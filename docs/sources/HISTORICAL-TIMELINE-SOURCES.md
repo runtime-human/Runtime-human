@@ -2,7 +2,7 @@
 
 ## Назначение
 
-Этот документ определяет, как наполняется историческая временная шкала Runtime Human. Исторические даты нельзя брать из памяти агента без проверки.
+Документ определяет, как наполняется историческая временная шкала Runtime Human. Исторические даты нельзя брать из памяти агента без проверки.
 
 ## Приоритет источников
 
@@ -20,36 +20,45 @@ type HistoricalSourceRecord = Readonly<{
   title: string;
   url: string;
   publisher: string;
-  sourceType: 'release-archive' | 'official-history' | 'announcement' | 'standard' | 'secondary';
+  sourceType:
+    | 'release-archive'
+    | 'official-history'
+    | 'announcement'
+    | 'standard'
+    | 'secondary';
   accessedAt: string;
   supports: readonly string[];
   archivedUrl?: string;
 }>;
 ```
 
-## Confidence
+Machine-readable registry: [`SOURCE-REGISTRY.jsonc`](SOURCE-REGISTRY.jsonc).
 
-- `primary` — точная дата подтверждена первичным источником.
+## Confidence и precision
+
+- `primary` — дата подтверждена первичным источником.
 - `secondary` — подтверждена несколькими качественными вторичными источниками.
 - `estimated` — точная дата недоступна; используется интервал и пояснение.
 
-`estimated` нельзя использовать для жёсткой разблокировки в конкретный день. Такие записи открываются по месяцу, кварталу или году.
+Дата отдельно хранит precision: `day`, `month`, `quarter`, `year`. Estimated/year-level запись нельзя использовать для жёсткой разблокировки в случайно выбранный день.
 
 ## Стартовые исторические опорные точки
 
-| Год | Событие | Источник/назначение |
+| Год | Событие | Предпочтительный источник |
 |---:|---|---|
-| 1990 | старт канонической кампании | архитектурное решение ADR-001 |
-| 1991 | публичное распространение World Wide Web | CERN / W3C historical materials |
-| 1991 | ранний публичный Python 0.9.x | Python release history и архивы `alt.sources` |
-| 1991 | публичное объявление и ранние версии Linux | kernel.org и архив объявления Linus Torvalds |
-| 1993 | Mosaic и ускорение массового Web | NCSA/CERN historical sources |
+| 1990 | старт канонической кампании | ADR-001 |
+| 1991 | публичное распространение World Wide Web | CERN / W3C |
+| 1991 | ранний публичный Python 0.9.x | Python archives / historical announcement |
+| 1991 | объявление и ранние версии Linux | kernel.org / announcement archive |
+| 1993 | Mosaic и ускорение массового Web | NCSA / CERN historical materials |
 | 1994 | Python 1.0 | Python release archives |
-| 1995 | Windows 95 | Microsoft lifecycle/history |
+| 1995 | Windows 95 | Microsoft history/lifecycle |
 | 1995 | Java | Sun/Oracle historical archives |
-| 1995 | JavaScript | Netscape announcement / Ecma history |
+| 1995 | JavaScript | Netscape/Ecma history |
 | 1995 | PHP Tools 1.0 | PHP manual history |
 | 1995 | Ruby 0.95 | Ruby release archives |
+
+Таблица является backlog источников, а не автоматически подтверждённым dataset. Каждая запись в `content/history/**` всё равно обязана иметь sourceRefs.
 
 ## Базовые ссылки
 
@@ -66,23 +75,37 @@ type HistoricalSourceRecord = Readonly<{
 
 ## Модель доступности
 
-Дата появления технологии не равна дате доступности персонажу. Для каждой записи отдельно моделируются:
+Глобальная дата появления технологии не равна доступности персонажу в вымышленном мегаполисе. Для каждой записи отдельно моделируются:
 
 - announcement;
 - first public release;
-- first consumer availability;
-- региональная доступность;
-- hardware requirements;
+- global consumer availability;
+- local city availability;
+- hardware/platform requirements;
 - цена входа;
-- распространение литературы и курсов;
-- professional demand;
+- распространение литературы, журналов и курсов;
+- professional demand в локальном рынке;
 - mainstream adoption;
 - decline;
 - end of support.
 
+Multi-country/region table не используется. Локальная задержка и спрос определяются `HomeCityProfile`, `EraProfile` и `LocalMarketState`.
+
 ## Реальные компании
 
-Базовый игровой мир использует вымышленных работодателей и конкурентов. Реальные компании допускаются в исторической базе только как фактический контекст появления продукта или отраслевого события. Не использовать официальные логотипы, рекламные материалы и копирование trade dress без отдельной проверки прав.
+Базовый игровой мир использует вымышленных работодателей и конкурентов. Реальные компании допускаются в исторической базе только как фактический контекст появления продукта или отраслевого события.
+
+Не использовать без отдельной проверки:
+
+- официальные логотипы;
+- рекламные материалы;
+- trade dress;
+- вымышленные скандалы и внутренние события;
+- фиктивное партнёрство или endorsement.
+
+## Будущая граница
+
+`historicalThrough = 2026-07`. После неё реальные компании и бренды не получают придуманные будущие релизы. Альтернативное будущее использует вымышленные IDs и маркируется как fictional future.
 
 ## Review process
 
@@ -90,7 +113,9 @@ type HistoricalSourceRecord = Readonly<{
 
 1. содержать `sourceRefs`;
 2. проходить schema validation;
-3. проходить chronology validation;
-4. не создавать продукт раньше его prerequisites;
-5. иметь human review при изменении канонической даты;
-6. обновлять snapshot исторического каталога.
+3. проходить chronology/prerequisite validation;
+4. не создавать продукт раньше prerequisites;
+5. иметь human review при изменении canonical date;
+6. обновлять snapshot исторического каталога;
+7. обновлять semantic content fingerprint;
+8. не вводить multi-region simulation в обход ADR-003.

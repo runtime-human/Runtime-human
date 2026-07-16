@@ -1,0 +1,7 @@
+# Human review required for sensitive project surfaces
+/.github/workflows/ @MrFr3di
+/src-tauri/capabilities/ @MrFr3di
+/src-tauri/tauri.conf.json @MrFr3di
+/migrations/ @MrFr3di
+/docs/adr/ @MrFr3di
+/docs/sources/ @MrFr3di

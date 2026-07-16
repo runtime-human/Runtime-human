@@ -1,0 +1,52 @@
+{
+  // Канонический registry расширяется content tooling. URL не является доказательством сам по себе:
+  // поле supports обязано указывать, какое утверждение подтверждает источник.
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "source.cern.birth-of-web",
+      "title": "The birth of the Web",
+      "url": "https://home.cern/science/computing/birth-web",
+      "publisher": "CERN",
+      "sourceType": "official-history",
+      "accessedAt": "2026-07-16",
+      "supports": ["history.web.public-era"]
+    },
+    {
+      "id": "source.w3c.history",
+      "title": "A Little History of the World Wide Web",
+      "url": "https://www.w3.org/History.html",
+      "publisher": "W3C",
+      "sourceType": "official-history",
+      "accessedAt": "2026-07-16",
+      "supports": ["history.web.timeline"]
+    },
+    {
+      "id": "source.python.versions",
+      "title": "Python documentation by version",
+      "url": "https://www.python.org/doc/versions/",
+      "publisher": "Python Software Foundation",
+      "sourceType": "release-archive",
+      "accessedAt": "2026-07-16",
+      "supports": ["technology.python.release-history"]
+    },
+    {
+      "id": "source.linux.kernel-archives",
+      "title": "Linux Kernel Archives",
+      "url": "https://www.kernel.org/",
+      "publisher": "Linux Kernel Organization",
+      "sourceType": "release-archive",
+      "accessedAt": "2026-07-16",
+      "supports": ["technology.linux.release-history"]
+    },
+    {
+      "id": "source.php.history",
+      "title": "History of PHP",
+      "url": "https://www.php.net/manual/en/history.php.php",
+      "publisher": "PHP Documentation Group",
+      "sourceType": "official-history",
+      "accessedAt": "2026-07-16",
+      "supports": ["technology.php.release-history"]
+    }
+  ]
+}
