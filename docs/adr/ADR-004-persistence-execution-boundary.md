@@ -1,17 +1,20 @@
 # ADR-004: Граница выполнения persistence
 
-- **Статус:** Proposed
+- **Статус:** Accepted
 - **Дата:** 2026-07-16
+- **Основание принятия:** DR-001, DR-002 и синхронизация архитектурного канона
 
 ## Контекст
 
-Прямой SQL из WebView через общий plugin API оставляет архитектурную границу только соглашением и увеличивает последствия XSS/ошибки permissions.
+Прямой SQL из WebView через общий plugin API оставляет архитектурную границу только соглашением и увеличивает последствия XSS, ошибки permissions или нарушения package boundaries.
 
-## Предлагаемое решение
+## Решение
 
-Авторитетные операции записи, migrations, backup, restore и import/export выполняются Rust adapter через узкие typed Tauri commands. Renderer не получает raw SQL capability.
+Авторитетные операции записи, migrations, backup, restore, import/export и mod ingest выполняются Rust adapter через узкие typed Tauri commands. Renderer не получает raw SQL execute capability.
 
-Game Core остаётся на TypeScript и передаёт рассчитанный результат application слою. Rust не содержит баланс и события.
+Game Core остаётся на TypeScript и передаёт рассчитанный результат application слою. Rust не содержит баланс, события и исторические правила.
+
+`tauri-plugin-sql` не используется production main window для authoritative writes. Read-only debug surface допускается только отдельным development capability и не входит в release profile без отдельного review.
 
 ## Последствия
 
@@ -21,19 +24,27 @@ Game Core остаётся на TypeScript и передаёт рассчита�
 - единая transaction policy;
 - безопасная работа с `i64`;
 - централизованный recovery;
-- меньшая поверхность permissions.
+- меньшая поверхность permissions;
+- проще синхронизировать migrations, backup и future mod/import flows.
 
 Минусы:
 
 - больше Rust DTO/contract tests;
 - два языка в persistence flow;
-- требуется аккуратная IPC schema.
+- требуется аккуратная IPC schema;
+- prototype должен подтвердить приемлемый developer workflow.
 
 ## Альтернативы
 
-1. `tauri-plugin-sql` только в отдельном TS package и architecture lint — проще, но слабее trust boundary.
+1. `tauri-plugin-sql` только в отдельном TS package и architecture lint — отклонено как недостаточно сильная trust boundary.
 2. Полностью Rust game core — отклонено как лишняя сложность.
 
-## Критерий принятия
+## Implementation gate
 
-Prototype должен подтвердить, что typed Rust repository не создаёт заметного торможения agent workflow и покрывается contract tests.
+До vertical slice должны существовать:
+
+- typed save/load/month commands;
+- Rust repository tests;
+- IPC schema validation;
+- capability test, подтверждающий отсутствие SQL execute у main window;
+- migration/backup integration fixture.

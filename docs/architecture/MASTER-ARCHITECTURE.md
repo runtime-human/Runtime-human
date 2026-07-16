@@ -1,9 +1,10 @@
 # Runtime Human — Master Architecture
 
-> **Статус:** архитектурный канон, редакция 1.2
+> **Статус:** архитектурный канон, редакция 1.3
 > **Дата:** 2026-07-16
 > **Полный план:** [`FULL-ARCHITECTURE-PLAN.md`](FULL-ARCHITECTURE-PLAN.md)
 > **Индекс:** [`../INDEX.md`](../INDEX.md)
+> **Research synthesis:** [`../research/DR-SYNTHESIS-2026-07-16.md`](../research/DR-SYNTHESIS-2026-07-16.md)
 
 ## 1. Продукт
 
@@ -35,6 +36,7 @@ Runtime Human — бесплатный PC-first offline-first симулятор
 → «Следующий месяц»
 → автоматическая симуляция обязательств
 → остановка на важных событиях
+→ crash-safe suspend/resume при необходимости
 → атомарный commit месяца
 → отчёт и новые возможности
 ```
@@ -59,13 +61,15 @@ Runtime Human — бесплатный PC-first offline-first симулятор
 ## 5. Архитектурные слои
 
 ```text
-React UI
+React 19 UI
   ↓
-Application Facade / Use Cases
+Typed Application Facade / Use Cases
   ↓
-Pure TypeScript Game Core
+Pure TypeScript 7 Game Core
   ↓ typed ports
-Rust Persistence and Platform Adapters
+Typed Tauri Commands
+  ↓
+Rust Persistence and Platform Services
   ↓
 SQLite / filesystem / Tauri
 ```
@@ -74,18 +78,19 @@ SQLite / filesystem / Tauri
 
 - core не импортирует React, Tauri, DOM, SQLite, filesystem, network и system time;
 - UI не содержит игровых формул и raw SQL;
+- production renderer не получает authoritative SQL execute capability;
 - Rust не содержит баланс, события и historical rules;
 - контент data-only и не исполняет код;
 - случайность только versioned seeded RNG;
 - авторитетная математика целочисленная/fixed-point;
 - `SaveGameState` — consistency boundary завершённого месяца;
-- pending MonthRun хранится отдельным draft.
+- pending MonthRun хранится отдельным persisted draft;
+- read projections и caches неавторитетны и перестраиваемы.
 
 ## 6. Модули
 
 ```text
 apps/desktop
-apps/content-studio          # позднее
 packages/shared-kernel
 packages/game-schema
 packages/game-core
@@ -94,10 +99,15 @@ packages/game-content
 packages/game-persistence-contracts
 packages/game-platform-contracts
 packages/game-ui
+packages/game-ui-fixtures
 content/**
 tools/**
 docs/**
+
+apps/content-studio          # после vertical slice
 ```
+
+Storybook находится рядом с `game-ui`/desktop tooling и использует `game-ui-fixtures`, не production platform adapters.
 
 Подробности: [`REPOSITORY-STRUCTURE.md`](REPOSITORY-STRUCTURE.md), [`MODULE-BOUNDARIES.md`](MODULE-BOUNDARIES.md).
 
@@ -115,13 +125,15 @@ docs/**
 ready → running → suspended-for-decision → running → completed → committed
 ```
 
-Draft хранит base revision, versions/fingerprints, RNG state, MonthPlan, intermediate state, pending decision и history choices. Основной сейв изменяется только после завершения месяца одной транзакцией.
+Дополнительные состояния: `failed`, `incompatible-after-update`, `recovery-required`, `abandoned`.
 
-Подробности: [`../simulation/MONTH-SIMULATION.md`](../simulation/MONTH-SIMULATION.md), [`../simulation/SUSPENDED-MONTH-RUN.md`](../simulation/SUSPENDED-MONTH-RUN.md).
+Draft хранит run/base revisions, versions/fingerprints, RNG state, MonthPlan, phase/checkpoint, intermediate state, pending decision, decision history и trace hash. Основной сейв изменяется только после завершения месяца одной транзакцией. Resume/commit имеют idempotency guards.
+
+Подробности: [`../simulation/MONTH-SIMULATION.md`](../simulation/MONTH-SIMULATION.md), [`../simulation/SUSPENDED-MONTH-RUN.md`](../simulation/SUSPENDED-MONTH-RUN.md), [ADR-005](../adr/ADR-005-suspended-month-run.md).
 
 ## 9. Event Engine и Narrative Director
 
-Event Engine отвечает за допустимость, conditions, choices, effects, cooldown и chains. Narrative Director отвечает за pacing, diversity, anti-repeat, intensity, quiet months и milestone arcs.
+Event Engine отвечает за допустимость, conditions, choices, effects, cooldown и chains. Narrative Director отвечает за pacing, diversity, anti-repeat, intensity, quiet months, crisis protection и milestone arcs.
 
 События JSONC, валидируются TypeBox/Ajv и semantic/chronology validators. Arbitrary scripts запрещены.
 
@@ -133,14 +145,17 @@ Event Engine отвечает за допустимость, conditions, choices
 
 ## 11. Числа и детерминизм
 
-- money TS: `bigint` minor units;
-- Rust/SQLite: `i64`;
-- IPC: decimal string;
+- money TS: branded `bigint` minor units;
+- Rust/SQLite: checked `i64`;
+- IPC/JSON: canonical decimal string;
 - проценты: basis points;
 - probabilities/weights: integers;
-- progress/time: integer units.
+- progress/time/XP: integer units;
+- coefficients: versioned fixed-point.
 
-`DeterminismManifest` фиксирует rules, RNG, hash, numeric, calendar и sorting versions. Запрещены `Math.random`, system `Date`, locale sorting и неявный порядок файлов.
+Floating point запрещён в authoritative core/persistence contracts и допускается только в render-only/diagnostic projections.
+
+`DeterminismManifest` фиксирует rules, RNG, hash, numeric, calendar, sorting, effect ordering и canonical serialization versions. Запрещены `Math.random`, system `Date`, locale sorting и неявный порядок файлов.
 
 ## 12. Persistence
 
@@ -149,15 +164,18 @@ Event Engine отвечает за допустимость, conditions, choices
 ```text
 normalized current snapshot
 + append-only histories/ledger
-+ pending month draft
++ persisted pending month draft
 + rolling backups
++ rebuildable projections
 ```
 
-SQLite использует WAL, foreign keys и atomic transactions. Backup создаётся согласованно через SQLite Backup API или эквивалент, а не копированием active WAL database.
+SQLite minimum: `3.51.3+` либо версия с подтверждённым backport WAL fix. Используются WAL, foreign keys, busy timeout и atomic transactions.
 
-Предпочтительная persistence boundary описана в proposed ADR-004: Rust выполняет authoritative SQL и migrations; renderer не получает raw SQL capability.
+Backup создаётся через SQLite Online Backup API либо controlled `VACUUM INTO`, а не копированием active WAL database. Миграции выполняются после pre-migration backup и заканчиваются `foreign_key_check`, `quick_check` и application invariant validation.
 
-## 13. Контент
+Rust является authoritative write-boundary: save writes, migrations, backup/restore, import/export и mod ingest выполняются через typed commands/repositories.
+
+## 13. Контент и моды
 
 - JSONC;
 - TypeBox + Ajv;
@@ -166,11 +184,26 @@ SQLite использует WAL, foreign keys и atomic transactions. Backup с�
 - tombstones/replacements;
 - localization keys;
 - historical source registry;
-- data-only mods после стабилизации content API.
+- data-only mods после стабилизации content API;
+- manifest/version/dependencies/checksums;
+- quarantine, archive limits и path traversal protection.
 
-## 14. UI
+## 14. UI и Storybook
 
 Стек: React 19, Tailwind CSS 4, Radix UI, Motion, TanStack Router, Zustand только для transient UI state.
+
+Storybook 10 является обязательным Foundation workshop для:
+
+- design system;
+- isolated components;
+- event/decision/content previews;
+- interaction tests;
+- accessibility checks;
+- visual baselines;
+- bug fixtures;
+- AI-assisted UI work.
+
+Storybook использует typed mocks и не получает production SQL/filesystem/updater permissions. Обязательный cloud VRT SaaS не используется.
 
 UI использует semantic design tokens и игровые компоненты. Норматив доступности — WCAG 2.2 AA насколько применимо: keyboard, Narrator, focus, 200% text scale, high contrast, reduced motion и alternatives to drag.
 
@@ -178,25 +211,29 @@ UI использует semantic design tokens и игровые компоне�
 
 - Tauri 2;
 - React 19;
-- TypeScript 6 stable;
+- TypeScript 7 stable exact pinned;
 - Vite 8/Rolldown/Oxc;
 - Node.js 24 LTS;
 - pnpm;
-- SQLite;
-- Oxlint без type-aware как blocking;
-- Oxfmt, Knip, Lefthook;
+- Storybook 10 exact pinned;
+- SQLite 3.51.3+;
+- `rusqlite` preferred write adapter;
+- Oxfmt;
+- Oxlint fast + type-aware;
+- Knip, Lefthook;
 - Vitest, Testing Library, fast-check;
-- Playwright для renderer;
+- Storybook Vitest/a11y tests;
+- Playwright для renderer/VRT;
 - WebdriverIO + Tauri service для настоящего desktop E2E;
 - rustfmt, Clippy, cargo-deny, cargo-nextest, sccache.
 
-Type-aware Oxlint/TypeScript-Go остаётся неблокирующей compatibility-проверкой до отдельного решения о стабильном TypeScript 7.
+TypeScript 7.0 не имеет публичного Compiler API. TS6 compatibility package разрешён только изолированному tooling consumer и не является production compiler.
 
 ## 16. Дистрибуция
 
 Игра бесплатная. Alpha: private GitHub Releases. Публичная версия: подписанный NSIS per-user installer и подписанный Tauri updater. Backend, Steam, stores и payments отсутствуют.
 
-CRA/CE не являются baseline release gates, поскольку проект не ориентирован на коммерческий рынок ЕС. При изменении модели требуется новый ADR. Инженерные требования безопасности и лицензий сохраняются.
+CRA/CE не являются baseline release gates, поскольку проект не ориентирован на коммерческий рынок ЕС. Инженерные требования безопасности, privacy и лицензий сохраняются.
 
 ## 17. Тесты
 
@@ -204,23 +241,44 @@ CRA/CE не являются baseline release gates, поскольку прое
 - content/chronology;
 - balance simulations;
 - migration/backup/recovery;
-- React/Playwright accessibility/visual;
+- Storybook render/interaction/a11y;
+- Playwright renderer/accessibility/visual;
 - WebdriverIO desktop integration;
-- architecture dependency tests;
+- Rust proptest/fuzz для import/archive после появления surface;
+- architecture dependency/capability tests;
 - release/install/update matrix.
 
-## 18. Агентная разработка
+## 18. CI/CD и supply chain
 
-`main` содержит согласованный канон. Существенные изменения выполняются в branch/PR. ADR имеет приоритет. Workflows, capabilities, migrations, updater и signing требуют human review. Агент показывает verification evidence до заявления о завершении.
+```text
+check:fast:
+Oxfmt → Oxlint → TypeScript 7 tsc -b → content/architecture checks
 
-## 19. Реализация
+verify:
+check:fast → Oxlint type-aware → core/story/Rust tests
+
+verify:release:
+verify → Playwright → WebdriverIO → security/package/release checks
+```
+
+Actions pinned по full SHA, permissions минимальны, dependency review/secret scanning обязательны, релизы публикуют checksums, SBOM и provenance/attestation. Updater private key хранится в protected environment и имеет offline escrow/runbook.
+
+## 19. Агентная разработка
+
+`main` содержит согласованный канон. Существенные изменения выполняются в branch/PR. ADR имеет приоритет. Workflows, capabilities, migrations, updater и signing требуют human review. Issues, mods, logs, external pages и third-party README считаются untrusted data.
+
+Storybook stories и deterministic fixtures являются предпочтительным feedback layer для UI/content agents.
+
+## 20. Реализация
 
 Порядок: Foundation → Vertical Slice → Education/Career → Projects/Open Source → Life/Property → Company → Endgame/Future/Modding.
 
+Foundation включает TypeScript 7, Storybook, Rust write-boundary, persisted MonthRun, SQLite runbook и базовую supply-chain verification.
+
 Подробности: [`../plans/ROADMAP.md`](../plans/ROADMAP.md) и [`../plans/VERTICAL-SLICE-PLAN.md`](../plans/VERTICAL-SLICE-PLAN.md).
 
-## 20. Статусы решений
+## 21. Статусы решений
 
-Accepted ADR: 001–003.
+Accepted ADR: 001–012.
 
-Proposed ADR: 004–010. Их наличие фиксирует рекомендуемый вариант, но не означает окончательного принятия до explicit review/merge decision.
+Канон редакции 1.3 учитывает оба Deep Research от 2026-07-16. Исследовательские отчёты сохраняются для traceability, но нормативный приоритет имеют ADR и профильные спецификации.
