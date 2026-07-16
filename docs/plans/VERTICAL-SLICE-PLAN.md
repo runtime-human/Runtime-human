@@ -15,29 +15,52 @@
 5. нажимает «Следующий месяц»;
 6. получает автоматическую школу/домашние обязательства;
 7. сталкивается минимум с одним возможным blocking event;
-8. закрывает и возобновляет приостановленный MonthRun;
+8. закрывает приложение и возобновляет persisted MonthRun;
 9. получает отчёт;
-10. перезапускает приложение и загружает тот же сейв.
+10. перезапускает приложение и загружает тот же committed сейв.
 
 ## Обязательные технические элементы
 
 - pnpm monorepo;
+- TypeScript 7 exact pinned;
+- Vite 8/Oxc tooling;
 - Tauri shell;
 - React routing/design tokens;
-- shared kernel/GameDate/Money/IDs;
+- Storybook 10 workshop;
+- shared kernel/GameDate/Money/IDs/fixed-point types;
 - TypeBox/Ajv schemas;
-- deterministic RNG;
+- deterministic RNG + Determinism Manifest;
 - Gregorian calendar;
-- Begin/Resume MonthRun;
-- proposed persistence boundary prototype;
+- Begin/Resume/Recover MonthRun;
+- accepted Rust persistence write-boundary;
+- explicit Tauri capabilities без SQL execute у main window;
+- SQLite 3.51.3+ version gate;
 - SQLite schema/migration 001;
-- backup smoke;
+- Online Backup API/restore smoke;
 - JSONC content pack;
 - Event Engine minimum;
 - Narrative Director minimum blocking budget;
 - Russian localization;
-- Vitest/fast-check/Playwright;
-- one WebdriverIO Tauri smoke.
+- Vitest/fast-check;
+- Storybook render/interaction/a11y tests;
+- Playwright browser/visual test;
+- WebdriverIO Tauri critical smoke.
+
+## Storybook minimum
+
+- application shell;
+- date/resource bar;
+- character summary;
+- activity card;
+- event card;
+- blocking decision dialog;
+- monthly report;
+- save/recovery panel;
+- loading/empty/error;
+- long Russian text;
+- keyboard focus;
+- 200% text scale;
+- high contrast и reduced motion.
 
 ## Content minimum
 
@@ -50,25 +73,45 @@
 - 2 housing states;
 - monthly report templates.
 
+## Persistence/recovery scenarios
+
+Обязательны fixtures/tests:
+
+- app close на blocking decision;
+- повторная отправка того же decision;
+- crash до month commit;
+- повторный запуск после commit до draft cleanup;
+- incompatible content fingerprint;
+- failed migration;
+- backup restore;
+- Safe Mode open/export.
+
 ## Acceptance criteria
 
-- одинаковый seed даёт одинаковый месяц;
+- одинаковый seed/manifest даёт одинаковый месяц и trace hash;
 - закрытие на blocking event безопасно;
 - основной сейв не содержит half-applied month;
-- money round trip точный;
+- duplicate decision/commit не применяет эффекты дважды;
+- money/fixed-point round trip точный;
 - save загружается после restart;
+- SQLite version/pragmas проверены;
 - keyboard-only flow проходит;
-- no raw SQL capability у renderer в выбранном prototype;
+- canonical Storybook stories и a11y checks проходят;
+- visual baseline воспроизводим в CI;
+- no raw SQL execute capability у renderer;
+- WebdriverIO проходит create → suspend → restart → resume → commit → reload;
 - `pnpm verify` проходит;
-- architecture docs соответствуют реализации.
+- architecture/docs/research traceability соответствуют реализации.
 
 ## Не входит
 
 - полноценная работа/Junior career;
 - компания;
 - open source community;
-- моды;
+- пользовательские моды;
 - updater release channel;
 - несколько эпох;
 - второй город/страна;
-- backend.
+- backend;
+- обязательный cloud VRT;
+- Content Studio.
