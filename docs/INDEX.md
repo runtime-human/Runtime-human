@@ -1,6 +1,6 @@
 # Runtime Human — индекс документации
 
-Этот каталог является навигационной точкой по архитектуре, игровому дизайну, симуляции, контенту и инженерным правилам проекта.
+Этот каталог является навигационной точкой по архитектуре, игровому дизайну, симуляции, контенту, исследованиям и инженерным правилам проекта.
 
 ## Иерархия источников истины
 
@@ -9,9 +9,17 @@
 3. `docs/architecture/MASTER-ARCHITECTURE.md`.
 4. `docs/architecture/FULL-ARCHITECTURE-PLAN.md`.
 5. Планы реализации и issue/PR.
-6. Комментарии в коде.
+6. Исследовательские отчёты и внешние references.
+7. Комментарии в коде.
 
-При конфликте применяется источник с более высоким приоритетом. Документ нижнего уровня обязан быть обновлён после принятия решения верхнего уровня.
+При конфликте применяется источник с более высоким приоритетом. Исследование не становится каноном без ADR/обновления профильной спецификации.
+
+## Исследования
+
+- [Индекс Deep Research](research/README.md)
+- [DR-001 — аудит стека и архитектуры](research/DR-001-STACK-ARCHITECTURE-AUDIT-2026-07-16.md)
+- [DR-002 — многоязычное исследование gamedev/desktop практик](research/DR-002-MULTILINGUAL-GAMEDEV-STACK-RESEARCH-2026-07-16.md)
+- [Синтез исследований и матрица решений](research/DR-SYNTHESIS-2026-07-16.md)
 
 ## Архитектура
 
@@ -90,7 +98,8 @@
 ## Инженерия
 
 - [Технологический стек](engineering/TECH-STACK.md)
-- [TypeScript policy](engineering/TYPESCRIPT-POLICY.md)
+- [TypeScript 7 policy](engineering/TYPESCRIPT-POLICY.md)
+- [Storybook workflow](engineering/STORYBOOK-WORKFLOW.md)
 - [Rust boundary](engineering/RUST-BOUNDARY.md)
 - [Тестовая стратегия](engineering/TESTING-STRATEGY.md)
 - [CI/CD](engineering/CI-CD.md)
@@ -114,6 +123,10 @@
 - [Roadmap](plans/ROADMAP.md)
 - [Release Milestones](plans/RELEASE-MILESTONES.md)
 
+## ADR
+
+- [Индекс принятых решений](adr/README.md)
+
 ## Правило обновления
 
-Изменение архитектурного решения начинается с ADR. После принятия ADR одновременно обновляются master-документ, профильные спецификации, схемы, тесты и планы реализации.
+Изменение архитектурного решения начинается с ADR. После принятия ADR одновременно обновляются master-документ, профильные спецификации, схемы, тесты, планы реализации и research traceability.
