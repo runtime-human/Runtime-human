@@ -1,3 +1,0 @@
-# Final
-
-Documentation branch finalized.
