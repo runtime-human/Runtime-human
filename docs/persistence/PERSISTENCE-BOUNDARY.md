@@ -4,11 +4,12 @@
 
 - [ADR-004 — Persistence Execution Boundary](../adr/ADR-004-persistence-execution-boundary.md);
 - [ADR-013 — Professional Progression](../adr/ADR-013-authoritative-professional-progression-evidence.md);
-- [ADR-014 — Project & Work Package](../adr/ADR-014-authoritative-project-work-package-model.md).
+- [ADR-014 — Project & Work Package](../adr/ADR-014-authoritative-project-work-package-model.md);
+- [ADR-015 — Casual-first Complexity](../adr/ADR-015-casual-first-abstraction-and-complexity-budget.md).
 
-## Решение
+## 1. Решение
 
-Authoritative writes, migrations, MonthRun checkpoints/commit, project/professional history, backup, restore, import/export and mod ingest execute in Rust services/repositories.
+Authoritative writes, migrations, MonthRun checkpoints/commit, backup, restore, import/export and mod ingest execute in Rust services/repositories.
 
 Renderer has no raw SQL execute.
 
@@ -16,121 +17,129 @@ Renderer has no raw SQL execute.
 React UI
 → typed application facade
 → typed Tauri command
-→ Rust persistence service/repository
+→ Rust persistence service
 → SQLite managed writer
 ```
 
-## TypeScript responsibilities
+## 2. Profile-aware persistence
+
+Rust persists only fields belonging to the active implemented profile.
+
+- MVP DTOs contain minimal project/professional state.
+- Recommended/Extended DTOs are added with schema migration and feature.
+- Rust does not require absent future tables/fields.
+- Generic unvalidated future payload is not used to bypass typed contracts.
+
+## 3. TypeScript responsibilities
 
 - pure simulation;
-- WorkPackage/project outcome calculation;
-- quality/debt/defect/release state transitions;
-- contribution and `ExperienceEpisode` creation;
-- progression/evidence calculation;
-- application contracts/orchestration;
+- compact WorkPackage/project outcome;
+- active quality/debt/risk/release transitions;
+- `ExperienceEpisode` creation;
+- professional progression/result;
+- application orchestration;
 - DTO schemas/ports/read models;
-- validating core result before persistence command.
+- validation before persistence command.
 
-## Rust responsibilities
+Extended calculations are added only with implemented systems.
 
-- database lifecycle/SQLite 3.51.3+ gate/pragmas;
-- schema migrations;
-- transactions/optimistic revisions/idempotency;
+## 4. Rust responsibilities
+
+- database lifecycle/SQLite gate/pragmas;
+- implemented schema migrations;
+- transaction/revisions/idempotency;
 - MonthRun draft/checkpoints/commit;
-- normalized project/professional snapshot;
-- releases/incidents/scope decisions/contributions;
-- evidence/practice/grade records;
-- unique record constraints;
-- projection cache invalidation/versioning;
+- minimal normalized snapshots;
+- compact release/important history records;
+- aggregated professional result/grade records;
+- unique constraints;
+- projection invalidation;
 - serialization/checked integer conversion;
 - backup/restore/import/export;
-- mod quarantine;
 - Safe Mode/recovery/diagnostics.
 
-Rust does not calculate project outcome, latent work, defects, releases, mastery, evidence or grade.
+Rust does not calculate gameplay outcomes.
 
-## Authoritative commit contract
+## 5. MVP commit contract
 
 MonthRun commit DTO includes:
 
-- final normalized snapshot;
-- ProjectState/WorkPackage/quality/debt/defect deltas;
-- release/incident/major decision records;
-- participant contribution summaries;
-- provider outcomes/episodes;
-- professional state/evidence/practice/grade deltas;
-- finance/other histories/ledger;
-- committed run marker/trace;
+- final implemented snapshot;
+- project/package delta;
+- compact quality/debt/risk/release delta;
+- provider episode;
+- professional state/result delta;
+- finance/life history;
+- committed-run marker/trace;
 - projection invalidation metadata.
 
 Rust validates:
 
 - expected save/run/project/package revisions;
-- unique run/package/release/incident/episode/evidence IDs;
-- project/package lifecycle and references;
-- release immutability/reference snapshots;
-- latent realization/checksum consistency in draft;
-- project outcome → episode → evidence relation;
-- contribution refs;
-- grade order/uniqueness;
+- unique run/package/release/episode/result IDs;
+- valid package transition;
+- hidden realization checksum;
+- project outcome → episode → professional result relation;
+- grade order/uniqueness when grade exists;
 - checked integer ranges;
-- no draft-only state in committed snapshot;
+- no draft-only values;
 - snapshot/history consistency.
 
-Project outcome, release, episode and evidence cannot commit in separate transactions.
+Project and professional result cannot commit separately.
 
-## Draft/checkpoint persistence
+## 6. Draft persistence
 
-Project checkpoint stores:
+MVP checkpoint stores:
 
 - project/package revisions;
-- progress/latent work/RNG states;
+- progress/hidden realization/RNG state;
 - uncertainty/pending decision;
-- provisional quality/debt/defect/release/incident outcome;
-- contribution/episode draft;
+- provisional compact outcome;
+- compact quality/debt/risk/release change;
+- episode/professional draft;
 - hashes/fingerprints.
 
-Professional checkpoint stores episode assessment and evidence draft.
+No fields for unimplemented incident/debt/defect/team/evidence-detail systems.
 
-Rust preserves payload exactly; it does not interpret gameplay formulas.
+Rust preserves payload exactly and does not interpret formulas.
 
-## IPC
+## 7. IPC
 
 - versioned runtime-validated DTO;
 - `bigint` as canonical decimal string;
 - request/idempotency ID and expected revisions;
-- explicit project/professional schema/rules versions;
+- explicit active schema/rules versions;
 - payload limits;
-- no unnecessary raw paths/secrets;
 - stable typed errors;
-- TS/Rust tests for optional/null/enum/union semantics.
+- no unnecessary paths/secrets;
+- TS/Rust contract tests.
 
-## Capabilities
+## 8. Capabilities
 
 Production main window has no:
 
-- `sql:allow-execute`;
+- SQL execute;
 - shell proxy;
 - arbitrary filesystem;
 - updater/signing/release operations.
 
-Read-only SQL debug only in separate development capability.
+Read-only debug access exists only in a separate development capability.
 
-## Rust boundary limit
+## 9. Rust boundary limit
 
 Rust does not:
 
 - choose events/narrative;
-- create or advance Work Packages;
-- reveal latent work/roll defects;
-- evaluate release gates;
-- create episodes/evidence claims;
+- create/advance packages;
+- materialize hidden project outcome;
+- evaluate release choice;
+- create episodes/professional result;
 - calculate mastery/grade/readiness;
-- interpret content definitions.
+- interpret content.
 
-It persists validated canonical result according to transaction/compatibility policy.
+It persists the validated canonical result.
 
-## Concurrency
+## 10. Concurrency
 
 - one managed writer;
 - commit/migration/backup/restore/import mutually exclusive;
@@ -139,17 +148,20 @@ It persists validated canonical result according to transaction/compatibility po
 - projection rebuild bounded;
 - unique constraints guard duplicate records.
 
-## Tests
+## 11. MVP tests
 
-- TS ↔ Rust DTO round trips;
-- project/professional integer boundaries;
-- permissions/no SQL execute;
+- TS ↔ Rust DTO round trip;
+- integer boundaries;
+- permission/no SQL execute;
 - interrupted checkpoint/write recovery;
-- duplicate request/package/release/incident/episode/evidence;
-- latent work/RNG payload round trip;
-- project outcome + episode + evidence atomicity;
-- release immutability;
-- grade award persistence;
+- duplicate request/package/release/episode/result;
+- hidden realization round trip;
+- project + episode + professional result atomicity;
+- compact release immutability;
+- grade award persistence when applicable;
 - projection invalidation/rebuild;
 - backup/migration/restore;
-- incompatible pending project/progression draft.
+- incompatible pending draft;
+- absent Extended tables do not break open/recovery.
+
+Extended tests are added with implemented systems.
