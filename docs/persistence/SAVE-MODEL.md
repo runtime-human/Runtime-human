@@ -1,217 +1,274 @@
 # Модель сохранения
 
-Нормативные решения: [ADR-005](../adr/ADR-005-suspended-month-run.md), [ADR-010](../adr/ADR-010-authoritative-save-state.md) и [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md).
+Нормативные решения:
+
+- [ADR-005 — Suspended MonthRun](../adr/ADR-005-suspended-month-run.md);
+- [ADR-010 — Authoritative Save State](../adr/ADR-010-authoritative-save-state.md);
+- [ADR-013 — Professional Progression](../adr/ADR-013-authoritative-professional-progression-evidence.md);
+- [ADR-014 — Project & Work Package](../adr/ADR-014-authoritative-project-work-package-model.md).
 
 ## Consistency boundary
 
-`SaveGameState` является consistency boundary завершённого месяца. Данные внутри хранятся нормализованно по доменным модулям, но commit месяца изменяет их атомарно.
+`SaveGameState` — consistency boundary завершённого месяца. Domain tables normalized, but MonthRun changes them atomically.
 
-Professional provider outcome, professional state delta и evidence history всегда commit/rollback вместе.
+The following always commit/rollback together:
 
-## Авторитетная структура
+- provider/project outcome;
+- ProjectState/WorkPackage/quality/debt/defect delta;
+- release/incident/contribution history;
+- `ExperienceEpisode`;
+- professional state/evidence/practice/grade delta;
+- finance/other cross-system consequences.
+
+## Authoritative structure
 
 ```text
 current normalized snapshot
-+ append-only histories / finance ledger / professional evidence ledger
++ append-only histories / ledger / evidence / releases / incidents
 + persisted pending MonthRun draft
 + committed MonthRun markers/traces
 + rolling backups
-+ rebuildable read projections
++ rebuildable projections
 ```
 
-Полное event sourcing не используется: текущий state не восстанавливается воспроизведением всей жизни и старых версий правил.
+Full event sourcing is not used.
 
 ## Save metadata
 
-- save ID;
-- display name;
-- created/updated timestamps инфраструктуры;
-- game date и MonthIndex;
+- save ID/display name;
+- infrastructure created/updated timestamps;
+- game date/MonthIndex;
 - save schema version;
-- professional state/evidence schema versions;
+- project/work-package/release schema versions;
+- professional/evidence/projection schema versions;
 - rules version;
-- content/mod fingerprints;
+- content/mod/project/progression fingerprints;
 - Determinism Manifest;
-- committed revision;
-- last committed MonthRun ID;
+- committed revision/last run;
 - health/recovery state;
 - checksum/canonical envelope hash;
-- last successful backup metadata.
+- backup metadata.
 
-System timestamps не влияют на игровой outcome и не входят в authoritative simulation hash, если это не указано явно в envelope policy.
+System timestamps do not affect game outcome.
 
 ## Normalized snapshot
 
-Таблицы/authoritative records хранят:
+Authoritative records:
 
-- character identity/life state;
-- `CharacterProfessionalState`;
-- skill mastery/fluency;
-- technology familiarity/version recency;
-- professional focus;
-- awarded grades;
-- people и relationships;
+- character/life state;
+- professional state;
+- people/relationships;
 - employment/activities;
-- projects/products/open source;
+- projects;
+- project goals/constraints/scope slices;
+- project components;
+- active/recent Work Packages;
+- project quality dimensions;
+- technical debt aggregate/significant records;
+- latent defect aggregates/known defects;
+- project maintenance/participant/ownership state;
+- products/open-source extensions;
 - company;
-- inventory/equipment;
-- housing;
+- inventory/equipment/housing;
 - finance;
 - world/city/timeline;
 - narrative/arcs;
-- achievements/life-cycle state.
+- achievements/lifecycle.
 
-Разбиение на таблицы не означает независимые транзакции каждого доменного объекта.
+Normalized tables do not imply separate transactions.
 
-## Append-only history
+## Project storage model
 
-Append-only records:
+Logical tables/entities:
 
-- life months;
-- event/decision history;
-- career history;
-- project/product releases;
-- achievements;
-- relationship milestones;
-- finance ledger;
-- `ProfessionalEvidenceEvent`;
-- `EvidenceClaim`;
+```text
+projects
+project_goals
+project_constraints
+project_scope_slices
+project_requirements
+project_components
+work_packages
+work_package_dependencies
+work_package_participants
+project_quality_dimensions
+project_debt_aggregates
+project_debt_records
+project_latent_defect_aggregates
+project_known_defects
+project_maintenance_state
+project_participant_plans
+```
+
+A physical implementation may use versioned payload columns for bounded profiles, but IDs/revisions/status and critical references remain queryable/validated.
+
+## Append-only project history
+
+- project lifecycle milestones;
+- major scope/architecture/technology decisions;
+- releases;
+- incidents/rollbacks;
+- significant contribution summaries;
+- project repair/migration records.
+
+`ReleaseRecord` immutable after commit.
+
+Significant debt/defect records are managed state with append-only origin/resolution history; they are not silently deleted.
+
+## Resolved package compaction
+
+Routine resolved packages may compact after retention window while preserving:
+
+- package semantic snapshot;
+- final outcome;
+- scope/quality/debt/defect deltas;
+- contribution summary;
+- release/episode/evidence refs;
+- trace hash;
+- rules/content fingerprints.
+
+Never compact away:
+
+- releases;
+- incidents;
+- significant debt/scope decisions;
+- records referenced by evidence/history;
+- active/recovery packages.
+
+## Professional append-only history
+
+- `ProfessionalEvidenceEvent`/claims;
 - `MonthlyPracticeAggregate`;
-- `ProfessionalGradeAward` history;
-- committed MonthRun summary/trace reference;
-- migration history.
+- `ProfessionalGradeAward`;
+- progression migration/repair history.
 
-История используется для журнала, auditability, diagnostics, readiness projections и balance analysis, но не является единственным источником текущего professional state.
+Evidence stores semantic source/context snapshots and survives missing content.
 
-Append-only означает отсутствие обычного редактирования gameplay history. Corruption repair/compaction/migration выполняется только versioned operation с записью причины и source hashes.
+## Derived/rebuildable data
 
-## Professional evidence storage
+- demonstrated/current-market readiness;
+- specialization/capability cards;
+- evidence indexes;
+- project dashboard/health;
+- work forecast presentation;
+- grouped debt/defect/risk summaries;
+- portfolio comparison;
+- release charts;
+- monthly reports;
+- search/thumbnail caches.
 
-Evidence event хранит semantic snapshot:
-
-- source/provider kind и stable source ID;
-- context category/project/role snapshot;
-- period;
-- outcome;
-- claims;
-- assistance;
-- anti-repeat key;
-- content/rules/trace identifiers.
-
-Удаление или обновление mod/content definition не удаляет evidence. Display использует актуальную локализацию, tombstone либо сохранённый fallback label.
-
-Routine practice сворачивается помесячно и не создаёт запись на каждый день или commit.
-
-## Authoritative и derived professional data
-
-Authoritative:
-
-- aptitude values;
-- skill mastery/fluency;
-- technology familiarity;
-- professional focus;
-- awarded grades;
-- evidence/practice history.
-
-Derived/rebuildable:
-
-- demonstrated grade readiness;
-- current market readiness;
-- specialization profile;
-- capability cards;
-- evidence indexes/summaries;
-- UI charts/reports.
-
-Derived data не используется как единственный вход MonthRun. При отсутствии cache projection перестраивается из authoritative professional state/evidence.
+Derived data is not the sole MonthRun input and may be rebuilt.
 
 ## Pending MonthRun
 
-Pending draft отделён от committed snapshot и содержит exact deterministic/compatibility context. Он не считается текущим месяцем жизни до commit.
+Draft stores exact deterministic/compatibility context.
 
-Professional draft дополнительно содержит:
+Project draft minimum:
 
-- provider outcome/episode checkpoints;
+- project/package revisions and pre-state hashes;
+- allocation;
+- package progress;
+- latent work realization;
+- project RNG states;
+- uncertainty/pending decision;
+- provisional outcome;
+- quality/debt/defect provisional deltas;
+- release/incident candidate;
+- contribution/episode draft;
+- project trace/fingerprint.
+
+Professional draft minimum:
+
+- episode refs/snapshots;
 - professional delta;
 - pending evidence IDs/claims;
-- monthly practice accumulators;
-- anti-repeat state;
-- progression trace hash.
+- practice/anti-repeat state;
+- progression trace/fingerprint.
 
-На один save допускается один active draft. Active draft может быть resumed, migrated поддерживаемым способом, abandoned либо открыт в recovery flow.
+Draft is not committed history. One active draft per save.
 
-## Revision и idempotency
+## Revision and idempotency
 
-- Committed save revision увеличивается один раз на успешный authoritative transaction/Month commit.
-- MonthRun draft имеет отдельную `runRevision`.
-- Mutating commands передают expected revision и request/idempotency ID.
-- Conflict не перезаписывается молча.
-- Повтор committed MonthRun ID не применяет месяц повторно.
-- Deterministic evidence ID предотвращает duplicate evidence после retry/restart.
-- Crash после commit до draft cleanup восстанавливается через committed marker.
+- save revision increments once per successful authoritative transaction;
+- project/package each have domain revisions;
+- draft has run revision;
+- mutating commands include expected revisions/request ID;
+- conflicts never overwrite silently;
+- committed run ID prevents duplicate month;
+- deterministic package/release/incident/episode/evidence IDs prevent duplicate records;
+- crash after commit uses committed marker;
+- projection cache update does not require save revision unless policy says so.
 
-Не каждое внутреннее обновление readiness/search cache увеличивает authoritative save revision.
+## Backups
 
-## Save slots и backups
+Backup includes:
 
-Поддерживаются несколько независимых сейвов. Autosave является защищённой committed revision/slot policy, а не единственной незащищённой копией.
+- project/professional snapshots;
+- release/incident/evidence/history ledgers;
+- schema/rules/content/fingerprint metadata;
+- active draft when policy allows;
+- projection caches optional/rebuildable.
 
-Рекомендуется:
+Recommended slots:
 
-- manual slots;
+- manual;
 - current autosave;
-- несколько rolling previous revisions/backups;
-- pre-migration/pre-update backup;
-- read-only import preview до замены/создания slot.
+- rolling previous revisions;
+- pre-migration/pre-update;
+- read-only import preview.
 
-Backup всегда включает professional snapshot, evidence ledger и progression schema metadata.
+## Integrity on open
 
-## Integrity при открытии
+Check:
 
-Проверяются:
+1. file/envelope/SQLite/pragmas;
+2. save/project/professional/evidence schema versions;
+3. foreign keys/stable refs;
+4. rules/content/mod/project/progression compatibility;
+5. Determinism Manifest;
+6. active draft/committed marker consistency;
+7. project/package state-machine validity;
+8. latent work realization/checksum;
+9. release immutability/reference validity;
+10. debt/defect origin/resolution references;
+11. duplicate package/release/incident/episode/evidence IDs;
+12. evidence/grade history validity;
+13. critical domain invariants;
+14. recovery flags.
 
-1. file/envelope readability;
-2. SQLite version и required pragmas;
-3. save/professional/evidence schema versions;
-4. foreign keys;
-5. rules/content/mod compatibility;
-6. Determinism Manifest support;
-7. active pending draft/committed marker consistency;
-8. evidence source snapshot/claim validity;
-9. duplicate evidence IDs;
-10. awarded-grade history order/hash references;
-11. critical application invariants;
-12. health/recovery flags.
+Forecast/project/readiness caches may be dropped/rebuilt if projection version mismatches.
 
-Readiness/specialization caches могут быть удалены и перестроены при несовпадении projection version.
+## Rust write protocol
 
-`quick_check` применяется по recovery/backup/open policy, а полный `integrity_check` — только в diagnostics/recovery из-за стоимости.
+Only Rust persistence service performs authoritative write:
 
-## Write protocol
-
-Authoritative write выполняется только Rust persistence service:
-
-- typed DTO validation;
-- expected revision/idempotency check;
+- DTO validation;
+- expected revisions/idempotency;
 - explicit SQLite transaction;
-- snapshot/history/evidence consistency;
-- checked integer conversions;
-- unique evidence/run constraints;
-- projection cache invalidation/update;
-- commit/rollback;
-- durable result/error mapping.
+- checked integer conversion;
+- snapshot/history/project/evidence consistency;
+- unique IDs/constraints;
+- release immutability;
+- cache invalidation metadata;
+- commit/rollback/error mapping.
 
-Renderer не получает raw SQL execute capability.
+Rust does not calculate project outcome, defect roll or evidence.
+
+Renderer has no raw SQL execute capability.
 
 ## Compatibility
 
-Старый сейв открывается только через поддерживаемую migration chain. Новая версия не должна молча:
+New version must not silently:
 
-- удалять неизвестные IDs;
-- продолжать несовместимый MonthRun;
-- менять numeric scale/RNG/effect/progression order;
-- пересчитывать awarded grade новой формулой без migration policy;
-- превращать transfer в evidence;
-- сбрасывать отсутствующий mod content;
-- переписывать evidence/history без migration record.
+- continue incompatible active package/MonthRun;
+- reroll latent work/defects/releases;
+- change numeric scale/RNG/project phase order;
+- rewrite release history;
+- remove debt/defect/scope/evidence without migration/tombstone;
+- merge/split packages in a way that duplicates outcome/evidence;
+- recalculate awarded grade;
+- convert revenue/stars into technical quality/evidence;
+- discard missing mod semantic snapshots;
+- rewrite append-only history without repair/migration record.
 
-При невозможности writable migration предлагаются recovery, exact compatible version либо read-only export.
+If writable migration is impossible: exact-compatible version, Safe Mode, read-only export or backup restore.
