@@ -1,324 +1,271 @@
 # Баланс и массовые симуляции
 
-Нормативные спецификации:
+Нормативные источники:
 
-- [Programmer-First Design](../game-design/PROGRAMMER-FIRST-DESIGN.md);
+- [ADR-015](../adr/ADR-015-casual-first-abstraction-and-complexity-budget.md);
+- [Casual Simulation Design](../game-design/CASUAL-SIMULATION-DESIGN.md);
 - [Professional Progression Engine](../game-design/PROFESSIONAL-PROGRESSION-ENGINE.md);
-- [Project & Work Package Engine](../game-design/PROJECT-WORK-PACKAGE-ENGINE.md);
-- [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md);
-- [ADR-014](../adr/ADR-014-authoritative-project-work-package-model.md).
+- [Project & Work Package Engine](../game-design/PROJECT-WORK-PACKAGE-ENGINE.md).
 
-## Назначение
+## 1. Назначение
 
-Headless simulation detects soft locks, evidence/project farming, debt spirals, defect/release imbalance, dominant strategies and loss of programmer fantasy.
+Balance strategy должна соответствовать реализованному профилю сложности.
 
-```bash
-pnpm balance:simulate --runs 10000 --scenario canonical-1990
-```
+Нельзя требовать от MVP Casual симуляций систем, которых ещё нет. Ранние gates проверяют:
 
-Production core/content registry; policy player instead of UI.
+- понятность;
+- ритм;
+- причинность;
+- отсутствие простых exploits;
+- recovery;
+- желание продолжать.
 
-## Policy players
+Long-term economic, team, Senior и portfolio metrics добавляются вместе с соответствующим gameplay.
 
-### Professional
+## 2. Три уровня проверки
+
+## 2.1. MVP Casual
+
+Использует небольшой deterministic fixture corpus и ручные usability tests.
+
+Проверяет:
+
+- first-month reachability;
+- same seed/restart;
+- one meaningful decision;
+- visible concepts;
+- professional/project outcome;
+- assisted/independent/partial/failure semantics;
+- no duplicate result;
+- no tiny-project/easy-task obvious exploit;
+- no bad-start soft lock.
+
+10 000 массовых прогонов не являются обязательными до появления стабильного core/tooling. Достаточно unit/property/golden fixtures и небольшой simulation sample.
+
+## 2.2. Recommended
+
+После первого playable year:
+
+- сотни/тысячи runs;
+- time-to-Intern/Junior;
+- strategy diversity;
+- event repetition;
+- technology choices;
+- multiple projects;
+- simple debt/issue recovery;
+- unemployment/re-entry;
+- path balance.
+
+## 2.3. Extended
+
+После появления late systems:
+
+- Senior/Top Programmer;
+- companies/teams/delegation;
+- debt spirals;
+- incidents/rollback;
+- portfolio scaling;
+- long-term economy;
+- evidence compaction;
+- post-2026 futures.
+
+## 3. MVP policy players
+
+Only:
 
 - balanced learner;
-- passive course grinder;
-- project-first learner;
-- optimal challenge seeker;
-- easy-task farmer;
-- newest-tech chaser;
-- legacy specialist;
-- deep specialist/broad generalist;
-- cautious corporate/aggressive switcher;
-- OSS maintainer/founder/management shortcut;
-- family/health/low-income/interrupted-career;
-- random valid/adversarial exploiter.
+- ask-for-help learner;
+- independent learner;
+- speed-first/release-early;
+- quality-first/delay;
+- easy-task repeater;
+- project restart/abandon exploiter;
+- low-income/no-equipment start;
+- random valid.
 
-### Project-specific
+Do not implement founder, large-team, rollback or Senior policies before systems exist.
 
-- tiny-project spammer;
-- Work-Package splitter;
-- intentional-failure/bug farmer;
-- debt-create-and-repay farmer;
-- release spammer;
-- perfection staller;
-- overparallelizer;
-- huge-team scaler;
-- micromanager;
-- zero-oversight delegator;
-- quality-first/delivery-first;
-- refactor-first/patch-first;
-- early-release risk taker;
-- project abandon/reset exploiter.
+## 4. MVP product metrics
 
-## Programmer-first metrics
+### Comprehension/playtest
 
-### Rhythm
-
-- programmer/professional decision shares;
-- meaningful decisions/month/year;
-- professional outcome months/stagnation;
-- quiet/blocking/life-only event rates;
-- professional arc starvation.
-
-### Progression
-
-- mastery/fluency/familiarity;
-- evidence volume/diversity/confidence/autonomy/context concentration;
-- capability/grade readiness/award timing;
-- current market readiness/recovery;
-- title mismatch/specialization/Top Programmer rarity.
-
-### Anti-farming
-
-- passive-course production evidence;
-- easy-task diminishing;
-- failure/mentor/event/title/salary/fame shortcuts;
-- antiRepeat suppression;
-- duplicate evidence target zero;
-- management technical identity.
-
-### Technologies and paths
-
-- breadth/depth/Tier exposure;
-- transfer/reacquisition/legacy/latest-tech dominance;
-- path parity and switching;
-- corporate/architect/OSS/public/freelancer/founder/calm career viability.
-
-## Project metrics
-
-### Work Package flow
-
-- packages created/active/resolved per project-year;
-- package duration distribution;
-- active package count and overparallelization;
-- completed/partial/failed/recovered ratios;
-- blocked/suspended duration;
-- meaningful decisions per package;
-- package split/anti-repeat concentration;
-- work lost to coordination/continuity/debt drag;
-- known vs revealed latent work;
-- forecast optimistic/likely/cautious error and calibration.
-
-### Scope and delivery
-
-- scope added/cut/deferred frequency;
-- requirement volatility;
-- milestone/release delay;
-- project completion/abandon/transfer/sale rates;
-- time-to-first-release/time-between-releases;
-- empty/minor release spam;
-- perfection-stall duration/opportunity cost;
-- project reset/abandon exploit.
-
-### Quality
-
-- active dimension count;
-- target/assessed/confidence distribution;
-- quality trade-off frequency;
-- release quality by archetype/path;
-- low-confidence releases;
-- critical gate bypass/accepted-risk rate;
-- one-dimension dominance;
-- impossible/trivial quality profiles.
-
-### Technical debt
-
-- debt aggregate/significant records per project-year;
-- intentional vs accidental debt;
-- principal/drag/risk distribution;
-- work consumed by debt drag;
-- debt repayment/containment/spiral rate;
-- debt-created-and-repaid farming;
-- debt recovery time;
-- projects soft-locked by debt.
-
-### Defects and incidents
-
-- latent risk injection/materialization;
-- known/escaped defect severity;
-- incident/regression/rollback rates;
-- defect discovery timing;
-- fix/workaround/defer choices;
-- repeated bug farming;
-- project archetype/quality/debt correlation;
-- no-luck and high-risk seed outcomes.
-
-### Teams and contribution
-
-- direct/review/architecture/mentoring/delegation contribution shares;
-- team result vs character contribution divergence;
-- huge-team throughput vs coordination;
-- micromanagement/zero-oversight outcomes;
-- owner clarity/key-person risk;
-- delegation-credit over-attribution target zero;
-- project outcome → episode/evidence mapping.
-
-### Releases and maintenance
-
-- release gate pass/fail/override;
-- rollback/hotfix/incident after release;
-- accepted debt/known issues;
-- maintenance load by size/debt/dependency/support;
-- maintenance package frequency;
-- legacy/migration project viability;
-- immutable release/history integrity.
-
-## Life/economy/recovery metrics
-
-- unemployment/re-entry;
-- income/savings/debt/bankruptcy;
-- burnout/health/family interruption;
-- mastery/market readiness recovery;
-- product/company/project failure recovery;
-- money utility/background parity.
-
-## Target gates
+- time to explain current goal;
+- time to choose ordinary decision;
+- correct prediction of consequence direction;
+- correct explanation after MonthRun;
+- next-step discovery;
+- percentage wanting to continue;
+- perceived genre: game vs dashboard/task manager.
 
 Starting hypotheses:
 
-### Programmer progression
+- ordinary choice understood within 10–20 seconds;
+- ≥80% explain first-month goal without guide;
+- majority correctly name two causes after report;
+- majority wants to continue to February;
+- advanced/details view not needed for ordinary choice.
 
-- ≥60% meaningful decisions programmer/professional core;
-- ≥40% direct technical component;
-- ≥8/12 months professional outcome or explained pause;
-- grade not from XP/time/title/salary/fame;
-- Senior requires varied contexts/duration;
-- transfer without practice creates no evidence;
-- partial/failure no full delivery;
-- short break preserves mastery/awarded grade;
-- all major paths recoverable/viable.
+Thresholds require real playtest and may change.
+
+### Complexity
+
+- primary objects per screen: target 3–5;
+- visible skills: target 3, maximum 5;
+- active packages shown: target 1, maximum 3;
+- blocking decisions in ordinary month: target 0–1;
+- monthly report primary rows: target 5–7;
+- jargon terms requiring explanation: target zero in normal mode.
+
+### Progression
+
+- first visible learning outcome reachable;
+- assisted learning does not grant independent status;
+- partial/failure not full delivery;
+- repeated easy practice diminished;
+- short break/restart does not erase state;
+- provider cannot mutate grade directly;
+- no duplicate progression result.
 
 ### Project
 
-- ordinary package has 0–2 blocking decisions; major/incident 1–4;
-- casual direct active package count normally 1–4;
-- package median duration meaningful, not daily-click or multi-decade stall;
-- forecast likely range calibrated without exact certainty;
-- latent work never rerolls;
-- ProjectState cannot be represented only by one progress/quality score;
-- tiny-project/package-splitting/release-spam policies do not outperform sustained projects;
-- debt improves short-term trade-off but creates measurable future cost/risk;
-- debt spiral always has at least one recovery/exit unless true ending;
-- defect rate neither zero nor unavoidable catastrophe;
-- critical release gate bypass only through explicit policy/decision;
-- team result is not fully attributed to player;
-- headcount scaling is sublinear where coordination/coupling exist;
-- delegated project remains viable without hourly micromanagement;
-- project failure creates recovery/history, not universal game over;
-- duplicate package/release/incident/episode/evidence IDs target zero.
+- goal/current package understandable;
+- project has meaningful trade-off, not one progress bar;
+- package count bounded;
+- uncertainty does not reroll;
+- three qualities sufficient for decision;
+- debt/known issue has future consequence;
+- release/delay/recovery reachable;
+- no duplicate project/release result.
 
-Thresholds versioned and calibrated after playable traces.
+## 5. MVP deterministic fixtures
 
-## Scenarios
+- independent success;
+- assisted success;
+- simplified early release/minor debt;
+- delayed release/good maintainability;
+- partial diagnosis;
+- failed attempt with February recovery;
+- low-income/no-home-computer path;
+- quiet month;
+- close/restart at decision;
+- duplicate answer/resume;
+- project abandon/restart exploit attempt;
+- repeated easy-task attempt.
 
-- canonical 1990 project;
-- low-income/no-home-computer;
-- high/low aptitudes/health/family commitments;
-- course/project/easy-task paths;
-- newest-tech/legacy;
-- corporate/architect/OSS/public/freelancer/founder;
-- specialization/career break/management return;
-- small personal project;
-- work/freelance/open-source/product projects;
-- high uncertainty;
-- quality critical project;
-- debt shortcut then change;
-- latent defect/incident/rollback;
-- overparallelized portfolio;
-- small vs large team;
-- micromanaged vs autonomous delegation;
-- obsolete technology migration;
-- abandoned/transferred/sold project;
-- no-luck/adversarial/post-2026.
+## 6. MVP property tests
 
-## Soft-lock indicators
-
-- no learning/job/project/recovery action;
-- impossible grade evidence/context;
-- project has no reachable package/release/archive path;
-- debt drag consumes all achievable work indefinitely;
-- unresolved critical defect/release gate has no response;
-- maintenance load exceeds all capacity without transfer/archive;
-- active package depends on missing/unreachable content;
-- relationship/health crisis blocks forever;
-- Company/OSS/project failure destroys all career paths;
-- UI cannot explain stagnation/forecast/risk;
-- awarded grade/history lost after update;
-- missing mod makes history unreadable.
-
-## Property tests
-
-- no overflow/negative invalid units/stuck MonthRun;
+- no invalid negative/overflow units;
 - deterministic seed/order/manifest;
-- no duplicate package/release/incident/episode/evidence;
-- package state machine valid;
-- terminal project/package does not progress;
-- known progress monotonic; latent revelation only valid increase;
-- latent/defect/release rolls stable on reload;
-- release immutable;
-- partial not full completion/delivery;
-- low confidence != low quality;
-- debt drag only affected scope;
-- debt repayment cannot increase principal accidentally;
-- critical gate blocks unless explicit accepted risk;
-- Project provider cannot mutate professional state;
-- Product/Company/OSS cannot mutate technical ProjectState directly;
-- team/player contribution separated;
-- transfer no evidence;
-- awarded grade stable;
-- failures have reachable recovery unless true ending.
+- duplicate commands idempotent;
+- terminal package does not progress;
+- hidden outcome stable after restart;
+- partial not full completion;
+- assisted not independent;
+- project provider cannot mutate professional state;
+- awarded grade not created by XP/time;
+- release/history immutable after commit;
+- recovery path exists for non-ending failure.
 
-## Golden corpus
+## 7. Playtest gates before Recommended profile
 
-- January 1990 two-package project/release;
-- uncertainty broadens forecast;
-- assisted/independent/partial/failure outcomes;
-- debt shortcut and later repayment;
-- latent defect → known defect → hotfix;
-- bad release → rollback;
-- scope cut/release delay;
-- team release with small player contribution;
-- delegated autonomous/micromanaged package;
-- legacy migration;
-- abandoned/transferred project;
-- Beginner→Senior progression;
-- OSS/founder/calm corporate/late career.
+Recommended complexity is blocked until:
 
-## Change gate
+1. first month is understood;
+2. one year prototype shows repetition/problem requiring depth;
+3. players ask for or benefit from specific detail;
+4. current model produces identifiable exploit or implausible outcome;
+5. proposed feature improves comprehension/retention or strategy diversity;
+6. added UI/content/test burden is measured.
 
-Project/progression changes require:
+Examples:
 
-1. baseline report;
-2. candidate distribution comparison;
-3. exploit/farming comparison;
-4. forecast calibration;
-5. debt/defect/release comparison;
-6. path/recovery assessment;
-7. migration/compatibility assessment;
-8. explanation of regressions;
-9. versioned threshold update if intentional.
+- add forecast confidence only if players misread forecast;
+- add debt records only if one debt band cannot explain choices;
+- add situational security only when relevant project exists;
+- add evidence details only if grade/result feels untrustworthy;
+- add team contribution only with actual team gameplay.
 
-## Reports
+## 8. Recommended metrics
 
-JSON + Markdown begins with:
+When systems exist:
 
-- programmer-first verdict;
-- Project Engine integrity verdict;
-- project exploit/debt/defect/release verdict;
-- evidence/grade verdict;
-- path parity/soft-lock verdict;
-- major distributions/regressions.
+- time-to-Intern/Junior;
+- professional outcome months;
+- skill/technology strategy diversity;
+- event/category repetition;
+- project completion/abandon/recovery;
+- 2–5 package distribution;
+- scope/quality trade-off frequency;
+- debt band consequences;
+- known issue/incident rate;
+- job search/unemployment recovery;
+- life/professional balance;
+- path parity;
+- no evidence/project farming.
 
-## Release gate
+## 9. Extended metrics
 
-- deterministic replay/no overflow/stuck run;
-- project/progression invariants;
-- no duplicate records;
-- vertical slice reachable;
-- bounded decision frequency;
-- forecast/debt/defect/release policies within targets;
-- no dominant project exploit/path;
-- recovery scenarios/no-luck corpus pass;
-- compatibility/migration corpus passes.
+Only later:
+
+- Middle/Senior readiness;
+- full evidence/context diversity;
+- team vs player contribution;
+- delegation/micromanagement;
+- debt ledgers/spirals;
+- defects/incidents/rollback;
+- maintenance/legacy/migrations;
+- company portfolio;
+- Top Programmer rarity;
+- long-term compaction.
+
+## 10. Soft-lock indicators
+
+MVP:
+
+- no route to technology/access;
+- project has no continue/release/recovery option;
+- failure gives no next step;
+- life constraint blocks all professional actions indefinitely;
+- UI cannot explain stagnation;
+- restart loses/corrupts result;
+- missing content makes save unreadable.
+
+Later indicators are added with later systems, not simulated speculatively.
+
+## 11. Change gate
+
+Any new gameplay depth requires:
+
+1. current problem evidence;
+2. simpler alternatives considered;
+3. player-facing choice/consequence;
+4. normal UI design;
+5. fixture/playtest criterion;
+6. migration/state cost;
+7. deferred alternative documented.
+
+## 12. Reports
+
+MVP report begins with:
+
+- comprehension verdict;
+- casual complexity verdict;
+- deterministic/recovery verdict;
+- progression causality verdict;
+- project trade-off verdict;
+- obvious exploit/soft-lock verdict;
+- desire-to-continue result.
+
+It does not contain empty sections for unimplemented Extended systems.
+
+## 13. Release gate for first playable
+
+- first month reachable;
+- normal UI sufficient;
+- choice understood;
+- causal report understood;
+- no duplicate/reroll;
+- accessibility pass;
+- no obvious farming/bad-start soft lock;
+- majority playtesters want to continue;
+- no speculative Extended system required.
