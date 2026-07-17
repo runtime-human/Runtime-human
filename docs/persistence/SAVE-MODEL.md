@@ -5,270 +5,297 @@
 - [ADR-005 — Suspended MonthRun](../adr/ADR-005-suspended-month-run.md);
 - [ADR-010 — Authoritative Save State](../adr/ADR-010-authoritative-save-state.md);
 - [ADR-013 — Professional Progression](../adr/ADR-013-authoritative-professional-progression-evidence.md);
-- [ADR-014 — Project & Work Package](../adr/ADR-014-authoritative-project-work-package-model.md).
+- [ADR-014 — Project & Work Package](../adr/ADR-014-authoritative-project-work-package-model.md);
+- [ADR-015 — Casual-first Complexity](../adr/ADR-015-casual-first-abstraction-and-complexity-budget.md).
 
-## Consistency boundary
+## 1. Consistency boundary
 
-`SaveGameState` — consistency boundary завершённого месяца. Domain tables normalized, but MonthRun changes them atomically.
+`SaveGameState` — consistency boundary завершённого месяца.
 
-The following always commit/rollback together:
+Commit/rollback together:
 
 - provider/project outcome;
-- ProjectState/WorkPackage/quality/debt/defect delta;
-- release/incident/contribution history;
+- minimal project state delta;
 - `ExperienceEpisode`;
-- professional state/evidence/practice/grade delta;
-- finance/other cross-system consequences.
+- professional state/result delta;
+- finance/life consequences;
+- important append-only history.
 
-## Authoritative structure
+## 2. Authoritative structure
 
 ```text
 current normalized snapshot
-+ append-only histories / ledger / evidence / releases / incidents
-+ persisted pending MonthRun draft
-+ committed MonthRun markers/traces
++ bounded append-only histories
++ pending MonthRun draft
++ committed-run markers/traces
 + rolling backups
 + rebuildable projections
 ```
 
 Full event sourcing is not used.
 
-## Save metadata
+## 3. Profile-aware schema rule
+
+Persistence stores only fields required by implemented gameplay profile.
+
+- MVP Casual has minimal project/professional state.
+- Recommended/Extended add tables/columns through migrations.
+- Empty future ledgers are not created.
+- Architecture seams are documented contracts, not preallocated schema.
+
+## 4. Save metadata
 
 - save ID/display name;
-- infrastructure created/updated timestamps;
 - game date/MonthIndex;
 - save schema version;
-- project/work-package/release schema versions;
-- professional/evidence/projection schema versions;
-- rules version;
-- content/mod/project/progression fingerprints;
+- active project/professional schema versions;
+- rules/content fingerprints;
 - Determinism Manifest;
 - committed revision/last run;
-- health/recovery state;
-- checksum/canonical envelope hash;
-- backup metadata.
+- recovery/backup metadata;
+- canonical checksum.
 
-System timestamps do not affect game outcome.
+Metadata does not list schema versions for unimplemented systems.
 
-## Normalized snapshot
+## 5. MVP normalized snapshot
 
-Authoritative records:
+Authoritative:
 
 - character/life state;
-- professional state;
-- people/relationships;
-- employment/activities;
-- projects;
-- project goals/constraints/scope slices;
-- project components;
-- active/recent Work Packages;
-- project quality dimensions;
-- technical debt aggregate/significant records;
-- latent defect aggregates/known defects;
-- project maintenance/participant/ownership state;
-- products/open-source extensions;
-- company;
+- minimal professional state;
+- people/relationships needed by current content;
+- active commitments/activities;
+- minimal projects and Work Packages;
+- three project quality bands;
+- debt/risk/known issue band;
+- compact release state;
 - inventory/equipment/housing;
 - finance;
 - world/city/timeline;
-- narrative/arcs;
+- narrative state;
 - achievements/lifecycle.
 
-Normalized tables do not imply separate transactions.
+Not required in MVP:
 
-## Project storage model
+- project component/requirement tables;
+- debt ledger;
+- defect inventory;
+- maintenance pressure;
+- participant plans;
+- detailed evidence claims/indexes;
+- company/portfolio/team tables;
+- incident/rollback history.
 
-Logical tables/entities:
+## 6. MVP logical project storage
 
 ```text
 projects
-project_goals
-project_constraints
-project_scope_slices
-project_requirements
-project_components
 work_packages
-work_package_dependencies
-work_package_participants
-project_quality_dimensions
-project_debt_aggregates
-project_debt_records
-project_latent_defect_aggregates
-project_known_defects
-project_maintenance_state
-project_participant_plans
+project_quality
+project_releases
+project_history
 ```
 
-A physical implementation may use versioned payload columns for bounded profiles, but IDs/revisions/status and critical references remain queryable/validated.
+Possible minimal fields:
 
-## Append-only project history
+### `projects`
 
-- project lifecycle milestones;
-- major scope/architecture/technology decisions;
-- releases;
-- incidents/rollbacks;
-- significant contribution summaries;
-- project repair/migration records.
+- ID;
+- stage;
+- goal snapshot;
+- debt/risk bands;
+- known issue snapshot;
+- release state;
+- revision.
 
-`ReleaseRecord` immutable after commit.
+### `work_packages`
 
-Significant debt/defect records are managed state with append-only origin/resolution history; they are not silently deleted.
+- ID/project ID;
+- objective snapshot;
+- state/progress/challenge/uncertainty/forecast;
+- pending decision;
+- outcome;
+- revision.
 
-## Resolved package compaction
+### `project_quality`
 
-Routine resolved packages may compact after retention window while preserving:
+- functional;
+- usability;
+- maintainability;
+- optional situational payload.
 
-- package semantic snapshot;
-- final outcome;
-- scope/quality/debt/defect deltas;
-- contribution summary;
-- release/episode/evidence refs;
-- trace hash;
-- rules/content fingerprints.
+### `project_releases`
 
-Never compact away:
+- immutable compact release record.
 
-- releases;
-- incidents;
-- significant debt/scope decisions;
-- records referenced by evidence/history;
-- active/recovery packages.
+Physical implementation may use versioned payload columns where practical.
 
-## Professional append-only history
+## 7. Recommended/Extended project migrations
 
-- `ProfessionalEvidenceEvent`/claims;
-- `MonthlyPracticeAggregate`;
-- `ProfessionalGradeAward`;
-- progression migration/repair history.
+Add only with feature:
 
-Evidence stores semantic source/context snapshots and survives missing content.
+- optional/deferred scope;
+- significant debt records;
+- known defects/incidents;
+- team contribution;
+- detailed release history;
+- maintenance;
+- components/requirements;
+- portfolio.
 
-## Derived/rebuildable data
+Each migration documents current gameplay consumer and rollback/recovery.
 
-- demonstrated/current-market readiness;
-- specialization/capability cards;
-- evidence indexes;
-- project dashboard/health;
-- work forecast presentation;
-- grouped debt/defect/risk summaries;
-- portfolio comparison;
-- release charts;
+## 8. Professional storage
+
+MVP snapshot:
+
+- two aptitude values;
+- active skill mastery/fluency;
+- active technology familiarity;
+- professional focus;
+- awarded grade list.
+
+MVP append-only:
+
+- aggregated meaningful professional result;
+- routine monthly practice aggregate;
+- awarded grade when applicable;
+- migration/repair record.
+
+Detailed claims, context diversity and evidence browser indexes are added later if used.
+
+## 9. Append-only history
+
+MVP preserves:
+
+- important project milestones;
+- compact release records;
+- important scope/quality/debt choices;
+- meaningful professional outcomes;
+- grade awards;
+- life milestones;
+- migration/repair history.
+
+Minor routine progress is aggregated and not stored as one record per day/action.
+
+## 10. Derived/rebuildable
+
+- readiness status/profile;
+- specialization;
+- capability cards;
+- project card/forecast;
+- grouped history;
 - monthly reports;
 - search/thumbnail caches.
 
-Derived data is not the sole MonthRun input and may be rebuilt.
+Advanced dashboards/indexes are created only when feature exists.
 
-## Pending MonthRun
+## 11. Pending MonthRun draft
 
-Draft stores exact deterministic/compatibility context.
+Draft stores exact state needed to resume without reroll.
 
-Project draft minimum:
+MVP project draft:
 
 - project/package revisions and pre-state hashes;
-- allocation;
-- package progress;
-- latent work realization;
-- project RNG states;
+- allocated work;
+- provisional package progress;
+- deterministic hidden realization;
 - uncertainty/pending decision;
-- provisional outcome;
-- quality/debt/defect provisional deltas;
-- release/incident candidate;
-- contribution/episode draft;
+- provisional compact project outcome;
+- provisional quality/debt/risk/release change;
 - project trace/fingerprint.
 
-Professional draft minimum:
+MVP professional draft:
 
-- episode refs/snapshots;
-- professional delta;
-- pending evidence IDs/claims;
-- practice/anti-repeat state;
+- episode ID/snapshot;
+- provisional mastery/fluency/familiarity delta;
+- aggregated professional result ID;
 - progression trace/fingerprint.
 
-Draft is not committed history. One active draft per save.
+No draft fields for unimplemented ledgers.
 
-## Revision and idempotency
+## 12. Revision and idempotency
 
-- save revision increments once per successful authoritative transaction;
-- project/package each have domain revisions;
-- draft has run revision;
-- mutating commands include expected revisions/request ID;
-- conflicts never overwrite silently;
-- committed run ID prevents duplicate month;
-- deterministic package/release/incident/episode/evidence IDs prevent duplicate records;
-- crash after commit uses committed marker;
-- projection cache update does not require save revision unless policy says so.
+- save revision increments once per successful commit;
+- project/package/draft use revisions;
+- mutating commands carry request ID/expected revision;
+- conflicts do not overwrite silently;
+- committed run marker prevents duplicate month;
+- deterministic project/episode/result/release IDs prevent duplicate records;
+- crash after commit resolves through committed marker.
 
-## Backups
+## 13. Backups
 
-Backup includes:
+Backup includes implemented snapshots/histories, schema/rules/content metadata and active draft according to policy.
 
-- project/professional snapshots;
-- release/incident/evidence/history ledgers;
-- schema/rules/content/fingerprint metadata;
-- active draft when policy allows;
-- projection caches optional/rebuildable.
+Rebuildable caches optional.
 
 Recommended slots:
 
-- manual;
 - current autosave;
 - rolling previous revisions;
+- manual;
 - pre-migration/pre-update;
 - read-only import preview.
 
-## Integrity on open
+## 14. Integrity on open
 
-Check:
+MVP checks:
 
 1. file/envelope/SQLite/pragmas;
-2. save/project/professional/evidence schema versions;
-3. foreign keys/stable refs;
-4. rules/content/mod/project/progression compatibility;
+2. implemented schema versions;
+3. stable references;
+4. rules/content compatibility;
 5. Determinism Manifest;
-6. active draft/committed marker consistency;
-7. project/package state-machine validity;
-8. latent work realization/checksum;
-9. release immutability/reference validity;
-10. debt/defect origin/resolution references;
-11. duplicate package/release/incident/episode/evidence IDs;
-12. evidence/grade history validity;
-13. critical domain invariants;
-14. recovery flags.
+6. active draft/committed marker;
+7. package state validity;
+8. hidden realization checksum;
+9. release immutability;
+10. duplicate IDs;
+11. professional/project cross-invariants;
+12. recovery flags.
 
-Forecast/project/readiness caches may be dropped/rebuilt if projection version mismatches.
+Do not fail open because absent Extended tables were never implemented.
 
-## Rust write protocol
+## 15. Rust write protocol
 
-Only Rust persistence service performs authoritative write:
+Rust persistence service performs:
 
 - DTO validation;
-- expected revisions/idempotency;
-- explicit SQLite transaction;
-- checked integer conversion;
-- snapshot/history/project/evidence consistency;
-- unique IDs/constraints;
-- release immutability;
-- cache invalidation metadata;
+- revision/idempotency checks;
+- explicit transaction;
+- checked conversion;
+- snapshot/history consistency;
+- unique constraints;
 - commit/rollback/error mapping.
 
-Rust does not calculate project outcome, defect roll or evidence.
+Rust does not calculate project or progression outcome.
 
 Renderer has no raw SQL execute capability.
 
-## Compatibility
+## 16. Compatibility
 
 New version must not silently:
 
-- continue incompatible active package/MonthRun;
-- reroll latent work/defects/releases;
-- change numeric scale/RNG/project phase order;
-- rewrite release history;
-- remove debt/defect/scope/evidence without migration/tombstone;
-- merge/split packages in a way that duplicates outcome/evidence;
-- recalculate awarded grade;
-- convert revenue/stars into technical quality/evidence;
-- discard missing mod semantic snapshots;
-- rewrite append-only history without repair/migration record.
+- continue incompatible active draft/package;
+- reroll hidden outcome;
+- change numeric/RNG/phase rules;
+- rewrite release/grade history;
+- duplicate outcome during schema expansion;
+- discard semantic snapshots;
+- convert popularity/title into technical progression.
 
-If writable migration is impossible: exact-compatible version, Safe Mode, read-only export or backup restore.
+Adding Recommended/Extended fields requires migration only when the feature enters implementation.
+
+If migration impossible: exact-compatible version, Safe Mode, read-only export or backup restore.
+
+## 17. Invariants
+
+- storage matches active profile;
+- no speculative empty schemas;
+- project/progression/life commit atomically;
+- routine history bounded;
+- meaningful history readable after content changes;
+- projections rebuildable;
+- hidden outcome restart-safe;
+- Extended migration cost considered before feature approval.
