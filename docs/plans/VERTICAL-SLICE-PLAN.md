@@ -4,66 +4,68 @@
 
 - [Programmer-First Design](../game-design/PROGRAMMER-FIRST-DESIGN.md);
 - [Professional Progression Engine](../game-design/PROFESSIONAL-PROGRESSION-ENGINE.md);
-- [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md).
+- [Project & Work Package Engine](../game-design/PROJECT-WORK-PACKAGE-ENGINE.md);
+- [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md);
+- [ADR-014](../adr/ADR-014-authoritative-project-work-package-model.md).
 
 ## Цель
 
-Создать минимальную, но настоящую играбельную цепочку от нового персонажа до сохранённого результата первого месяца января 1990 года.
-
-Vertical slice проверяет не только MonthRun/save/recovery, но и центральную цепочку:
+Создать минимальную играбельную цепочку января 1990:
 
 ```text
-hands-on provider outcome
+small personal project
+→ two Work Packages
+→ uncertainty/quality/release decision
+→ technical outcome/release
+→ contribution snapshot
 → ExperienceEpisode
-→ mastery/fluency delta
-→ evidence claims
-→ capability/readiness explanation
+→ mastery/fluency/evidence
 → atomic commit/restart
 ```
 
+Slice проверяет игру, а не только Tauri/save infrastructure.
+
 ## Gameplay question
 
-> Интересно ли игроку прожить первый месяц будущего программиста и понимает ли он, чему научился, что доказал и какой следующий шаг открыл?
+> Интересно ли игроку создать первый маленький программный проект, понять technical trade-off, получить правдоподобный результат и увидеть, чему он научился?
 
-Если игрок помнит только комнату, покупку, семейное событие и сохранение, но не технический результат, slice не прошёл gameplay validation.
+Если игрок запомнил только progress bar/покупку/сохранение, slice невалиден.
 
-## Scope
+## Player flow
 
-Игрок:
+1. Создать 12-летнего персонажа.
+2. Начать в комнате родителей с background доступа к технике.
+3. Получить/увидеть historically valid beginner environment.
+4. Выбрать обучение/professional focus.
+5. Создать маленький personal text-program project.
+6. Увидеть цель, scope и первый Work Package.
+7. Сделать свободную покупку при наличии денег.
+8. Увидеть pre-month commitments + project forecast range.
+9. Нажать `Следующий месяц`.
+10. Автоматически пройти school/home commitments.
+11. Продвинуть package `core-interaction-loop`.
+12. Обнаружить uncertainty/invalid-input problem.
+13. Получить meaningful choice: help/fix, cut validation/release risk, investigate next month, simplify scope.
+14. Закрыть приложение на blocking decision и восстановить тот же draft/hidden outcome.
+15. Resolve first/second package as independent/assisted/partial/failure.
+16. Update quality and optional debt/known defect.
+17. Decide release/delay/cut where outcome permits.
+18. Create immutable `ReleaseRecord` or recovery package.
+19. Create contribution snapshot and `ExperienceEpisode`.
+20. Progression updates mastery/fluency/familiarity/evidence.
+21. Show project/professional monthly report and February next step.
+22. Restart and load identical committed result without duplicate package/release/evidence.
 
-1. создаёт персонажа 12 лет;
-2. начинает в комнате родителей;
-3. имеет семейное/финансовое состояние и background доступа к технике;
-4. видит historically appropriate beginner technology либо путь к доступу;
-5. выбирает обучение и professional focus;
-6. запускает одну hands-on activity;
-7. принимает свободную покупку при наличии денег;
-8. видит forecast commitments/equipment/load/likely outcome;
-9. нажимает `Следующий месяц`;
-10. получает автоматические school/home commitments;
-11. сталкивается с technical uncertainty/problem decomposition/debugging;
-12. при необходимости получает blocking decision;
-13. закрывает приложение и возобновляет persisted MonthRun;
-14. получает independent, assisted, partial или failure outcome;
-15. provider формирует `ExperienceEpisode`;
-16. Progression Core обновляет mastery/fluency и technology familiarity;
-17. создаются evidence claims либо practice aggregate;
-18. отображается capability/readiness explanation;
-19. открывается следующий шаг на февраль;
-20. после restart загружается тот же committed result без duplicate evidence.
-
-## Минимальная progression model
+## Minimal professional model
 
 ### Aptitudes
 
 - Reasoning Aptitude;
 - Learning Adaptability.
 
-Aptitudes фиксируются background/character setup и не требуют отдельной progression UI в slice.
+No dedicated aptitude progression UI in slice.
 
 ### Skills
-
-Только пять:
 
 - Problem Solving;
 - Programming;
@@ -73,10 +75,10 @@ Aptitudes фиксируются background/character setup и не требую
 
 ### Technology
 
-- одна `TechnologyFamilyDefinition`;
-- одна historically available Tier A/B technology;
+- one technology family;
+- one historically available Tier A/B beginner technology;
 - conceptual/operational familiarity;
-- без major version graph.
+- no version graph/full transfer matrix.
 
 ### Capability bands
 
@@ -85,113 +87,134 @@ Aptitudes фиксируются background/character setup и не требую
 - Independent;
 - Complex.
 
-### Outcome space
+## Minimal Project model
 
-- independent completion;
-- assisted completion;
-- partial diagnosis/progress;
-- failure with reachable recovery.
+### Project
 
-## Beginner technology
+A small personal text program in January 1990.
 
-- lifecycle/local availability соответствуют январю 1990;
-- hardware/access requirements объяснимы;
-- UI использует human language;
-- transfer graph в slice может иметь только один empty/minimal family edge set;
-- Tier C не получает state.
+Project lifecycle used:
 
-## Hands-on activity и challenge
-
-Activity включает:
-
-- понятную цель;
-- один provider-owned task/work package;
-- небольшую техническую неопределённость;
-- один choice approach;
-- expected work units/calendar span;
-- available help/feedback;
-- partial/failure/recovery;
-- skill/technology applications;
-- stable `ExperienceEpisode` output.
-
-Допустимые choices:
-
-- разбить задачу;
-- проверить условие/ввод;
-- сравнить с примером;
-- попросить помощь;
-- продолжить исследование;
-- оставить partial result и вернуться.
-
-Это не реальный IDE/coding puzzle.
-
-## First ExperienceEpisode
-
-```ts
-type ExperienceEpisode = Readonly<{
-  id: ExperienceEpisodeId;
-  provider: 'education';
-  source: ExperienceSourceRef;
-  period: GameDateRange;
-  challenge: ChallengeProfile;
-  participation: ParticipationProfile;
-  practice: PracticeProfile;
-  outcome: OutcomeProfile;
-  feedback: FeedbackProfile;
-  skillApplications: readonly SkillApplication[];
-  technologyApplications: readonly TechnologyApplication[];
-  contextFingerprint: ContextFingerprint;
-}>;
+```text
+idea → active-development → released / maintenance
 ```
+
+No Product users/revenue/company/OSS extension.
+
+### Scope slices
+
+- core interaction;
+- result output;
+- optional input validation/recovery.
+
+Normally 2 committed + 1 optional.
+
+### Quality dimensions
+
+Only:
+
+- functional correctness;
+- usability/experience;
+- maintainability.
+
+Each stores target/assessed/confidence.
+
+### Work Packages
+
+1. `core-interaction-loop`;
+2. `input-validation-and-recovery`.
+
+No daily tickets/backlog.
+
+### Uncertainty
+
+One deterministic latent realization:
+
+- invalid/edge input requires more work;
+- can also reveal easier-than-expected branch in fixture corpus.
+
+UI shows optimistic/likely/cautious range, not exact hidden work.
+
+### Debt/defect
+
+At most one meaningful branch:
+
+- accepted validation debt/known issue;
+- or no debt after fix;
+- failure path creates recovery package for February.
+
+No full debt/defect ecosystem.
+
+### Release
+
+One release candidate/record with:
+
+- included scope;
+- quality/confidence snapshot;
+- known issue/accepted debt;
+- technical outcome;
+- contribution snapshot.
+
+No market adoption/revenue.
+
+## Choices
+
+- decompose/check input;
+- compare with example;
+- ask for help;
+- simplify scope;
+- accept known issue and release;
+- delay and investigate;
+- release only if gate/policy allows.
+
+Not an IDE/coding puzzle.
+
+## Project → Episode
+
+Project Engine owns:
+
+- package/release outcome;
+- quality/debt/defect;
+- character contribution.
+
+Then creates one episode with:
+
+- project/package/release source;
+- challenge/practice/feedback;
+- direct/assisted contribution;
+- outcome/quality;
+- skills/technology;
+- stable context fingerprint.
+
+Partial/failure do not become full delivery.
 
 ## First evidence
 
-`ProfessionalEvidenceEvent` содержит:
-
-- deterministic ID;
-- source/context snapshot;
-- outcome;
-- assistance;
-- claims;
-- antiRepeatKey;
-- rules/content/trace IDs.
-
-Минимальные claim dimensions:
+Claims may include:
 
 - craft;
 - autonomy;
-- quality либо debugging/recovery;
-- delivery только для full completion.
+- quality or debugging/recovery;
+- delivery only for completed/released valid outcome.
 
-Partial/failure не создают full delivery claim.
+No grade award required. Read model shows capability/readiness movement.
 
-Slice не требует grade promotion. `ProfessionalGradeAward` может отсутствовать; read model показывает readiness/capability progress.
+## Required technical elements
 
-## Обязательные технические элементы
-
-- pnpm monorepo;
-- TypeScript 7 exact pinned;
-- Vite 8/Oxc;
-- Tauri shell;
-- React/design tokens/Storybook 10;
-- shared kernel IDs/GameDate/Money/fixed-point;
+- pnpm monorepo/TypeScript 7/Vite 8/Oxc;
+- Tauri/React/Storybook 10;
+- shared kernel IDs/GameDate/Money/WorkUnit/fixed-point;
 - TypeBox/Ajv schemas;
-- deterministic RNG/Manifest;
+- seeded deterministic RNG/Manifest;
 - Gregorian calendar;
 - Begin/Resume/Recover MonthRun;
-- Rust persistence boundary;
-- no SQL execute capability;
-- SQLite 3.51.3+ gate;
-- schema/migration 001;
-- backup/restore smoke;
+- Rust persistence/no SQL execute;
+- SQLite 3.51.3+ gate/schema migration/backup smoke;
 - JSONC content pack;
 - Event/Narrative minimum;
-- `CharacterProfessionalState`;
-- `ExperienceEpisode` contract;
-- mastery/fluency/familiarity minimum;
-- claims-based evidence;
-- deterministic evidence IDs;
-- readiness read model;
+- `CharacterProfessionalState`/episodes/evidence;
+- `ProjectState`/two packages/quality/release;
+- deterministic package/release/evidence IDs;
 - Russian localization;
 - Vitest/fast-check/Storybook/Playwright/WebdriverIO.
 
@@ -199,134 +222,144 @@ Slice не требует grade promotion. `ProfessionalGradeAward` может �
 
 ### Foundation
 
-- app shell/date/resource bar;
+- shell/date/resources;
 - loading/empty/error;
-- long Russian text;
-- keyboard/200%/high contrast/reduced motion.
+- RU long text;
+- keyboard/200%/contrast/reduced motion.
 
-### Programmer core
+### Programmer
 
-- professional focus;
-- learning activity;
-- beginner technology;
-- technical challenge/choice;
-- skill capability summary;
-- mastery vs fluency explanation;
-- evidence claims;
-- readiness summary;
-- pre-month forecast;
-- programmer-first report.
+- focus/learning/technology;
+- skill capability/mastery vs fluency;
+- episode/evidence/readiness;
+- professional report.
+
+### Project
+
+- project summary;
+- Work Package ready/active/blocked/partial/resolved;
+- forecast narrow/wide/changed;
+- scope committed/optional/deferred;
+- quality target/confidence;
+- known issue/debt;
+- release ready/blocked/accepted risk;
+- contribution independent/assisted.
 
 ### MonthRun/recovery
 
-- blocking decision;
+- uncertainty decision;
+- release decision;
 - suspended run;
-- draft evidence state;
-- save/recovery;
+- same hidden outcome after restart;
+- draft project/episode/evidence;
+- recovery/incompatible fingerprint;
 - quiet month.
 
 ## Content minimum
 
-- один HomeCityProfile и era 1990–1994;
-- 3 backgrounds доступа без permanent bad start;
-- 5 early technologies в каталоге, но только одна обязана иметь full slice progression;
+- one HomeCityProfile, era 1990–1994;
+- 3 access backgrounds without permanent bad start;
+- 5 early technologies catalogue; one full progression;
 - 1 technology family;
-- 5 skill definitions;
-- 1 activity definition;
-- 1 challenge template;
-- 4 provider outcomes;
-- 1 evidence template/reason-code set;
-- 3 learning options максимум;
-- 6–10 events, большинство связано с learning/equipment/school/professional context;
-- 3 equipment variants;
-- 2 housing states;
-- report templates.
+- 5 skills;
+- 1 project archetype;
+- 3 scope slices;
+- 2 Work Package templates;
+- 1 quality profile;
+- 1 bounded latent-work/uncertainty rule;
+- 1 debt/known-defect branch;
+- 1 release policy;
+- 4 professional outcomes;
+- evidence reason codes;
+- ≤3 learning options;
+- 6–10 events, mostly professional/project/access context;
+- 3 equipment variants/2 housing states;
+- project/professional report templates.
 
-## Decision-density targets
+## Decision density
 
-- 2–4 meaningful decisions;
-- минимум 2 programmer-core;
-- максимум 1 life-only blocking;
-- минимум 1 non-blocking technical observation;
-- no required jargon;
-- advanced explanation available.
+- 2–4 meaningful decisions total;
+- minimum 2 programmer/project core;
+- maximum 1 life-only blocking;
+- ordinary package has ≤1 blocking choice in slice;
+- no jargon requirement;
+- advanced details on demand.
+
+## Deterministic fixture corpus
+
+- average/low-income/no-home-computer;
+- high/low aptitudes;
+- independent/assisted;
+- partial/failure recovery;
+- latent work high/low realization;
+- release with/without known issue;
+- quiet month;
+- duplicate answer/restart.
+
+Every start has reachable programming/project outcome or explicit February access/recovery path.
 
 ## Persistence/recovery fixtures
 
-- close at technical blocking decision;
+- close before/after latent work revelation;
+- close at project/release decision;
 - duplicate answer/resume;
-- crash before provider outcome;
-- crash after episode before progression assessment;
-- crash after draft evidence before commit;
+- crash after package outcome before episode;
+- crash after episode/evidence before commit;
 - crash after commit before cleanup;
-- duplicate evidence ID;
-- incompatible progression/content fingerprint;
-- failed migration;
-- backup restore;
-- Safe Mode/export.
-
-## Balance fixtures
-
-- average background;
-- no-home-computer/low-income access;
-- high/low Reasoning Aptitude;
-- high/low Learning Adaptability;
-- assisted outcome;
-- independent outcome;
-- partial diagnosis;
-- failure-first recovery;
-- quiet month.
-
-Каждый run имеет reachable programmer outcome или объяснимый доступ в феврале.
+- duplicate package/release/episode/evidence IDs;
+- incompatible project/progression/content fingerprint;
+- failed migration/backup restore/Safe Mode/export.
 
 ## Acceptance criteria
 
+### Project fantasy
+
+- player explains project goal/current package;
+- understands forecast uncertainty;
+- quality dimensions visible without one fake score;
+- choice changes scope/quality/debt/release meaningfully;
+- project not daily ticket clicking;
+- release/history/contribution understandable.
+
 ### Programmer fantasy
 
-- игрок объясняет, чему научился;
-- skill и technology различимы;
-- task/provider outcome traceable;
-- assistance повышает learning, но не autonomy claim;
-- partial/failure не считаются full delivery;
-- evidence создаётся только из episode/outcome;
-- readiness/capability соответствует claims;
-- следующий шаг понятен;
-- report начинается с programmer development;
-- бытовые KPI не доминируют.
+- player explains learning and contribution;
+- skill vs technology distinct;
+- assistance helps learning but lowers autonomy evidence;
+- partial/failure not full delivery;
+- next February step clear.
 
 ### Determinism/recovery
 
-- одинаковый seed/manifest даёт одинаковый trace/delta/evidence IDs;
-- duplicate decision/resume/commit не дублирует evidence;
-- main save не содержит half-applied progression;
-- provider outcome + professional delta/evidence atomic;
-- save/restart round trip;
-- no raw SQL capability;
-- WebdriverIO: create → learn → suspend → restart → resume → episode → evidence → commit → reload.
+- same seed/manifest gives same latent work/package/release/episode/evidence IDs and trace;
+- reload does not reroll defects/hidden work;
+- duplicate commands do not duplicate records;
+- Project outcome + professional delta atomic;
+- restart round-trip;
+- no raw SQL capability.
 
 ### UX/accessibility
 
-- keyboard-only;
-- Storybook/a11y/visual baseline;
-- novice understands cause without external guide;
-- expert finds advanced claims/state;
-- long RU/200% scale works.
+- novice understands causality without guide;
+- expert can inspect quality/confidence/contribution;
+- keyboard/a11y/visual/RU long text/200% pass;
+- no default backlog/Jira/table overload.
 
 ### Verification
 
-- `pnpm verify`;
+- `pnpm verify` after scaffold;
 - architecture/docs/research traceability;
-- balance fixtures show no access soft lock, duplicate evidence or farming shortcut.
+- balance fixtures show no access/project/evidence farming or soft lock.
 
-## Не входит
+## Not included
 
-- полноценная работа/Junior path;
-- full project/product engine;
-- full grade awards/gates;
-- company/OSS community;
-- full transfer matrix;
-- specialization profiles;
-- evidence compaction;
-- Top Programmer/leadership evidence;
-- user mods/updater/multiple eras/cities/backend/cloud VRT/Content Studio;
+- full work/Junior career;
+- multiple project archetypes/portfolio;
+- Product users/revenue/competition;
+- Company teams/payroll;
+- OSS community/governance;
+- full debt/defect/incident system;
+- full grade gates/transfer/specialization;
+- evidence/package compaction;
+- mods/updater/multiple eras/cities/backend/cloud VRT/Content Studio;
 - real IDE/code validation.
