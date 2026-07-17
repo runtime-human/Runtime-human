@@ -4,12 +4,12 @@
 
 - [ADR-005 — Suspended MonthRun](../adr/ADR-005-suspended-month-run.md);
 - [ADR-007 — Determinism Manifest](../adr/ADR-007-determinism-manifest.md);
-- [ADR-009 — Narrative Director](../adr/ADR-009-narrative-director.md);
 - [ADR-010 — Authoritative Save State](../adr/ADR-010-authoritative-save-state.md);
 - [ADR-013 — Professional Progression](../adr/ADR-013-authoritative-professional-progression-evidence.md);
-- [ADR-014 — Project & Work Package](../adr/ADR-014-authoritative-project-work-package-model.md).
+- [ADR-014 — Project & Work Package](../adr/ADR-014-authoritative-project-work-package-model.md);
+- [ADR-015 — Casual-first Complexity](../adr/ADR-015-casual-first-abstraction-and-complexity-budget.md).
 
-## Public contracts
+## 1. Public contracts
 
 ```ts
 type BeginMonthCommand = Readonly<{
@@ -34,321 +34,285 @@ type MonthRunResult =
   | MonthRunFailed;
 ```
 
-Core pure. Application loads state/draft, validates revisions/compatibility/idempotency and persists through ports.
+Core pure. Application validates state/draft/compatibility and persists through ports.
 
-## State machine
+## 2. State machine
 
 ```text
 ready → running → suspended-for-decision → running → completed → committed
 ```
 
-Explicit exceptional states:
+Exceptional:
 
 ```text
-failed
-incompatible-after-update
-recovery-required
-abandoned
+failed / incompatible-after-update / recovery-required / abandoned
 ```
 
-## Deterministic context
+## 3. Profile-aware pipeline
 
-MonthRunner inputs:
+MonthRunner processes only implemented systems and fields.
+
+MVP Casual:
+
+1. Load committed save and active draft.
+2. Validate revisions, schemas, fingerprints, manifest and idempotency.
+3. Restore/create deterministic context.
+4. Resolve calendar/world changes.
+5. Calculate life capacity and mandatory commitments.
+6. Allocate integer work units across active activities.
+7. Advance current project Work Package using compact factors.
+8. Materialize deterministic uncertainty/hidden outcome.
+9. Select eligible event/project decision.
+10. Persist checkpoint and suspend when a blocking decision exists.
+11. Resume with same state/RNG; no reroll.
+12. Resolve compact project outcome and quality/debt/risk/release change.
+13. Create one stable `ExperienceEpisode` where meaningful.
+14. Apply mastery/fluency/familiarity and aggregated professional result.
+15. Apply life/finance/relationship consequences.
+16. Build short monthly report/read models.
+17. Validate invariants.
+18. Commit one atomic transaction.
+
+Recommended/Extended phases are inserted only when their systems exist and require a rules/schema version change.
+
+## 4. Deterministic context
+
+Inputs:
 
 - committed base state;
 - MonthPlan;
 - GameDate/calendar;
-- compiled immutable content registry;
-- save/rules/content/mod/project/progression fingerprints;
+- compiled active content registry;
+- implemented schema/rules/content fingerprints;
 - Determinism Manifest;
-- root/fork RNG states;
+- RNG states;
 - previous decision/input log;
-- phase/checkpoint;
-- provider checkpoints;
-- project checkpoints;
-- progression checkpoint.
+- phase/checkpoint.
 
-No filesystem/SQLite/system clock/locale/process/UI reads.
+No filesystem, SQLite, system clock, locale or UI reads.
 
-## Versioned pipeline
+## 5. MVP checkpoint
 
-1. Load committed save and active draft.
-2. Validate revisions, schemas, fingerprints, manifest and idempotency.
-3. Restore/create deterministic context and RNG forks.
-4. Resolve month calendar days.
-5. Apply scheduled world/era changes.
-6. Calculate life capacity, health/fatigue and mandatory commitments.
-7. Allocate integer work units across activities/commitments/projects.
-8. Career/Company/Open Source/Education provide constraints, participants and signals.
-9. Project Engine allocates received project work to active Work Packages.
-10. Project Engine advances known work using project-specific capability/clarity/toolchain/coordination/continuity factors.
-11. Project Engine reveals deterministic latent work/uncertainty and materializes package decision candidates.
-12. Event Engine adds eligible events; Narrative Director selects blocking/display set.
-13. Before blocking decision, persist immutable provider/project/progression checkpoint and return `suspended`.
-14. Resume applies answer to the same package/event state and RNG state; no reroll.
-15. Project Engine resolves package outcomes and updates scope/quality/debt/defects.
-16. Evaluate release candidates, incidents, maintenance and immutable technical records.
-17. Build participant contribution snapshots.
-18. Experience Providers materialize stable `ExperienceEpisode`.
-19. Professional Progression evaluates episodes:
-    - mastery;
-    - fluency/familiarity;
-    - evidence candidates;
-    - monthly practice;
-    - explanations/trace.
-20. Validate/materialize deterministic evidence IDs.
-21. Product/Open Source/Company/Career consume typed project outcomes and apply their domain consequences.
-22. Update finance/housing/world/relationships and other post-outcome systems.
-23. Build readiness/project/report projections.
-24. Validate cross-module invariants.
-25. Build immutable final state, append-only deltas and canonical trace.
-26. Application/Rust persistence performs one authoritative atomic commit.
+Stores only restart-critical state:
 
-Phase order is a versioned rules contract.
+- save/run/project/package revisions;
+- pre-state hashes;
+- allocated work;
+- package progress;
+- deterministic hidden realization;
+- uncertainty;
+- pending decision and answer history;
+- provisional compact project outcome;
+- provisional quality/debt/risk/release change;
+- episode/professional result draft;
+- RNG states;
+- trace/fingerprint.
 
-## Project checkpoint
+No checkpoint fields for unimplemented debt ledgers, defect inventories, teams, incidents or detailed evidence claims.
 
-Minimum:
-
-- project/package revisions;
-- scope/quality/debt/defect pre-state hashes;
-- allocated participant work;
-- package phase/progress;
-- latent work realization/revealed amount;
-- project RNG states;
-- discovered uncertainty;
-- pending project decision;
-- provisional package outcome;
-- release candidate/incident draft;
-- contribution draft;
-- episode draft;
-- project trace hashes/fingerprints.
-
-Exact hidden latent work cannot change after restart except supported migration.
-
-## Professional checkpoint
-
-Minimum:
-
-- stable episode IDs;
-- source/context snapshots or refs+hashes;
-- draft skill/technology deltas;
-- pending evidence IDs;
-- anti-repeat state;
-- monthly practice accumulators;
-- readiness input hash;
-- progression trace hash.
-
-Draft episodes/evidence/releases are not committed history.
-
-## Project RNG scopes
+## 6. MVP RNG scopes
 
 ```text
-project/{projectId}/package/{packageId}/latent-work
+project/{projectId}/package/{packageId}/hidden-outcome
 project/{projectId}/package/{packageId}/uncertainty
-project/{projectId}/package/{packageId}/defect
-project/{projectId}/release/{releaseId}/technical
-project/{projectId}/incident/{incidentId}
+event/{eventId}
+narrative/{monthIndex}
 ```
+
+Additional defect/release/incident scopes are added with those systems.
 
 Rules:
 
-- package latent work is generated once;
-- uncertainty/defect/release outcomes do not reroll on reload;
-- UI forecast does not consume RNG;
+- hidden outcome generated once;
+- already materialized result never rerolls;
+- UI forecast consumes no RNG;
 - Progression does not reroll provider outcome;
-- event/narrative scopes remain separate.
+- event/narrative streams remain separate.
 
-## Work allocation
+## 7. Work allocation
 
-Global allocation already includes life capacity/fatigue. Project Engine applies only project factors.
+Life/health capacity applied once globally.
+
+MVP project progress:
 
 ```text
 effectiveWork = roundHalfEven(
   allocatedWork
   × capabilityFitBps
   × clarityBps
-  × toolchainBps
-  × coordinationBps
-  × continuityBps
-  / 10000^5
+  × toolSupportBps
+  × debtBps
+  / 10000^4
 )
 ```
 
-Debt drag consumes part of effective work before scope progress. Revealed latent work can increase known remaining work without reversing completed work.
+- all values integer/fixed-point;
+- debt reduces future effective progress;
+- hidden work may reveal additional required work;
+- full outcome requires state checks, not only a progress value;
+- team coordination factors are added only with team gameplay.
 
-## Project decision policy
+## 8. Blocking policy
 
-Blocking when:
+Ordinary month: 0–1 blocking decision.
 
-- material scope/quality/architecture/technology changes;
-- debt/risk acceptance is significant;
-- critical defect/incident response chosen;
-- release/delay/cut/rollback selected;
-- ownership/delegation commitment changes;
-- provider cannot safely apply configured policy;
-- ethics/security/relationship consequence is material.
+Blocking only when:
 
-Routine implementation/maintenance does not block.
+- scope/quality/risk/release choice is meaningful;
+- character must choose help versus independence;
+- important commitment changes;
+- life/professional crisis has no safe default;
+- configured policy cannot resolve outcome.
 
-## Project outcome → episode
+Routine implementation, learning, maintenance and minor events do not block.
 
-Project Engine finalizes technical truth first:
+## 9. Project outcome → professional result
 
-- completion/partial/failure/recovery;
-- quality/debt/defect deltas;
-- release/incident state;
-- player/team contribution.
+Project Engine first decides:
 
-Only then it builds `ExperienceEpisode`.
+- completed/partial/failure/recovery;
+- three quality bands;
+- debt/risk/known issue;
+- release/delay state;
+- participation: independent/assisted/team/review.
+
+Then it creates `ExperienceEpisode`.
 
 Progression cannot:
 
-- change project quality/debt/defects;
+- rewrite project result;
 - turn partial into delivery;
-- attribute team outcome to player;
-- generate evidence from revenue/popularity alone.
+- treat assisted as independent;
+- derive mastery from popularity/revenue.
 
-## Deterministic IDs
+## 10. Deterministic IDs
 
-Examples:
+MVP examples:
 
 ```text
 WorkPackageId = hash(saveId, projectId, originId, creationMonth, ordinal, rulesVersion)
 ReleaseId = hash(saveId, projectId, releaseOrdinal, gameDate, rulesVersion)
-IncidentId = hash(saveId, projectId, sourceDefectOrRisk, monthRunId, ordinal)
 ExperienceEpisodeId = hash(saveId, monthRunId, providerSourceId, outcomeOrdinal)
-EvidenceId = hash(saveId, monthRunId, episodeId, outcomeOrdinal, progressionRulesVersion)
+ProfessionalResultId = hash(saveId, monthRunId, episodeId, progressionRulesVersion)
 ```
 
-## Checkpoint policy
+IDs restore identically after resume.
 
-Persist checkpoint:
+## 11. Checkpoint policy
 
-- before every blocking decision;
-- after accepted answer before next blocking phase;
-- after latent work/defect/release random materialization if later phases can suspend;
-- after provider outcomes before progression if needed;
+Persist:
+
+- before blocking decision;
+- after accepted answer before later random/materialized phases;
+- after hidden outcome materialization when later suspend is possible;
 - before completed → committed.
 
-No need to persist every microstep if crash/replay tests prove recoverability.
+No need to store every microstep if replay tests prove recovery.
 
-## Atomic authoritative commit
+## 12. Atomic commit
 
-One Rust/SQLite transaction writes:
+One Rust/SQLite transaction writes only implemented deltas:
 
-- normalized project/professional/other snapshot deltas;
-- resolved Work Package state;
-- quality/debt/defect state;
-- releases/incidents/major decisions;
-- contribution summaries;
-- episodes/evidence/practice/grade records;
-- finance/history/ledger;
+- project/package state;
+- compact quality/debt/risk/release state;
+- episode and professional delta/result;
+- life/finance/history changes;
 - save revision;
-- committed MonthRun marker/trace;
+- committed-run marker/trace;
 - draft cleanup.
 
-Project outcome and evidence cannot commit separately.
+Project outcome and professional progression cannot commit separately.
 
-## Side effects
+## 13. Side effects
 
-### Authoritative
+Authoritative:
 
-- draft/checkpoint;
-- normalized snapshot;
-- append-only histories/ledger/evidence/releases/incidents;
+- checkpoint;
+- snapshot/history;
 - revision/committed marker.
 
-### Non-authoritative
+Rebuildable:
 
-- UI read models;
-- project forecast/dashboard;
-- readiness/specialization;
-- charts/search indexes;
-- notifications/audio;
-- redacted diagnostics.
+- casual project/professional cards;
+- forecast/readiness status;
+- monthly report;
+- notifications/diagnostics.
 
-Non-authoritative effects do not change next month outcome.
+Rebuildable output cannot change next MonthRun.
 
-## Idempotency
+## 14. Idempotency
 
 - duplicate request does not rerun operation;
-- duplicate decision does not consume RNG;
-- duplicate committed run does not apply month twice;
-- duplicate package outcome/release/incident/episode/evidence ID is rejected/idempotent;
+- duplicate decision consumes no new RNG;
+- duplicate committed run does not apply twice;
+- duplicate package/release/episode/result ID rejected or returns prior result;
 - save revision increments once;
-- crash after commit uses committed marker;
-- active draft belongs to exact base revision/fingerprints.
+- active draft belongs to exact base revision/fingerprint.
 
-## Cross-module invariants
+## 15. Cross-module invariants
 
-- date/MonthIndex monotonic;
-- authoritative arithmetic integer/in-range;
-- terminal project/package does not progress;
-- package belongs to project and refs valid/tombstoned;
-- latent realization stable;
+- date monotonic;
+- integer values in range;
+- terminal package does not progress;
+- hidden realization stable;
 - partial is not full completion;
-- release immutable and valid;
-- critical release gate bypass requires explicit risk acceptance/policy;
-- low confidence is not treated as low quality;
-- defect rolls stable;
+- release immutable;
 - Project Engine does not mutate professional state;
-- Product/Company/OSS do not mutate Project technical truth directly;
-- team outcome separated from character contribution;
-- episode references committed/provisional provider outcome;
-- assistance does not increase autonomy claim;
-- transfer does not create production evidence;
-- readiness/project projections built from same final state;
-- final state contains no draft-only values.
+- participation semantics preserved;
+- final state contains no draft-only values;
+- absent Extended fields are not required;
+- report projections use same final state.
 
-## Errors
+## 16. Errors
 
 Before run:
 
 - validation/revision conflict;
-- unsupported schema/rules/manifest;
-- content/mod/project/progression mismatch;
+- unsupported implemented schema/rules/manifest;
+- content fingerprint mismatch;
 - malformed plan/answer;
-- incompatible active package/draft.
+- incompatible active draft.
 
 During run:
 
 - invariant violation;
 - overflow;
 - invalid package transition;
-- missing scope/dependency/source;
-- inconsistent latent work realization;
-- duplicate release/episode/evidence;
-- impossible release gate/outcome;
+- inconsistent hidden realization;
+- duplicate stable ID;
 - corrupted checkpoint/trace.
 
-Core error does not mutate committed save. Persistence failure keeps completed run recoverable.
+Core error never mutates committed save.
 
-## Trace
+## 17. Trace
 
-Each phase stores stable ID, input/output hashes, RNG scope and applied IDs.
+MVP bounded trace:
 
-Project trace includes:
-
-- project/package IDs/revisions;
-- allocation/effective work and integer modifiers;
-- latent work revelation;
+- phase ID;
+- input/output hashes;
+- package ID/revision;
+- allocation and compact modifiers;
+- hidden realization ID;
 - decision/answer;
-- quality/debt/defect deltas;
-- release gate/outcome;
-- contribution mapping;
-- episode IDs;
+- compact project outcome;
+- episode/result IDs;
 - reason codes.
 
-Production trace bounded; debug trace shares canonical hash.
+Advanced trace details are added only with implemented systems.
 
-## Performance targets
+## 18. Performance targets
 
-- normal month p95 ≤ 100 ms;
+- ordinary month p95 ≤ 100 ms on reference machine;
 - heavy month p95 ≤ 500 ms;
-- project processing scales with active packages, not full project history;
-- routine resolved packages can compact;
-- releases/incidents/significant debt remain append-only;
-- read models use projections/indexes;
-- mass simulation uses pure core without React/Tauri/SQLite per run;
+- processing scales with active commitments/packages;
+- no replay of full history;
 - optimization cannot change deterministic result.
+
+## 19. Casual-first verification
+
+- same decision understood and restored after restart;
+- ordinary month has bounded blocking choices;
+- compact result explains causality;
+- no duplicate/reroll;
+- no need for unimplemented Extended phases;
+- player wants to continue after first MonthRun.
