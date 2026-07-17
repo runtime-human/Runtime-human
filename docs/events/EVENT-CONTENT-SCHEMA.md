@@ -1,12 +1,16 @@
 # Схема контента событий
 
-Связанные спецификации: [Narrative Director](NARRATIVE-DIRECTOR.md) и [Professional Progression Engine](../game-design/PROFESSIONAL-PROGRESSION-ENGINE.md).
+Связанные спецификации:
 
-## Формат
+- [Narrative Director](NARRATIVE-DIRECTOR.md);
+- [Professional Progression Engine](../game-design/PROFESSIONAL-PROGRESSION-ENGINE.md);
+- [Project & Work Package Engine](../game-design/PROJECT-WORK-PACKAGE-ENGINE.md).
 
-Исходники событий хранятся в JSONC. TypeBox определяет TypeScript type и JSON Schema; Ajv выполняет runtime validation.
+## Format
 
-## Минимальная форма
+Events are JSONC, TypeBox defines TS/JSON Schema, Ajv validates runtime payload.
+
+## Event definition
 
 ```ts
 type EventDefinition = Readonly<{
@@ -23,6 +27,7 @@ type EventDefinition = Readonly<{
   blocking: boolean;
   participants?: readonly ParticipantSelector[];
   relatedProfessionalContext?: ProfessionalContextSelector;
+  relatedProjectContext?: ProjectContextSelector;
   professionalMilestone?: ProfessionalMilestoneTag;
   choices: readonly EventChoice[];
   journal: LocalizationKey;
@@ -42,38 +47,23 @@ philosophy-legacy
 
 ## Choice
 
-Choice содержит:
+Choice may contain:
 
-- localization key;
-- дополнительные requirements;
-- immediate effects;
-- delayed effects;
+- localization/requirements;
+- immediate/delayed effects;
 - chain transition;
-- optional preview policy;
-- optional provider decision modifier;
-- optional feedback/assistance modifier;
-- optional failure/recovery transition.
+- preview policy;
+- typed provider/project decision modifier;
+- feedback/assistance modifier;
+- failure/recovery transition.
 
-Choice не начисляет mastery, fluency, grade или production evidence напрямую.
+Choice cannot directly:
 
-## Event и progression
-
-Событие может:
-
-- открыть/изменить provider task/activity;
-- изменить assistance/feedback/context;
-- создать technical decision для существующего work package;
-- материализовать provider outcome, если event domain действительно владеет этим outcome;
-- создать `ExperienceEpisode` через typed provider mapping;
-- добавить delayed professional consequence/hook.
-
-Событие не может:
-
-- вызвать `addSkillXp`/`setGrade` raw effect;
-- выдать Senior evidence за narrative answer;
-- превратить fame/reputation в mastery;
-- считать чтение текста production delivery;
-- обойти technology era/eligibility.
+- add mastery/fluency/evidence/grade;
+- add arbitrary project progress;
+- complete/cancel package without Project Engine transition;
+- set quality/debt/defect/release truth;
+- reroll hidden project state.
 
 ## Professional context
 
@@ -88,110 +78,151 @@ type ProfessionalContextSelector = Readonly<{
 }>;
 ```
 
-Селектор разрешается до event selection. Неразрешимый обязательный context делает событие ineligible.
+## Project context
+
+```ts
+type ProjectContextSelector = Readonly<{
+  projectId: ProjectId;
+  expectedProjectRevision?: ProjectRevision;
+  packageId?: WorkPackageId;
+  expectedPackageRevision?: WorkPackageRevision;
+  scopeSliceIds?: readonly ScopeSliceId[];
+  releaseCandidateId?: ReleaseCandidateId;
+  defectId?: DefectId;
+  debtId?: TechnicalDebtId;
+}>;
+```
+
+Required context is resolved before selection. Missing/stale refs make event ineligible or return typed conflict, never silently retarget another project.
 
 ## Technical decision types
 
-Примеры:
+- problem decomposition;
+- research vs implementation;
+- ask for help;
+- debug hypothesis;
+- test/review strategy;
+- scope/quality/deadline;
+- refactor vs patch;
+- debt accept/repay/contain;
+- defect fix/workaround/defer;
+- release/delay/cut/rollback;
+- incident response;
+- ownership/delegation;
+- architecture/technology trade-off.
 
-- problem-decomposition;
-- research-vs-implementation;
-- ask-for-help;
-- debug-hypothesis;
-- test-strategy;
-- scope-quality-deadline;
-- refactor-vs-patch;
-- release-vs-delay;
-- incident-response;
-- review/mentoring;
-- architecture-tradeoff.
+Decision type is metadata for diversity/UI/balance, not executable formula.
 
-Decision type используется для content diversity, UI и balance metrics, но не является formula script.
+## Event → Project integration
 
-## Condition/effect registry
+Event may:
 
-Каждая операция имеет:
+- request creation/defer/cancel of a package through typed Project command;
+- modify package approach/priority/guardrails through valid transition;
+- supply new constraint/signal/participant/assistance;
+- present Project Engine-generated uncertainty/release/incident decision;
+- create delayed typed project signal/hook;
+- materialize provider outcome only if the event domain owns that outcome.
 
-- discriminator;
-- schema;
-- pure evaluator/handler;
-- version;
-- semantic checks;
-- tests.
+Event may not:
 
-Неизвестный discriminator блокирует загрузку pack.
+- declare package completed because narrative choice says so;
+- mutate `knownRemainingWork`/latent work directly;
+- set quality to excellent;
+- delete debt/defect;
+- ship a release without release gate/outcome;
+- attribute team result to player;
+- create evidence without `ExperienceEpisode`.
 
-Professional effects ограничены typed operations, например:
+## Typed project operations
 
-- modify provider constraint;
-- set task priority/approach;
-- add assistance/feedback;
-- create/defer provider task;
-- record decision input;
-- create narrative hook;
-- change relationship/trust;
-- change health/finance capacity.
+Allowed discriminators include:
 
-Raw skill/evidence/grade mutation запрещена.
+- `project.request-package`;
+- `project.set-approach`;
+- `project.change-scope-request`;
+- `project.set-quality-priority`;
+- `project.accept-risk`;
+- `project.select-defect-response`;
+- `project.select-debt-response`;
+- `project.select-release-action`;
+- `project.set-owner-guardrails`;
+- `project.add-external-signal`;
+- `project.record-decision-input`.
 
-## Delayed professional consequences
+Handlers call Project Engine public API with expected revisions.
 
-Событие может создавать versioned typed hook:
+Raw state patch/eval script is forbidden.
+
+## Delayed consequences
 
 ```ts
-type DelayedProfessionalConsequence = Readonly<{
+type DelayedProjectConsequence = Readonly<{
   id: ConsequenceId;
   triggerWindow: GameDateWindow;
-  relatedContext: ProfessionalContextRef;
-  providerModifier: ProviderModifier;
+  context: ProjectContextRef;
+  signal: ProjectExternalSignal;
   requirements: readonly Condition[];
   expirationPolicy: ExpirationPolicy;
 }>;
 ```
 
-Delayed consequence должен быть traceable к выбору и не выдаёт hidden evidence без будущего outcome.
+It can influence future eligibility/constraints but cannot secretly materialize release/defect/evidence without future provider processing.
+
+## Condition/effect registry
+
+Each operation has:
+
+- discriminator/schema/version;
+- pure evaluator/handler;
+- semantic checks;
+- tests;
+- allowed owning module;
+- revision/idempotency policy.
+
+Unknown discriminator blocks pack.
 
 ## Metadata
 
-- author;
-- review status;
-- content version;
-- created/last reviewed dates;
+- author/review/content version;
+- creation/review dates;
 - sensitivity tags;
-- narrative arc;
-- product layer;
-- target life/professional stage;
+- arc/product layer;
+- target life/professional/project stage;
 - target frequency;
 - technical decision type;
-- sourceRefs для historical claims.
+- sourceRefs.
 
-## Validation levels
+## Validation
 
-1. JSONC parse with source locations.
-2. Schema validation.
-3. Stable ID/namespace validation.
-4. Reference resolution.
-5. Chronology/technology availability validation.
-6. Reachability and chain validation.
-7. Professional context/provider mapping validation.
-8. Progression safety lint.
-9. Localization completeness.
-10. Balance/pacing lint.
+1. parse/source locations;
+2. schema/stable namespace;
+3. reference/revision policy;
+4. chronology/technology/project eligibility;
+5. chain/reachability;
+6. provider/project mapping;
+7. progression/project safety lint;
+8. localization;
+9. balance/pacing lint.
 
-## Progression safety lint
+## Safety lint
 
-Validator блокирует:
+Blocks:
 
 - direct mastery/grade/evidence effects;
-- technical tag без professional context;
-- evidence potential без provider outcome mapping;
-- full delivery evidence из partial/failure branch;
-- autonomy claim при forced/full assistance;
-- technology недоступной эпохи;
-- life-only event, ошибочно помеченный technical только из-за косвенного modifier;
-- event farming без cooldown/anti-repeat key;
-- philosophy choice с authoritative professional reward без результата.
+- direct project progress/quality/debt/defect/release mutation;
+- project decision without project context/revision policy;
+- package completion from narrative-only branch;
+- release action without gate/accepted-risk path;
+- defect/debt removal without Project transition;
+- hidden-state reroll;
+- partial/failure mapped to full delivery;
+- assisted branch inflating autonomy;
+- unavailable-era technology/tool/distribution;
+- life-only event falsely tagged technical;
+- event farming without cooldown/anti-repeat;
+- philosophy answer with authoritative project/professional reward.
 
 ## Error UX
 
-Validator показывает файл, line/column, JSON path, rule ID и безопасное исправление, если оно однозначно. Ошибка одного мода помещает pack в quarantine, а не повреждает core content.
+Validator reports file, line/column, JSON path, rule ID and safe fix when unambiguous. Invalid mod pack is quarantined without damaging save/core content.
