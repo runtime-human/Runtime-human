@@ -2,386 +2,312 @@
 
 ## Статус
 
-Нормативная UI-спецификация для [Project & Technical Work Package Engine](../game-design/PROJECT-WORK-PACKAGE-ENGINE.md) и [ADR-014](../adr/ADR-014-authoritative-project-work-package-model.md).
+Нормативная UI-спецификация.
+
+Источники:
+
+- [ADR-014](../adr/ADR-014-authoritative-project-work-package-model.md);
+- [ADR-015](../adr/ADR-015-casual-first-abstraction-and-complexity-budget.md);
+- [Project & Work Package Engine](../game-design/PROJECT-WORK-PACKAGE-ENGINE.md);
+- [Casual Simulation Design](../game-design/CASUAL-SIMULATION-DESIGN.md).
 
 ## 1. UX goal
 
-Игрок должен понимать:
+Игрок должен быстро понять:
 
-- что проект пытается создать;
-- что сейчас делается и зачем;
-- где остаётся неопределённость;
-- какие quality priorities приняты;
-- почему forecast изменился;
-- какой debt/defect/risk действительно важен;
-- что сделал сам персонаж, команда или delegated owner;
-- готов ли release и какую цену имеет решение.
+- что проект создаёт;
+- какой этап выполняется сейчас;
+- когда примерно будет результат;
+- что неизвестно;
+- какие три качества важны;
+- какой риск/долг действительно влияет;
+- какой выбор требуется.
 
-UI не имитирует Jira, IDE или engineering dashboard.
+UI не имитирует Jira, IDE, backlog, engineering dashboard или debt ledger.
 
-## 2. Progressive disclosure
+## 2. Уровни раскрытия
 
-### Novice mode
+### Normal — baseline
 
-Shows:
+Показывает:
 
-- project goal/lifecycle;
-- next milestone;
-- 1–3 active Work Packages;
-- optimistic/likely/cautious forecast;
-- 3–5 active quality priorities;
-- critical known issue/debt/risk;
-- next meaningful choice;
+- goal;
+- stage;
+- current Work Package;
+- simple forecast;
+- uncertainty band;
+- three quality bands;
+- debt band;
+- one known issue/risk;
+- next decision;
 - latest release/result.
 
-### Advanced mode
+### Details — Recommended
 
-Adds:
+Добавляет:
 
-- scope slices/acceptance criteria;
-- challenge dimensions;
-- uncertainty reason codes;
-- quality assessed band/confidence/trend;
-- significant debt records;
-- known defect details;
-- participant/contribution breakdown;
-- release gate trace;
-- package/history references.
+- optional/deferred scope;
+- reasons forecast changed;
+- important decision history;
+- significant debt/issue theme;
+- compact contribution history;
+- release details.
 
-Exact hidden latent work and RNG values remain hidden outside diagnostics.
+### Advanced/Diagnostics — Extended
 
-## 3. Main project screen
+Может показывать:
 
-Hierarchy:
+- hidden/internal work profile;
+- detailed quality confidence/trend;
+- debt/defect records;
+- contribution dimensions;
+- release trace;
+- compatibility/debug data.
 
-1. Project goal/status.
-2. Current milestone and release readiness.
-3. Active Work Packages.
-4. Scope/quality trade-off.
-5. Critical risk/debt/defect.
-6. Participants/ownership.
-7. History and advanced details.
+Not required for MVP.
 
-Always visible:
-
-- title/kind/lifecycle;
-- owner/context;
-- current milestone;
-- likely forecast + confidence;
-- active packages count;
-- critical warning;
-- primary action/decision.
-
-## 4. Project summary read model
+## 3. Main project card
 
 ```ts
-export type ProjectSummaryReadModel = Readonly<{
+type CasualProjectCardReadModel = Readonly<{
   projectId: ProjectId;
   title: string;
-  kindLabel: string;
-  lifecycleLabel: string;
-  goalSummary: string;
-  ownerSummary: string;
-  milestone: ProjectMilestoneSummary;
-  forecast: WorkForecastReadModel;
-  activePackages: readonly WorkPackageCardReadModel[];
-  qualitySummary: ProjectQualityReadModel;
-  criticalItems: readonly ProjectCriticalItemReadModel[];
-  releaseReadiness?: ReleaseReadinessReadModel;
-  nextDecision?: ProjectDecisionReadModel;
+  goal: string;
+  stage: string;
+  currentPackage?: CasualWorkPackageCard;
+  forecast: string;
+  uncertainty: CasualUncertaintyLabel;
+  quality: CasualQualityReadModel;
+  debt: CasualDebtLabel;
+  knownIssue?: string;
+  nextDecision?: CasualProjectDecision;
+  latestResult?: string;
 }>;
 ```
 
-No raw mutable ProjectState.
+No raw ProjectState.
+
+## 4. Visual hierarchy
+
+1. Project title and goal.
+2. Current stage/package.
+3. Forecast and uncertainty.
+4. Three qualities.
+5. Important debt/issue.
+6. Next decision.
+7. Details/history link.
+
+At most 3 project cards on primary screen. Only one expanded by default.
 
 ## 5. Work Package card
 
 Shows:
 
 - human objective;
-- kind/status;
-- related scope;
-- challenge summary;
-- progress state without fake exact percentage when hidden work exists;
-- forecast range/confidence;
-- owner/participants;
-- quality/risk focus;
+- state;
+- progress band;
+- challenge label;
+- uncertainty;
+- forecast;
 - blocker/decision;
 - last meaningful change.
 
-Progress presentation:
+Progress labels:
 
-- “начало / продвигается / близко к завершению / требует пересмотра”;
-- optional known-work progress in advanced mode;
-- never guarantee completion from known progress alone when uncertainty remains.
+- не начато;
+- начато;
+- продвигается;
+- почти готово;
+- готово;
+- требует пересмотра.
+
+No exact percentage when uncertainty makes it misleading.
 
 ## 6. Forecast
 
-```ts
-export type WorkForecastReadModel = Readonly<{
-  optimisticLabel: string;
-  likelyLabel: string;
-  cautiousLabel: string;
-  confidenceLabel: string;
-  changedSinceLastMonth: boolean;
-  changeExplanation?: string;
-  reasonItems: readonly ForecastReasonReadModel[];
-}>;
-```
+MVP labels:
+
+- вероятно в этом месяце;
+- вероятно в следующем;
+- срок пока неясен.
 
 Example:
 
-> Вероятнее всего — февраль. Диапазон расширился: обнаружена зависимость от старого формата данных.
+> Вероятно в феврале. Срок изменился: появилась дополнительная обработка ошибок.
 
-Do not show false precision such as “87% chance in 13.4 days”.
+Optimistic/likely/cautious columns are not required in MVP.
 
 ## 7. Scope
 
-Novice:
+Normal mode:
 
-- committed goal slices;
-- optional/deferred count;
-- what release includes/excludes.
+- основной результат;
+- optional result;
+- what is excluded only when relevant.
 
-Advanced:
-
-- requirements/acceptance criteria;
-- dependencies;
-- uncertainty/volatility;
-- decision history.
-
-Player changes scope through meaningful choices, not checklist editing.
-
-## 8. Quality
-
-Active dimensions only.
-
-Each quality item shows:
-
-- target in human language;
-- assessed state;
-- confidence separately;
-- trend/cause;
-- consequence if below target/unknown.
+Player chooses scope through cards/dialogs, not checkbox editing.
 
 Example:
 
 ```text
-Надёжность: приемлемая
-Уверенность: низкая — ещё не проверены редкие сценарии
+Основное: программа принимает данные и показывает результат.
+Дополнительно: объясняет неправильный ввод.
 ```
 
-UI must not merge all dimensions into authoritative “Project quality 74”. A derived compact health label may summarize, but clicking reveals dimensions and it cannot be used as gameplay truth.
+## 8. Quality
 
-## 9. Technical debt
+Always visible for ordinary project:
 
-Novice shows themes:
+- Работоспособность;
+- Удобство;
+- Поддерживаемость.
 
-- “быстрое решение затрудняет следующие изменения”;
-- “не хватает автоматических проверок”;
-- “устаревшая зависимость увеличивает риск”.
+Bands:
 
-Advanced shows significant records:
+- не проверено;
+- слабое;
+- приемлемое;
+- хорошее;
+- отличное.
 
-- origin/decision;
-- affected scope;
-- estimated repayment range;
-- current drag/risk;
-- intentional/accidental;
-- mitigation status.
+Situational reliability/performance/security/operations appear only if current project/decision needs them.
 
-Routine debt is grouped. No monthly “pay debt” maintenance click.
+No authoritative `Quality 74`. A compact label may summarize only as UI wording and must not hide three underlying bands.
 
-## 10. Defects and incidents
+## 9. Debt and issues
 
-Novice:
+Debt:
 
-- critical/significant known issues;
-- grouped minor issues;
-- incident/rollback banner;
-- recommended response.
+- нет;
+- незначительный;
+- заметный;
+- тяжёлый.
 
-Advanced:
+Normal explanation:
 
-- severity/area/reproducibility/confidence;
-- workaround/status;
-- source release/package;
-- fix package.
+> Быстрое решение усложнит следующие изменения.
 
-Latent defect risk shown only as bounded warning when player has sufficient information. Exact hidden stock never displayed.
+Known issue:
 
-## 11. Release decision
+> Неправильный ввод пока приводит к непонятному результату.
 
-Focused screen/dialog:
+No list of minor debt/bugs by default.
 
-- included/excluded scope;
-- quality target/assessment/confidence;
-- critical defects;
-- accepted debt/risk;
-- rollout/support/rollback readiness;
-- forecast/opportunity cost;
-- choices: release, delay, cut scope, fix critical item, cancel/rollback where applicable.
+## 10. Release decision
 
-Consequences use ranges/categories, not hidden exact formula.
+MVP dialog:
 
-Critical gate cannot be bypassed unless policy exposes explicit accepted-risk choice with reason.
-
-## 12. Contribution
-
-Monthly/release explanation separates:
-
-- character direct implementation;
-- analysis/design;
-- testing/review;
-- architecture/decision;
-- mentoring;
-- delegated ownership;
-- team/external contribution.
+- what will be released;
+- one known limitation;
+- overall quality/risk summary;
+- options:
+  - release;
+  - delay and fix;
+  - simplify scope;
+  - continue next month.
 
 Example:
 
-> Команда выпустила обновление. Ваш вклад: архитектурное решение, review и координация. Direct implementation была выполнена другим разработчиком.
+```text
+Первая версия работает, но плохо объясняет неправильный ввод.
 
-This prevents false craft attribution.
+Выпустить сейчас:
++ закончить проект в январе
+- пользователю будет сложнее понять ошибку
+- небольшой долг усложнит следующее изменение
 
-## 13. Project decisions
+Исправить:
++ лучшее качество
+- выпуск переносится на февраль
+```
 
-Decision card includes:
+Rollout/support/rollback matrix deferred.
 
-- concrete problem;
-- why now;
-- options with trade-offs;
-- what is known/unknown;
-- reversible/irreversible indicator;
-- expected scope/quality/debt/risk effects;
-- disabled reasons;
-- safe suspend/recovery status.
+## 11. Contribution
 
-Avoid abstract options like “делать качественно / делать плохо”.
+MVP labels:
 
-## 14. Monthly report
+- самостоятельно;
+- с помощью;
+- совместно с командой;
+- через review/руководство.
 
-Project section:
+For first solo project only first two are required.
 
-1. milestone/package outcomes;
-2. forecast changes and why;
-3. quality/debt/defect changes;
-4. release/incident;
-5. character/team contribution;
-6. generated professional episode/evidence explanation;
-7. next decision/opportunity.
+No percentages or impact matrix.
 
-Routine progress grouped in one line.
+## 12. Monthly report
 
-## 15. Portfolio abstraction
+Project section normally has 1–3 primary rows:
 
-For many delegated projects:
+1. package/project outcome;
+2. important quality/debt/issue consequence;
+3. next project decision.
 
-- one card per project with milestone/health/critical exception;
-- filters by owner/status/risk;
-- only projects requiring player decision rise to top;
-- no rendering all packages/employees by default;
-- drill-down on demand.
+Professional learning is shown in progression section, not duplicated as full evidence ledger.
 
-## 16. Storybook groups
+Example:
 
-### Project Core
+```text
+Проект продвинулся
 
-- Project Summary — Discovery/Active/Released/Maintenance;
-- Work Package — Ready/Active/Blocked/Partial/Resolved;
-- Forecast — Narrow/Wide/Changed/Low Confidence;
-- Scope — Committed/Optional/Deferred;
-- Quality — Targets/Low Confidence/Trade-off;
-- Debt — Aggregate/Significant/Intentional;
-- Defect — Known/Critical/Grouped/Incident;
-- Release — Ready/Blocked/Accepted Risk/Rollback;
-- Contribution — Solo/Team/Assisted/Delegated.
+Основная программа готова. Обработка неправильного ввода перенесена на февраль.
+Поддерживаемость снизилась до «приемлемой»: вы выбрали быстрое временное решение.
+```
 
-### MonthRun and recovery
+## 13. Multiple projects
 
-- Uncertainty decision;
-- Scope/quality trade-off;
-- Release decision;
-- Suspended project run;
-- Restart same hidden outcome;
-- Duplicate answer conflict;
-- Incompatible project fingerprint.
+Before company/portfolio gameplay:
 
-### Accessibility/edge
+- show up to three project cards;
+- one project has primary focus;
+- only projects needing attention rise to top;
+- routine progress collapsed.
 
-- keyboard-only;
-- 200% text;
-- long Russian labels;
-- high contrast;
-- reduced motion;
-- screen-reader status;
-- many projects portfolio;
-- missing content/tombstone;
-- empty/archived/failed project.
+Full filters/portfolio dashboard deferred.
 
-## 17. Usability tests
+## 14. Storybook baseline
 
-### Casual player
+- Project Card: idea/development/release/finished;
+- Work Package: planned/active/blocked/completed;
+- Forecast: this month/next month/unclear/changed;
+- Quality: basic/good/trade-off;
+- Debt: none/minor/noticeable;
+- Known issue;
+- Release: ready/known limitation/delay/failure;
+- Contribution: independent/assisted;
+- Decision card;
+- long RU/keyboard/200%/high contrast/Narrator.
 
-Can answer within 10 minutes:
+Deferred stories:
 
-- what project aims to do;
-- what is being worked on;
-- why finish date uncertain;
-- which quality priority matters;
-- what current decision changes;
-- why team result differs from own contribution.
+- debt ledger;
+- defect inventory;
+- rollback;
+- granular team contribution;
+- portfolio dashboard.
 
-### Technical player
+## 15. Usability tests
 
-Can inspect:
+Player should:
 
-- quality confidence;
-- debt origin/effects;
-- latent uncertainty explanation;
-- release gates;
-- contribution trace;
-- scope/package/history without perceiving fake engineering.
+- explain project goal in one sentence;
+- identify current package;
+- understand forecast direction;
+- name the quality/risk trade-off;
+- choose within 10–20 seconds;
+- explain consequence after MonthRun;
+- not describe screen as task manager/CRM.
 
-### Causality
+## 16. Definition of Done
 
-After month/release player identifies:
+Project UI ready when:
 
-- why forecast moved;
-- which decision created/paid debt;
-- how defect/incident arose;
-- why evidence was/was not created;
-- what recovery path exists.
-
-## 18. Accessibility
-
-- keyboard navigation/focus restore;
-- no color-only quality/severity;
-- status announcements for forecast/decision changes;
-- visible labels and target sizes;
-- long RU text/reflow at 200%;
-- reduced motion;
-- alternatives to drag;
-- tables only advanced and accessible.
-
-## 19. Performance
-
-- virtualize long project/release histories;
-- render active summaries, not full state;
-- memoize after profiling;
-- large portfolio via bounded projections;
-- no full-history scan per render;
-- UI does not calculate project formulas.
-
-## 20. Definition of Done
-
-Project UI change requires:
-
-- typed read-model/command contracts;
-- novice/advanced stories;
-- uncertainty/quality/debt causality;
-- keyboard/a11y/long RU/200% checks;
-- visual baseline for layout-critical states;
-- no hidden exact work/defect exposure;
-- no raw mutable state/persistence access;
-- browser and desktop flow updates where integrated.
+- goal/current work/choice visible without scrolling through tables;
+- three qualities sufficient for current decision;
+- debt/issue grouped;
+- no false exact progress;
+- normal mode does not need advanced data;
+- routine grouped;
+- accessibility stories pass;
+- playtest confirms comprehension and desire to continue.
