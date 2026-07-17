@@ -1,6 +1,6 @@
 # Programmer Progression & Evidence Documentation Implementation Plan
 
-> **Status:** completed on branch `agent/sd001-progression-evidence`.
+> **Status:** completed on branch `agent/sd001-progression-evidence`; published as draft PR #4.
 
 **Goal:** Integrate SD-001 into Runtime Human canon as an authoritative professional progression/evidence architecture without turning progression into a god-module.
 
@@ -104,4 +104,4 @@
 - [x] Link ADR-013, SD-001 and progression specification.
 - [x] Require balance comparison for progression changes.
 - [x] Review changed files for XP-grade, automatic grade decay, direct narrative mastery and provider ownership contradictions.
-- [ ] Open a draft PR with documentation-only verification results.
+- [x] Open draft PR #4 with documentation-only verification results.
