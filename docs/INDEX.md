@@ -31,6 +31,13 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [Professional Progression UI](ui/PROFESSIONAL-PROGRESSION-UI.md)
 - [SD-001 analysis](research/SD-001-PROGRAMMER-PROGRESSION-EVIDENCE-ENGINE-2026-07-17.md)
 
+## Professional challenges
+
+- [ADR-016 — Professional Challenge Model](adr/ADR-016-authoritative-professional-challenge-model.md)
+- [Professional Challenge Engine](game-design/PROFESSIONAL-CHALLENGE-ENGINE.md)
+- [Professional Challenge UI](ui/PROFESSIONAL-CHALLENGE-UI.md)
+- [SD-003 analysis](research/SD-003-PROFESSIONAL-CHALLENGE-CAPABILITY-ENGINE-2026-07-17.md)
+
 ## Projects
 
 - [ADR-014 — Project & Work Package Model](adr/ADR-014-authoritative-project-work-package-model.md)
