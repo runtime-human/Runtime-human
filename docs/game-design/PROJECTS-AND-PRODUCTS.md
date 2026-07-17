@@ -1,219 +1,230 @@
 # Проекты и продукты
 
-Связанная спецификация: [Professional Progression Engine](PROFESSIONAL-PROGRESSION-ENGINE.md).
+Нормативная техническая модель: [Project & Technical Work Package Engine](PROJECT-WORK-PACKAGE-ENGINE.md).
 
-## Project base model
+Связанные решения:
 
-Общие поля проекта:
+- [ADR-014 — Authoritative Project & Work Package Model](../adr/ADR-014-authoritative-project-work-package-model.md);
+- [ADR-013 — Professional Progression & Evidence](../adr/ADR-013-authoritative-professional-progression-evidence.md).
 
-- kind;
-- scope;
-- requirements;
-- technologies;
-- progress work units;
-- quality dimensions;
-- technical debt;
-- bugs;
-- maintainability;
-- deadline;
-- participants;
-- work packages;
-- release history;
-- audience;
-- economic model.
+## Product statement
 
-## Виды
+Проект — главное место, где программист превращает знания в технический результат, принимает trade-offs и создаёт профессиональную историю.
 
-- рабочий проект;
+Проект не является:
+
+- одной шкалой progress;
+- списком сотен tickets;
+- IDE/coding puzzle;
+- бухгалтерской CRM;
+- автоматическим источником XP;
+- синонимом продукта, компании или open-source community.
+
+## Общая техническая основа
+
+Все виды используют Project Engine:
+
+- personal/pet project;
+- school/research project;
+- work project;
 - freelance contract;
-- pet project;
-- research project;
-- open-source project;
-- коммерческий продукт/SaaS.
+- open-source technical project;
+- commercial product technical core;
+- company internal/platform project.
 
-Специализированные подсистемы расширяют базовую модель, а не копируют отдельные несовместимые Project-типы.
+Общая модель содержит:
 
-## Длительность
+- goals and constraints;
+- scope slices and requirements;
+- Work Packages;
+- technical uncertainty and forecast;
+- multidimensional quality;
+- technical debt;
+- latent/known defects;
+- releases and maintenance;
+- participant contribution;
+- technical project history.
 
-Проект не расходует единый action slot. Он получает work units от персонажа, команды, contributors или автоматизации. Несколько проектов разрешены, но context switching и обязательства уменьшают скорость.
+## Extension map
 
-Игрок не распределяет ежедневные coding tasks вручную. Project Engine формирует агрегированные `WorkPackage` и поднимает только решения с реальным trade-off.
+### Product/Market
 
-## Work package
+Владеет:
 
-```ts
-type WorkPackage = Readonly<{
-  id: WorkPackageId;
-  projectId: ProjectId;
-  kind: WorkPackageKind;
-  challenge: ChallengeProfile;
-  requiredSkills: readonly SkillRequirement[];
-  technologies: readonly TechnologyRequirement[];
-  expectedWorkUnits: WorkUnit;
-  minimumCalendarSpan: CalendarSpan;
-  qualityTargets: QualityTargetProfile;
-  riskProfile: ProjectRiskProfile;
-  deadline?: GameDate;
-  participantPlan: ParticipantPlan;
-  outcomeSpace: readonly ProviderOutcomeDefinition[];
-}>;
-```
+- users/adoption;
+- demand;
+- pricing;
+- revenue/cost;
+- churn;
+- competitors;
+- market fit.
 
-Project Engine владеет work-package state, progress, quality/debt/bugs и outcome truth.
+Получает `ReleaseTechnicalOutcome` от Project Engine и возвращает support/demand signals.
 
-## Project → Progression contract
+### Open Source
 
-После significant outcome Project Engine создаёт `ExperienceEpisode` с:
+Владеет:
 
-- work package/source;
-- contribution персонажа;
-- challenge profile;
-- autonomy/assistance;
-- practice/feedback;
-- outcome/quality/reliability;
-- applied skills/technologies;
-- stable project/context fingerprint.
+- contributors/maintainers;
+- issue/PR community flow;
+- governance;
+- community health;
+- sponsorship/funding;
+- forks/ownership transfer.
 
-Progression Core:
+Не дублирует technical quality/debt/defects/releases.
 
-- не изменяет project quality/debt/bugs;
-- не решает повторно, завершён ли package;
-- не приписывает персонажу результат всей команды;
-- создаёт mastery/fluency/familiarity delta и evidence claims.
+### Company
 
-Project Engine не изменяет skill/grade напрямую.
+Владеет:
 
-## Вклад и командный результат
+- employees/teams;
+- payroll/hiring/retention;
+- portfolio priorities;
+- budgets/tooling/process;
+- organizational debt;
+- delegation policies at organization level.
+
+Передаёт Project Engine capacity, ownership and constraints.
+
+### Career
+
+Владеет:
+
+- job/role/title;
+- salary/promotion;
+- stakeholders;
+- organizational expectations;
+- employment consequences.
+
+Получает contribution/outcome summaries.
+
+### Professional Progression
+
+Получает `ExperienceEpisode` и создаёт mastery/fluency/familiarity/evidence. Project Engine не изменяет skill/grade напрямую.
+
+## Work Package
+
+Минимальная meaningful единица технической работы — `WorkPackage`, а не ticket.
+
+Work Package:
+
+- имеет понятную цель;
+- связан с небольшим числом scope slices;
+- содержит challenge, uncertainty, quality targets and participant plan;
+- занимает часть месяца или несколько месяцев;
+- выполняется автоматически между meaningful decisions;
+- изменяет project quality/debt/defects/release readiness;
+- может создать `ExperienceEpisode`.
+
+Игрок не распределяет ежедневные задачи вручную.
+
+## Основные решения игрока
+
+- определить/cut/defer scope;
+- выбрать approach/technology/architecture;
+- исследовать uncertainty или начать реализацию;
+- запросить mentor/review;
+- инвестировать в quality;
+- принять/погасить debt;
+- fix/workaround/defer defect;
+- release/delay/cut/rollback;
+- назначить owner и guardrails;
+- archive/transfer/sell/abandon project.
+
+Routine implementation, maintenance и support выполняются автоматически по commitments/policies.
+
+## Quality
+
+Качество многомерно. Core dimensions:
+
+- functional correctness;
+- usability/experience;
+- reliability;
+- performance efficiency;
+- security/safety;
+- maintainability;
+- supportability/operability.
+
+Project archetype активирует обычно 3–5 dimensions. Низкая confidence не равна низкому quality.
+
+## Technical debt
+
+Debt моделируется через:
+
+- aggregate pressure для routine debt;
+- significant debt records для traceable decisions/constraints;
+- future change drag;
+- defect/risk amplification;
+- maintenance/migration consequences.
+
+Осознанный debt может быть рациональным, но не является positive evidence сам по себе.
+
+## Defects and incidents
 
 Разделяются:
 
-- project outcome;
-- team outcome;
-- character contribution;
-- assisted contribution;
-- delegated contribution;
-- leadership/review contribution.
+- latent defect risk;
+- known defects;
+- escaped defects;
+- incidents/regressions.
 
-Успешный релиз команды не даёт персонажу full delivery/impact evidence, если его вклад был мал или не подтверждён.
+Не каждый bug получает отдельную UI-card. Minor defects агрегируются.
 
-Delegation может создавать leverage/leadership evidence только если:
+## Releases
 
-- решение/назначение было значимым;
-- сотрудник/команда действительно достигли результата;
-- вклад персонажа traceable;
-- результат не является полностью внешним совпадением.
+Release — immutable technical milestone с:
 
-## Качество
+- scope snapshot;
+- quality/confidence;
+- known issues;
+- accepted debt/risk;
+- rollout/support policy;
+- technical outcome;
+- contribution snapshot.
 
-Качество многомерно:
+Product/Open Source/Company используют release outcome, но не переписывают technical history.
 
-- functional correctness;
-- UX;
-- performance;
-- reliability;
-- security;
-- documentation;
-- maintainability.
+## Failure and recovery
 
-Одна абстрактная шкала «качество 100» недостаточна для событий и последствий.
+Проект может:
 
-Quality dimensions принадлежат Project Engine. Progression получает нормализованный outcome/claim context, а не полный внутренний проектный state.
+- пропустить milestone;
+- выпустить rough release;
+- попасть в debt spiral;
+- столкнуться с incident;
+- устареть;
+- потерять contributor;
+- остановиться;
+- быть архивированным, переданным, проданным или закрытым.
 
-## Техническая неопределённость
+Провал проекта обычно создаёт новую историю и recovery path, а не game over.
 
-Work package может открыть:
+## Historical evolution
 
-- неизвестные requirements;
-- ошибочную гипотезу;
-- integration conflict;
-- legacy constraint;
-- performance/reliability/security risk;
-- недостающий skill/technology;
-- необходимость research/mentor/review.
+Era capabilities меняют:
 
-Uncertainty может создать blocking decision и checkpoint. После выбора Project Engine продолжает тот же deterministic package/outcome flow.
+- доступные tools/version control/testing/CI;
+- distribution channels;
+- dependency ecosystems;
+- collaboration/review;
+- deployment/operations;
+- project archetypes and monetization.
 
-## Частичный результат
+SaaS, open-source hosting и modern CI не доступны в эпохах, где они исторически невозможны.
 
-Partial outcome может:
+## Required tests
 
-- продвинуть scope;
-- выявить bug/risk;
-- создать debt;
-- дать diagnosis;
-- открыть recovery task;
-- создать learning/debugging evidence.
-
-Partial outcome не подтверждает full delivery или release quality.
-
-## Релиз
-
-Release является отдельной неизменяемой записью с version, scope, known issues, quality snapshot, marketing/support decisions и результатом запуска.
-
-Release может создать:
-
-- delivery evidence;
-- reliability/incident evidence;
-- impact evidence;
-- community/product outcome;
-
-только через `ExperienceEpisode` и с учётом вклада персонажа.
-
-## Продукт
-
-Коммерческий продукт дополнительно хранит:
-
-- users и active users;
-- pricing model;
-- revenue и operating cost;
-- support load;
-- churn;
-- market fit;
-- brand/reputation;
-- competitors;
-- legal/operational risks в упрощённом виде.
-
-Большой revenue не является technical evidence автоматически. Product/market success и programmer mastery связаны, но не тождественны.
-
-## Failure states
-
-Проект может быть заморожен, отменён, передан, продан, архивирован или закрыт.
-
-Неудача сохраняется в истории и может создать:
-
-- debugging/recovery learning;
-- debt/support burden;
-- reputation impact;
-- financial consequence;
-- новый project/narrative arc.
-
-Провал не выдаёт большой mastery bonus только за сложность. Evidence соответствует реально продемонстрированным действиям.
-
-## Anti-farming
-
-- одинаковые routine packages агрегируются;
-- повтор simple task получает diminishing learning/evidence;
-- искусственное продление не повышает challenge;
-- intentional failure не даёт delivery/quality claims;
-- один release не закрывает все grade dimensions;
-- множество поверхностных проектов не создаёт depth;
-- project context weight ограничен при grade qualification.
-
-## Историческая связь
-
-Доступные project kinds, distribution channels, technologies, tooling и monetization patterns зависят от эпохи. SaaS не должен выглядеть одинаково в 1995 и 2015 году.
-
-Technology availability проверяется provider/content registry до создания work package.
-
-## Тесты
-
-- work package deterministic outcome;
-- partial/full/failure mapping;
-- team result vs character contribution;
-- delegation evidence;
-- release/impact evidence;
-- duplicate episode/evidence prevention;
-- project close stops progression;
-- easy-package diminishing;
-- historical technology eligibility;
-- atomic project outcome + evidence commit.
+- deterministic Work Package outcome;
+- uncertainty/forecast;
+- quality/confidence;
+- debt drag;
+- latent defect materialization;
+- partial/full/failure;
+- release gate/rollback;
+- team outcome vs player contribution;
+- delegation;
+- Project outcome + ExperienceEpisode atomic commit;
+- anti-farming/parallelization;
+- historical eligibility;
+- migration/compatibility.
