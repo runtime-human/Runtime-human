@@ -1,35 +1,42 @@
 # Архитектура контента
 
-Нормативные решения: [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md) и [Professional Progression Engine](../game-design/PROFESSIONAL-PROGRESSION-ENGINE.md).
+Нормативные решения:
 
-## Цель
+- [ADR-013 — Professional Progression](../adr/ADR-013-authoritative-professional-progression-evidence.md);
+- [ADR-014 — Project & Work Package](../adr/ADR-014-authoritative-project-work-package-model.md).
 
-Большая часть событий, skills, technologies, activities, challenges, companies, equipment, housing и historical milestones должна добавляться без изменения Game Core.
+Связанные спецификации:
 
-Контент описывает definitions и provider parameters, но не исполняет произвольный progression code.
+- [Professional Progression Engine](../game-design/PROFESSIONAL-PROGRESSION-ENGINE.md);
+- [Project & Work Package Engine](../game-design/PROJECT-WORK-PACKAGE-ENGINE.md).
+
+## Goal
+
+Most events, skills, technologies, project archetypes/packages, companies, equipment, housing and historical milestones are data-driven without executable content code.
+
+Definitions parameterize providers; Game Core owns deterministic state transitions.
 
 ## Source format
 
-- JSONC для структурированных definitions;
-- отдельные localization files;
+- JSONC structured definitions;
+- localization files;
 - asset manifests;
-- source registry для historical claims.
+- historical source registry.
 
-YAML не является baseline из-за неоднозначностей типов и более слабой надёжности автоматических правок агентами.
+YAML is not baseline due to typing/agent-edit ambiguity.
 
 ## Pipeline
 
 ```text
-source JSONC
-→ parse with source locations
+JSONC + source locations
 → schema validation
 → semantic validation
 → chronology validation
 → reference graph validation
-→ progression/balance lint
-→ compile immutable registry
-→ compile transfer edges/provider profiles
-→ fingerprint and snapshots
+→ project/progression/balance lint
+→ compile immutable registries
+→ compile transfer/provider/project policies
+→ semantic fingerprints/snapshots
 ```
 
 ## Content domains
@@ -37,51 +44,111 @@ source JSONC
 ### Professional progression
 
 - skill groups/skills;
-- technology families;
-- technologies/version bands;
-- directed transfer definitions;
-- professional focus options;
-- specialization profile definitions;
-- grade profiles/capability bands;
-- learning sources;
-- professional activity definitions;
-- challenge/task templates;
-- feedback/assistance profiles;
-- evidence reason/claim templates;
-- provider outcome mappings.
+- technology families/technologies/version bands;
+- directed transfer;
+- professional focus/specialization profiles;
+- grade/capability profiles;
+- learning sources/activities/challenges;
+- feedback/assistance/evidence mappings.
 
-### Other domains
+### Projects
 
-- events;
-- products/projects;
-- companies;
-- equipment;
-- housing;
-- conferences;
+- `ProjectArchetypeDefinition`;
+- `ProjectKindDefinition`;
+- `ScopeTemplateDefinition`;
+- `WorkPackageTemplateDefinition`;
+- `ProjectQualityProfileDefinition`;
+- `TechnicalDebtRuleDefinition`;
+- `DefectRuleDefinition`;
+- `ReleasePolicyDefinition`;
+- `MaintenancePolicyDefinition`;
+- `EraProjectCapabilityDefinition`.
+
+### Extensions and other domains
+
+- events/chains/NPC;
+- products/markets;
+- open-source/community;
+- companies/careers;
 - education;
+- equipment/housing;
+- conferences;
 - eras/city;
-- achievements;
-- localization;
-- historical sources.
+- achievements/localization/historical sources.
+
+## Project definitions
+
+### ProjectArchetypeDefinition
+
+Describes:
+
+- allowed kinds/eras;
+- default goals/constraints;
+- active quality dimensions;
+- scope size bands;
+- typical uncertainty/debt/defect/maintenance profiles;
+- allowed package templates;
+- release policy;
+- UI visibility/progressive disclosure.
+
+It does not own runtime ProjectState.
+
+### ScopeTemplateDefinition
+
+- stable semantic slice;
+- requirements/acceptance criteria;
+- value/uncertainty bands;
+- dependencies;
+- era/project-kind eligibility;
+- anti-splitting group.
+
+### WorkPackageTemplateDefinition
+
+- kind/objective family;
+- allowed scope refs;
+- challenge profile;
+- known/latent work bounds;
+- uncertainty dimensions;
+- quality targets/risk;
+- technologies/skill applications;
+- participant constraints;
+- outcome space/recovery;
+- decision hooks;
+- anti-repeat key.
+
+A template is not a ticket list and cannot execute formula scripts.
+
+### Quality profile
+
+- active dimensions (normally 3–5);
+- target defaults/bands;
+- release confidence requirements;
+- assessment source policies;
+- trade-off/recovery constraints.
+
+### Debt/defect rules
+
+Compiled rules describe bounded categories, affected areas, risk/drag ranges, prevention/materialization mappings and recovery package families.
+
+Content never rolls randomness or mutates state directly.
+
+### Release/Maintenance policies
+
+Release policy describes gates, accepted-risk permissions, era distribution/rollback/support capabilities.
+
+Maintenance policy maps technical state plus external support/dependency signals into routine load or package candidates.
 
 ## Definition ownership
 
-Content definitions не владеют runtime state.
-
-- `SkillDefinition` описывает ID, group, facets, visibility tier и localization.
-- `TechnologyDefinition` описывает Tier A/B/C, family, lifecycle, requirements и compatibility.
-- `TransferDefinition` компилируется в directed integer `TransferEdge`.
-- `ProfessionalActivityDefinition` описывает commitment/provider contract.
-- `ProfessionalChallengeTemplate` описывает challenge dimensions, outcome space и evidence potential.
-- `GradeProfileDefinition` описывает gates/profiles, но awarded grade остаётся state/history.
-
-Provider domain может расширять template своими fields, но отдаёт progression только нормализованный `ExperienceEpisode`.
+- Definitions are immutable data.
+- Project Engine owns runtime technical truth.
+- Product/Open Source/Company/Career extensions submit typed inputs and consume typed outputs.
+- Progression receives `ExperienceEpisode` only.
+- Events can request/modify provider decisions but not directly complete packages or mint evidence.
 
 ## Stable IDs
 
-Core content использует namespace `core.*`. ID не зависит от отображаемого названия и не переиспользуется после удаления.
-
-Рекомендуемые namespaces:
+Core namespaces:
 
 ```text
 core.skill.*
@@ -91,96 +158,134 @@ core.transfer.*
 core.activity.*
 core.challenge.*
 core.grade-profile.*
+core.project-archetype.*
+core.project-kind.*
+core.scope-template.*
+core.work-package.*
+core.quality-profile.*
+core.debt-rule.*
+core.defect-rule.*
+core.release-policy.*
+core.maintenance-policy.*
+core.era-project-capability.*
 ```
 
-Evidence сохраняет semantic snapshot и не становится невалидным после удаления definition.
+IDs never derive from display names or get reused.
 
-## ContentMetadata
+Historical project/release/evidence records preserve semantic snapshots/tombstones.
 
-Каждый объект имеет author, contentVersion, reviewStatus, createdAt, lastReviewedAt, tags и optional sourceRefs.
+## Content metadata
 
-Professional definitions дополнительно могут иметь:
+Every object:
 
-- rules compatibility range;
+- author/review status;
+- content version;
+- created/last-reviewed dates;
+- tags/sourceRefs;
+- compatibility range;
 - historical availability;
 - balance risk tags;
-- UI visibility tier;
+- UI tier;
 - migration/tombstone metadata.
 
 ## Semantic validation
 
-Validator проверяет:
+### Progression
 
-- skill graph без циклических hard prerequisites;
-- отсутствие дублирующих skills/facets;
-- Tier C technology не имеет proficiency state/grade requirement;
-- technology lifecycle chronology;
-- version band justification;
-- transfer edge range/direction;
-- transfer не создаёт evidence;
-- challenge principal band согласован с dimensions;
-- evidence template не подтверждает невозможную dimension;
-- partial/failure outcome не даёт full delivery/quality claims;
-- assistance profile не завышает autonomy;
-- grade profile не является одним weighted average;
-- provider outcome mapping имеет stable source/context;
-- historical availability соответствует era/sourceRefs.
+- no duplicate skills/facets;
+- Tier C has no proficiency;
+- valid technology chronology/transfer;
+- partial/failure cannot grant full delivery;
+- assistance cannot inflate autonomy;
+- grade not one weighted average;
+- provider mapping stable.
+
+### Projects
+
+- archetype activates 3–5 quality dimensions unless reviewed exception;
+- scope templates have reachable acceptance criteria;
+- package principal challenge consistent with dimensions;
+- known/latent work bounds valid;
+- latent realization bounded/non-negative;
+- outcome and recovery reachable;
+- active decision reachable but not mandatory routine spam;
+- package cannot directly change skills/grade;
+- quality targets valid for archetype;
+- debt/defect rules reference valid areas/categories;
+- release gate feasible for at least one reachable state;
+- era allows required technology/tool/distribution;
+- anti-splitting/anti-repeat key present;
+- Product/Company/OSS fields do not duplicate technical state.
 
 ## Balance lint
 
-- слишком много Tier A technologies;
-- skill/content с отсутствующими providers;
-- challenge без reachable outcome/recovery;
-- easy-task farming risk;
-- passive course создаёт production/impact evidence;
-- один context полностью закрывает Senior gate;
-- grade profile не имеет diversity/duration gate;
-- transfer edge слишком высокий;
-- challenge требует technology недоступной эпохи;
-- activity не имеет work-unit/calendar cost;
-- hidden mastery effect вне Progression Core.
+- too many Tier A technologies;
+- too many active project quality dimensions;
+- package duration too small/large for meaningful unit;
+- project represented only by progress;
+- package without trade-off/outcome/recovery;
+- package spam/easy-task farming;
+- scope splitting/release spam;
+- intentional failure/bug/debt farming;
+- unbounded parallel package capacity;
+- team size linear multiplier without coordination;
+- release gate impossible/trivial;
+- debt spiral without recovery;
+- defect rate zero or unavoidable catastrophe;
+- forecast exact despite uncertainty;
+- project challenge requires unavailable era technology;
+- direct project/professional mutation from event/extension content.
 
 ## Immutable runtime
 
-После компиляции definitions immutable. Игровое состояние ссылается на stable IDs и сохраняет definition version/fingerprint там, где изменение может повлиять на active process.
+Compiled runtime receives:
 
-Runtime получает:
-
-- compiled registries;
-- prevalidated challenge/provider profiles;
-- sparse directed transfer edges;
-- grade profile registry;
+- project/progression registries;
+- prevalidated templates/policies;
+- sparse transfer edges;
+- era capabilities;
 - semantic fingerprints.
 
-Runtime не вычисляет transfer из произвольных content dimensions во время MonthRun.
+Runtime does not calculate schemas or execute content-defined formulas.
 
-## Modding policy
+## Modding
 
-Моды могут добавлять data-only skills/technologies/activities/challenges/profiles после schema/semantic validation.
+Data-only mods may add project archetypes/packages/technologies/events after validation.
 
-Ограничения:
+Forbidden:
 
-- нельзя исполнять formula script;
-- нельзя переопределять core skill semantics без explicit patch/conflict policy;
-- нельзя создавать evidence напрямую из raw text;
-- нельзя расширять Tauri/persistence capabilities;
-- incompatible professional definition блокирует pack activation;
-- active save references используют mod-lock/tombstones/semantic snapshots.
+- executable scripts/raw HTML/automatic network fetch;
+- overriding core semantics without conflict policy;
+- direct SQL/Tauri capabilities;
+- direct skill/grade/project-state effects;
+- release/defect RNG hooks outside rule registry;
+- unbounded per-ticket content;
+- missing migration/tombstone policy for active definitions.
+
+Active saves lock semantic fingerprints; historical records use snapshots.
 
 ## Content Studio
 
-После vertical slice создаётся внутренний Content Studio для форм, challenge preview, progression outcome preview, chain graph, fixtures и localization review. Studio использует те же schemas и validators, что CI.
+After vertical slice, Content Studio previews:
 
-Storybook показывает professional cards/read models, но не исполняет privileged persistence.
+- project archetype/scope graph;
+- Work Package lifecycle/outcomes;
+- uncertainty/forecast ranges;
+- quality/debt/defect effects;
+- release gates;
+- contribution/episode mapping;
+- balance fixtures/localization.
 
-## Запреты
+It uses production schemas/validators but no privileged persistence.
 
-- executable scripts;
-- raw HTML;
-- сетевые ссылки, загружаемые автоматически;
-- ID по названию файла;
-- канонические даты без provenance;
-- скрытые side effects вне effect/provider/progression registry;
-- direct skill/grade mutation из content;
-- отдельная progression bar для Tier C;
-- narrative choice, выдающий mastery без `ExperienceEpisode`.
+## Forbidden drifts
+
+- executable formula content;
+- hidden side effects outside registries;
+- direct skill/grade mutation;
+- direct package completion from narrative text;
+- one quality score as source of truth;
+- Tier C progression bars;
+- content IDs from filenames/names;
+- canonical historical dates without provenance;
+- Project/Product/Company duplicated technical state.
