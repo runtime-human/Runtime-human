@@ -1,29 +1,44 @@
-# Deep Research — индекс
+# Deep Research и System Design — индекс
 
-Этот каталог хранит нормализованные результаты внешних исследований, использованные для архитектурных и игровых решений Runtime Human.
+Этот каталог хранит нормализованные исследования и системные анализы Runtime Human.
 
-Исследовательский отчёт не является источником истины сам по себе. Его выводы становятся каноном только после отражения в принятом ADR либо профильных спецификациях, когда новый ADR не требуется.
+Исследование не является источником истины само по себе. Его выводы становятся каноном после отражения в accepted ADR и профильных спецификациях.
 
-## Исследования от 2026-07-16
+## 2026-07-16
 
 1. [DR-001 — Аудит стека и архитектуры](DR-001-STACK-ARCHITECTURE-AUDIT-2026-07-16.md)
-2. [DR-002 — Многоязычное исследование gamedev и desktop-практик](DR-002-MULTILINGUAL-GAMEDEV-STACK-RESEARCH-2026-07-16.md)
-3. [Синтез двух технических исследований и матрица решений](DR-SYNTHESIS-2026-07-16.md)
+2. [DR-002 — Многоязычное исследование gamedev/desktop-практик](DR-002-MULTILINGUAL-GAMEDEV-STACK-RESEARCH-2026-07-16.md)
+3. [Синтез технических исследований](DR-SYNTHESIS-2026-07-16.md)
 
-## Исследования от 2026-07-17
+## 2026-07-17
 
-1. [DR-003 — Programmer-First synthesis игрового дизайна](DR-003-PROGRAMMER-FIRST-DESIGN-SYNTHESIS-2026-07-17.md)
+1. [DR-003 — Programmer-First synthesis](DR-003-PROGRAMMER-FIRST-DESIGN-SYNTHESIS-2026-07-17.md)
+2. [SD-001 — Programmer Progression & Evidence Engine](SD-001-PROGRAMMER-PROGRESSION-EVIDENCE-ENGINE-2026-07-17.md)
 
-DR-003 фиксирует риск scope inversion: life-sim, economy, relationships, narrative и philosophy не должны вытеснять развитие навыков программирования, технологий, инженерной зрелости, проектов и грейдов. Нормативный результат отражён в `docs/game-design/PROGRAMMER-FIRST-DESIGN.md` и синхронизированных профильных спецификациях.
+DR-003 закрепил programmer-first product hierarchy.
+
+SD-001 спроектировал authoritative progression/evidence architecture:
+
+- Experience Providers → `ExperienceEpisode`;
+- mastery/fluency/familiarity;
+- claims-based append-only evidence;
+- awarded grade milestone;
+- demonstrated/current-market readiness projections;
+- deterministic MonthRun/persistence integration.
+
+Нормативные результаты SD-001:
+
+- `docs/adr/ADR-013-authoritative-professional-progression-evidence.md`;
+- `docs/game-design/PROFESSIONAL-PROGRESSION-ENGINE.md`;
+- синхронизированные domain, MonthRun, persistence, content, project, NPC, balance, UI и plan documents.
 
 ## Правила
 
-- официальная документация имеет приоритет над блогами и форумами;
-- инженерные блоги, design talks и postmortem используются как практическое подтверждение;
-- форумные обсуждения используются как источник рисков и повторяющихся проблем, но не как единственное основание решения;
-- текущая версия библиотеки, инструмента или игры перепроверяется перед реализацией;
-- сырой результат Deep Research нормализуется: удаляются внутренние citation-токены, дубли и неподтверждённые формулировки;
-- fact, interpretation и direct applicability должны быть разделены;
-- изменение accepted архитектурного решения требует ADR;
-- уточнение уже принятой игровой фантазии может быть внесено через профильную specification synchronization, если существующий ADR не отменяется;
-- результат исследования считается внедрённым только после обновления канона, balance metrics, plans и traceability.
+- официальная документация имеет приоритет над блогами/форумами;
+- secondary sources используются для failure modes и practical confirmation;
+- versions и current facts перепроверяются перед реализацией;
+- raw research нормализуется: citations, дубли и неподтверждённые формулировки очищаются;
+- fact, interpretation и applicability разделяются;
+- архитектурное решение требует ADR;
+- результат считается внедрённым только после synchronization канона, contracts, migrations, tests, plans и traceability;
+- formulas/thresholds, требующие playtest, остаются versioned hypotheses, а не неизменным каноном.
