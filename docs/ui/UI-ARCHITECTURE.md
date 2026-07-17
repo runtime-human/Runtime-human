@@ -1,398 +1,316 @@
 # UI Architecture
 
-Нормативное решение по UI workshop: [ADR-012](../adr/ADR-012-storybook-ui-content-workshop.md).
+Нормативные источники:
 
-Нормативная продуктовая иерархия: [Programmer-First Design](../game-design/PROGRAMMER-FIRST-DESIGN.md).
+- [ADR-012](../adr/ADR-012-storybook-ui-content-workshop.md);
+- [ADR-015](../adr/ADR-015-casual-first-abstraction-and-complexity-budget.md);
+- [Programmer-First Design](../game-design/PROGRAMMER-FIRST-DESIGN.md);
+- [Casual Simulation Design](../game-design/CASUAL-SIMULATION-DESIGN.md).
 
-## Принцип
+## 1. Принцип
 
-React UI отображает read models и отправляет typed commands. Он не является источником истины, не содержит authoritative игровые формулы и не обращается к raw SQL/platform implementation.
+React UI отображает typed read models и отправляет commands. Он не содержит authoritative formulas и не обращается к raw persistence/platform implementation.
 
-Информационная архитектура должна сразу сообщать, что Runtime Human — симулятор развития программиста. Финансы, здоровье, отношения и события показываются как значимые ограничения и самостоятельные ценности, но не получают визуальный приоритет над skills, technologies, projects, grade readiness и professional focus.
+Normal UI должен ощущаться как казуальная игра, а не CRM, engineering dashboard или performance-review tool.
 
-## Слои UI
+Главный UX-критерий:
 
-```text
-routes/screens
-→ feature compositions
-→ game components
-→ primitives/design tokens
-```
+> Игрок понимает обычное решение за несколько секунд и может объяснить последствие после месяца.
 
-Application facade является внешней границей UI. Components не получают mutable full `GameState`.
+## 2. Уровни раскрытия
 
-## State
+### Normal
 
-- Durable authoritative state: persistence + application use cases.
-- UI read models/query cache: application facade.
-- Transient UI state: Zustand.
-- Form state: локально в feature либо специализированный helper при доказанной необходимости.
-- Storybook state: deterministic fixtures и in-memory mocks.
-- Domain state не дублируется целиком в Zustand или Storybook decorators.
+Основной продукт.
 
-## Главная информационная иерархия
+Показывает:
 
-1. текущий professional focus;
-2. активное обучение и technology proficiency;
-3. текущие задачи/проекты и качество результата;
-4. grade readiness и следующий полезный тип evidence;
-5. commitments/load forecast;
-6. критические health/finance/relationship constraints;
-7. история, era context и philosophy по запросу.
+- текущую ситуацию;
+- 3–5 primary objects;
+- один следующий meaningful choice;
+- human-readable statuses;
+- причину важного изменения;
+- next step.
 
-Главный экран не является KPI-dashboard. Он показывает небольшое число приоритетных объектов с progressive disclosure.
+### Details
 
-## Screens и порядок навигации
+Открывается по запросу.
 
-1. **Today/Life Screen** — текущий месяц, professional focus, commitments, ближайший technical milestone, warnings и `Следующий месяц`.
-2. **Skills & Technologies** — capabilities, skill graph, technology lifecycle, transfer и learning options.
-3. **Projects** — текущие задачи, quality/debt/bugs, milestones, releases и portfolio.
-4. **Career** — grade readiness, job, vacancies, interviews, promotion и path choices.
-5. **Open Source/Public Work** — после открытия соответствующих систем.
-6. **Company** — после открытия founder/CTO path.
-7. **Life** — health, relationships, housing, equipment и finance.
-8. **Journal/History** — события, evidence, decisions, delayed consequences и legacy.
-9. **Settings/Saves/Diagnostics/Recovery**.
+Показывает:
 
-Экран `Life` не является стартовым generic dashboard с равноправными плитками всех систем. Он композиционно подчинён текущему professional journey.
+- несколько contributing factors;
+- историю важных decisions;
+- quality/debt/risk explanation;
+- evidence source summary;
+- forecast reasons.
 
-## Today/Life Screen
+### Advanced/Diagnostics
+
+Не обязателен для MVP.
+
+Может показывать:
+
+- internal dimensions;
+- claims;
+- numeric projections;
+- trace/reason codes;
+- compatibility/debug data.
+
+Advanced view не меняет gameplay outcome.
+
+## 3. State
+
+- Authoritative state: Game Core + persistence.
+- Read models: application layer.
+- Transient UI state: Zustand/local component state.
+- Storybook: deterministic fixtures.
+- UI не дублирует full GameState.
+
+## 4. Главная информационная иерархия
+
+1. current professional focus;
+2. main activity/project;
+3. next milestone;
+4. one critical constraint/warning;
+5. next month/action.
+
+Secondary:
+
+- skills/technology;
+- finance;
+- health/relationships;
+- history.
+
+Игрок не должен одновременно видеть полный skill graph, evidence matrix, project backlog, debt ledger и finance dashboard.
+
+## 5. Навигация
+
+Baseline:
+
+1. **Сегодня** — текущий месяц, focus, main activity, warning, `Следующий месяц`.
+2. **Развитие** — skills, technology, learning и readiness summary.
+3. **Проекты** — current projects и meaningful choices.
+4. **Карьера** — job, vacancies и progression, когда система открыта.
+5. **Жизнь** — health, relationships, housing и finance.
+6. **История** — important events, milestones и releases.
+7. **Настройки/Сейвы**.
+
+Open Source, Company и Public Work становятся отдельными разделами только после открытия систем и подтверждённой необходимости. Ранний UI не резервирует пустые сложные dashboards.
+
+## 6. Экран «Сегодня»
 
 Всегда видны:
 
-- дата, возраст и жизненный этап;
+- дата/возраст;
 - professional focus;
-- active learning;
-- active work/project commitments;
-- ближайший technical milestone;
-- compact grade-readiness statement;
-- load forecast;
-- critical warnings;
-- unresolved blocking decision;
+- одна главная activity/project;
+- ближайший milestone;
+- одно critical warning;
+- unresolved decision;
 - `Следующий месяц`.
 
-По запросу раскрываются:
+Optional compact items:
 
-- work-unit forecast;
-- context switching;
-- detailed evidence gaps;
-- finance breakdown;
-- relationship/health detail;
-- exact change history.
+- активное обучение;
+- readiness status;
+- money/health only if materially changed.
 
-## Skills & Technologies
+Подробные work units, context switching и history раскрываются по запросу.
 
-Базовый режим использует capability language:
+## 7. Professional progression UI
 
-- «может находить причину простых ошибок»;
-- «самостоятельно завершает небольшие задачи»;
-- «готов владеть feature end-to-end».
+Normal mode:
 
-Advanced detail показывает:
+- awarded grade;
+- one capability phrase;
+- максимум 3–5 relevant skills;
+- active technology familiarity;
+- readiness status;
+- next useful step.
 
-- skill families;
-- mastery/fluency/familiarity;
-- technology families;
-- transfer;
-- lifecycle stage;
-- evidence sources;
-- grade-readiness contribution.
+Пример:
 
-UI не показывает Tier C technology tags как отдельные collectible bars.
+```text
+Отладка — уверенный начинающий
 
-## Grade Readiness
+Вы самостоятельно находите простые ошибки.
+Следующий шаг: проблема, затрагивающая несколько частей программы.
+```
 
-Обычный режим не раскрывает точные 0–1000 scores. Он показывает:
+Internal terms `mastery`, `fluency`, `evidence claim`, `gate` не обязательны в normal mode.
 
-- текущую подтверждённую способность;
-- сильные dimensions;
-- недостающий тип evidence;
-- примеры подходящих задач;
-- причины, почему promotion и grade могут различаться.
+## 8. Project UI
 
-Advanced/debug режим может показывать numeric breakdown и source trace.
+Normal project card:
 
-## Professional forecast
+- goal;
+- stage;
+- current package;
+- simple forecast;
+- uncertainty band;
+- three quality bands;
+- debt band;
+- one important issue/risk;
+- next decision.
 
-Перед MonthRun forecast показывает:
+Не показываются по умолчанию:
 
-- mandatory commitments;
-- ожидаемый диапазон доступных work units;
-- active learning/project allocations, сформированные policy;
-- conflicts;
-- context-switching risk;
-- вероятный skill/technology progress;
-- milestone/deadline risk;
-- fatigue/burnout warning;
-- какие активности будут частичными, замороженными или вытесненными.
+- backlog;
+- requirement graph;
+- component graph;
+- full debt/defect list;
+- participant percentages;
+- release gate matrix.
 
-Forecast не является percentage slider и не требует ручного распределения каждого дня.
+## 9. Forecast
 
-## Commands
+Normal labels:
 
-UI отправляет typed commands и обрабатывает pending/success/error. Double submit блокируется request ID/idempotency policy.
+- вероятно в этом месяце;
+- вероятно в следующем;
+- срок пока неясен.
 
-Компонент не вызывает Tauri command напрямую, если операция может быть выражена application facade. Platform-specific dialog/window operation инкапсулируется отдельным typed adapter.
+Uncertainty:
 
-## Month transition
+- низкая;
+- средняя;
+- высокая.
 
-При MonthRun UI показывает фазовый прогресс только если операция заметна. Внутреннее число шагов не является стабильным gameplay/API contract.
+UI объясняет причину изменения прогноза. Exact probability/hidden work не показываются.
 
-Blocking event получает focused scene/dialog с:
+## 10. Month transition
 
-- корректным focus trap;
-- доступным названием/описанием;
-- category/product-layer context без технических внутренних IDs;
-- keyboard choices;
+Обычный MonthRun не требует отдельного progress screen, если завершается быстро.
+
+Blocking decision:
+
+- одна concrete problem;
+- 2–4 options;
+- clear trade-off direction;
+- known/unknown consequences;
 - disabled reason;
-- forecast consequences;
-- безопасным закрытием приложения после durable checkpoint;
-- recovery state при несовместимом/повреждённом draft.
+- safe suspend state.
 
-После resume UI использует новую run revision и не повторяет уже применённый answer.
+Обычный месяц: 0–1 blocking decision. Несколько решений допустимы только как связанный milestone/crisis flow.
 
-## Monthly Report
+## 11. Monthly Report
 
-Порядок разделов:
+Primary report содержит максимум 5–7 строк/карточек:
 
-1. **Что изменилось в вас как в программисте**;
-2. **Работа и проекты**;
-3. **Professional Evidence и grade readiness**;
-4. **Новые технологии и возможности**;
-5. **Нагрузка, здоровье и отношения**;
-6. **Деньги**;
-7. **События, история и delayed consequences**.
+1. чему научился персонаж;
+2. главный project/work outcome;
+3. важное professional capability/readiness change;
+4. важное life consequence;
+5. заметное money change;
+6. important event;
+7. next step.
 
-Каждое значимое изменение содержит:
+Routine changes grouped under `Подробнее`.
+
+Каждая primary row отвечает:
 
 - что изменилось;
 - почему;
-- какой source/task/event это вызвал;
-- временно ли изменение;
-- что игрок может сделать дальше.
+- что это значит;
+- что можно сделать дальше.
 
-`Before/after` используется для крупных изменений. Мелкие изменения группируются и не создают визуальный шум.
+## 12. Warnings
 
-## Warning severity
+Statuses:
 
-- **Info:** новая возможность или некритичное изменение.
-- **Notice:** заметный trade-off или approaching threshold.
-- **Warning:** высока вероятность неполного результата, deadline miss, debt или fatigue.
-- **Critical:** MonthRun может создать тяжёлое последствие, soft-lock risk или требует blocking decision.
+- info;
+- attention;
+- warning;
+- critical.
 
-Severity не передаётся только цветом. Текст формулирует cause и recovery path.
+На основном экране одновременно показывается не более одного primary warning и нескольких compact indicators.
 
-## Storybook
+Warning всегда содержит cause и possible action. Цвет не является единственным носителем смысла.
 
-Storybook 10 вводится с Foundation как:
-
-- component workshop;
-- design-system documentation;
-- library редких UI states;
-- event/decision/content preview;
-- interaction/a11y test surface;
-- visual baseline source;
-- bug fixture registry;
-- контролируемый контекст для UI-агентов.
-
-Stories строятся на public component/read-model contracts и `game-ui-fixtures`.
-
-Storybook запрещено:
-
-- загружать production save;
-- вызывать raw Tauri/SQL/filesystem/updater APIs;
-- зависеть от wall clock/network;
-- получать release secrets/capabilities.
-
-Platform behavior заменяется typed mocks. Storybook MCP допускается только development-only после security review.
-
-## Storybook story groups
+## 13. Storybook baseline
 
 ### Foundation
 
-- Typography/Russian Long Text;
-- Color/High Contrast;
-- Spacing/Layout/200% Scale;
-- Focus/Keyboard;
-- Reduced Motion;
-- Icons and Semantic Status.
-
-### Programmer Core
-
-- Professional Focus Card;
-- Skill Capability Summary;
-- Skill Detail/Mastery-Fluency;
-- Technology Lifecycle Card;
-- Transfer Preview;
-- Grade Readiness Summary;
-- Evidence Timeline;
-- Learning Activity Card;
-- Technical Task/Trade-off Card.
-
-### Projects and Career
-
-- Project Overview;
-- Quality/Debt/Bugs;
-- Milestone/Release;
-- Vacancy Comparison;
-- Interview Outcome Explanation;
-- Promotion Review;
-- Career Path Matrix.
-
-### Month Loop
-
-- Pre-Month Forecast;
-- Commitment Conflict;
-- Context Switching Warning;
-- Blocking Decision;
-- Suspended Month Recovery;
-- Monthly Report Programmer-First;
-- Quiet Month;
-- Professional Stagnation Explanation.
-
-### Life Layer
-
-- Health/Fatigue Warning;
-- Relationship Commitment;
-- Finance Constraint;
-- Housing/Equipment Access;
-- Crisis and Recovery.
-
-### Edge and Accessibility
-
-- Empty/Loading/Error;
-- Very Long Russian Text;
-- 200% Text Scale;
-- High Contrast;
-- Reduced Motion;
-- Keyboard-Only;
-- Narrator Labels;
-- Large Evidence History;
-- Conflicting Warnings;
-- Save/Recovery/Safe Mode.
-
-## Usability tests
-
-### Novice comprehension
-
-Пользователь без опыта программирования должен за 10 минут:
-
-- понять текущую цель;
-- выбрать обучение;
-- объяснить, почему навык вырос;
-- отличить skill от technology;
-- понять, что grade не равен должности;
-- найти следующий разумный шаг.
-
-### Expert credibility
-
-Разработчик должен:
-
-- признать различие mastery, fluency, technology familiarity и evidence;
-- увидеть реальные engineering trade-offs;
-- не воспринимать систему как набор бессмысленных XP bars;
-- понять, почему новая технология не всегда оптимальна;
-- найти advanced details без перегрузки основного экрана.
-
-### Month-loop clarity
-
-Пользователь должен до подтверждения месяца:
-
-- назвать главные commitments;
-- увидеть conflict/load risk;
-- предсказать, какие активности будут частичными;
-- понять, когда система действует автоматически;
-- понять причину blocking event и последствия выбора.
-
-### Report causality
-
-После месяца пользователь должен правильно ответить:
-
-- что изменилось в профессиональном развитии;
-- почему;
-- что является временным;
-- какой следующий тип evidence полезен;
-- какое life constraint повлияло на результат.
-
-## Component contract
-
-Reusable component:
-
-- принимает минимальный immutable props/read model;
-- сообщает intent через callback/typed command descriptor;
-- не знает persistence/entity repositories;
-- имеет stable accessible names;
-- имеет canonical и edge stories;
-- не скрывает critical error только в toast;
-- не кодирует смысл только цветом;
-- не требует drag-only interaction;
-- не показывает authoritative formula, если read model может дать explanation.
-
-## Error boundaries
-
-Route/feature boundaries изолируют сбой графика или вторичной панели. Ошибка authoritative command выводит recovery action и не маскируется toast.
-
-Категории UI error:
-
-- validation;
-- conflict/stale revision;
-- unavailable;
-- incompatible;
-- recovery required;
-- cancelled;
-- internal.
-
-Internal details не показывают private path/secrets. Diagnostic export выполняется явно.
-
-## Accessibility
-
-Норматив: WCAG 2.2 AA насколько применимо к desktop WebView.
-
-Обязательны:
-
-- keyboard-only flow;
-- visible/non-obscured focus;
-- focus restore после dialog;
-- Narrator labels/status announcements;
-- 200% text scale/reflow;
+- typography/long RU;
+- keyboard/focus;
+- 200% scale;
 - high contrast;
 - reduced motion;
-- target sizes;
-- alternatives to drag;
-- long Russian/localized text fixtures.
+- status semantics.
 
-Storybook a11y automation дополняет, но не заменяет ручной Narrator review критических flows.
+### Casual core
 
-## Performance
+- Today screen;
+- Professional summary;
+- Skill capability card;
+- Project card;
+- Work Package card;
+- Simple forecast;
+- Quality/debt bands;
+- Blocking decision;
+- Monthly report;
+- Save/recovery.
 
-- route-level lazy loading;
-- virtualization длинных журналов/evidence history;
-- memoization только после профилирования;
-- тяжёлые balance/content tools вне production renderer;
-- отсутствие неограниченных re-renders полного GameState;
-- Storybook fixtures bounded и не маскируют performance реальных больших списков;
-- UI long task >50 мс исследуется; pure CPU MonthRun при необходимости переносится в Worker без изменения core API.
+### Edge states
 
-## Testing matrix
+- loading/empty/error;
+- quiet month;
+- assisted/partial/failure;
+- high uncertainty;
+- known issue;
+- long text;
+- conflicting constraints.
 
-- Storybook + Vitest addon: isolated render/interactions/a11y;
-- Testing Library: focused component/application behavior;
-- Playwright: routes, compositions, visual regression, keyboard/accessibility с mocks;
-- WebdriverIO Tauri: настоящий executable, IPC, SQLite, dialogs и lifecycle.
+Evidence timeline, complex grade matrix, portfolio and incident dashboards are deferred stories until corresponding gameplay exists.
 
-Компоненты ищутся в тестах через roles/names, а не CSS implementation selectors. Visual baselines создаются в фиксированной среде и не обновляются автоматически без review.
+## 14. Usability gates
 
-## Definition of Done
+Новичок должен:
+
+- понять цель first month без guide;
+- понять ordinary decision за 10–20 seconds;
+- правильно назвать direction trade-off;
+- после MonthRun объяснить минимум две причины результата;
+- найти next step;
+- не воспринимать screen как CRM/dashboard.
+
+Технический игрок должен:
+
+- признать trade-off правдоподобным;
+- видеть causality;
+- не воспринимать progression как один XP;
+- находить Details без необходимости использовать их всегда.
+
+## 15. Accessibility
+
+- keyboard-only;
+- visible focus;
+- focus restore;
+- Narrator labels/status;
+- 200% scale/reflow;
+- high contrast;
+- reduced motion;
+- no drag-only actions;
+- long Russian text fixtures.
+
+## 16. Performance
+
+- route-level loading;
+- no full-state rerenders;
+- long history virtualized only when it exists;
+- read models prepared outside components;
+- Storybook fixtures bounded;
+- normal screen does not render hidden extended systems.
+
+## 17. Definition of Done
 
 UI change готово, когда:
 
-- read-model/command contract типизирован;
-- programmer-first hierarchy не нарушена;
-- canonical/edge stories существуют;
-- keyboard/focus behavior проверено;
-- interaction/a11y tests проходят;
-- layout-critical visual baseline reviewed;
-- long RU text и 200% scale проверены;
-- novice causality и advanced detail paths не конфликтуют;
-- нет прямого platform/persistence access;
-- relevant browser/desktop flow обновлён при изменении интеграции.
+- normal mode solves the task without advanced view;
+- primary concepts fit complexity budget;
+- causal explanation exists;
+- routine is grouped;
+- keyboard/a11y/long-RU pass;
+- no raw platform/persistence access;
+- relevant Storybook stories exist;
+- usability question and result documented.
