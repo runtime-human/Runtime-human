@@ -2,287 +2,340 @@
 
 - **Статус:** Accepted
 - **Дата:** 2026-07-17
-- **Решение владельца:** продолжать системные анализы, самостоятельно принимать и объединять согласованные документационные PR
-- **Связанные ADR:** ADR-005, ADR-006, ADR-007, ADR-010, ADR-013
-- **Связанные спецификации:** `docs/game-design/PROJECT-WORK-PACKAGE-ENGINE.md`, `docs/game-design/PROFESSIONAL-PROGRESSION-ENGINE.md`
+- **Решение владельца:** использовать shared technical Project Engine и aggregated Work Packages с casual-first реализационным профилем ADR-015
+- **Связанные ADR:** ADR-005, ADR-006, ADR-007, ADR-010, ADR-013, ADR-015
+- **Связанные спецификации:** `docs/game-design/PROJECT-WORK-PACKAGE-ENGINE.md`, `docs/game-design/CASUAL-SIMULATION-DESIGN.md`
 
 ## Контекст
 
-После ADR-013 Project Engine закреплён как Experience Provider, однако оставались неопределёнными:
+Project Engine должен поддерживать реальные технические trade-offs без двух крайностей:
 
-- authoritative project lifecycle;
-- минимальная единица технической работы;
-- scope/requirements ownership;
-- uncertainty and forecasting;
-- multidimensional quality;
-- technical debt carrying cost;
-- latent/materialized defects;
-- releases and maintenance;
-- team contribution and delegation;
-- границы Project/Product/Open Source/Company/Career;
-- crash-safe связь project outcome и `ExperienceEpisode`.
+- один progress bar, не различающий scope, uncertainty, quality и consequences;
+- backlog/Jira simulator с сотнями задач, dimensions и records.
 
-Если Project Engine моделировать как backlog из ежедневных tasks, игра превратится в Jira/CRM. Если оставить один progress bar, проект не сможет выражать инженерные trade-offs и давать достоверный professional evidence.
+SD-002 определил правильные ownership boundaries, но максимальная модель оказалась слишком широкой для казуального Vertical Slice. ADR-015 уточняет: Project Engine сохраняет extension seams, но реализует только поля, необходимые текущему gameplay.
 
 ## Решение
 
 ### 1. Project Engine владеет технической правдой проекта
 
-Project Engine authoritative для:
+Project Engine authoritative для уже реализованных аспектов:
 
-- project lifecycle;
-- goals, constraints and scoped requirements;
-- work packages;
-- project-specific uncertainty and forecast state;
-- quality state;
-- technical debt;
-- latent and known defects;
-- release technical records;
-- maintenance state;
-- participant ownership and contribution;
-- technical project outcomes.
+- project lifecycle/stage;
+- goal and bounded scope;
+- aggregated Work Packages;
+- project uncertainty/forecast band;
+- active quality state;
+- technical debt band/значимые исключения;
+- player-relevant defects/incidents;
+- compact release records;
+- character/team contribution summary;
+- technical outcomes.
 
 Он не владеет:
 
 - users/revenue/churn/competition — Product/Market;
-- contributors/governance/community health — Open Source extension;
-- hiring/payroll/team employment — Company;
-- job/promotion/salary — Career;
+- contributors/governance/community health — Open Source;
+- hiring/payroll/employment — Company/Career;
 - skills/mastery/grade — Professional Progression;
-- event eligibility/pacing — Event Engine/Narrative Director.
+- event pacing — Event Engine/Narrative Director.
 
-### 2. Work Package является минимальной authoritative единицей значимой технической работы
+Неиспользуемый future state не добавляется только ради полноты.
+
+### 2. Work Package является агрегированным этапом
 
 `WorkPackage`:
 
-- представляет агрегированный outcome, а не daily task/ticket;
-- имеет одну понятную цель;
-- содержит challenge, uncertainty, quality targets, participants and outcome space;
+- представляет понятный outcome, а не ticket/file/method;
+- имеет одну цель;
 - обычно занимает часть месяца или несколько месяцев;
-- создаёт не более нескольких значимых решений;
-- изменяет authoritative ProjectState;
+- создаёт не более одного обычного player-facing trade-off;
+- изменяет project state;
 - может сформировать `ExperienceEpisode`.
 
-Микротикеты, методы, файлы и routine chores не сохраняются как отдельные authoritative work packages.
+В MVP один project имеет два Work Packages; обычный casual project — 2–5.
 
-### 3. Project lifecycle и Work Package lifecycle разделяются
+### 3. Реализационные профили
 
-Project lifecycle:
+#### MVP Casual
+
+Player-facing project state:
+
+- короткая goal;
+- stage;
+- 2 Work Packages;
+- progress band;
+- uncertainty band;
+- три quality bands;
+- debt band;
+- risk/known issue;
+- compact release state;
+- contribution summary.
+
+#### Recommended
+
+После playtest:
+
+- 2–5 packages;
+- optional/deferred scope;
+- situational quality dimensions;
+- meaningful debt/defect records;
+- release history;
+- team contribution categories;
+- maintenance arcs.
+
+#### Extended
+
+Для late-game при подтверждённой потребности:
+
+- component/requirement graph;
+- detailed latent work and forecast confidence;
+- debt ledger;
+- defect inventory/incidents/rollback;
+- granular contribution;
+- delegation policies;
+- portfolio abstractions.
+
+Extended profile не является baseline/roadmap requirement до отдельного playtest gate.
+
+### 4. Project lifecycle раскрывается по мере необходимости
+
+MVP player-facing lifecycle:
 
 ```text
-idea → discovery → active-development → released → maintenance
-→ completed / archived / transferred / sold / abandoned
+idea → development → release-preparation → released → maintenance / finished
 ```
 
-Work Package lifecycle:
+`archived`, `transferred`, `sold`, `abandoned` и сложные transition states добавляются вместе с соответствующим gameplay.
 
-```text
-draft → ready → active → blocked / suspended-for-decision
-→ resolved / cancelled / deferred
-```
+Internal state machine может иметь дополнительные technical states для consistency, но они не обязаны становиться отдельными пользовательскими стадиями.
 
-`resolved` содержит outcome kind: completed, partial, failed, recovered.
+### 5. Scope остаётся компактным
 
-### 4. Scope хранится как небольшое число смысловых slices
+MVP хранит/показывает:
 
-ProjectState хранит:
+- main goal;
+- committed result;
+- optional result;
+- deferred/removed result только при player decision.
 
-- goals;
-- mandatory constraints;
-- committed scope;
-- optional scope;
-- deferred scope;
-- acceptance criteria;
-- requirement uncertainty/volatility.
+Полный requirement graph и acceptance criteria collection не обязательны.
 
-Player не управляет сотнями requirements. Blocking scope decision создаётся только при существенном изменении ценности, срока, качества, architecture или release.
+Player меняет scope через смысловой выбор, а не checklist editor.
 
-### 5. Неопределённость является authoritative, но точная скрытая работа не показывается игроку
+### 6. Uncertainty является authoritative, но простым для игрока
 
-Work Package содержит:
+MVP использует bands:
 
-- known remaining work;
-- latent work envelope/realization;
-- uncertainty dimensions;
-- discovered constraints;
-- forecast confidence.
+- low;
+- medium;
+- high.
 
-Actual latent work определяется детерминированно и раскрывается по мере исследования/реализации.
+Forecast:
 
-UI показывает optimistic/likely/cautious forecast и причины диапазона. Exact hidden value не является player-facing contract.
+- likely this month;
+- likely next month;
+- timing unclear.
 
-### 6. Качество многомерно
+Deterministic hidden work/roll фиксируется в MonthRun draft и не reroll после reload.
 
-Core quality dimensions:
+Optimistic/likely/cautious points, detailed confidence и reason arrays являются Recommended/Extended options, а не обязательным baseline.
 
-- functional correctness;
-- usability/experience;
+### 7. Quality многомерно семантически, но ситуационно в реализации
+
+Одна универсальная authoritative quality number запрещена.
+
+MVP active dimensions:
+
+- functional correctness / работоспособность;
+- usability / удобство;
+- maintainability / поддерживаемость.
+
+Situational dimensions:
+
 - reliability;
-- performance efficiency;
+- performance;
 - security/safety;
-- maintainability;
-- supportability/operability.
+- supportability/operations.
 
-Project archetype активирует обычно 3–5 dimensions.
+Они добавляются только для relevant project archetype.
 
-Каждая active dimension хранит target, assessed band, confidence, trend and source. Одна универсальная шкала quality запрещена как authoritative representation.
+MVP state хранит band и минимальный reason/source. Confidence/trend/detail добавляются, только когда меняют decision или объяснение.
 
-### 7. Technical debt моделируется как pressure и significant records
+### 8. Technical debt — band + значимые исключения
 
-Мелкий debt агрегируется в `DebtPressureAggregate`.
-
-Значимый debt хранится как immutable/managed `TechnicalDebtRecord` с:
-
-- origin;
-- category;
-- affected scope;
-- principal work estimate;
-- change drag;
-- defect/risk amplification;
-- visibility/confidence;
-- intentional/unintentional marker;
-- mitigation/repayment state.
-
-Debt влияет через future work drag, risk, maintenance и constraints. Он не является моральным штрафом и не создаёт positive evidence сам по себе.
-
-### 8. Defect model разделяет latent risk, known defects и incidents
-
-Не каждый bug является отдельной сущностью.
-
-Authoritative state использует:
-
-- latent defect risk aggregates;
-- significant known defects;
-- escaped defects;
-- incidents/regressions.
-
-Defect injection/materialization используют versioned deterministic rules и отдельные RNG forks.
-
-### 9. Team outcome и character contribution различаются
-
-Project outcome не приписывается персонажу автоматически.
-
-Contribution snapshot разделяет:
-
-- direct implementation;
-- review;
-- architecture/decision;
-- mentoring;
-- delegated/leadership contribution;
-- external/team-only result.
-
-Delegation задаётся owner, outcome, guardrails, autonomy, review cadence and escalation threshold. Игрок не распределяет часы каждого сотрудника.
-
-### 10. Release является immutable technical milestone
-
-`ReleaseRecord` содержит:
-
-- included scope/packages;
-- quality/confidence snapshot;
-- known issues;
-- accepted debt/risk;
-- rollout/support policy;
-- technical outcome;
-- rollback/incident state;
-- contribution snapshot.
-
-Product/Market/Open Source получают release outcome через typed contract и не переписывают technical history.
-
-### 11. Project outcome и progression commit атомарны
-
-Versioned MonthRun flow:
+MVP normal state:
 
 ```text
-capacity/constraints
-→ Work Package advancement
+none → minor → noticeable → heavy
+```
+
+Debt влияет на future work, risk и maintenance.
+
+Отдельный `TechnicalDebtRecord` создаётся только для player-relevant theme:
+
+- temporary architecture;
+- missing tests;
+- obsolete dependency;
+- poorly understood critical area.
+
+Полный ledger, principal/drag breakdown и множество categories откладываются.
+
+Debt не растёт произвольным monthly percentage и не создаёт positive evidence сам по себе.
+
+### 9. Defects and incidents агрегируются
+
+MVP различает:
+
+- latent risk;
+- known issue;
+- serious incident.
+
+Minor bugs агрегируются. Player-facing record создаётся только для проблемы, меняющей решение, release или future work.
+
+Defect materialization deterministic и не reroll после reload.
+
+### 10. Team outcome и character contribution различаются
+
+MVP contribution summary:
+
+- independent;
+- assisted;
+- team contribution;
+- review/leadership contribution.
+
+Granular work units и multiple impact dimensions не обязательны.
+
+Team success не создаёт full direct-craft evidence автоматически.
+
+### 11. Release является compact immutable milestone
+
+MVP release state:
+
+- not ready;
+- ready;
+- ready with known limitation;
+- delayed;
+- released;
+- failed with recovery.
+
+Committed `ReleaseRecord` сохраняет минимум:
+
+- included outcome/scope summary;
+- quality/risk summary;
+- known issue;
+- contribution summary;
+- technical outcome;
+- rules/trace identifiers.
+
+Rollout/support/rollback policies добавляются только для поздних production projects.
+
+### 12. Project outcome и progression commit атомарны
+
+```text
+capacity
+→ Work Package progress
 → uncertainty/decision checkpoint
 → project outcome
-→ quality/debt/defect/release updates
+→ compact quality/debt/risk/release update
 → ExperienceEpisode
 → progression assessment
-→ cross-module invariants
-→ atomic Rust/SQLite commit
+→ invariants
+→ atomic commit
 ```
 
-Draft содержит project checkpoint, provider outcomes, episodes and progression candidates. Retry/resume не создают duplicate package outcome, release или evidence.
+Draft фиксирует hidden outcome, pending decision и provisional results. Retry/resume не создаёт duplicate package outcome, release или evidence.
 
-### 12. Детерминизм
+### 13. Determinism и compatibility
 
-- Все IDs stable/deterministic.
-- Input collections сортируются stable IDs.
-- Project randomness проходит через scoped PRNG forks.
-- Forecast presentation не влияет на hidden actual work.
-- Content/rules update не продолжает active package/draft без compatibility check.
-- Все authoritative arithmetic integer/fixed-point.
+- stable/deterministic IDs;
+- stable input ordering;
+- scoped PRNG;
+- hidden outcome не меняется после reload;
+- active package требует compatible rules/content;
+- all authoritative arithmetic integer/fixed-point;
+- released/history summaries сохраняют semantic snapshot.
 
 ## Последствия
 
 ### Положительные
 
-- проекты создают инженерные решения вместо progress-bar grind;
-- сохраняется casual-friendly abstraction;
-- Project Engine остаётся отдельным bounded context;
-- quality/debt/defects имеют долгосрочные последствия;
-- делегирование масштабируется без микроменеджмента;
-- project outcomes создают корректный `ExperienceEpisode`;
-- save/recovery contracts становятся однозначными.
+- проекты создают trade-offs без Jira UX;
+- первый playable дешевле;
+- Project Engine сохраняет корректные boundaries;
+- late-game expansion остаётся возможным;
+- quality/debt/risk не сводятся к одному прогрессу;
+- project outcome корректно связан с progression.
 
-### Отрицательные
+### Стоимость
 
-- ProjectState/save schema сложнее;
-- требуется content authoring для archetypes/packages/quality profiles;
-- balance simulator должен проверять debt spirals, release spam и project farming;
-- UI должен показывать uncertainty и quality confidence без ложной точности.
+- некоторые late-game поля потребуют migrations;
+- ранний project model менее подробен;
+- content должен создавать сильные агрегированные packages;
+- playtest определяет, какие extensions действительно нужны.
+
+### Риски
+
+- чрезмерное упрощение может снова создать progress bar;
+- hidden risk может казаться случайным;
+- один debt band может скрывать интересные темы;
+- expert player может хотеть больше details.
+
+Риски ограничиваются meaningful decisions, causal report, Details-on-demand и ADR-015 playtest gate.
 
 ## Отклонённые варианты
 
 ### Один progress bar проекта
 
-Отклонён: не моделирует scope, uncertainty, quality, debt и contribution.
+Отклонено: не создаёт scope/quality/risk trade-offs.
 
 ### Полный backlog/ticket simulator
 
-Отклонён: создаёт микроменеджмент, контентный взрыв и CRM-like UX.
+Отклонено: микроменеджмент и content explosion.
 
-### Quality как одно число
+### Полная SD-002 модель как Vertical Slice baseline
 
-Отклонён: скрывает trade-offs и противоречит качественной модели продукта.
+Отклонено ADR-015: слишком высокая реализационная и UX-стоимость до проверки gameplay.
+
+### Quality как одно authoritative число
+
+Отклонено: скрывает trade-offs. Compact summary label допустим только как UI projection.
 
 ### Каждый bug/debt item как отдельная карточка
 
-Отклонён: создаёт шум и maintenance clicking.
+Отклонено: создаёт maintenance clicking.
 
-### Progression Core владеет task outcome
+### Progression Core владеет project outcome
 
-Отклонён ADR-013: provider владеет domain truth.
+Отклонено ADR-013.
 
-### Company владеет ProjectState
+## Инварианты
 
-Отклонён: pet/freelance/open-source/work projects должны использовать общий technical engine.
-
-## Compatibility
-
-Breaking changes:
-
-- project/work-package state schema;
-- quality/debt/defect/release schemas;
-- MonthRun project phases and RNG scopes;
-- project content API;
-- provider outcome/episode contracts.
-
-Active MonthRun и active Work Package требуют exact-compatible rules/content fingerprint либо controlled migration/abandon flow.
-
-Released history, significant debt/defects and scope decisions сохраняют semantic snapshots/tombstones при missing content.
+- Work Package не является daily ticket;
+- normal project имеет bounded packages/visible concepts;
+- Project Engine владеет technical truth;
+- one quality score не authoritative;
+- situational dimensions не существуют без relevant gameplay;
+- latent outcome не reroll;
+- debt создаёт future consequence, а не monthly chore;
+- minor bugs/debt aggregate;
+- team result и player contribution различаются;
+- committed release immutable;
+- project outcome, episode и progression commit atomically;
+- extended fields не добавляются без current feature/playtest evidence.
 
 ## Verification requirements
 
-Изменение Project Engine требует:
+MVP Project Engine проверяет:
 
-- unit/property tests state machines and formulas;
-- deterministic golden package/release traces;
-- suspend/resume/idempotency tests;
-- project outcome + evidence atomic commit test;
-- debt/defect/release mass simulation;
-- anti-exploit policies;
-- UI forecast/quality causality stories;
-- migration/compatibility corpus.
+- понятность goal/current package;
+- 0–1 ordinary blocking choice;
+- deterministic uncertainty/restart;
+- three quality bands and one debt/risk consequence;
+- release/delay/recovery outcomes;
+- no duplicate records;
+- no progress-bar-only or ticket-level UX;
+- monthly report causality;
+- player desire to continue.
+
+Recommended/Extended verification добавляется только вместе с соответствующим implemented scope.
