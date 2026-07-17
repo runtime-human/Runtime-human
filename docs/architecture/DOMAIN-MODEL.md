@@ -1,10 +1,14 @@
 # Доменная модель Runtime Human
 
-Нормативные решения: [ADR-010](../adr/ADR-010-authoritative-save-state.md) и [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md).
+Нормативные решения:
+
+- [ADR-010 — Authoritative Save State](../adr/ADR-010-authoritative-save-state.md);
+- [ADR-013 — Professional Progression & Evidence](../adr/ADR-013-authoritative-professional-progression-evidence.md);
+- [ADR-014 — Project & Work Package Model](../adr/ADR-014-authoritative-project-work-package-model.md).
 
 ## Consistency boundary
 
-`SaveGameState` является consistency boundary завершённого месяца. Это не один гигантский класс: состояние нормализовано по модулям, но месячный commit проверяет межмодульные invariants целиком.
+`SaveGameState` является consistency boundary завершённого месяца. Состояние нормализовано по модулям, но MonthRun commit проверяет межмодульные invariants и записывает их атомарно.
 
 ```ts
 type SaveGameState = Readonly<{
@@ -29,9 +33,9 @@ type SaveGameState = Readonly<{
 
 ## CharacterState
 
-Содержит identity, дату рождения, жизненный этап, traits, health/capacity statuses и историю ключевых жизненных достижений.
+Содержит identity, birth date, life stage, traits, health/capacity statuses и ключевые жизненные milestones.
 
-Профессиональная прогрессия не хранится как набор полей внутри общего `CharacterState`; она выделена в `CharacterProfessionalState`, чтобы skills, technology familiarity, evidence и grades имели отдельные invariants и migration policy.
+Профессиональная прогрессия выделена в `CharacterProfessionalState`.
 
 ## CharacterProfessionalState
 
@@ -50,95 +54,227 @@ type CharacterProfessionalState = Readonly<{
 Authoritative:
 
 - reasoning/learning aptitude;
-- skill mastery и fluency;
+- skill mastery/fluency;
 - technology conceptual/operational familiarity;
-- technology version recency;
-- выбранный professional focus;
+- professional focus;
 - awarded grades;
-- current-month practice accumulators внутри draft.
+- current MonthRun practice draft.
 
-Неавторитетны и перестраиваются:
+Rebuildable:
 
-- demonstrated grade readiness;
-- current market readiness;
+- demonstrated/current-market readiness;
 - specialization profile;
 - capability cards;
-- evidence summaries/indexes;
-- monthly professional report.
+- evidence indexes;
+- professional reports.
 
 ## Professional Evidence
 
-`ProfessionalEvidenceEvent` является append-only профессиональной историей. Он хранится отдельно от snapshot и содержит semantic source/context snapshot, outcome и набор `EvidenceClaim`.
+`ProfessionalEvidenceEvent` — append-only history с semantic source/context snapshot и `EvidenceClaim`.
 
-Routine practice не создаёт event на каждый день или микрозадачу; она сворачивается в `MonthlyPracticeAggregate`.
+Routine practice сворачивается в `MonthlyPracticeAggregate`.
 
-Grade award является authoritative milestone. Grade readiness — projection.
+Grade award authoritative; readiness projection rebuildable.
 
 ## Experience Providers
 
-Education, Project, Career, Open Source, Company и Event domains владеют своим task/outcome lifecycle и создают нормализованный `ExperienceEpisode`.
+Education, Project, Career, Open Source, Company и Event domains владеют своим outcome lifecycle и создают `ExperienceEpisode`.
 
-Progression Core не владеет:
+Provider не изменяет skill/technology/grade напрямую.
 
-- project scope/debt/bugs/releases;
-- vacancy/salary/promotion;
-- course schedule;
-- event eligibility;
-- health/fatigue;
-- provider-specific task state.
+## ProjectState
 
-Он оценивает episode и возвращает professional delta/evidence/readiness projection.
+Project Engine владеет technical truth:
 
-## Грейд, должность и путь
+```ts
+type ProjectState = Readonly<{
+  schemaVersion: ProjectStateSchemaVersion;
+  id: ProjectId;
+  archetypeId: ProjectArchetypeId;
+  kind: ProjectKind;
+  lifecycle: ProjectLifecycleState;
+  createdAt: GameDate;
+  owner: ProjectOwnerRef;
+  goals: readonly ProjectGoal[];
+  constraints: readonly ProjectConstraint[];
+  scope: ProjectScopeState;
+  technologies: readonly ProjectTechnologyRef[];
+  components: Readonly<Record<ProjectComponentId, ProjectComponentState>>;
+  workPackages: Readonly<Record<WorkPackageId, WorkPackageState>>;
+  quality: ProjectQualityState;
+  debt: TechnicalDebtState;
+  defects: ProjectDefectState;
+  maintenance: ProjectMaintenanceState;
+  participantPlan: ProjectParticipantPlan;
+  lastReleaseId?: ReleaseId;
+  projectRevision: ProjectRevision;
+}>;
+```
 
-- `ProfessionalGradeAward` — достигнутый grade milestone;
-- `Position` — должность в организации;
-- `Role` — выполняемая функция;
-- `Title` — отображаемое название;
-- `CompanyLevel` — внутренняя лестница работодателя;
-- `SpecializationProfile` — derived professional profile;
-- `Top Programmer` — редкий endgame-status/achievement, а не обычный следующий numeric grade.
+ProjectState не хранит:
 
-Senior может занимать Junior-position, иметь outdated market readiness или перейти в management без автоматической потери grade.
+- product users/revenue/churn;
+- open-source governance/community health;
+- company payroll/hiring;
+- career salary/promotion;
+- character mastery/grade.
 
-## Person и Relationship
+## Project lifecycle
 
-NPC имеют стабильные ID и делятся на `active`, `background`, `archived`. Активные NPC хранят профессию, организацию, traits, связи и narrative memory. Relationship хранит тип, близость, доверие, конфликт, историю и текущие обязательства.
+```text
+idea → discovery → active-development → released → maintenance
+→ completed / archived / transferred / sold / abandoned
+```
 
-Professional memory может ссылаться на mentoring, review, shared project и technical trust, но canonical evidence остаётся в progression ledger.
+Terminal/archived project не получает normal progress.
 
-## Activity
+## ProjectScopeState
 
-Длительное занятие хранит цель, состояние, приоритет, work units, prerequisites, дату начала, дедлайн и назначенных участников. Количество активностей не ограничено искусственным числом, но они конкурируют за время и внимание.
+Хранит небольшое число смысловых slices:
 
-Activity/provider может создать один или несколько `ExperienceEpisode`, но не изменяет skill state напрямую.
+- committed;
+- optional;
+- deferred;
+- removed tombstones;
+- requirements/acceptance criteria;
+- uncertainty/volatility;
+- stable revision.
+
+Scope slice не является Jira ticket.
+
+## WorkPackageState
+
+`WorkPackage` — минимальная authoritative единица significant technical work.
+
+Хранит:
+
+- objective/kind;
+- scope refs;
+- challenge profile;
+- known remaining work;
+- deterministic latent work state;
+- uncertainty;
+- quality targets;
+- risk/technology/skill application expectations;
+- dependencies;
+- participant plan;
+- progress/deadline;
+- pending decision;
+- resolved outcome;
+- revision.
+
+Lifecycle:
+
+```text
+draft → ready → active
+active → blocked / suspended-for-decision / resolved / deferred / cancelled
+```
+
+`resolvedOutcome` различает completed, partial, failed, recovered.
+
+## Project quality
+
+Authoritative quality не является одной шкалой.
+
+Active dimensions выбираются project archetype:
+
+- functional correctness;
+- usability/experience;
+- reliability;
+- performance efficiency;
+- security/safety;
+- maintainability;
+- supportability/operability.
+
+Каждая dimension хранит target, assessed band, confidence, trend and source.
+
+## Technical debt
+
+`TechnicalDebtState` содержит:
+
+- aggregate pressure для мелкого routine debt;
+- significant `TechnicalDebtRecord` с origin, category, affected scope, principal work, change drag, defect risk, confidence и mitigation state.
+
+Debt влияет на будущую работу только через affected areas/change/support/risk, а не произвольный monthly interest.
+
+## Defects and incidents
+
+`ProjectDefectState` разделяет:
+
+- latent defect risk aggregates;
+- known significant defects;
+- unresolved critical count;
+- escaped defects/incidents через append-only history.
+
+Minor defects могут быть агрегированы. Reload не reroll materialization.
+
+## Releases
+
+`ReleaseRecord` append-only immutable milestone:
+
+- included scope/packages;
+- quality/confidence snapshot;
+- known issues;
+- accepted debt/risk;
+- rollout/support policy;
+- technical outcome;
+- rollback/incident state;
+- contribution snapshot;
+- rules/trace identifiers.
+
+Product/Open Source/Company используют release outcome, но не переписывают technical history.
+
+## Contribution
+
+Project Engine отделяет:
+
+- team/project outcome;
+- direct character contribution;
+- review/architecture/mentoring;
+- delegated/leadership contribution;
+- external/team-only result.
+
+Только traceable contribution входит в `ExperienceEpisode`.
 
 ## Employment
 
-Хранит работодателя, position/title/company level, договор, зарплату, график, текущий рабочий проект, отношения с командой и карьерные риски.
+Хранит employer, position/title/company level, contract, salary, schedule, work project refs, team relationships and career risks.
 
-Employment не хранит professional grade как источник истины и не начисляет skill XP только за стаж. Рабочие outcomes передаются progression через episodes.
+Employment задаёт constraints/expectations и получает project contribution/outcome summaries. Не владеет technical ProjectState или professional grade.
 
-## Project
+## ProductState
 
-Единый базовый тип проекта специализируется через kind:
+Владеет market/economic state:
 
-- work;
-- freelance;
-- personal;
-- open-source;
-- product;
-- research.
+- users/adoption;
+- pricing/revenue/cost;
+- churn;
+- market fit/competition;
+- support demand.
 
-Project содержит scope, quality dimensions, progress, debt, release history, contributors, audience и economic model.
+Получает `ReleaseTechnicalOutcome` и возвращает demand/support signals.
 
-Project владеет work packages/outcomes. Progression владеет тем, что вклад персонажа доказал и чему научил.
+## CompanyState
 
-## Company
+Владеет ownership, employees, teams, cash, expenses, strategy, portfolio priorities, hiring/retention and organizational policies.
 
-Содержит ownership, сотрудников, продукты, cash, expenses, strategy, reputation, operating capacity и delegation policies. Компания не моделируется через ручную расстановку мебели и сотрудников по комнатам.
+Company передаёт Project Engine participant capacity/ownership/budgets/tooling constraints. Не хранит duplicate project quality/debt/defects.
 
-Company/Leadership provider может создавать architecture, mentoring, delegation и technical-direction episodes, но management result не превращается автоматически в programming mastery.
+## Open Source extension
+
+Владеет contributors, maintainers, governance, community health, sponsorship, forks and ownership transfer.
+
+Использует Project Engine для technical scope/packages/quality/debt/defects/releases.
+
+## Person and Relationship
+
+NPC имеют stable ID и tiers active/background/archived.
+
+Professional memory может хранить mentoring, review, shared project and technical trust facts, но canonical contribution/evidence остаётся в Project/Progression ledgers.
+
+## Activity
+
+Длительное занятие хранит commitment-level goal, priority, work units, dates and participants. Project work деталируется через Work Packages.
 
 ## World
 
@@ -149,27 +285,51 @@ type WorldState = Readonly<{
   currentEra: EraId;
   localMarket: LocalMarketState;
   technologyCatalogRevision: string;
+  projectCapabilityRevision: string;
 }>;
 ```
 
-Стран, виз, постоянной миграции и отдельных региональных рынков в core нет.
+Era определяет доступные tools, distribution, collaboration, deployment and project archetypes.
+
+## Append-only histories
+
+- professional evidence/grade awards;
+- releases;
+- major scope/architecture decisions;
+- incidents;
+- project lifecycle milestones;
+- significant contribution summaries;
+- finance ledger;
+- migrations/repairs.
+
+## Rebuildable projections
+
+- readiness/specialization;
+- project health/dashboard;
+- forecast cards;
+- grouped risk/debt/defect summaries;
+- portfolio comparison;
+- release charts;
+- monthly reports.
 
 ## Invariants
 
-- дата не уменьшается;
-- money operations не переполняют `i64`;
-- закрытый project/task/activity не прогрессирует;
-- уволенный персонаж не получает зарплату;
-- один предмет не может одновременно находиться в инвентаре и быть проданным;
-- pending MonthRun соответствует revision базового сейва;
-- content references разрешаются либо имеют tombstone/semantic snapshot;
-- все NPC-ссылки указывают на существующего или archived персонажа;
-- evidence всегда имеет source/context snapshot;
-- duplicate MonthRun/resume не создаёт evidence дважды;
-- transfer не создаёт production evidence;
-- partial outcome не подтверждает full delivery;
-- awarded grade не понижается автоматически;
-- salary/title/fame не создают mastery;
-- Tier C technology не имеет proficiency state;
-- readiness/specialization projections воспроизводимы из authoritative state/history;
-- progression arithmetic integer/fixed-point и traceable.
+- date/MonthIndex do not decrease;
+- money and authoritative arithmetic checked integer/fixed-point;
+- terminal project/package/activity does not progress;
+- package belongs to one project;
+- exact latent work realization does not reroll;
+- scope/dependency refs valid or tombstoned;
+- partial outcome is not full delivery;
+- release immutable and references valid package/scope snapshots;
+- low quality confidence is not automatically low quality;
+- debt drag affects only applicable areas;
+- defects do not reroll on reload;
+- Project Engine does not mutate professional state;
+- team outcome separated from character contribution;
+- product revenue/fame does not mutate technical quality/mastery;
+- evidence always has source/context snapshot;
+- provider outcome, ProjectState delta and evidence commit atomically;
+- duplicate MonthRun/resume does not duplicate package outcome/release/episode/evidence;
+- awarded grade does not demote automatically;
+- derived projections reproducible from authoritative state/history.
