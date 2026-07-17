@@ -19,7 +19,8 @@
 - [Индекс Deep Research](research/README.md)
 - [DR-001 — аудит стека и архитектуры](research/DR-001-STACK-ARCHITECTURE-AUDIT-2026-07-16.md)
 - [DR-002 — многоязычное исследование gamedev/desktop практик](research/DR-002-MULTILINGUAL-GAMEDEV-STACK-RESEARCH-2026-07-16.md)
-- [Синтез исследований и матрица решений](research/DR-SYNTHESIS-2026-07-16.md)
+- [Синтез технических исследований и матрица решений](research/DR-SYNTHESIS-2026-07-16.md)
+- [DR-003 — Programmer-First synthesis игрового дизайна](research/DR-003-PROGRAMMER-FIRST-DESIGN-SYNTHESIS-2026-07-17.md)
 
 ## Архитектура
 
@@ -35,6 +36,7 @@
 ## Игровой дизайн
 
 - [Игровой канон](game-design/GAMEPLAY-CANON.md)
+- [Programmer-First Design](game-design/PROGRAMMER-FIRST-DESIGN.md)
 - [Месячный игровой цикл](game-design/MONTHLY-GAME-LOOP.md)
 - [Мягкие ограничения](game-design/SOFT-LIMITS.md)
 - [Прогрессия персонажа](game-design/CHARACTER-PROGRESSION.md)
@@ -129,4 +131,4 @@
 
 ## Правило обновления
 
-Изменение архитектурного решения начинается с ADR. После принятия ADR одновременно обновляются master-документ, профильные спецификации, схемы, тесты, планы реализации и research traceability.
+Изменение архитектурного решения начинается с ADR. Уточнение существующего продуктового канона может быть зафиксировано профильной спецификацией, если оно не отменяет accepted ADR. После изменения одновременно обновляются master-документ, профильные спецификации, схемы, тесты, планы реализации и research traceability.

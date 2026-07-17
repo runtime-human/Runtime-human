@@ -24,6 +24,11 @@ Research report не переопределяет accepted canon автомат�
 - PC-first, Windows-first.
 - Offline-first.
 - Бесплатная игра без Steam, магазинов, платежей и обязательного backend.
+- Runtime Human прежде всего является симулятором становления, работы и наследия программиста; life-sim, economy, relationships, narrative и philosophy являются слоями контекста и последствий.
+- Programmer Mastery Core и Professional Expression имеют приоритет при конфликте контентного бюджета, экранного пространства, blocking events и roadmap scope.
+- Программирование не является одной из равноправных профессий внутри generic life simulator.
+- Любая gameplay feature обязана показать связь с навыками, технологиями, проектами, грейдом либо профессиональным путём; иначе она считается optional flavour/post-MVP.
+- Грейд определяется подтверждённым professional evidence, а не суммой XP.
 - Канонический старт — январь 1990 года, возраст 12 лет.
 - Пользовательский календарь — реальный григорианский.
 - Один ход — один месяц; внутри месяца симуляция по дням и целочисленным work units.
@@ -38,6 +43,8 @@ Research report не переопределяет accepted canon автомат�
 - Авторитетные числа — integer/fixed-point; float в core запрещён.
 - Исторические данные имеют provenance и source references.
 - Реальные компании не используются как игровые работодатели и не получают вымышленные внутренние события.
+
+Нормативная продуктовая иерархия: [`docs/game-design/PROGRAMMER-FIRST-DESIGN.md`](docs/game-design/PROGRAMMER-FIRST-DESIGN.md).
 
 ## Engineering baseline
 
@@ -57,6 +64,7 @@ Research report не переопределяет accepted canon автомат�
 - Изменение save schema требует migration tests.
 - Изменение historical dataset требует проверки источников.
 - Изменение stable content ID требует tombstone/migration review.
+- Изменение grade, skill growth, technology lifecycle, programmer-first budgets или professional evidence требует balance baseline comparison.
 - Изменения `.github/workflows/**`, `src-tauri/capabilities/**`, migrations, updater и signing требуют human review.
 - Не добавлять зависимость без обоснования, проверки лицензии и оценки поддержки.
 - Документация и код обновляются в одном PR, если реализация меняет контракт.
@@ -78,7 +86,7 @@ pnpm verify
 pnpm verify:release
 ```
 
-UI-задача дополнительно показывает Storybook build/tests и relevant visual/a11y result. Persistence-задача показывает Rust/integration/recovery tests.
+Gameplay/balance change дополнительно показывает relevant deterministic fixtures, mass simulation comparison и programmer-first metrics. UI-задача дополнительно показывает Storybook build/tests и relevant visual/a11y result. Persistence-задача показывает Rust/integration/recovery tests.
 
 До реализации команд используйте соответствующие проверки из профильной спецификации и перечисляйте фактически выполненные команды.
 
@@ -91,6 +99,7 @@ UI-задача дополнительно показывает Storybook build/
 - migrations/content IDs;
 - stories/fixtures;
 - выполненные проверки;
+- balance/programmer-first impact;
 - известные риски;
 - recovery/compatibility impact;
 - незавершённые части.
