@@ -4,286 +4,321 @@
 
 - [Programmer-First Design](../game-design/PROGRAMMER-FIRST-DESIGN.md);
 - [Professional Progression Engine](../game-design/PROFESSIONAL-PROGRESSION-ENGINE.md);
-- [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md).
+- [Project & Work Package Engine](../game-design/PROJECT-WORK-PACKAGE-ENGINE.md);
+- [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md);
+- [ADR-014](../adr/ADR-014-authoritative-project-work-package-model.md).
 
 ## Назначение
 
-Ручное прохождение не обнаруживает редкие soft locks, экономические разрывы, деградацию programmer fantasy, evidence farming, доминирующие стратегии и невозможные карьерные пути. Поэтому core должен запускаться headless через CLI.
-
-Balance simulator проверяет не только выживаемость персонажа, но и корректность разделения mastery, fluency, evidence, awarded grade и current market readiness.
-
-## Balance simulator
+Headless simulation detects soft locks, evidence/project farming, debt spirals, defect/release imbalance, dominant strategies and loss of programmer fantasy.
 
 ```bash
 pnpm balance:simulate --runs 10000 --scenario canonical-1990
 ```
 
-CLI использует production Game Core и versioned content registry, но автоматического policy player вместо UI.
+Production core/content registry; policy player instead of UI.
 
 ## Policy players
+
+### Professional
 
 - balanced learner;
 - passive course grinder;
 - project-first learner;
 - optimal challenge seeker;
 - easy-task farmer;
-- newest-technology chaser;
+- newest-tech chaser;
 - legacy specialist;
-- deep specialist;
-- broad generalist;
-- cautious corporate;
-- aggressive career switcher;
-- open-source maintainer;
-- founder/management shortcut seeker;
-- family-first;
-- health-constrained;
-- low-income recovery;
-- interrupted-career returner;
-- random-but-valid;
-- adversarial min-max/exploiter.
+- deep specialist/broad generalist;
+- cautious corporate/aggressive switcher;
+- OSS maintainer/founder/management shortcut;
+- family/health/low-income/interrupted-career;
+- random valid/adversarial exploiter.
+
+### Project-specific
+
+- tiny-project spammer;
+- Work-Package splitter;
+- intentional-failure/bug farmer;
+- debt-create-and-repay farmer;
+- release spammer;
+- perfection staller;
+- overparallelizer;
+- huge-team scaler;
+- micromanager;
+- zero-oversight delegator;
+- quality-first/delivery-first;
+- refactor-first/patch-first;
+- early-release risk taker;
+- project abandon/reset exploiter.
 
 ## Programmer-first metrics
 
-### Решения и ритм
+### Rhythm
 
-- programmer-core decision share;
-- direct technical decision share;
-- meaningful decisions per month/year;
-- months with professional outcome;
-- maximum professional stagnation streak;
-- quiet month rate;
-- blocking events per year;
-- life-only blocking share;
-- repeated decision/category streaks;
+- programmer/professional decision shares;
+- meaningful decisions/month/year;
+- professional outcome months/stagnation;
+- quiet/blocking/life-only event rates;
 - professional arc starvation.
 
-### Professional progression
+### Progression
 
-- время до первого hands-on result;
-- age/access to first programming environment;
-- mastery gain by provider/challenge/outcome;
-- fluency gain/decay/reacquisition;
-- technology familiarity/version recency;
-- meaningful evidence events per month;
-- routine practice aggregation rate;
-- evidence diversity;
-- context concentration;
-- evidence confidence/autonomy distribution;
-- capability-band progression;
-- demonstrated grade readiness;
-- current market readiness;
-- grade award time-to-Intern/Junior/Middle/Senior;
-- award stability after breaks;
-- false-title/under-titled states;
-- specialization switching recovery;
-- Top Programmer rarity.
+- mastery/fluency/familiarity;
+- evidence volume/diversity/confidence/autonomy/context concentration;
+- capability/grade readiness/award timing;
+- current market readiness/recovery;
+- title mismatch/specialization/Top Programmer rarity.
 
 ### Anti-farming
 
-- course-grinding mastery/evidence ratio;
-- easy-task repeat diminishing;
-- intentional-failure claim distribution;
-- mentor/assistance autonomy reduction;
-- repeated antiRepeatKey suppression;
-- shallow breadth detection;
-- one-context grade concentration;
-- title/salary/fame shortcut attempts;
-- management path technical-core retention;
-- event-only evidence attempts;
-- duplicate evidence ID rate (target zero).
+- passive-course production evidence;
+- easy-task diminishing;
+- failure/mentor/event/title/salary/fame shortcuts;
+- antiRepeat suppression;
+- duplicate evidence target zero;
+- management technical identity.
 
-### Технологии
+### Technologies and paths
 
-- technology breadth/depth;
-- Tier A/B/C exposure;
-- adoption by lifecycle stage;
-- latest-technology dominance;
-- legacy value utilization;
-- directed transfer efficiency;
-- transfer without target practice (must not create evidence);
-- reacquisition time;
-- obsolete technology recovery;
-- technologies/content never selected.
+- breadth/depth/Tier exposure;
+- transfer/reacquisition/legacy/latest-tech dominance;
+- path parity and switching;
+- corporate/architect/OSS/public/freelancer/founder/calm career viability.
 
-### Пути
+## Project metrics
 
-- corporate specialist viability;
-- technical leader/architect viability;
-- public expert viability;
-- freelancer viability;
-- open-source maintainer viability;
-- founder/CTO viability;
-- calm career viability;
-- path switching frequency/cost;
-- path parity по mastery, autonomy, income, stability, reputation, fame, freedom, influence, workload, risk и legacy;
-- Founder/CTO programmer identity retention.
+### Work Package flow
 
-### Projects/provider outcomes
+- packages created/active/resolved per project-year;
+- package duration distribution;
+- active package count and overparallelization;
+- completed/partial/failed/recovered ratios;
+- blocked/suspended duration;
+- meaningful decisions per package;
+- package split/anti-repeat concentration;
+- work lost to coordination/continuity/debt drag;
+- known vs revealed latent work;
+- forecast optimistic/likely/cautious error and calibration.
 
-- project completion/failure/recovery;
-- quality/debt/bug distributions;
-- `ExperienceEpisode` produced per provider/project kind;
-- team outcome vs character contribution;
-- evidence produced per outcome kind;
-- partial outcome incorrectly treated as delivery (target zero);
-- delegation/mentoring downstream evidence;
-- legacy burden;
-- OSS adoption/community health;
-- company survival;
-- product revenue/sustainability.
+### Scope and delivery
 
-### Life/economy/recovery
+- scope added/cut/deferred frequency;
+- requirement volatility;
+- milestone/release delay;
+- project completion/abandon/transfer/sale rates;
+- time-to-first-release/time-between-releases;
+- empty/minor release spam;
+- perfection-stall duration/opportunity cost;
+- project reset/abandon exploit.
+
+### Quality
+
+- active dimension count;
+- target/assessed/confidence distribution;
+- quality trade-off frequency;
+- release quality by archetype/path;
+- low-confidence releases;
+- critical gate bypass/accepted-risk rate;
+- one-dimension dominance;
+- impossible/trivial quality profiles.
+
+### Technical debt
+
+- debt aggregate/significant records per project-year;
+- intentional vs accidental debt;
+- principal/drag/risk distribution;
+- work consumed by debt drag;
+- debt repayment/containment/spiral rate;
+- debt-created-and-repaid farming;
+- debt recovery time;
+- projects soft-locked by debt.
+
+### Defects and incidents
+
+- latent risk injection/materialization;
+- known/escaped defect severity;
+- incident/regression/rollback rates;
+- defect discovery timing;
+- fix/workaround/defer choices;
+- repeated bug farming;
+- project archetype/quality/debt correlation;
+- no-luck and high-risk seed outcomes.
+
+### Teams and contribution
+
+- direct/review/architecture/mentoring/delegation contribution shares;
+- team result vs character contribution divergence;
+- huge-team throughput vs coordination;
+- micromanagement/zero-oversight outcomes;
+- owner clarity/key-person risk;
+- delegation-credit over-attribution target zero;
+- project outcome → episode/evidence mapping.
+
+### Releases and maintenance
+
+- release gate pass/fail/override;
+- rollback/hotfix/incident after release;
+- accepted debt/known issues;
+- maintenance load by size/debt/dependency/support;
+- maintenance package frequency;
+- legacy/migration project viability;
+- immutable release/history integrity.
+
+## Life/economy/recovery metrics
 
 - unemployment/re-entry;
-- income/expense/savings/debt/bankruptcy;
-- burnout frequency/duration;
-- health/family interruption recovery;
-- mastery retained after interruption;
-- current market readiness recovery time;
-- money utility in late game;
-- professional progress by background.
+- income/savings/debt/bankruptcy;
+- burnout/health/family interruption;
+- mastery/market readiness recovery;
+- product/company/project failure recovery;
+- money utility/background parity.
 
 ## Target gates
 
-Предварительные gates:
+Starting hypotheses:
 
-- минимум 60% meaningful decisions относятся к programmer/professional core;
-- минимум 40% имеют direct technical component;
-- минимум 8 из 12 месяцев имеют professional outcome или объяснимую паузу;
-- обычная professional stagnation streak не превышает 3 месяцев;
-- life-only blocking streak не превышает 2 без crisis arc;
-- grade award не получается только из XP/time/title/salary/fame;
-- Senior не достигается без core floors, varied evidence, distinct contexts и duration;
-- один context не даёт доминирующую долю qualifying Senior weight;
-- passive course grinder не получает production Senior path;
-- easy-task farmer поддерживает fluency/reliability, но не обгоняет optimal challenge по mastery/grade evidence;
-- mentor abuse не создаёт high autonomy;
-- transfer без target practice не создаёт evidence;
-- partial/failure outcome не создаёт full delivery/quality claims;
-- short break не стирает mastery/awarded grade;
-- current market readiness после перерыва имеет recovery path;
-- Founder не доминирует одновременно по income, freedom, influence и risk;
-- latest-tech-only policy не превосходит стабильно все остальные;
-- low-income/interrupted-career scenarios имеют recovery;
-- Top Programmer остаётся редким;
-- calm corporate path имеет достижимый endgame;
-- ни один major path не создаёт mandatory soft lock.
+### Programmer progression
 
-Thresholds versioned и калибруются после playable traces.
+- ≥60% meaningful decisions programmer/professional core;
+- ≥40% direct technical component;
+- ≥8/12 months professional outcome or explained pause;
+- grade not from XP/time/title/salary/fame;
+- Senior requires varied contexts/duration;
+- transfer without practice creates no evidence;
+- partial/failure no full delivery;
+- short break preserves mastery/awarded grade;
+- all major paths recoverable/viable.
 
-## Сценарии
+### Project
 
-- canonical 1990 average start;
+- ordinary package has 0–2 blocking decisions; major/incident 1–4;
+- casual direct active package count normally 1–4;
+- package median duration meaningful, not daily-click or multi-decade stall;
+- forecast likely range calibrated without exact certainty;
+- latent work never rerolls;
+- ProjectState cannot be represented only by one progress/quality score;
+- tiny-project/package-splitting/release-spam policies do not outperform sustained projects;
+- debt improves short-term trade-off but creates measurable future cost/risk;
+- debt spiral always has at least one recovery/exit unless true ending;
+- defect rate neither zero nor unavoidable catastrophe;
+- critical release gate bypass only through explicit policy/decision;
+- team result is not fully attributed to player;
+- headcount scaling is sublinear where coordination/coupling exist;
+- delegated project remains viable without hourly micromanagement;
+- project failure creates recovery/history, not universal game over;
+- duplicate package/release/incident/episode/evidence IDs target zero.
+
+Thresholds versioned and calibrated after playable traces.
+
+## Scenarios
+
+- canonical 1990 project;
 - low-income/no-home-computer;
-- high/low Reasoning Aptitude;
-- high/low Learning Adaptability;
-- weak equipment access;
-- weak health/high workload;
-- strong family commitments;
-- course-heavy path;
-- project-heavy path;
-- easy-task farming;
-- newest-tech chasing;
-- legacy specialist;
-- corporate/architect/open-source/public/freelancer/founder paths;
-- specialization switch;
-- career break and return;
-- management-to-IC return;
-- no-luck seed corpus;
-- adversarial min-max;
-- long-run post-2026 future.
+- high/low aptitudes/health/family commitments;
+- course/project/easy-task paths;
+- newest-tech/legacy;
+- corporate/architect/OSS/public/freelancer/founder;
+- specialization/career break/management return;
+- small personal project;
+- work/freelance/open-source/product projects;
+- high uncertainty;
+- quality critical project;
+- debt shortcut then change;
+- latent defect/incident/rollback;
+- overparallelized portfolio;
+- small vs large team;
+- micromanaged vs autonomous delegation;
+- obsolete technology migration;
+- abandoned/transferred/sold project;
+- no-luck/adversarial/post-2026.
 
 ## Soft-lock indicators
 
-- нет learnable technology/access/recovery path;
-- нет работы/обучения/community/project action;
-- debt растёт без restructuring path;
-- health/fatigue не позволяет minimum recovery;
-- grade gate требует недостижимый evidence type/context;
-- specialization устарела без retraining/legacy path;
-- relationship/family crisis бесконечно блокирует MonthRun;
-- company/OSS failure уничтожает все paths;
-- Narrative Director не выдаёт professional milestones;
-- UI projection не объясняет стагнацию;
-- awarded grade потерян после projection/rules update;
-- missing mod делает historical evidence нечитаемым.
+- no learning/job/project/recovery action;
+- impossible grade evidence/context;
+- project has no reachable package/release/archive path;
+- debt drag consumes all achievable work indefinitely;
+- unresolved critical defect/release gate has no response;
+- maintenance load exceeds all capacity without transfer/archive;
+- active package depends on missing/unreachable content;
+- relationship/health crisis blocks forever;
+- Company/OSS/project failure destroys all career paths;
+- UI cannot explain stagnation/forecast/risk;
+- awarded grade/history lost after update;
+- missing mod makes history unreadable.
 
 ## Property tests
 
-- no NaN/overflow/negative invalid units;
-- no stuck MonthRun;
-- deterministic seed/manifest/policy;
-- no duplicate evidence IDs;
-- evidence source/context required;
-- transfer never produces production evidence;
-- provider cannot mutate skill state directly;
-- partial outcome never qualifies full delivery;
-- assistance increases learning without increasing autonomy improperly;
-- mastery does not decay below policy floor after short break;
-- reacquisition faster than initial acquisition;
-- awarded grade stable under projection rebuild;
-- Tier C has no proficiency state;
-- ineligible technology/job/event never selected;
-- readiness projection reproducible;
-- failure state has reachable recovery unless true ending.
+- no overflow/negative invalid units/stuck MonthRun;
+- deterministic seed/order/manifest;
+- no duplicate package/release/incident/episode/evidence;
+- package state machine valid;
+- terminal project/package does not progress;
+- known progress monotonic; latent revelation only valid increase;
+- latent/defect/release rolls stable on reload;
+- release immutable;
+- partial not full completion/delivery;
+- low confidence != low quality;
+- debt drag only affected scope;
+- debt repayment cannot increase principal accidentally;
+- critical gate blocks unless explicit accepted risk;
+- Project provider cannot mutate professional state;
+- Product/Company/OSS cannot mutate technical ProjectState directly;
+- team/player contribution separated;
+- transfer no evidence;
+- awarded grade stable;
+- failures have reachable recovery unless true ending.
 
 ## Golden corpus
 
-- first January 1990 programming result;
-- assisted vs independent result;
-- partial diagnosis;
-- easy-task diminishing;
-- difficult task with mentor;
-- failed task with debugging/recovery claims;
-- Beginner→Intern→Junior→Middle→Senior;
-- specialization switch;
-- unemployment/re-entry;
-- career break/return;
-- legacy technology success;
-- failed product recovery;
-- OSS maintainer;
-- Founder with delegation;
-- calm corporate career;
-- late career/retirement.
+- January 1990 two-package project/release;
+- uncertainty broadens forecast;
+- assisted/independent/partial/failure outcomes;
+- debt shortcut and later repayment;
+- latent defect → known defect → hotfix;
+- bad release → rollback;
+- scope cut/release delay;
+- team release with small player contribution;
+- delegated autonomous/micromanaged package;
+- legacy migration;
+- abandoned/transferred project;
+- Beginner→Senior progression;
+- OSS/founder/calm corporate/late career.
 
-## Gates и частота
+## Change gate
 
-Smoke suite выполняет сотни прогонов в CI. Большая выборка запускается nightly/release.
-
-Изменение skills, evidence, grade profiles, transfer, technology lifecycle или provider mappings требует:
+Project/progression changes require:
 
 1. baseline report;
-2. candidate report;
-3. distribution comparison;
-4. farming/exploit comparison;
-5. migration/compatibility assessment;
-6. объяснение regressions;
-7. versioned threshold update при намеренном изменении.
+2. candidate distribution comparison;
+3. exploit/farming comparison;
+4. forecast calibration;
+5. debt/defect/release comparison;
+6. path/recovery assessment;
+7. migration/compatibility assessment;
+8. explanation of regressions;
+9. versioned threshold update if intentional.
 
 ## Reports
 
-Machine-readable JSON и human-readable Markdown.
-
-Human-readable report начинается с:
+JSON + Markdown begins with:
 
 - programmer-first verdict;
-- evidence integrity/farming verdict;
-- grade award/readiness verdict;
-- path parity verdict;
-- soft-lock verdict;
-- time-to-grade distributions;
-- significant regressions.
+- Project Engine integrity verdict;
+- project exploit/debt/defect/release verdict;
+- evidence/grade verdict;
+- path parity/soft-lock verdict;
+- major distributions/regressions.
 
 ## Release gate
 
-- programmer-first shares соблюдены;
-- no overflow/stuck MonthRun;
-- no duplicate/inconsistent evidence;
-- vertical-slice content reachable;
-- blocking frequency bounded;
-- deterministic replay;
-- no unexplained grade award;
-- no dominant path across all key dimensions;
-- recovery scenarios pass;
-- no-luck corpus не создаёт массовый soft lock;
-- old-grade/projection compatibility corpus проходит.
+- deterministic replay/no overflow/stuck run;
+- project/progression invariants;
+- no duplicate records;
+- vertical slice reachable;
+- bounded decision frequency;
+- forecast/debt/defect/release policies within targets;
+- no dominant project exploit/path;
+- recovery scenarios/no-luck corpus pass;
+- compatibility/migration corpus passes.
