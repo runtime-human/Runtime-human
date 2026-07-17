@@ -1,6 +1,6 @@
 # Project & Technical Work Package Documentation Implementation Plan
 
-> **Status:** documentation implementation completed on branch `agent/sd002-project-work-package-engine`; PR/merge verification follows.
+> **Status:** completed and merged through PR #5 on 2026-07-17; squash commit `5cd8e94d6424bb29376dbf3d78a1af7c213433af`.
 
 **Goal:** Integrate SD-002 as the authoritative project/work-package architecture while preserving ADR-013 provider boundaries.
 
@@ -65,4 +65,4 @@
 - [x] Compare branch with `main`; `behind_by = 0` at review time.
 - [x] Review for ticket-level micromanagement, single authoritative quality, direct skill changes, duplicated Product/Company/OSS state and nondeterministic hidden outcomes.
 - [x] Verify ADR-014 Accepted and normative specification boundaries.
-- [ ] Open PR, mark ready and squash-merge after final compare.
+- [x] Open ready PR #5 and squash-merge into `main`.
