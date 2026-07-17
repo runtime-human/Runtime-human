@@ -1,53 +1,61 @@
 # Runtime Human
 
-PC-first бесплатный offline-first симулятор становления, работы и наследия программиста.
+PC-first бесплатный offline-first казуальный симулятор становления, работы и наследия программиста.
 
-Человеческая жизнь, отношения, здоровье, экономика, историческая эпоха и философия создают цену, ограничения и смысл профессионального пути, но не заменяют развитие навыков программирования, технологий, инженерной зрелости, проектов и грейдов.
+Игра сочетает понятные решения, месячную автоматическую симуляцию и долгосрочные последствия. Внутренняя модель может быть глубокой, но основной интерфейс не превращается в Jira, CRM, IDE или performance-review dashboard.
 
 ## Канон
 
 - Канонический старт: январь 1990 года, персонажу 12 лет.
-- Календарь: реальный григорианский.
 - Один пользовательский ход: один месяц.
-- Игрок свободно принимает решения; очков действий и обязательного процентного распределения времени нет.
-- Ограничения создаются деньгами, временем, здоровьем, календарём, вниманием, оборудованием и сотрудниками.
-- Programmer Mastery Core имеет приоритет над life-sim, economy и narrative слоями при конфликте объёма и внимания игрока.
-- Грейд определяется подтверждённым professional evidence, а не суммой XP.
-- Основное место действия — один фиксированный вымышленный международный мегаполис в неназванной вымышленной стране.
-- Постоянных переездов, виз, разных национальных рынков и карты мира нет.
-- Исторические технологии и продукты открываются по подтверждённой временной шкале.
-- Работодатели, университеты, конференции, магазины, NPC и локальная экономика вымышлены.
-- Игра бесплатная, без Steam, магазинов, платёжного backend и целевого выпуска на рынки ЕС.
+- Нет universal action points и обязательного percentage распределения времени.
+- Routine commitments продолжаются автоматически.
+- Обычный месяц содержит 0–1 важное blocking decision.
+- Programmer Mastery Core имеет приоритет над life-sim и narrative слоями.
+- Грейд не равен XP, стажу, зарплате или title.
+- Проекты используют несколько крупных Work Packages, а не ежедневные тикеты.
+- Normal UI показывает небольшое число понятных объектов и human-readable statuses.
+- Details/Advanced раскрываются по запросу и не меняют outcome.
+- Architecture seam не является обязательством реализовать future complexity.
+- Основное место действия — один фиксированный вымышленный мегаполис.
+- Реальные технологии открываются по подтверждённой временной шкале.
+- Работодатели, NPC и локальная экономика вымышлены.
+- Игра бесплатная, без Steam, платежей и обязательного backend.
+
+## Реализационные профили
+
+- **MVP Casual** — единственный обязательный профиль для Foundation и Vertical Slice.
+- **Recommended** — добавляется после успешного playtest первого месяца и года.
+- **Extended Simulation** — поздние опциональные системы, не ранний roadmap requirement.
 
 ## Инженерный baseline
 
 - Tauri 2 + React 19;
-- TypeScript 7 + Vite 8/Rolldown/Oxc;
-- Storybook 10 как UI/content workshop с Foundation;
+- TypeScript 7 + Vite/Oxc;
+- Storybook 10;
 - pure TypeScript Game Core;
-- Rust authoritative persistence/platform boundary;
+- Rust persistence/platform boundary;
 - SQLite 3.51.3+;
 - deterministic persisted MonthRun;
-- integer/fixed-point domain numerics;
-- Vitest/fast-check/Storybook/Playwright/WebdriverIO test matrix.
+- integer/fixed-point authoritative numerics;
+- focused Vitest/fast-check/Storybook/Playwright/WebdriverIO matrix.
 
 ## Документация
 
 - [Индекс документации](docs/INDEX.md)
+- [Casual Simulation Design](docs/game-design/CASUAL-SIMULATION-DESIGN.md)
 - [Programmer-First Design](docs/game-design/PROGRAMMER-FIRST-DESIGN.md)
-- [Master Architecture](docs/architecture/MASTER-ARCHITECTURE.md)
-- [Полный архитектурный план](docs/architecture/FULL-ARCHITECTURE-PLAN.md)
+- [Professional Progression Engine](docs/game-design/PROFESSIONAL-PROGRESSION-ENGINE.md)
+- [Project & Work Package Engine](docs/game-design/PROJECT-WORK-PACKAGE-ENGINE.md)
 - [Архитектурные решения](docs/adr/)
-- [Deep Research и synthesis](docs/research/)
-- [TypeScript policy](docs/engineering/TYPESCRIPT-POLICY.md)
-- [Storybook workflow](docs/engineering/STORYBOOK-WORKFLOW.md)
+- [Исследования и design corrections](docs/research/)
 - [Vertical Slice](docs/plans/VERTICAL-SLICE-PLAN.md)
 - [Roadmap](docs/plans/ROADMAP.md)
 
 ## Источник истины
 
-Этот приватный репозиторий является единственным источником истины. При конфликте действует порядок из [`AGENTS.md`](AGENTS.md): accepted ADR → профильная спецификация → master architecture → full plan → implementation plan/issue → research/external sources → комментарии в коде.
+Этот приватный репозиторий является единственным источником истины. При конфликте действует порядок из [`AGENTS.md`](AGENTS.md).
 
 ## Статус
 
-Проект находится на стадии архитектурного и игрового проектирования и подготовки первой вертикальной играбельной версии. Архитектурный канон редакции 1.3 учитывает Deep Research от 16–17 июля 2026 года и принятые ADR-001–012.
+Проект находится на стадии игрового и архитектурного проектирования первой вертикальной версии. Accepted ADR-015 закрепляет casual-first abstraction и запрещает реализовывать расширенную симуляцию раньше подтверждённой игровой потребности.
