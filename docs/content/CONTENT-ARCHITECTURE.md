@@ -3,289 +3,316 @@
 Нормативные решения:
 
 - [ADR-013 — Professional Progression](../adr/ADR-013-authoritative-professional-progression-evidence.md);
-- [ADR-014 — Project & Work Package](../adr/ADR-014-authoritative-project-work-package-model.md).
+- [ADR-014 — Project & Work Package](../adr/ADR-014-authoritative-project-work-package-model.md);
+- [ADR-015 — Casual-first Complexity](../adr/ADR-015-casual-first-abstraction-and-complexity-budget.md).
 
 Связанные спецификации:
 
+- [Casual Simulation Design](../game-design/CASUAL-SIMULATION-DESIGN.md);
 - [Professional Progression Engine](../game-design/PROFESSIONAL-PROGRESSION-ENGINE.md);
 - [Project & Work Package Engine](../game-design/PROJECT-WORK-PACKAGE-ENGINE.md).
 
-## Goal
+## 1. Goal
 
-Most events, skills, technologies, project archetypes/packages, companies, equipment, housing and historical milestones are data-driven without executable content code.
+Game content is data-driven without executable scripts. Content creates a small number of understandable situations, choices and outcomes.
 
-Definitions parameterize providers; Game Core owns deterministic state transitions.
+A schema field or definition type is added only when current gameplay uses it.
 
-## Source format
+## 2. Source format
 
-- JSONC structured definitions;
+- JSONC definitions;
 - localization files;
 - asset manifests;
 - historical source registry.
 
-YAML is not baseline due to typing/agent-edit ambiguity.
-
-## Pipeline
+Pipeline:
 
 ```text
-JSONC + source locations
+JSONC
 → schema validation
-→ semantic validation
-→ chronology validation
-→ reference graph validation
-→ project/progression/balance lint
-→ compile immutable registries
-→ compile transfer/provider/project policies
-→ semantic fingerprints/snapshots
+→ semantic/chronology/reference validation
+→ casual-complexity lint
+→ balance/reachability lint
+→ immutable registry
+→ fingerprints/snapshots
 ```
 
-## Content domains
+## 3. Implementation profiles
 
-### Professional progression
+### MVP Casual content domains
 
-- skill groups/skills;
-- technology families/technologies/version bands;
-- directed transfer;
-- professional focus/specialization profiles;
-- grade/capability profiles;
-- learning sources/activities/challenges;
-- feedback/assistance/evidence mappings.
+- 5 professional skills;
+- 1 technology family;
+- 1 fully playable technology;
+- learning activities;
+- 1 project archetype;
+- 2 Work Package templates;
+- 3 project quality definitions;
+- 1 uncertainty rule;
+- 1 debt/known-issue branch;
+- 4 professional/project outcomes;
+- 4–6 events;
+- minimal equipment/housing/era/localization.
 
-### Projects
+### Recommended
 
-- `ProjectArchetypeDefinition`;
-- `ProjectKindDefinition`;
-- `ScopeTemplateDefinition`;
-- `WorkPackageTemplateDefinition`;
-- `ProjectQualityProfileDefinition`;
-- `TechnicalDebtRuleDefinition`;
-- `DefectRuleDefinition`;
-- `ReleasePolicyDefinition`;
-- `MaintenancePolicyDefinition`;
-- `EraProjectCapabilityDefinition`.
+- more skills/technologies;
+- multiple project archetypes;
+- optional/deferred scope;
+- situational quality;
+- significant debt/issue definitions;
+- career/product/open-source content.
 
-### Extensions and other domains
+### Extended
 
-- events/chains/NPC;
-- products/markets;
-- open-source/community;
-- companies/careers;
-- education;
-- equipment/housing;
-- conferences;
-- eras/city;
-- achievements/localization/historical sources.
+- technology versions/large transfer graph;
+- components/requirements;
+- defect/incident/rollback policies;
+- team/delegation content;
+- company portfolios;
+- advanced grade/evidence profiles.
 
-## Project definitions
+Extended schemas are not required before feature implementation.
+
+## 4. MVP progression definitions
+
+### SkillDefinition
+
+- stable ID;
+- localization;
+- UI visibility/relevance;
+- broad practice tags;
+- optional capability phrases.
+
+### TechnologyDefinition
+
+- stable ID/family;
+- historical availability;
+- equipment/access requirements;
+- learning difficulty;
+- simple familiarity labels;
+- project compatibility;
+- source references.
+
+### LearningActivityDefinition
+
+- goal;
+- required access;
+- relevant skills/technology;
+- challenge band;
+- expected outcomes;
+- assistance options;
+- recovery/next step.
+
+Detailed evidence mapping can be produced by Core rules from outcome tags; content does not directly mint evidence.
+
+## 5. MVP project definitions
 
 ### ProjectArchetypeDefinition
 
-Describes:
+Contains:
 
-- allowed kinds/eras;
-- default goals/constraints;
-- active quality dimensions;
-- scope size bands;
-- typical uncertainty/debt/defect/maintenance profiles;
-- allowed package templates;
-- release policy;
-- UI visibility/progressive disclosure.
-
-It does not own runtime ProjectState.
-
-### ScopeTemplateDefinition
-
-- stable semantic slice;
-- requirements/acceptance criteria;
-- value/uncertainty bands;
-- dependencies;
-- era/project-kind eligibility;
-- anti-splitting group.
+- stable ID;
+- title/goal template;
+- era eligibility;
+- allowed technology;
+- two or a few package templates;
+- three base qualities;
+- simple uncertainty/debt/risk rules;
+- outcome/release options;
+- UI copy.
 
 ### WorkPackageTemplateDefinition
 
-- kind/objective family;
-- allowed scope refs;
-- challenge profile;
-- known/latent work bounds;
-- uncertainty dimensions;
-- quality targets/risk;
-- technologies/skill applications;
-- participant constraints;
-- outcome space/recovery;
-- decision hooks;
+Contains:
+
+- stable ID;
+- human objective;
+- kind;
+- challenge band;
+- work range;
+- uncertainty band/rule;
+- relevant skills/technology;
+- possible compact outcomes;
+- optional meaningful decision hook;
 - anti-repeat key.
 
-A template is not a ticket list and cannot execute formula scripts.
+It does not require:
 
-### Quality profile
+- component/scope graph;
+- multiple quality targets;
+- participant plan;
+- debt/defect ledgers;
+- rollout/support policy.
 
-- active dimensions (normally 3–5);
-- target defaults/bands;
-- release confidence requirements;
-- assessment source policies;
-- trade-off/recovery constraints.
+### CasualQualityDefinition
 
-### Debt/defect rules
+Base IDs:
 
-Compiled rules describe bounded categories, affected areas, risk/drag ranges, prevention/materialization mappings and recovery package families.
+- functional;
+- usability;
+- maintainability.
 
-Content never rolls randomness or mutates state directly.
+Situational quality definition is introduced only with a project using it.
 
-### Release/Maintenance policies
+### CasualOutcomeDefinition
 
-Release policy describes gates, accepted-risk permissions, era distribution/rollback/support capabilities.
+- completed;
+- assisted completion;
+- partial;
+- failure with recovery;
+- early release with limitation;
+- delayed result.
 
-Maintenance policy maps technical state plus external support/dependency signals into routine load or package candidates.
+Only needed outcomes are authored for a package.
 
-## Definition ownership
+## 6. Definition ownership
 
-- Definitions are immutable data.
-- Project Engine owns runtime technical truth.
-- Product/Open Source/Company/Career extensions submit typed inputs and consume typed outputs.
-- Progression receives `ExperienceEpisode` only.
-- Events can request/modify provider decisions but not directly complete packages or mint evidence.
+- Content definitions are immutable data.
+- Core owns deterministic state transitions.
+- Project Engine owns project truth.
+- Progression consumes `ExperienceEpisode`.
+- Events request typed transitions.
+- Content cannot directly change mastery, grade, project progress, quality, debt or release truth.
 
-## Stable IDs
+## 7. Stable IDs
 
-Core namespaces:
+MVP namespaces:
 
 ```text
 core.skill.*
 core.tech-family.*
 core.technology.*
-core.transfer.*
 core.activity.*
-core.challenge.*
-core.grade-profile.*
 core.project-archetype.*
-core.project-kind.*
-core.scope-template.*
 core.work-package.*
-core.quality-profile.*
-core.debt-rule.*
-core.defect-rule.*
-core.release-policy.*
-core.maintenance-policy.*
-core.era-project-capability.*
+core.quality.*
+core.event.*
 ```
 
-IDs never derive from display names or get reused.
+Additional namespaces are added with actual domains.
 
-Historical project/release/evidence records preserve semantic snapshots/tombstones.
+IDs never derive from display names and are never reused.
 
-## Content metadata
+Historical records preserve semantic snapshots/tombstones.
 
-Every object:
+## 8. Metadata
 
+Every definition:
+
+- version;
 - author/review status;
-- content version;
-- created/last-reviewed dates;
-- tags/sourceRefs;
+- localization;
+- era/availability;
+- sourceRefs where historical;
 - compatibility range;
-- historical availability;
-- balance risk tags;
-- UI tier;
-- migration/tombstone metadata.
+- UI profile/tier;
+- migration/tombstone metadata when needed.
 
-## Semantic validation
+Do not require irrelevant metadata for purely fictional simple content.
+
+## 9. Semantic validation
 
 ### Progression
 
-- no duplicate skills/facets;
-- Tier C has no proficiency;
-- valid technology chronology/transfer;
-- partial/failure cannot grant full delivery;
-- assistance cannot inflate autonomy;
-- grade not one weighted average;
-- provider mapping stable.
+- skill/technology IDs valid;
+- unavailable technology not learnable;
+- assisted/partial/failure semantics valid;
+- passive activity cannot create full delivery;
+- provider mapping stable;
+- normal UI has bounded relevant skills.
 
 ### Projects
 
-- archetype activates 3–5 quality dimensions unless reviewed exception;
-- scope templates have reachable acceptance criteria;
-- package principal challenge consistent with dimensions;
-- known/latent work bounds valid;
-- latent realization bounded/non-negative;
-- outcome and recovery reachable;
-- active decision reachable but not mandatory routine spam;
-- package cannot directly change skills/grade;
-- quality targets valid for archetype;
-- debt/defect rules reference valid areas/categories;
-- release gate feasible for at least one reachable state;
-- era allows required technology/tool/distribution;
-- anti-splitting/anti-repeat key present;
-- Product/Company/OSS fields do not duplicate technical state.
+- project has a clear goal;
+- package is aggregated and meaningful;
+- package has reachable outcome/recovery;
+- package does not directly mutate professional state;
+- project has no more required fields than active profile;
+- base qualities valid;
+- uncertainty outcome bounded/deterministic;
+- release/delay/recovery reachable;
+- anti-repeat key present;
+- no duplicate Product/Company state.
 
-## Balance lint
+## 10. Casual-complexity lint
 
-- too many Tier A technologies;
-- too many active project quality dimensions;
-- package duration too small/large for meaningful unit;
+Blocks or warns:
+
+- too many visible skills;
+- more than 2–5 packages in ordinary project without review;
+- package that is effectively a daily ticket;
 - project represented only by progress;
-- package without trade-off/outcome/recovery;
-- package spam/easy-task farming;
-- scope splitting/release spam;
-- intentional failure/bug/debt farming;
-- unbounded parallel package capacity;
-- team size linear multiplier without coordination;
-- release gate impossible/trivial;
-- debt spiral without recovery;
-- defect rate zero or unavoidable catastrophe;
-- forecast exact despite uncertainty;
-- project challenge requires unavailable era technology;
-- direct project/professional mutation from event/extension content.
+- ordinary package with multiple unrelated blocking decisions;
+- more than three baseline quality dimensions;
+- situational quality without relevant decision;
+- debt/bug record that does not affect player choice;
+- exact forecast despite uncertainty;
+- normal copy using internal evidence/engineering jargon;
+- feature requiring unimplemented future system;
+- content set too large for first phase.
 
-## Immutable runtime
+## 11. Balance/reachability lint
 
-Compiled runtime receives:
+- all outcomes reachable;
+- failure has recovery unless true ending;
+- low-income background has access path;
+- repeated easy/package content cannot farm progression;
+- hidden result does not reroll;
+- one decision has distinguishable trade-offs;
+- monthly report can explain outcome;
+- no unavoidable blocking chain.
 
-- project/progression registries;
-- prevalidated templates/policies;
-- sparse transfer edges;
-- era capabilities;
-- semantic fingerprints.
+## 12. Runtime registry
 
-Runtime does not calculate schemas or execute content-defined formulas.
+MVP runtime receives only:
 
-## Modding
+- active skill/technology/activity definitions;
+- project/package/quality/outcome definitions;
+- event definitions;
+- era/access data;
+- fingerprints.
 
-Data-only mods may add project archetypes/packages/technologies/events after validation.
+No empty registries/policies for Extended systems.
+
+## 13. Modding
+
+Data-only mods may add content supported by current content API.
+
+A mod cannot require unimplemented Extended schema while declaring MVP compatibility.
 
 Forbidden:
 
-- executable scripts/raw HTML/automatic network fetch;
-- overriding core semantics without conflict policy;
-- direct SQL/Tauri capabilities;
-- direct skill/grade/project-state effects;
-- release/defect RNG hooks outside rule registry;
-- unbounded per-ticket content;
+- executable scripts/raw HTML/network fetch;
+- raw state patches;
+- direct skill/grade/project mutations;
+- RNG hooks outside Core;
+- ticket-level unbounded content;
 - missing migration/tombstone policy for active definitions.
 
-Active saves lock semantic fingerprints; historical records use snapshots.
+## 14. Content Studio
 
-## Content Studio
+After Vertical Slice, Content Studio first previews:
 
-After vertical slice, Content Studio previews:
+- project card;
+- package objective/outcomes;
+- simple uncertainty;
+- three qualities;
+- decision text;
+- professional explanation;
+- localization/accessibility;
+- deterministic fixtures.
 
-- project archetype/scope graph;
-- Work Package lifecycle/outcomes;
-- uncertainty/forecast ranges;
-- quality/debt/defect effects;
-- release gates;
-- contribution/episode mapping;
-- balance fixtures/localization.
+Advanced scope/debt/defect/release editors are added with those features.
 
-It uses production schemas/validators but no privileged persistence.
+## 15. Forbidden drifts
 
-## Forbidden drifts
-
-- executable formula content;
-- hidden side effects outside registries;
-- direct skill/grade mutation;
-- direct package completion from narrative text;
-- one quality score as source of truth;
-- Tier C progression bars;
-- content IDs from filenames/names;
-- canonical historical dates without provenance;
-- Project/Product/Company duplicated technical state.
+- schema completeness before gameplay;
+- executable content;
+- direct state/evidence effects;
+- one quality score;
+- every library as progression;
+- content IDs from names;
+- project/ticket explosion;
+- full future content API in MVP;
+- canonical historical dates without provenance.
