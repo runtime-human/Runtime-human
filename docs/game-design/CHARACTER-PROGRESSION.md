@@ -1,6 +1,10 @@
 # Прогрессия персонажа
 
-Нормативная межсистемная модель: [Programmer-First Design](PROGRAMMER-FIRST-DESIGN.md).
+Нормативные спецификации:
+
+- [Programmer-First Design](PROGRAMMER-FIRST-DESIGN.md);
+- [Professional Progression & Evidence Engine](PROFESSIONAL-PROGRESSION-ENGINE.md);
+- [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md).
 
 ## Принцип
 
@@ -8,162 +12,240 @@
 
 ## Слои прогрессии
 
-1. Базовые характеристики — медленно меняющиеся потенциалы.
-2. Fundamentals — переносимые основы решения технических задач.
-3. Core craft — programming, code reading, debugging, testing, refactoring и tools.
-4. Engineering skills — requirements, design, architecture, performance, reliability, security, delivery и legacy work.
-5. Технологии — конкретные языки, frameworks, tools и platforms.
-6. Специализации — Backend, Frontend, Desktop, DevOps/Platform, GameDev, AI, Security и другие.
-7. Professional Evidence — подтверждённая история задач и результатов.
-8. Грейд — вывод о профессиональной зрелости.
-9. Должность — текущая организационная роль.
-10. Репутация и слава — профессиональная и публичная позиции.
-11. Traits и жизненные статусы — результаты истории персонажа.
+1. Aptitudes — узкие медленно меняющиеся modifiers.
+2. Skills — переносимые профессиональные способности.
+3. Technology familiarity — конкретные языки/frameworks/platforms.
+4. Professional focus — выбранный приоритет игрока.
+5. Experience episodes — provider outcomes.
+6. Professional Evidence — подтверждённая история результатов.
+7. Grade awards — достигнутые professional milestones.
+8. Grade/market readiness — projections.
+9. Specialization profile — derived профессиональный профиль.
+10. Position/role/title — организационный контекст.
+11. Reputation/fame/traits/life statuses — другие независимые системы.
 
-## Базовые характеристики
+## Aptitudes
 
-Рекомендуемый минимальный набор:
+Baseline:
 
-- Analytical Reasoning;
-- Learning Adaptability;
-- Self-Organization;
-- Communication.
+- Reasoning Aptitude;
+- Learning Adaptability.
 
-Они не заменяют skills и не определяют grade напрямую.
+Они:
 
-`Coding`, `Engineering` и `Quality` не должны одновременно существовать как широкие базовые характеристики и отдельные профессиональные навыки. Их authoritative progression находится в skill/evidence model.
+- не заменяют skills;
+- не определяют grade;
+- обычно влияют на learning в ограниченном диапазоне;
+- меняются редко;
+- могут компенсироваться практикой, mentor, tools и временем;
+- не создают permanent bad start;
+- не являются главным scoreboard.
 
-Базовые характеристики:
+Self-Organization моделируется planning/delivery skills и current statuses. Communication — профессиональным skill. Focus/fatigue — current capacity. Creativity/Curiosity/Persistence — traits.
 
-- модифицируют скорость обучения и устойчивость результата;
-- могут компенсироваться практикой, наставничеством, инструментами и выбранной специализацией;
-- не создают необратимо плохой старт;
-- не показываются как главный scoreboard игры.
+`Coding`, `Engineering` и `Quality` не являются базовыми характеристиками: их progression находится в skill/evidence model.
+
+## Skills
+
+Authoritative `SkillState` разделяет:
+
+- mastery;
+- fluency;
+- last practice;
+- strongest demonstrated capability band.
+
+Mastery отражает устойчивое понимание и почти не деградирует. Fluency отражает текущую скорость/уверенность и может снижаться после длительного перерыва к floor, основанному на mastery.
+
+## Technology familiarity
+
+Authoritative technology state разделяет:
+
+- conceptual familiarity;
+- operational familiarity;
+- version band/recency;
+- last practice.
+
+Technology familiarity не является transferable skill. Strong skills ускоряют освоение новой technology, но не создают production evidence без практики.
+
+## ExperienceEpisode
+
+Education, Project, Career, Open Source, Company и Event providers создают нормализованный `ExperienceEpisode`.
+
+Episode содержит:
+
+- source/context;
+- challenge;
+- participation/autonomy/assistance;
+- practice;
+- outcome;
+- feedback;
+- applied skills/technologies.
+
+Provider не изменяет professional state напрямую.
+
+## Три разных результата опыта
+
+### Mastery gain
+
+Зависит от challenge match, novelty, feedback, reflection, capacity и diminishing returns.
+
+### Fluency/familiarity
+
+Зависят от практики, outcome stability, technology/version use и reacquisition.
+
+### Evidence
+
+Зависит от реально продемонстрированного challenge band, completion, quality, autonomy, confidence, context novelty и anti-repeat.
+
+Помощь может повысить learning и снизить autonomy evidence. Провал может дать debugging/recovery learning, но не delivery/quality evidence.
 
 ## Professional Evidence
 
-Значимое профессиональное действие создаёт `ProfessionalEvidence` с:
+Meaningful outcome создаёт immutable `ProfessionalEvidenceEvent` с отдельными `EvidenceClaim`.
 
-- источником и project/role context;
-- skill/technology families;
-- complexity и novelty;
-- autonomy и assistance;
-- outcome quality;
-- delivery reliability;
-- scope/impact;
-- collaboration/mentoring;
-- duration/date;
-- confidence;
-- failure/recovery markers.
+Routine practice сворачивается в `MonthlyPracticeAggregate`.
 
-Неудача может дать learning/debugging evidence, но не подтверждает delivery, quality или autonomy автоматически.
+Evidence обязательно имеет source/context snapshot и не исчезает при удалении исходного content/mod definition.
 
-## Рост навыков
+## Grade model
 
-- Курсы дают теорию и особенно эффективны в начале или при закрытии пробелов.
-- Работа и реальные проекты дают практику и grade evidence.
-- Менторство повышает feedback quality, но не заменяет самостоятельный результат.
-- Сложная задача может одновременно развивать skill, technology proficiency и specialization.
-- Повторение слишком простых задач имеет diminishing returns.
-- Чрезмерно сложная задача без поддержки повышает риск провала и даёт меньше usable mastery.
-- Оптимальная зона находится немного выше текущей подтверждённой способности.
+Grade не является XP, weighted average, стажем, зарплатой, title или fame.
 
-Авторитетный gain вычисляется только integer/fixed-point modifiers:
+Core dimensions:
+
+- Craft;
+- Complexity;
+- Autonomy;
+- Quality;
+- Delivery/Ownership.
+
+Profile dimensions:
+
+- Depth;
+- Breadth/Transfer;
+- Leverage/Collaboration;
+- Impact.
+
+Grade требует:
+
+- floors по core dimensions;
+- нескольких qualifying claims;
+- distinct contexts;
+- устойчивости во времени;
+- подходящего professional profile;
+- отсутствия critical deficit.
+
+Capability bands:
 
 ```text
-base gain
-× difficulty match
-× novelty
-× feedback quality
-× reflection
-× transfer
-× current capacity
+Observed → Guided → Routine → Independent → Complex → Systemic → Strategic → Frontier
 ```
 
-## Mastery, fluency и familiarity
+## Award и readiness
+
+`ProfessionalGradeAward` является authoritative milestone.
+
+Derived:
+
+- Demonstrated Grade Readiness;
+- Current Market Readiness;
+- Specialization Profile;
+- capability explanations.
+
+Длительный перерыв может снизить current fluency/market readiness, но не отменяет award автоматически.
+
+## Грейды
+
+### Beginner
+
+Guided/Routine learning tasks; понимает простые программы и изменяет их с помощью.
+
+### Intern
+
+Supervised real contribution, регулярный feedback, ограниченная production responsibility.
+
+### Junior
+
+Independent bounded tasks, debugging, testing и delivery в понятном scope.
+
+### Middle
+
+Feature/subsystem ownership end-to-end, ambiguity, design и collaboration.
+
+### Senior
+
+Systemic ambiguity, risk, architecture, sustained delivery, mentoring и technical direction.
+
+### Top Programmer
+
+Редкий endgame-status, требующий длительного strategic/frontier impact и achievements. Не является обычным следующим threshold.
+
+## Promotion, title и grade
 
 Разделяются:
 
-- mastery — переносимое понимание;
-- fluency — скорость и уверенность текущей практики;
-- technology familiarity — знание конкретного инструмента и версии;
-- evidence recency — актуальность подтверждения для рынка труда.
+- professional grade;
+- position;
+- role;
+- title;
+- company level;
+- salary band;
+- reputation/fame.
 
-Mastery почти не деградирует. Fluency и familiarity могут снижаться после длительного неиспользования. Возвращение использует reacquisition bonus и не начинает progression с нуля.
+Возможны Middle на Junior-position, завышенный title, Senior IC, strong OSS maintainer без corporate title и rusty Senior с низкой current market readiness.
 
-Смена специализации сохраняет общие skills и transfer, но требует evidence в новом project context.
+## Specialization
 
-## Grade Readiness
+- `ProfessionalFocus` — authoritative выбранный приоритет;
+- `SpecializationProfile` — derived из evidence/skills/technologies/contexts.
 
-Грейд не является простой проверкой общего XP. Read model агрегирует evidence по dimension scores 0–1000:
+Путь:
 
-- craft;
-- complexity;
-- autonomy;
-- quality;
-- delivery;
-- breadth;
-- depth;
-- collaboration;
-- impact.
+```text
+general beginner
+→ exploratory profile
+→ emerging specialization
+→ established specialization
+→ deep specialist / broad senior / technical leader
+```
 
-Предварительные target floors:
+Смена specialization сохраняет mastery/transfer и требует новых production contexts.
 
-| Grade | Craft | Complexity | Autonomy | Quality | Delivery | Дополнительные условия |
-|---|---:|---:|---:|---:|---:|---|
-| Beginner | 80 | 20 | 20 | 40 | 20 | завершённые учебные задачи |
-| Intern | 180 | 100 | 100 | 140 | 100 | 6+ supervised evidence |
-| Junior | 320 | 220 | 260 | 280 | 240 | 12+ evidence, 2 project contexts |
-| Middle | 520 | 460 | 500 | 480 | 460 | устойчивый результат 18+ месяцев |
-| Senior | 700 | 680 | 700 | 650 | 650 | impact 580+, collaboration/architecture 450+, 36+ месяцев |
+## Snowballing и плохой старт
 
-Promotion работодателя, title и professional grade различаются.
-
-Target time-to-grade:
-
-- Beginner → Intern: 12–36 месяцев;
-- Intern → Junior: 6–18 месяцев supervised work;
-- Junior → Middle: 24–48 месяцев;
-- Middle → Senior: 36–72 месяцев.
-
-Диапазоны versioned и проверяются balance simulator по разным backgrounds и путям.
-
-## Защита от snowballing и плохого старта
-
-- высокий стартовый доступ к технике ускоряет первые шаги, но не даёт прямой grade;
-- сильные характеристики не заменяют evidence;
-- слабый старт компенсируется community, mentors, school resources, used equipment и более длинным временем обучения;
-- неудачные ранние решения не блокируют смену технологии или специализации;
-- успех в одной технологии ускоряет transfer, но не открывает все технологии автоматически;
-- накопленное богатство не покупает mastery напрямую;
-- reputation/fame не могут повысить grade без capabilities.
-
-## Top Programmer
-
-Top Programmer — редкий endgame-статус, а не обычный следующий уровень после Senior. Numeric readiness является только prerequisite.
-
-Возможные условия:
-
-- выдающиеся продукты или open source;
-- устойчивое индустриальное влияние;
-- высокий технический уровень;
-- профессиональная репутация;
-- публичные достижения, если путь их предполагает;
-- несколько лет подтверждённого результата;
-- влияние на других программистов, практики или технологии.
+- доступ к технике ускоряет первые шаги, но не даёт grade;
+- aptitude не заменяет evidence;
+- слабый старт компенсируется community, mentor, school resources, used equipment и временем;
+- wealth/reputation/fame не покупают mastery;
+- latest technology не является автоматическим оптимумом;
+- routine task farming ограничено diminishing/aggregation;
+- один project/context не закрывает Senior gates;
+- interruption имеет recovery/reacquisition path.
 
 ## Отрицательные состояния
 
-Burnout, болезнь, конфликт и потеря мотивации являются статусами/рисками, а не «высокими отрицательными характеристиками».
+Burnout, болезнь, конфликт и потеря мотивации являются statuses/risks.
 
-Они могут временно снижать capacity, fluency или evidence recency, но не стирают mastery и не понижают professional grade автоматически.
+Они могут временно снижать capacity, fluency и current market readiness, но не стирают mastery и не понижают awarded grade автоматически.
 
 ## UI раскрытие
 
-Игрок сначала видит понятные capabilities:
+Normal mode показывает capabilities:
 
 - «может самостоятельно исправлять небольшие ошибки»;
 - «уверенно завершает понятные задачи»;
 - «готов владеть небольшой feature end-to-end».
 
-Детальные skill families, evidence и technology proficiency раскрываются по запросу. Точные readiness scores не обязаны показываться в обычном режиме.
+Advanced mode показывает evidence, dimensions, technology transfer и причины readiness. Exact hidden weights не обязательны.
+
+## Balance metrics
+
+- skill gain by source/challenge;
+- mastery/fluency separation;
+- evidence diversity/context concentration;
+- time-to-grade;
+- current market readiness/reentry;
+- easy-task/course/mentor farming;
+- specialization switching;
+- grade award stability;
+- Top Programmer rarity.

@@ -1,20 +1,31 @@
 # Vertical Slice Plan
 
-Нормативная продуктовая иерархия: [Programmer-First Design](../game-design/PROGRAMMER-FIRST-DESIGN.md).
+Нормативные спецификации:
+
+- [Programmer-First Design](../game-design/PROGRAMMER-FIRST-DESIGN.md);
+- [Professional Progression Engine](../game-design/PROFESSIONAL-PROGRESSION-ENGINE.md);
+- [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md).
 
 ## Цель
 
 Создать минимальную, но настоящую играбельную цепочку от нового персонажа до сохранённого результата первого месяца января 1990 года.
 
-Vertical slice должен проверить не только инфраструктуру MonthRun/save/recovery, но и центральную фантазию: игрок начинает становиться программистом, решает первую техническую проблему, получает понятное evidence и видит следующий профессиональный шаг.
+Vertical slice проверяет не только MonthRun/save/recovery, но и центральную цепочку:
+
+```text
+hands-on provider outcome
+→ ExperienceEpisode
+→ mastery/fluency delta
+→ evidence claims
+→ capability/readiness explanation
+→ atomic commit/restart
+```
 
 ## Gameplay question
 
-Slice обязан ответить:
+> Интересно ли игроку прожить первый месяц будущего программиста и понимает ли он, чему научился, что доказал и какой следующий шаг открыл?
 
-> Интересно ли игроку прожить первый месяц будущего программиста, даже если убрать ценность технического proof-of-concept?
-
-Если после прохождения игрок помнит только комнату, покупку, семейное событие и корректное сохранение, но не помнит, чему научился и что создал/исправил, slice не прошёл gameplay validation.
+Если игрок помнит только комнату, покупку, семейное событие и сохранение, но не технический результат, slice не прошёл gameplay validation.
 
 ## Scope
 
@@ -22,235 +33,300 @@ Slice обязан ответить:
 
 1. создаёт персонажа 12 лет;
 2. начинает в комнате родителей;
-3. имеет стартовое семейное/финансовое состояние и один из backgrounds доступа к технике;
-4. видит historically appropriate beginner technology или путь получить к ней доступ;
-5. выбирает одно обучение;
-6. запускает первую hands-on programming activity;
-7. принимает одну свободную покупку при наличии денег;
-8. видит pre-month forecast: school/home commitments, learning, equipment limits и ожидаемый technical outcome;
-9. нажимает «Следующий месяц»;
-10. получает автоматическую школу/домашние обязательства;
-11. сталкивается с первой технической неопределённостью, ошибкой или задачей problem decomposition;
-12. при необходимости получает минимум один possible blocking event;
+3. имеет семейное/финансовое состояние и background доступа к технике;
+4. видит historically appropriate beginner technology либо путь к доступу;
+5. выбирает обучение и professional focus;
+6. запускает одну hands-on activity;
+7. принимает свободную покупку при наличии денег;
+8. видит forecast commitments/equipment/load/likely outcome;
+9. нажимает `Следующий месяц`;
+10. получает автоматические school/home commitments;
+11. сталкивается с technical uncertainty/problem decomposition/debugging;
+12. при необходимости получает blocking decision;
 13. закрывает приложение и возобновляет persisted MonthRun;
-14. получает частичный или завершённый programming result;
-15. получает рост core skill и technology proficiency;
-16. получает сохранённый `ProfessionalEvidence`;
-17. видит grade-readiness/capability explanation;
-18. получает новый профессиональный вариант на февраль;
-19. перезапускает приложение и загружает тот же committed сейв.
+14. получает independent, assisted, partial или failure outcome;
+15. provider формирует `ExperienceEpisode`;
+16. Progression Core обновляет mastery/fluency и technology familiarity;
+17. создаются evidence claims либо practice aggregate;
+18. отображается capability/readiness explanation;
+19. открывается следующий шаг на февраль;
+20. после restart загружается тот же committed result без duplicate evidence.
 
-## Programmer-core minimum
+## Минимальная progression model
 
-### Beginner technology
+### Aptitudes
 
-- одна исторически доступная programming environment/technology из content pack;
-- lifecycle stage и local availability соответствуют январю 1990;
-- технология относится к Tier A либо Tier B;
-- UI объясняет её человеческим языком.
+- Reasoning Aptitude;
+- Learning Adaptability.
 
-### Hands-on activity
+Aptitudes фиксируются background/character setup и не требуют отдельной progression UI в slice.
 
-Активность должна включать:
+### Skills
+
+Только пять:
+
+- Problem Solving;
+- Programming;
+- Debugging;
+- Data Modelling;
+- Testing & Quality.
+
+### Technology
+
+- одна `TechnologyFamilyDefinition`;
+- одна historically available Tier A/B technology;
+- conceptual/operational familiarity;
+- без major version graph.
+
+### Capability bands
+
+- Guided;
+- Routine;
+- Independent;
+- Complex.
+
+### Outcome space
+
+- independent completion;
+- assisted completion;
+- partial diagnosis/progress;
+- failure with reachable recovery.
+
+## Beginner technology
+
+- lifecycle/local availability соответствуют январю 1990;
+- hardware/access requirements объяснимы;
+- UI использует human language;
+- transfer graph в slice может иметь только один empty/minimal family edge set;
+- Tier C не получает state.
+
+## Hands-on activity и challenge
+
+Activity включает:
 
 - понятную цель;
+- один provider-owned task/work package;
 - небольшую техническую неопределённость;
-- минимум один выбор approach;
-- возможность частичного результата;
-- один failure/recovery path;
-- skill/technology gain;
-- ProfessionalEvidence output.
+- один choice approach;
+- expected work units/calendar span;
+- available help/feedback;
+- partial/failure/recovery;
+- skill/technology applications;
+- stable `ExperienceEpisode` output.
 
-Она не превращается в полноценный IDE или coding puzzle. Выборы могут быть представлены как:
+Допустимые choices:
 
-- разбить задачу на части;
-- прочитать пример;
+- разбить задачу;
+- проверить условие/ввод;
+- сравнить с примером;
 - попросить помощь;
-- проверить ввод/условия;
-- переписать непонятный фрагмент;
-- потратить больше времени на понимание;
-- оставить imperfect result и продолжить позже.
+- продолжить исследование;
+- оставить partial result и вернуться.
 
-### First evidence
+Это не реальный IDE/coding puzzle.
 
-`ProfessionalEvidence` фиксирует:
+## First ExperienceEpisode
 
-- activity/source ID;
-- skill family;
-- technology family;
-- task difficulty;
-- novelty;
-- autonomy/assistance;
-- outcome quality;
-- completion/partial state;
-- date range.
+```ts
+type ExperienceEpisode = Readonly<{
+  id: ExperienceEpisodeId;
+  provider: 'education';
+  source: ExperienceSourceRef;
+  period: GameDateRange;
+  challenge: ChallengeProfile;
+  participation: ParticipationProfile;
+  practice: PracticeProfile;
+  outcome: OutcomeProfile;
+  feedback: FeedbackProfile;
+  skillApplications: readonly SkillApplication[];
+  technologyApplications: readonly TechnologyApplication[];
+  contextFingerprint: ContextFingerprint;
+}>;
+```
 
-Slice не требует полноценной grade promotion, но read model должен показать capability change.
+## First evidence
+
+`ProfessionalEvidenceEvent` содержит:
+
+- deterministic ID;
+- source/context snapshot;
+- outcome;
+- assistance;
+- claims;
+- antiRepeatKey;
+- rules/content/trace IDs.
+
+Минимальные claim dimensions:
+
+- craft;
+- autonomy;
+- quality либо debugging/recovery;
+- delivery только для full completion.
+
+Partial/failure не создают full delivery claim.
+
+Slice не требует grade promotion. `ProfessionalGradeAward` может отсутствовать; read model показывает readiness/capability progress.
 
 ## Обязательные технические элементы
 
 - pnpm monorepo;
 - TypeScript 7 exact pinned;
-- Vite 8/Oxc tooling;
+- Vite 8/Oxc;
 - Tauri shell;
-- React routing/design tokens;
-- Storybook 10 workshop;
-- shared kernel/GameDate/Money/IDs/fixed-point types;
+- React/design tokens/Storybook 10;
+- shared kernel IDs/GameDate/Money/fixed-point;
 - TypeBox/Ajv schemas;
-- deterministic RNG + Determinism Manifest;
+- deterministic RNG/Manifest;
 - Gregorian calendar;
 - Begin/Resume/Recover MonthRun;
-- accepted Rust persistence write-boundary;
-- explicit Tauri capabilities без SQL execute у main window;
-- SQLite 3.51.3+ version gate;
-- SQLite schema/migration 001;
-- Online Backup API/restore smoke;
+- Rust persistence boundary;
+- no SQL execute capability;
+- SQLite 3.51.3+ gate;
+- schema/migration 001;
+- backup/restore smoke;
 - JSONC content pack;
-- Event Engine minimum;
-- Narrative Director minimum blocking/programmer-first budgets;
-- ProfessionalEvidence schema/read model;
-- minimum skill/technology progression;
+- Event/Narrative minimum;
+- `CharacterProfessionalState`;
+- `ExperienceEpisode` contract;
+- mastery/fluency/familiarity minimum;
+- claims-based evidence;
+- deterministic evidence IDs;
+- readiness read model;
 - Russian localization;
-- Vitest/fast-check;
-- Storybook render/interaction/a11y tests;
-- Playwright browser/visual test;
-- WebdriverIO Tauri critical smoke.
+- Vitest/fast-check/Storybook/Playwright/WebdriverIO.
 
 ## Storybook minimum
 
 ### Foundation
 
-- application shell;
-- date/resource bar;
+- app shell/date/resource bar;
 - loading/empty/error;
 - long Russian text;
-- keyboard focus;
-- 200% text scale;
-- high contrast и reduced motion.
+- keyboard/200%/high contrast/reduced motion.
 
 ### Programmer core
 
-- professional focus card;
-- learning activity card;
-- beginner technology card;
-- technical problem/trade-off card;
+- professional focus;
+- learning activity;
+- beginner technology;
+- technical challenge/choice;
 - skill capability summary;
-- first ProfessionalEvidence;
-- grade-readiness explanation;
+- mastery vs fluency explanation;
+- evidence claims;
+- readiness summary;
 - pre-month forecast;
-- monthly report programmer-first.
+- programmer-first report.
 
 ### MonthRun/recovery
 
-- event card;
-- blocking decision dialog;
-- suspended MonthRun;
-- save/recovery panel;
-- quiet-month report fixture.
+- blocking decision;
+- suspended run;
+- draft evidence state;
+- save/recovery;
+- quiet month.
 
 ## Content minimum
 
 - один HomeCityProfile и era 1990–1994;
-- 3 семейных стартовых background, различающихся доступом, но не создающих permanent bad start;
-- 5 технологий ранней эпохи с Tier/lifecycle/transfer definitions;
-- 3 учебные активности;
-- минимум 1 hands-on programming activity с failure/recovery;
-- минимум 1 technical problem/decomposition event;
-- 6–10 событий, из которых большинство связано с learning/technology/equipment/school professional context;
-- 3 варианта стартовой техники;
+- 3 backgrounds доступа без permanent bad start;
+- 5 early technologies в каталоге, но только одна обязана иметь full slice progression;
+- 1 technology family;
+- 5 skill definitions;
+- 1 activity definition;
+- 1 challenge template;
+- 4 provider outcomes;
+- 1 evidence template/reason-code set;
+- 3 learning options максимум;
+- 6–10 events, большинство связано с learning/equipment/school/professional context;
+- 3 equipment variants;
 - 2 housing states;
-- first ProfessionalEvidence fixture;
-- programmer-first monthly report templates.
+- report templates.
 
-## Decision-density targets для slice
+## Decision-density targets
 
-- 2–4 meaningful decisions до/внутри первого MonthRun;
-- минимум 2 programmer-core decisions;
-- максимум 1 life-only blocking decision;
-- минимум 1 quiet/non-blocking technical observation;
-- ни одно решение не требует знания профессионального жаргона;
-- advanced explanation доступно по запросу.
+- 2–4 meaningful decisions;
+- минимум 2 programmer-core;
+- максимум 1 life-only blocking;
+- минимум 1 non-blocking technical observation;
+- no required jargon;
+- advanced explanation available.
 
-## Persistence/recovery scenarios
+## Persistence/recovery fixtures
 
-Обязательны fixtures/tests:
-
-- app close на technical blocking decision;
-- app close на life blocking decision;
-- повторная отправка того же decision;
-- crash до ProfessionalEvidence creation;
-- crash после evidence draft, но до month commit;
-- повторный запуск после commit до draft cleanup;
-- incompatible content fingerprint;
+- close at technical blocking decision;
+- duplicate answer/resume;
+- crash before provider outcome;
+- crash after episode before progression assessment;
+- crash after draft evidence before commit;
+- crash after commit before cleanup;
+- duplicate evidence ID;
+- incompatible progression/content fingerprint;
 - failed migration;
 - backup restore;
-- Safe Mode open/export.
+- Safe Mode/export.
 
 ## Balance fixtures
 
-Минимальный deterministic corpus:
+- average background;
+- no-home-computer/low-income access;
+- high/low Reasoning Aptitude;
+- high/low Learning Adaptability;
+- assisted outcome;
+- independent outcome;
+- partial diagnosis;
+- failure-first recovery;
+- quiet month.
 
-- average access/background;
-- low-income/no-home-computer start;
-- strong family support;
-- high learning adaptability;
-- weak self-organization;
-- failure-first technical outcome;
-- no blocking event quiet month.
-
-Каждый corpus run должен иметь reachable programmer outcome либо явно объяснимый путь получить доступ в феврале. Low-income background не должен создавать soft lock.
+Каждый run имеет reachable programmer outcome или объяснимый доступ в феврале.
 
 ## Acceptance criteria
 
 ### Programmer fantasy
 
-- игрок может объяснить, чему персонаж научился;
+- игрок объясняет, чему научился;
 - skill и technology различимы;
-- technical choice имеет понятное последствие;
-- ProfessionalEvidence создаётся только из task context;
-- capability/grade-readiness explanation соответствует evidence;
-- на февраль открывается понятный следующий профессиональный шаг;
-- monthly report начинается с programmer development;
-- финансовые и бытовые показатели не доминируют визуально.
+- task/provider outcome traceable;
+- assistance повышает learning, но не autonomy claim;
+- partial/failure не считаются full delivery;
+- evidence создаётся только из episode/outcome;
+- readiness/capability соответствует claims;
+- следующий шаг понятен;
+- report начинается с programmer development;
+- бытовые KPI не доминируют.
 
-### Determinism and recovery
+### Determinism/recovery
 
-- одинаковый seed/manifest даёт одинаковый месяц и trace hash;
-- закрытие на blocking event безопасно;
-- основной сейв не содержит half-applied month;
-- duplicate decision/commit не применяет effects/evidence дважды;
-- money/fixed-point round trip точный;
-- save загружается после restart;
-- SQLite version/pragmas проверены;
-- no raw SQL execute capability у renderer;
-- WebdriverIO проходит create → learn → suspend → restart → resume → evidence → commit → reload.
+- одинаковый seed/manifest даёт одинаковый trace/delta/evidence IDs;
+- duplicate decision/resume/commit не дублирует evidence;
+- main save не содержит half-applied progression;
+- provider outcome + professional delta/evidence atomic;
+- save/restart round trip;
+- no raw SQL capability;
+- WebdriverIO: create → learn → suspend → restart → resume → episode → evidence → commit → reload.
 
 ### UX/accessibility
 
-- keyboard-only flow проходит;
-- canonical Storybook stories и a11y checks проходят;
-- visual baseline воспроизводим в CI;
-- пользователь без опыта понимает цель и причинность без внешнего справочника;
-- опытный разработчик находит advanced evidence/skill detail;
-- long Russian text и 200% scale не ломают ключевой flow.
+- keyboard-only;
+- Storybook/a11y/visual baseline;
+- novice understands cause without external guide;
+- expert finds advanced claims/state;
+- long RU/200% scale works.
 
 ### Verification
 
-- `pnpm verify` проходит;
-- architecture/docs/research traceability соответствуют реализации;
-- balance fixtures не показывают programmer arc starvation или стартовый soft lock.
+- `pnpm verify`;
+- architecture/docs/research traceability;
+- balance fixtures show no access soft lock, duplicate evidence or farming shortcut.
 
 ## Не входит
 
-- полноценная работа/Junior career;
-- полноценная project/product system;
-- компания;
-- open-source community;
-- пользовательские моды;
-- updater release channel;
-- несколько эпох;
-- второй город/страна;
-- backend;
-- обязательный cloud VRT;
-- Content Studio;
-- реалистичный IDE или проверка написанного пользователем кода.
+- полноценная работа/Junior path;
+- full project/product engine;
+- full grade awards/gates;
+- company/OSS community;
+- full transfer matrix;
+- specialization profiles;
+- evidence compaction;
+- Top Programmer/leadership evidence;
+- user mods/updater/multiple eras/cities/backend/cloud VRT/Content Studio;
+- real IDE/code validation.
