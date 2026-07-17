@@ -15,23 +15,26 @@
 - [ADR-011 — TypeScript 7 как production baseline](ADR-011-typescript-7-baseline.md)
 - [ADR-012 — Storybook как UI и content workshop](ADR-012-storybook-ui-content-workshop.md)
 - [ADR-013 — Авторитетная модель профессиональной прогрессии и evidence](ADR-013-authoritative-professional-progression-evidence.md)
+- [ADR-014 — Авторитетная модель Project & Work Package](ADR-014-authoritative-project-work-package-model.md)
 
-ADR-004–012 приняты 2026-07-16 после систематизации двух Deep Research и явного решения владельца проекта о переходе на TypeScript 7 и ранний Storybook.
+ADR-004–012 приняты 2026-07-16 после технических Deep Research.
 
-ADR-013 принят 2026-07-17 после SD-001 и решения владельца внедрить Professional Progression & Evidence Engine в канон.
+ADR-013 принят 2026-07-17 после SD-001.
+
+ADR-014 принят 2026-07-17 после SD-002 и фиксирует shared technical Project Engine, aggregated Work Packages, multidimensional quality, debt/defects/releases and provider boundaries.
 
 ## Proposed
 
-На текущий момент предложенных, но не принятых ADR нет.
+Нет активных proposed ADR.
 
 ## Статусы
 
-- `Proposed` — решение подготовлено к обсуждению.
-- `Accepted` — решение является каноном.
-- `Superseded` — заменено новым ADR.
-- `Rejected` — рассмотрено и отклонено.
+- `Proposed` — подготовлено к обсуждению.
+- `Accepted` — канон.
+- `Superseded` — заменено.
+- `Rejected` — отклонено.
 
-Изменение статуса сопровождается датой, причиной и синхронизацией master/профильных спецификаций.
+Изменение статуса сопровождается датой, причиной и синхронизацией спецификаций.
 
 ## Research traceability
 
@@ -40,3 +43,4 @@ ADR-013 принят 2026-07-17 после SD-001 и решения владел
 - [Синтез технических решений](../research/DR-SYNTHESIS-2026-07-16.md)
 - [DR-003 — Programmer-First synthesis](../research/DR-003-PROGRAMMER-FIRST-DESIGN-SYNTHESIS-2026-07-17.md)
 - [SD-001 — Programmer Progression & Evidence Engine](../research/SD-001-PROGRAMMER-PROGRESSION-EVIDENCE-ENGINE-2026-07-17.md)
+- [SD-002 — Project & Work Package Engine](../research/SD-002-PROJECT-WORK-PACKAGE-ENGINE-2026-07-17.md)
