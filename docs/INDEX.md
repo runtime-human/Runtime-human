@@ -36,6 +36,8 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [ADR-016 — Professional Challenge Model](adr/ADR-016-authoritative-professional-challenge-model.md)
 - [Professional Challenge Engine](game-design/PROFESSIONAL-CHALLENGE-ENGINE.md)
 - [Professional Challenge UI](ui/PROFESSIONAL-CHALLENGE-UI.md)
+- [Professional Challenge Balance](simulation/PROFESSIONAL-CHALLENGE-BALANCE.md)
+- [Professional Challenge Implementation Plan](plans/PROFESSIONAL-CHALLENGE-IMPLEMENTATION-PLAN.md)
 - [SD-003 analysis](research/SD-003-PROFESSIONAL-CHALLENGE-CAPABILITY-ENGINE-2026-07-17.md)
 
 ## Projects
