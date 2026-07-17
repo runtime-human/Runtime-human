@@ -1,5 +1,7 @@
 # Границы модулей
 
+Нормативные решения: [ADR-004](../adr/ADR-004-persistence-execution-boundary.md) и [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md).
+
 ## Правило направления зависимостей
 
 ```text
@@ -37,6 +39,13 @@ SQLite / filesystem / Tauri
 
 Содержит TypeBox-схемы DTO, контента, save envelopes, IPC requests/results, Storybook fixtures и mod manifests. Не содержит поведения и side effects.
 
+Включает contracts для:
+
+- `ExperienceEpisode`;
+- professional state/evidence DTO;
+- progression read models;
+- skill/technology/grade content definitions.
+
 Generated schemas/types имеют один source и не редактируются вручную.
 
 ## `game-core`
@@ -48,6 +57,7 @@ Generated schemas/types имеют один source и не редактирую�
 - MonthRun engine;
 - Event Engine;
 - Narrative Director;
+- Professional Progression Core;
 - invariants;
 - deterministic randomness contracts;
 - calendar;
@@ -56,6 +66,50 @@ Generated schemas/types имеют один source и не редактирую�
 Запрещены импорты React, Tauri, Zustand, SQLite, filesystem, network, system `Date`, `Math.random` и production logger.
 
 Core не выполняет persistence. Он возвращает immutable result/checkpoint, который application layer передаёт в port.
+
+## Professional Progression Core
+
+Владеет:
+
+- `CharacterProfessionalState` transitions;
+- mastery/fluency/familiarity assessment;
+- experience assessment;
+- evidence materialization;
+- grade/readiness projections;
+- progression trace/explanations;
+- anti-repeat/dedup rules.
+
+Не владеет:
+
+- lifecycle проектов, work packages, вакансий, курсов и событий;
+- salary, employer, promotion и company state;
+- health/fatigue state;
+- provider-specific outcome truth;
+- persistence transaction;
+- UI formatting.
+
+Public input — immutable `ExperienceEpisode`. Public output — professional assessment/delta/evidence candidates/projections.
+
+## Experience Providers
+
+Provider modules:
+
+- Education;
+- Projects/Products;
+- Career/Employment;
+- Open Source;
+- Company/Leadership;
+- Event Engine.
+
+Каждый provider:
+
+- владеет своим task/activity/outcome lifecycle;
+- проверяет eligibility и domain invariants;
+- отделяет вклад персонажа от командного результата;
+- материализует stable `ExperienceEpisode`;
+- не изменяет skills/technologies/grade напрямую.
+
+Provider может использовать compiled definitions из `game-content`, но не импортирует внутренности Progression Core.
 
 ## `game-application`
 
@@ -70,7 +124,7 @@ Core не выполняет persistence. Он возвращает immutable re
 - backup/restore;
 - построение read models.
 
-Не содержит формул баланса, raw SQL и Tauri calls.
+Не содержит формул баланса, raw SQL, progression math и Tauri calls.
 
 ## `game-content`
 
@@ -79,19 +133,22 @@ Core не выполняет persistence. Он возвращает immutable re
 Владеет:
 
 - schemas/semantic validation orchestration;
+- skill/technology family/transfer definitions;
+- activity/challenge/grade profile definitions;
 - references/chronology;
 - load order и fingerprints;
 - tombstones/remaps;
 - localization resources;
 - built-in/mod pack registry.
 
-Не исполняет произвольный код контента.
+Не исполняет произвольный код контента и не вычисляет runtime progression.
 
 ## Persistence contracts
 
 Описывают typed repositories/services:
 
 - save snapshot/history;
+- professional snapshot/evidence ledger;
 - MonthRun draft/checkpoint/commit;
 - transaction/revision/idempotency;
 - migrations;
@@ -111,7 +168,7 @@ Platform contract не должен превращаться в универса
 
 Rust реализует persistence/platform contracts через узкие versioned commands. Production renderer не получает authoritative SQL execute, произвольный filesystem или shell capability.
 
-Rust не выбирает события, не вычисляет баланс и не интерпретирует content rules.
+Rust не выбирает события, не вычисляет progression/grade, не создаёт evidence claims и не интерпретирует content rules. Он валидирует DTO, checked integer ranges, idempotency и transaction consistency.
 
 ## `game-ui`
 
@@ -126,7 +183,7 @@ Rust не выбирает события, не вычисляет баланс 
 
 Не импортирует persistence implementation, raw Tauri API, `game-core` mutable state и SQL.
 
-UI получает данные/commands через typed application facade.
+UI получает capabilities, evidence, readiness и explanations через typed application/read-model facade. Он не пересчитывает grade или skill gain.
 
 ## `game-ui-fixtures`
 
@@ -138,7 +195,7 @@ UI получает данные/commands через typed application facade.
 - bug reproduction;
 - будущего Content Studio.
 
-Fixtures не используют system date/randomness, production save paths, сеть и privileged platform adapters.
+Fixtures включают novice/advanced professional read models, но не используют system date/randomness, production save paths, сеть и privileged platform adapters.
 
 `game-ui-fixtures` может зависеть от schemas/read-model contracts, но не от desktop composition/Rust implementation.
 
@@ -149,7 +206,7 @@ Storybook является development-only consumer `game-ui` и fixtures.
 Разрешено:
 
 - in-memory application/platform mocks;
-- deterministic read models;
+- deterministic professional/evidence read models;
 - interaction/a11y/visual tests.
 
 Запрещено:
@@ -158,7 +215,8 @@ Storybook является development-only consumer `game-ui` и fixtures.
 - updater/signing;
 - arbitrary filesystem/network;
 - release secrets;
-- production Tauri capabilities.
+- production Tauri capabilities;
+- grade/progression formula в story decorator.
 
 Storybook MCP, если включён, остаётся за той же boundary и не входит в release dependency graph.
 
@@ -172,7 +230,7 @@ Storybook MCP, если включён, остаётся за той же bounda
 - Tauri/Rust commands;
 - production adapters/configuration.
 
-Composition root не содержит gameplay formulas.
+Composition root не содержит gameplay/progression formulas.
 
 ## Архитектурные проверки
 
@@ -182,6 +240,10 @@ CI обязан блокировать:
 - импорт React/DOM/Zustand из core/application;
 - импорт persistence implementation из UI/Storybook;
 - импорт `game-core` internals из UI;
+- provider import внутренних progression modules вместо public contracts;
+- provider direct mutation `CharacterProfessionalState`;
+- grade calculation вне Progression Core;
+- evidence creation без `ExperienceEpisode`/source snapshot;
 - raw SQL strings вне Rust persistence module/migrations;
 - SQL execute capability у main production window;
 - production adapters/secrets в Storybook graph;
