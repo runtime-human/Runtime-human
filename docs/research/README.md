@@ -1,6 +1,6 @@
 # Deep Research и System Design — индекс
 
-Каталог хранит нормализованные исследования и системные анализы Runtime Human.
+Каталог хранит нормализованные исследования, системные анализы и design corrections Runtime Human.
 
 Research/system-design становится каноном только после accepted ADR и synchronization профильных спецификаций.
 
@@ -15,6 +15,7 @@ Research/system-design становится каноном только посл
 1. [DR-003 — Programmer-First synthesis](DR-003-PROGRAMMER-FIRST-DESIGN-SYNTHESIS-2026-07-17.md)
 2. [SD-001 — Programmer Progression & Evidence Engine](SD-001-PROGRAMMER-PROGRESSION-EVIDENCE-ENGINE-2026-07-17.md)
 3. [SD-002 — Project & Technical Work Package Engine](SD-002-PROJECT-WORK-PACKAGE-ENGINE-2026-07-17.md)
+4. [DC-001 — Casual-first complexity correction](DC-001-CASUAL-FIRST-COMPLEXITY-CORRECTION-2026-07-17.md)
 
 ## Нормативные результаты
 
@@ -26,36 +27,41 @@ Research/system-design становится каноном только посл
 ### SD-001 → ADR-013
 
 - Experience Providers → `ExperienceEpisode`;
-- mastery/fluency/familiarity;
-- claims-based append-only evidence;
-- authoritative grade awards;
-- readiness projections;
+- mastery/fluency/familiarity semantics;
+- traceable professional outcomes;
+- awarded grade vs readiness;
 - deterministic MonthRun/persistence.
-
-Normative spec: `docs/game-design/PROFESSIONAL-PROGRESSION-ENGINE.md`.
 
 ### SD-002 → ADR-014
 
 - Project Engine owns technical truth;
 - aggregated Work Packages, not tickets;
-- scope/requirements and deterministic uncertainty;
-- multidimensional quality/confidence;
-- technical debt pressure/records;
-- latent/known defects and incidents;
-- immutable releases and maintenance;
-- team vs character contribution;
-- typed Product/Open Source/Company/Career interfaces;
-- project outcome + episode/evidence atomic commit.
+- uncertainty, quality, debt/risk and release boundaries;
+- project outcome + progression atomic commit.
 
-Normative spec: `docs/game-design/PROJECT-WORK-PACKAGE-ENGINE.md`.
+### DC-001 → ADR-015
+
+- Runtime Human is casual-first;
+- architectural possibility is not mandatory implementation;
+- MVP Casual / Recommended / Extended profiles;
+- normal UI uses bounded human-readable concepts;
+- evidence, debt, defects, contribution and release detail are staged;
+- expanded simulation requires playtest evidence.
+
+Normative specs:
+
+- `docs/game-design/CASUAL-SIMULATION-DESIGN.md`;
+- `docs/game-design/PROFESSIONAL-PROGRESSION-ENGINE.md`;
+- `docs/game-design/PROJECT-WORK-PACKAGE-ENGINE.md`.
 
 ## Правила
 
 - official documentation and primary research have priority;
 - secondary sources support failure modes/practical confirmation;
-- current versions/facts are checked before implementation;
-- raw research is normalized and duplicate/unsupported claims removed;
-- fact, interpretation and Runtime Human applicability separated;
-- architectural decisions require ADR;
-- integration requires canon/contracts/migrations/tests/plans/traceability synchronization;
-- formulas/thresholds requiring playtest remain versioned hypotheses.
+- raw research is normalized;
+- fact, interpretation and project applicability separated;
+- architecture changes require ADR;
+- implementation complexity requires current gameplay justification;
+- extension seams do not create automatic roadmap items;
+- formulas/thresholds remain versioned hypotheses until playtest;
+- integration requires canon/contracts/tests/plans/traceability synchronization.
