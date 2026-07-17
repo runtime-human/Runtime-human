@@ -16,12 +16,16 @@
 - [ADR-012 — Storybook как UI и content workshop](ADR-012-storybook-ui-content-workshop.md)
 - [ADR-013 — Авторитетная модель профессиональной прогрессии и evidence](ADR-013-authoritative-professional-progression-evidence.md)
 - [ADR-014 — Авторитетная модель Project & Work Package](ADR-014-authoritative-project-work-package-model.md)
+- [ADR-015 — Casual-first abstraction и бюджет сложности](ADR-015-casual-first-abstraction-and-complexity-budget.md)
 
-ADR-004–012 приняты 2026-07-16 после технических Deep Research.
+## Decision sequence
 
-ADR-013 принят 2026-07-17 после SD-001.
+- ADR-004–012: technical Deep Research 2026-07-16.
+- ADR-013: SD-001 professional progression boundary.
+- ADR-014: SD-002 project/work-package boundary.
+- ADR-015: DC-001 casual-first correction; architecture seams remain, but MVP/roadmap implement only gameplay-proven complexity.
 
-ADR-014 принят 2026-07-17 после SD-002 и фиксирует shared technical Project Engine, aggregated Work Packages, multidimensional quality, debt/defects/releases and provider boundaries.
+ADR-015 constrains implementation scope of ADR-013/014 without отмены их ownership, determinism and compatibility guarantees.
 
 ## Proposed
 
@@ -34,13 +38,14 @@ ADR-014 принят 2026-07-17 после SD-002 и фиксирует shared t
 - `Superseded` — заменено.
 - `Rejected` — отклонено.
 
-Изменение статуса сопровождается датой, причиной и синхронизацией спецификаций.
+Изменение статуса сопровождается причиной и синхронизацией спецификаций.
 
 ## Research traceability
 
 - [DR-001 — аудит стека и архитектуры](../research/DR-001-STACK-ARCHITECTURE-AUDIT-2026-07-16.md)
 - [DR-002 — многоязычное исследование](../research/DR-002-MULTILINGUAL-GAMEDEV-STACK-RESEARCH-2026-07-16.md)
-- [Синтез технических решений](../research/DR-SYNTHESIS-2026-07-16.md)
+- [Technical synthesis](../research/DR-SYNTHESIS-2026-07-16.md)
 - [DR-003 — Programmer-First synthesis](../research/DR-003-PROGRAMMER-FIRST-DESIGN-SYNTHESIS-2026-07-17.md)
 - [SD-001 — Programmer Progression & Evidence Engine](../research/SD-001-PROGRAMMER-PROGRESSION-EVIDENCE-ENGINE-2026-07-17.md)
 - [SD-002 — Project & Work Package Engine](../research/SD-002-PROJECT-WORK-PACKAGE-ENGINE-2026-07-17.md)
+- [DC-001 — Casual-first complexity correction](../research/DC-001-CASUAL-FIRST-COMPLEXITY-CORRECTION-2026-07-17.md)

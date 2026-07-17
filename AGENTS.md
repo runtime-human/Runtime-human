@@ -20,66 +20,83 @@ Research does not override canon without ADR/spec synchronization.
 
 - PC-first, Windows-first, offline-first.
 - Free game without Steam/payment/backend dependency.
-- Runtime Human is primarily a programmer-development simulator.
-- Programmer Mastery and Professional Expression outrank life/narrative scope.
+- Runtime Human is a casual programmer-development simulator.
 - Programming is not one optional profession in a generic life simulator.
+- Programmer Mastery and Professional Expression outrank life/narrative scope.
 - Canonical start: January 1990, age 12.
-- One turn is one month with calendar days and integer work units.
+- One turn is one month.
 - No universal action points or mandatory percentage sliders.
-- Soft concrete constraints: time, money, health, calendar, attention, equipment, people.
+- Routine commitments continue automatically.
+- Player decisions are rare, concrete and consequence-bearing.
+- Ordinary month normally has 0–1 blocking decision.
+- Normal UI uses human language and bounded visible concepts.
+- Architecture completeness and realism are not gameplay goals by themselves.
 - One fictional metropolis; geography expansion needs ADR.
-- Game Core has no React/Tauri/SQLite/filesystem/network/system-time dependencies.
+- Core has no React/Tauri/SQLite/filesystem/network/system-time dependencies.
 - Renderer has no raw SQL execute.
 - Randomness uses seeded versioned PRNG/Manifest.
-- Authoritative arithmetic integer/fixed-point; no float fields in core.
+- Authoritative arithmetic integer/fixed-point.
 - Historical data has provenance; employers are fictional.
 
 Normative core:
 
+- [`CASUAL-SIMULATION-DESIGN.md`](docs/game-design/CASUAL-SIMULATION-DESIGN.md)
 - [`PROGRAMMER-FIRST-DESIGN.md`](docs/game-design/PROGRAMMER-FIRST-DESIGN.md)
 - [`PROFESSIONAL-PROGRESSION-ENGINE.md`](docs/game-design/PROFESSIONAL-PROGRESSION-ENGINE.md)
 - [`PROJECT-WORK-PACKAGE-ENGINE.md`](docs/game-design/PROJECT-WORK-PACKAGE-ENGINE.md)
 - [`ADR-013`](docs/adr/ADR-013-authoritative-professional-progression-evidence.md)
 - [`ADR-014`](docs/adr/ADR-014-authoritative-project-work-package-model.md)
+- [`ADR-015`](docs/adr/ADR-015-casual-first-abstraction-and-complexity-budget.md)
+
+## Casual-first invariants
+
+- MVP Casual is the only mandatory profile for Foundation/Vertical Slice.
+- Recommended/Extended features need playtest evidence.
+- Extension seam does not create an automatic implementation task.
+- Hidden state needs a current decision, consequence, exploit-protection or consistency purpose.
+- Do not add unused future fields to authoritative schemas.
+- Normal screen targets 3–5 primary objects.
+- Normal progression shows 3–5 relevant skills, capability text, readiness status and next step.
+- Normal project has 2–5 Work Packages and shows at most 1–3 active packages.
+- Normal project quality uses three base dimensions; situational dimensions exist only when relevant.
+- Debt/bugs aggregate; detailed ledgers are deferred.
+- Evidence is not the main UI; routine practice aggregates.
+- Details/Advanced do not change outcome and are not required for MVP.
+- No daily ticket, employee-hour or maintenance-click simulation.
 
 ## Professional progression invariants
 
 - Providers create stable `ExperienceEpisode`; Progression Core evaluates it.
 - Providers never change skills/grade directly.
-- Mastery, fluency, familiarity and evidence are separate.
+- Mastery, fluency, familiarity and evidence are semantically separate.
 - Assistance can improve learning without inflating autonomy.
-- Partial/failure is not full delivery/quality.
-- Meaningful evidence append-only; routine practice aggregates monthly.
-- Evidence has deterministic ID and semantic source/context snapshot.
-- Duplicate run/resume/decision does not duplicate evidence.
+- Partial/failure is not full delivery.
+- Meaningful evidence is traceable; routine practice aggregates.
+- Duplicate run/resume/decision does not duplicate progression.
 - Transfer needs target practice and creates no production evidence.
-- Tier C has no proficiency state.
 - Grade award authoritative; readiness/specialization rebuildable.
 - Short break can reduce fluency/market readiness, not erase mastery/grade.
 
-## Project & Work Package invariants
+## Project invariants
 
 - Project Engine owns technical project truth.
-- Work Package is an aggregated meaningful unit, not daily task, file, method or Jira ticket.
+- Work Package is aggregated, not a ticket/file/method.
 - Project is not one progress bar.
-- Quality is multidimensional; one score is never authoritative.
-- Low quality confidence is not automatically low quality.
-- Latent work/uncertainty/defect/release rolls are deterministic and do not change after reload.
-- Technical debt uses affected-scope drag/risk; no arbitrary monthly interest.
-- Minor debt/defects aggregate; significant records remain traceable.
-- Release record immutable after commit.
-- Product, Open Source, Company and Career use typed Project inputs/outputs and do not duplicate technical state.
-- Product revenue, stars, title or team success do not create technical quality/mastery automatically.
-- Team outcome, character direct contribution and delegated/leadership contribution remain distinct.
-- Player manages goals, scope, quality, ownership and guardrails, not every ticket/hour.
-- Project outcome, release, episode and evidence commit atomically.
-- Duplicate run/resume does not duplicate package outcome/release/incident/episode/evidence.
+- MVP uses bounded packages, simple uncertainty, three qualities, one debt/risk band and compact release state.
+- One quality score is never authoritative.
+- Situational quality/debt/defect fields are added only with current gameplay.
+- Hidden outcomes do not reroll after reload.
+- Debt creates future consequence, not a monthly chore.
+- Minor debt/defects aggregate.
+- Product, Company, Career and Open Source do not duplicate ProjectState.
+- Team result and character contribution remain distinct.
+- Project outcome and progression commit atomically.
 
 ## Engineering baseline
 
-- TypeScript 7 is production typechecker.
-- Storybook 10 required UI/content workshop.
-- Rust is persistence/platform boundary, not gameplay judge.
+- TypeScript 7 production typechecker.
+- Storybook 10 UI/content workshop.
+- Rust persistence/platform boundary, not gameplay judge.
 - SQLite minimum 3.51.3+ or confirmed WAL backport.
 - MonthRun persisted crash-safe state machine.
 - Storybook has no production Tauri permissions.
@@ -90,15 +107,20 @@ Normative core:
 - `main` contains accepted canon.
 - Substantial work uses branch/PR.
 - Architecture decision requires ADR.
-- Save/project/professional schema change requires migration/compatibility tests.
-- Stable content ID change requires tombstone/migration review.
+- Schema change requires migration/compatibility assessment for implemented fields.
+- Stable content IDs require tombstone/migration review.
 - Historical changes require source review.
-- Project lifecycle, WorkPackage, quality, debt, defect, release, contribution, progression or RNG changes require balance baseline comparison.
-- Awarded-grade or committed-release transforms require human review/audit trail.
+- Gameplay depth change documents:
+  - current player problem;
+  - simpler alternative;
+  - player-facing decision/consequence;
+  - normal UI;
+  - playtest criterion;
+  - state/content/test cost.
 - Workflow/capability/migration/updater/signing changes require human review.
 - Dependencies need license/support/security rationale.
 - Code and docs change together when contracts change.
-- UI change updates stories/tests.
+- UI changes update stories/tests.
 
 ## Agent security
 
@@ -116,30 +138,20 @@ pnpm verify
 pnpm verify:release
 ```
 
-Progression verification:
+MVP gameplay verification:
 
-- deterministic episode → delta → evidence;
-- no duplicate evidence;
-- provider boundary;
-- partial/failure/assistance semantics;
-- readiness rebuild;
-- migration/compatibility;
-- farming/time-to-grade simulation.
+- player goal/choice comprehension;
+- 10–20 second ordinary decision target;
+- monthly causality;
+- bounded visible concepts;
+- no duplicate/reroll;
+- assisted/partial/failure semantics;
+- one project trade-off;
+- first-month recovery;
+- accessibility/long RU;
+- desire to continue.
 
-Project verification:
-
-- WorkPackage state-machine/property tests;
-- deterministic latent work/defect/release fixtures;
-- forecast calibration;
-- quality confidence/debt drag/defect materialization;
-- release immutability/gates;
-- team vs character contribution;
-- no duplicate package/release/incident/episode/evidence;
-- project outcome + progression atomic commit;
-- project spam/debt spiral/release spam/parallelization/delegation simulations;
-- migration/recovery corpus.
-
-UI tasks report Storybook/visual/a11y. Persistence tasks report Rust/integration/recovery.
+Do not require Extended-system tests before those systems exist.
 
 Before scaffold, list actual documentation/contract checks performed.
 
@@ -148,10 +160,11 @@ Before scaffold, list actual documentation/contract checks performed.
 Include:
 
 - changed files/public contracts;
-- authoritative/append-only/derived state impact;
+- active implementation profile;
+- visible complexity impact;
+- authoritative/derived state impact;
 - migrations/content IDs;
-- stories/fixtures;
-- verification/balance results;
-- module ownership impact;
-- recovery/compatibility impact;
-- known risks/deferred work.
+- stories/fixtures/playtest criteria;
+- verification results;
+- deferred Extended work;
+- recovery/compatibility impact.

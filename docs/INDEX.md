@@ -10,21 +10,33 @@
 
 Research не становится каноном без ADR/spec synchronization.
 
-## Ключевые системные решения
+## Ключевой продуктовый канон
 
-### Programmer-first and progression
+- [ADR-015 — Casual-first abstraction и бюджет сложности](adr/ADR-015-casual-first-abstraction-and-complexity-budget.md)
+- [Casual Simulation Design](game-design/CASUAL-SIMULATION-DESIGN.md)
+- [Gameplay Canon](game-design/GAMEPLAY-CANON.md)
+- [Programmer-First Design](game-design/PROGRAMMER-FIRST-DESIGN.md)
+- [DC-001 — Casual-first correction](research/DC-001-CASUAL-FIRST-COMPLEXITY-CORRECTION-2026-07-17.md)
+
+Приоритет реализации:
+
+```text
+MVP Casual → playtest → Recommended → proven Extended features
+```
+
+## Professional progression
 
 - [ADR-013 — Professional Progression & Evidence](adr/ADR-013-authoritative-professional-progression-evidence.md)
 - [Professional Progression Engine](game-design/PROFESSIONAL-PROGRESSION-ENGINE.md)
-- [SD-001 — Progression & Evidence analysis](research/SD-001-PROGRAMMER-PROGRESSION-EVIDENCE-ENGINE-2026-07-17.md)
 - [Professional Progression UI](ui/PROFESSIONAL-PROGRESSION-UI.md)
+- [SD-001 analysis](research/SD-001-PROGRAMMER-PROGRESSION-EVIDENCE-ENGINE-2026-07-17.md)
 
-### Projects
+## Projects
 
 - [ADR-014 — Project & Work Package Model](adr/ADR-014-authoritative-project-work-package-model.md)
 - [Project & Work Package Engine](game-design/PROJECT-WORK-PACKAGE-ENGINE.md)
-- [SD-002 — Project & Work Package analysis](research/SD-002-PROJECT-WORK-PACKAGE-ENGINE-2026-07-17.md)
 - [Project & Work Package UI](ui/PROJECT-WORK-PACKAGE-UI.md)
+- [SD-002 analysis](research/SD-002-PROJECT-WORK-PACKAGE-ENGINE-2026-07-17.md)
 
 ## Исследования
 
@@ -47,8 +59,6 @@ Research не становится каноном без ADR/spec synchronizatio
 
 ## Игровой дизайн
 
-- [Gameplay Canon](game-design/GAMEPLAY-CANON.md)
-- [Programmer-First Design](game-design/PROGRAMMER-FIRST-DESIGN.md)
 - [Character Progression](game-design/CHARACTER-PROGRESSION.md)
 - [Skills & Technologies](game-design/SKILLS-AND-TECHNOLOGIES.md)
 - [Monthly Loop](game-design/MONTHLY-GAME-LOOP.md)
@@ -70,7 +80,6 @@ Research не становится каноном без ADR/spec synchronizatio
 - [Randomness](simulation/RANDOMNESS.md)
 - [Balance Simulation](simulation/BALANCE-SIMULATION.md)
 - [Event Engine](events/EVENT-ENGINE.md)
-- [Event Content Schema](events/EVENT-CONTENT-SCHEMA.md)
 - [Narrative Director](events/NARRATIVE-DIRECTOR.md)
 - [NPC Memory](events/NPC-AND-NARRATIVE-MEMORY.md)
 

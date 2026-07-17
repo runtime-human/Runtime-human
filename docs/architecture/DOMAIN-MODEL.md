@@ -3,12 +3,13 @@
 Нормативные решения:
 
 - [ADR-010 — Authoritative Save State](../adr/ADR-010-authoritative-save-state.md);
-- [ADR-013 — Professional Progression & Evidence](../adr/ADR-013-authoritative-professional-progression-evidence.md);
-- [ADR-014 — Project & Work Package Model](../adr/ADR-014-authoritative-project-work-package-model.md).
+- [ADR-013 — Professional Progression](../adr/ADR-013-authoritative-professional-progression-evidence.md);
+- [ADR-014 — Project & Work Package](../adr/ADR-014-authoritative-project-work-package-model.md);
+- [ADR-015 — Casual-first Complexity](../adr/ADR-015-casual-first-abstraction-and-complexity-budget.md).
 
-## Consistency boundary
+## 1. Consistency boundary
 
-`SaveGameState` является consistency boundary завершённого месяца. Состояние нормализовано по модулям, но MonthRun commit проверяет межмодульные invariants и записывает их атомарно.
+`SaveGameState` является consistency boundary завершённого месяца. MonthRun commit проверяет межмодульные invariants и сохраняет изменения атомарно.
 
 ```ts
 type SaveGameState = Readonly<{
@@ -31,13 +32,26 @@ type SaveGameState = Readonly<{
 }>;
 ```
 
-## CharacterState
+Пустой/неоткрытый модуль может использовать минимальный empty state. Наличие поля в верхнем GameState не требует реализации полной подсистемы.
 
-Содержит identity, birth date, life stage, traits, health/capacity statuses и ключевые жизненные milestones.
+## 2. Implementation profile rule
 
-Профессиональная прогрессия выделена в `CharacterProfessionalState`.
+Authoritative state хранит только поля, необходимые текущему реализованному gameplay.
 
-## CharacterProfessionalState
+- MVP Casual не резервирует full Extended state.
+- Recommended fields добавляются migrations вместе с feature.
+- Extended fields не добавляются «на будущее».
+- Derived UI detail не становится authoritative без причины.
+
+## 3. CharacterState
+
+Содержит identity, birth date, life stage, traits, health/capacity statuses и ключевые milestones.
+
+Professional state выделен отдельно.
+
+## 4. CharacterProfessionalState
+
+MVP:
 
 ```ts
 type CharacterProfessionalState = Readonly<{
@@ -47,236 +61,228 @@ type CharacterProfessionalState = Readonly<{
   technologies: Readonly<Record<TechnologyId, TechnologyProficiencyState>>;
   professionalFocus: ProfessionalFocus;
   awardedGrades: readonly ProfessionalGradeAward[];
-  monthlyPractice: Readonly<Record<PracticeAggregateKey, PracticeAccumulator>>;
 }>;
 ```
 
-Authoritative:
+```ts
+type SkillState = Readonly<{
+  skillId: SkillId;
+  mastery: MasteryPoint;
+  fluency: FluencyPoint;
+  lastPracticedMonth: MonthIndex;
+}>;
+```
 
-- reasoning/learning aptitude;
-- skill mastery/fluency;
-- technology conceptual/operational familiarity;
-- professional focus;
-- awarded grades;
-- current MonthRun practice draft.
+```ts
+type TechnologyProficiencyState = Readonly<{
+  technologyId: TechnologyId;
+  familyId: TechnologyFamilyId;
+  familiarity: FamiliarityPoint;
+  lastPracticedMonth: MonthIndex;
+}>;
+```
+
+Recommended/Extended могут добавить conceptual/operational/version fields и practice accumulators только вместе с соответствующим gameplay.
 
 Rebuildable:
 
-- demonstrated/current-market readiness;
-- specialization profile;
+- readiness status/profile;
+- specialization;
 - capability cards;
-- evidence indexes;
-- professional reports.
+- history indexes;
+- monthly report.
 
-## Professional Evidence
+## 5. Professional history
 
-`ProfessionalEvidenceEvent` — append-only history с semantic source/context snapshot и `EvidenceClaim`.
+MVP meaningful history:
 
-Routine practice сворачивается в `MonthlyPracticeAggregate`.
+```ts
+type ProfessionalEvidenceEvent = Readonly<{
+  id: ProfessionalEvidenceId;
+  period: GameDateRange;
+  sourceSnapshot: EvidenceSourceSnapshot;
+  outcome: ProfessionalOutcomeKind;
+  summary: EvidenceSummary;
+  skills: readonly SkillId[];
+  participation: ParticipationKind;
+  rulesVersion: RulesVersion;
+  traceHash: TraceHash;
+}>;
+```
 
-Grade award authoritative; readiness projection rebuildable.
+Routine practice groups monthly and does not create one record per action/day.
 
-## Experience Providers
+Detailed claims/evidence browser are Recommended/Extended.
 
-Education, Project, Career, Open Source, Company и Event domains владеют своим outcome lifecycle и создают `ExperienceEpisode`.
+## 6. Experience Providers
 
-Provider не изменяет skill/technology/grade напрямую.
+Education, Project, Career, Open Source, Company and Event domains create stable `ExperienceEpisode`.
 
-## ProjectState
+Provider owns domain outcome. Progression owns professional interpretation.
 
-Project Engine владеет technical truth:
+## 7. MVP ProjectState
 
 ```ts
 type ProjectState = Readonly<{
   schemaVersion: ProjectStateSchemaVersion;
   id: ProjectId;
-  archetypeId: ProjectArchetypeId;
-  kind: ProjectKind;
-  lifecycle: ProjectLifecycleState;
-  createdAt: GameDate;
-  owner: ProjectOwnerRef;
-  goals: readonly ProjectGoal[];
-  constraints: readonly ProjectConstraint[];
-  scope: ProjectScopeState;
-  technologies: readonly ProjectTechnologyRef[];
-  components: Readonly<Record<ProjectComponentId, ProjectComponentState>>;
-  workPackages: Readonly<Record<WorkPackageId, WorkPackageState>>;
-  quality: ProjectQualityState;
-  debt: TechnicalDebtState;
-  defects: ProjectDefectState;
-  maintenance: ProjectMaintenanceState;
-  participantPlan: ProjectParticipantPlan;
-  lastReleaseId?: ReleaseId;
-  projectRevision: ProjectRevision;
+  titleKey: LocalizationKey;
+  stage: CasualProjectStage;
+  goal: ProjectGoalSummary;
+  packages: Readonly<Record<WorkPackageId, WorkPackageState>>;
+  quality: CasualQualityProfile;
+  debt: DebtBand;
+  risk: ProjectRiskBand;
+  knownIssue?: CasualKnownIssue;
+  releaseState: CasualReleaseState;
+  revision: ProjectRevision;
 }>;
 ```
 
-ProjectState не хранит:
+MVP does not contain:
 
-- product users/revenue/churn;
-- open-source governance/community health;
-- company payroll/hiring;
-- career salary/promotion;
-- character mastery/grade.
+- components;
+- requirement graph;
+- detailed participant plan;
+- maintenance pressure model;
+- debt/defect ledger;
+- rollout/support policy.
 
-## Project lifecycle
+Those fields are added with later features, not reserved now.
 
-```text
-idea → discovery → active-development → released → maintenance
-→ completed / archived / transferred / sold / abandoned
+## 8. WorkPackageState
+
+```ts
+type WorkPackageState = Readonly<{
+  id: WorkPackageId;
+  projectId: ProjectId;
+  kind: CasualWorkPackageKind;
+  state: CasualWorkPackageLifecycle;
+  objectiveKey: LocalizationKey;
+  progress: ProgressBand;
+  challenge: CasualChallengeBand;
+  uncertainty: UncertaintyBand;
+  forecast: ForecastBand;
+  pendingDecisionId?: DecisionId;
+  resolvedOutcome?: CasualWorkPackageOutcome;
+  revision: WorkPackageRevision;
+}>;
 ```
 
-Terminal/archived project не получает normal progress.
+Work Package is an aggregated stage, not a ticket.
 
-## ProjectScopeState
-
-Хранит небольшое число смысловых slices:
-
-- committed;
-- optional;
-- deferred;
-- removed tombstones;
-- requirements/acceptance criteria;
-- uncertainty/volatility;
-- stable revision.
-
-Scope slice не является Jira ticket.
-
-## WorkPackageState
-
-`WorkPackage` — минимальная authoritative единица significant technical work.
-
-Хранит:
-
-- objective/kind;
-- scope refs;
-- challenge profile;
-- known remaining work;
-- deterministic latent work state;
-- uncertainty;
-- quality targets;
-- risk/technology/skill application expectations;
-- dependencies;
-- participant plan;
-- progress/deadline;
-- pending decision;
-- resolved outcome;
-- revision.
-
-Lifecycle:
+MVP lifecycle:
 
 ```text
-draft → ready → active
-active → blocked / suspended-for-decision / resolved / deferred / cancelled
+planned → active → blocked / completed / needs-rework
 ```
 
-`resolvedOutcome` различает completed, partial, failed, recovered.
+Internal suspend state lives in MonthRun draft where appropriate.
 
-## Project quality
+## 9. Project quality
 
-Authoritative quality не является одной шкалой.
+MVP:
 
-Active dimensions выбираются project archetype:
+```ts
+type CasualQualityProfile = Readonly<{
+  functional: QualityBand;
+  usability: QualityBand;
+  maintainability: QualityBand;
+  situational?: readonly CasualSituationalQuality[];
+}>;
+```
 
-- functional correctness;
-- usability/experience;
-- reliability;
-- performance efficiency;
-- security/safety;
-- maintainability;
-- supportability/operability.
+Situational quality exists only for current relevant gameplay.
 
-Каждая dimension хранит target, assessed band, confidence, trend and source.
+No authoritative universal quality score.
 
-## Technical debt
+## 10. Debt, risk and defects
 
-`TechnicalDebtState` содержит:
+MVP:
 
-- aggregate pressure для мелкого routine debt;
-- significant `TechnicalDebtRecord` с origin, category, affected scope, principal work, change drag, defect risk, confidence и mitigation state.
+- `DebtBand`;
+- `ProjectRiskBand`;
+- optional player-relevant `CasualKnownIssue`.
 
-Debt влияет на будущую работу только через affected areas/change/support/risk, а не произвольный monthly interest.
+Minor debt/bugs aggregate.
 
-## Defects and incidents
+Significant debt records, known-defect inventory, incidents and rollback become separate state only with Recommended/Extended gameplay.
 
-`ProjectDefectState` разделяет:
+## 11. Release
 
-- latent defect risk aggregates;
-- known significant defects;
-- unresolved critical count;
-- escaped defects/incidents через append-only history.
+MVP committed release:
 
-Minor defects могут быть агрегированы. Reload не reroll materialization.
+```ts
+type CasualReleaseRecord = Readonly<{
+  id: ReleaseId;
+  projectId: ProjectId;
+  releasedAt: GameDate;
+  outcomeSummary: LocalizationKey;
+  quality: CasualQualityProfile;
+  debt: DebtBand;
+  knownIssue?: CasualKnownIssueSnapshot;
+  contribution: ParticipationKind;
+  rulesVersion: RulesVersion;
+  traceHash: TraceHash;
+}>;
+```
 
-## Releases
+Record immutable after commit.
 
-`ReleaseRecord` append-only immutable milestone:
+Detailed scope snapshots, rollout, rollback, support and contribution ledger are later extensions.
 
-- included scope/packages;
-- quality/confidence snapshot;
-- known issues;
-- accepted debt/risk;
-- rollout/support policy;
-- technical outcome;
-- rollback/incident state;
-- contribution snapshot;
-- rules/trace identifiers.
+## 12. Contribution
 
-Product/Open Source/Company используют release outcome, но не переписывают technical history.
+MVP participation:
 
-## Contribution
+- independent;
+- assisted;
+- team;
+- review-or-leadership.
 
-Project Engine отделяет:
+Vertical Slice requires only independent/assisted.
 
-- team/project outcome;
-- direct character contribution;
-- review/architecture/mentoring;
-- delegated/leadership contribution;
-- external/team-only result.
+Project outcome and character participation remain separate.
 
-Только traceable contribution входит в `ExperienceEpisode`.
+## 13. Employment
 
-## Employment
+Employment owns employer, position/title, contract, salary, schedule and career risks.
 
-Хранит employer, position/title/company level, contract, salary, schedule, work project refs, team relationships and career risks.
+It may reference work projects but does not own ProjectState or professional grade.
 
-Employment задаёт constraints/expectations и получает project contribution/outcome summaries. Не владеет technical ProjectState или professional grade.
+Detailed teams/role expectations are added with Career gameplay.
 
-## ProductState
+## 14. ProductState
 
-Владеет market/economic state:
+Product owns market/economic state and consumes release outcome.
 
-- users/adoption;
-- pricing/revenue/cost;
-- churn;
-- market fit/competition;
-- support demand.
+Product may remain empty/unimplemented in MVP. ProjectState does not reserve users/revenue fields.
 
-Получает `ReleaseTechnicalOutcome` и возвращает demand/support signals.
+## 15. CompanyState
 
-## CompanyState
+Company owns employees, teams, cash and strategy when system exists. It provides capacity/ownership signals to Project Engine.
 
-Владеет ownership, employees, teams, cash, expenses, strategy, portfolio priorities, hiring/retention and organizational policies.
+No Company/team/delegation state is required in Vertical Slice.
 
-Company передаёт Project Engine participant capacity/ownership/budgets/tooling constraints. Не хранит duplicate project quality/debt/defects.
+## 16. Open Source extension
 
-## Open Source extension
+Owns community/governance/funding when implemented. Uses shared Project Engine technical outcome.
 
-Владеет contributors, maintainers, governance, community health, sponsorship, forks and ownership transfer.
+No OSS state required in Vertical Slice.
 
-Использует Project Engine для technical scope/packages/quality/debt/defects/releases.
+## 17. People and relationships
 
-## Person and Relationship
+NPC use stable IDs and active/background/archived tiers.
 
-NPC имеют stable ID и tiers active/background/archived.
+Professional mentoring may affect an episode but does not duplicate canonical project/progression history.
 
-Professional memory может хранить mentoring, review, shared project and technical trust facts, но canonical contribution/evidence остаётся в Project/Progression ledgers.
+## 18. Activity
 
-## Activity
+Long activity stores commitment-level goal, priority, dates and required capacity.
 
-Длительное занятие хранит commitment-level goal, priority, work units, dates and participants. Project work деталируется через Work Packages.
+Routine progress is automatic. Project technical stages use Work Packages.
 
-## World
+## 19. World
 
 ```ts
 type WorldState = Readonly<{
@@ -285,51 +291,33 @@ type WorldState = Readonly<{
   currentEra: EraId;
   localMarket: LocalMarketState;
   technologyCatalogRevision: string;
-  projectCapabilityRevision: string;
 }>;
 ```
 
-Era определяет доступные tools, distribution, collaboration, deployment and project archetypes.
+Additional capability revisions are added only with implemented systems.
 
-## Append-only histories
+## 20. Histories
 
-- professional evidence/grade awards;
+MVP append-only histories:
+
+- important professional results;
+- awarded grades when present;
 - releases;
-- major scope/architecture decisions;
-- incidents;
-- project lifecycle milestones;
-- significant contribution summaries;
-- finance ledger;
-- migrations/repairs.
+- important project decisions;
+- major life events;
+- migration/repair history.
 
-## Rebuildable projections
+Do not create empty ledgers for unimplemented debt, incidents, teams or portfolios.
 
-- readiness/specialization;
-- project health/dashboard;
-- forecast cards;
-- grouped risk/debt/defect summaries;
-- portfolio comparison;
-- release charts;
-- monthly reports.
+## 21. Invariants
 
-## Invariants
-
-- date/MonthIndex do not decrease;
-- money and authoritative arithmetic checked integer/fixed-point;
-- terminal project/package/activity does not progress;
-- package belongs to one project;
-- exact latent work realization does not reroll;
-- scope/dependency refs valid or tombstoned;
-- partial outcome is not full delivery;
-- release immutable and references valid package/scope snapshots;
-- low quality confidence is not automatically low quality;
-- debt drag affects only applicable areas;
-- defects do not reroll on reload;
-- Project Engine does not mutate professional state;
-- team outcome separated from character contribution;
-- product revenue/fame does not mutate technical quality/mastery;
-- evidence always has source/context snapshot;
-- provider outcome, ProjectState delta and evidence commit atomically;
-- duplicate MonthRun/resume does not duplicate package outcome/release/episode/evidence;
-- awarded grade does not demote automatically;
-- derived projections reproducible from authoritative state/history.
+- SaveGameState atomic at month boundary.
+- Provider outcome separated from progression interpretation.
+- Project technical truth separated from Product/Career/Company.
+- Awarded grade not derived from XP/title.
+- Project not ticket list or one progress score.
+- Hidden outcome deterministic.
+- Release immutable.
+- Routine history aggregated.
+- Extended fields absent until gameplay uses them.
+- UI projections rebuildable.

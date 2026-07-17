@@ -2,35 +2,62 @@
 
 ## Статус
 
-Нормативная межсистемная спецификация product hierarchy. Она уточняет `GAMEPLAY-CANON.md` и применяется ко всем игровым подсистемам, контенту, UI, balance simulation и планам реализации.
+Нормативная межсистемная specification product hierarchy.
 
-Профессиональная progression/evidence модель вынесена в:
+Связанные документы:
 
-- [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md);
-- [Professional Progression & Evidence Engine](PROFESSIONAL-PROGRESSION-ENGINE.md).
+- [Casual Simulation Design](CASUAL-SIMULATION-DESIGN.md);
+- [ADR-015](../adr/ADR-015-casual-first-abstraction-and-complexity-budget.md);
+- [Professional Progression Engine](PROFESSIONAL-PROGRESSION-ENGINE.md);
+- [Project & Work Package Engine](PROJECT-WORK-PACKAGE-ENGINE.md).
 
-Эти документы имеют приоритет в вопросах aptitudes, skills, mastery/fluency/familiarity, evidence и grades.
+`CASUAL-SIMULATION-DESIGN.md` имеет приоритет в вопросах visible complexity, MVP scope и progressive disclosure.
 
 ## 1. Product statement
 
-Runtime Human — симулятор становления, работы и наследия программиста, в котором человеческая жизнь создаёт цену, ограничения, контекст и смысл профессионального пути.
+Runtime Human — казуальный текстовый симулятор становления, работы и наследия программиста.
 
-Программирование не является одной из равноправных профессий внутри универсального life simulator. Оно является центральной игровой идентичностью персонажа и главным источником долгосрочной прогрессии.
+Человеческая жизнь создаёт цену, ограничения и смысл профессионального пути. Внутренняя симуляция может быть глубже пользовательского представления, но глубина не измеряется количеством шкал, таблиц и сущностей.
+
+Основная формула:
+
+```text
+понятная ситуация
+→ редкий содержательный выбор
+→ автоматический месяц
+→ правдоподобное последствие
+→ короткое объяснение
+→ следующий интересный вариант
+```
 
 ## 2. Иерархия систем
 
-При конфликте объёма, экранного пространства, контентного бюджета или blocking events действует следующий приоритет:
+При конфликте scope:
 
-1. **Programmer Mastery Core** — skills, technologies, реальные задачи, качество, инженерная зрелость и evidence.
-2. **Professional Expression** — работа, проекты, продукты, open source, публичная экспертиза, лидерство и компания.
-3. **Human Constraints and Values** — здоровье, отношения, семья, деньги, жильё, возраст и обязательства.
-4. **Narrative, Era and Philosophy** — исторический контекст, личные арки, delayed consequences, наследие и итоговая интерпретация жизни.
+1. **Programmer Mastery Core** — обучение, skills, technologies, реальные задачи и профессиональный рост.
+2. **Professional Expression** — работа, проекты, продукты, open source, лидерство и компания.
+3. **Human Constraints and Values** — здоровье, отношения, семья, деньги, жильё и обязательства.
+4. **Narrative, Era and Philosophy** — история, личные арки, delayed consequences и legacy.
 
-Нижний слой может изменить смысл или цену решений верхнего слоя, но не должен вытеснять его из основного игрового цикла.
+При конфликте внутри каждого слоя действует дополнительное правило:
 
-## 3. Programmer Mastery Core
+> Понятный meaningful choice важнее полной симуляционной детализации.
 
-Обязательные области:
+## 3. Casual-first constraints
+
+- normal mode не требует знания внутренних терминов;
+- обычный месяц содержит 0–1 blocking decision;
+- routine выполняется автоматически;
+- один экран показывает 3–5 primary objects;
+- одна system concept не дублируется несколькими visible bars;
+- скрытое состояние существует только ради текущего decision/consequence/consistency;
+- advanced details не являются обязательной частью MVP;
+- architecture seam не создаёт automatic roadmap task;
+- расширение требует playtest evidence.
+
+## 4. Programmer Mastery Core
+
+Полный semantic graph может включать:
 
 - problem solving;
 - programming;
@@ -46,251 +73,210 @@ Runtime Human — симулятор становления, работы и н�
 - review/mentoring/leadership;
 - community stewardship.
 
-Точный skill graph и visibility tiers определены в `PROFESSIONAL-PROGRESSION-ENGINE.md`.
+Но visible scope раскрывается по этапам:
 
-## 4. Aptitudes и профессиональное состояние
+- MVP: 3–5 relevant skills;
+- Recommended: дополнительные skills по мере career;
+- Extended: полный graph и advanced detail.
+
+Отдельный progress bar не создаётся для каждого facet, tool или библиотеки.
+
+## 5. Aptitudes и professional state
 
 Baseline aptitudes:
 
 - Reasoning Aptitude;
 - Learning Adaptability.
 
-Они являются узкими медленно меняющимися modifiers, а не RPG-судьбой и не главным scoreboard.
+Они являются узкими hidden/secondary modifiers, не RPG-судьбой.
 
-Self-Organization, Communication, Focus, Creativity и Persistence моделируются skills, traits и current statuses согласно профильным спецификациям.
+Internal professional state может разделять mastery, fluency, technology familiarity и evidence, но normal UI показывает:
 
-Authoritative professional state разделяет:
-
-- mastery;
-- fluency;
+- capability phrase;
+- relevant skills;
 - technology familiarity;
-- professional focus;
-- awarded grade milestones;
-- evidence/practice history.
+- readiness status;
+- next useful step.
 
-Grade readiness и specialization являются projections.
+## 6. Significant decision budget
 
-## 5. Significant decision budget
+Для active professional life:
 
-`MeaningfulDecision` — решение, изменяющее долгосрочное состояние, commitment, риск, проект, карьеру, relationship, technology или professional evidence.
+- programmer/professional choices остаются majority;
+- life-only events не вытесняют technical path;
+- обычный месяц — 0–1 blocking decision;
+- насыщенный milestone/crisis month — до 2 связанных decisions;
+- quiet month допустим и группирует routine progress;
+- серия однотипных choices должна менять контекст или consequence.
 
-Для rolling window в 12 месяцев до выхода из активной профессиональной жизни:
+Точные rolling percentages остаются balance diagnostics, а не генератором модальных окон.
 
-- минимум 60% meaningful decisions затрагивают Programmer Mastery Core или Professional Expression;
-- минимум 40% имеют прямой technical component;
-- life-only decisions не превышают 35% без активного crisis arc;
-- philosophy/legacy-only decisions до late career не превышают 10%;
-- минимум 8 из 12 месяцев дают видимый professional outcome либо объяснимую профессиональную паузу;
-- серия без нового technical evidence обычно не превышает 3 месяцев, кроме болезни, ухода за близким, отпуска, безработицы или выбранного sabbatical.
+## 7. Experience providers и progression
 
-Показатели являются balance targets. Они не требуют отдельного modal decision каждый месяц.
+Education, Projects, Career, Open Source, Company и Events владеют своими outcomes и передают `ExperienceEpisode`.
 
-## 6. Experience providers и progression
+Progression Core:
 
-Education, Projects, Career, Open Source, Company и Events владеют своими activities/tasks/outcomes и передают `ExperienceEpisode`.
+- оценивает learning;
+- обновляет skill/technology state;
+- создаёт aggregated professional result;
+- строит readiness projection;
+- объясняет change.
 
-Professional Progression Core:
+Provider не меняет skills напрямую, Progression не переписывает provider truth.
 
-- не владеет project/job/course lifecycle;
-- отдельно рассчитывает mastery, fluency/familiarity и evidence;
-- не создаёт grade из общего XP;
-- материализует evidence только из traceable outcome;
-- строит explainable readiness projections.
+## 8. Evidence и grades
 
-## 7. Professional Evidence и grades
+Evidence нужен для причинности и защиты грейда от XP shortcut.
 
-Meaningful professional outcome создаёт append-only evidence claims. Routine practice агрегируется помесячно.
+В MVP:
+
+- один meaningful outcome создаёт один human-readable summary;
+- routine practice агрегируется;
+- evidence matrix/timeline не показывается;
+- readiness status состоит из понятных областей;
+- no grade award required in first month.
 
 Professional grade:
 
-- является achieved milestone;
-- не равен стажу, XP, salary, title, role, reputation или fame;
-- требует capability gates, устойчивости и нескольких contexts;
-- не понижается автоматически после временного перерыва.
+- achieved milestone;
+- не равен XP, стажу, title, salary или fame;
+- не понижается автоматически после перерыва;
+- требует нескольких meaningful contexts.
 
-Разделяются:
+Top Programmer — late-game status, а не обязательный ранний formula target.
 
-- Demonstrated Grade Readiness;
-- Current Market Readiness.
+## 9. Technology policy
 
-Top Programmer — редкий endgame status с длительным impact, а не обычный числовой следующий grade.
+Technology tiers/lifecycle существуют для historical and gameplay meaning.
 
-## 8. Technology policy
+MVP:
 
-Каждая technology имеет Tier A/B/C.
+- одна technology family;
+- одна technology;
+- одна familiarity state;
+- no full version graph/transfer UI.
 
-- Tier A — самостоятельный gameplay/lifecycle/proficiency;
-- Tier B — identity с общей family mechanics;
-- Tier C — tag/context без отдельной progression bar.
+Recommended/Extended добавляют lifecycle, transfer и legacy context только при появлении соответствующего выбора.
 
-Technology lifecycle:
+## 10. Projects
 
-```text
-announced
-→ available
-→ learnable locally
-→ early adoption
-→ growing demand
-→ mainstream
-→ mature
-→ declining
-→ legacy
-→ end-of-support
-```
+Проект является главным местом применения навыков, но не становится Jira simulator.
 
-Directed transfer ускоряет learning/reacquisition, но не создаёт production evidence и не повышает grade.
+MVP project:
 
-## 9. Project as mastery engine
+- одна цель;
+- 2 Work Packages;
+- 3 quality bands;
+- uncertainty;
+- debt/risk band;
+- one release choice;
+- one professional outcome.
 
-Проект является главным местом, где знания превращаются в evidence.
+Игрок не управляет daily tasks, requirement checklist, debt ledger или bug inventory.
+
+Проект не может быть только progress bar: минимум один trade-off меняет scope, quality, risk, release или future cost.
+
+## 11. Career
+
+Работа создаёт автоматические task contexts, income, feedback и professional opportunities.
 
 Игрок принимает решения о:
 
-- scope;
-- quality priorities;
-- technology;
-- сроки/качество/debt;
-- research/implementation/testing/refactor/release;
-- bugs/incidents/feedback;
-- завершение, support, transfer, sale или archive.
+- направлении;
+- важных задачах;
+- качестве/сроке;
+- смене работодателя;
+- promotion/path;
+- mentoring/leadership.
 
-Игрок не распределяет ежедневные coding tasks вручную. Project Engine формирует aggregate work packages и передаёт contribution/outcome в Progression Core.
+Не требуется вручную обслуживать обычную рабочую неделю.
 
-Progress bar не может быть единственной моделью проекта.
+## 12. Life systems
 
-## 10. Career as expression of mastery
+Life systems:
 
-Работа создаёт task contexts, feedback, team contribution, зарплату и professional opportunities.
+- изменяют capacity, risk и opportunity cost;
+- создают самостоятельные ценности;
+- не требуют одинакового monthly maintenance clicking;
+- не превращают отдых/отношения в mandatory buttons;
+- не уничтожают programmer path после одного кризиса.
 
-Работа не начисляет mastery только за прошедший стаж.
+## 13. Narrative and philosophy
 
-Promotion, company title и professional grade различаются. Founder/CTO не являются обязательным лучшим endgame и не преобразуют management XP в programmer mastery.
+Narrative Director поддерживает professional journey и human history, но не заполняет каждый месяц событиями.
 
-После перехода к управлению programmer identity выражается через architecture, technical direction, review, mentoring, incident leadership и delegation with outcomes.
+Philosophy появляется как интерпретация уже прожитой истории:
 
-## 11. Life systems
+- передача проекта;
+- legacy technology;
+- mentoring;
+- выбор между ещё одним большим проектом и спокойной жизнью.
 
-Life systems имеют самостоятельную ценность и не обязаны быть только карьерными buffs. Однако они не требуют рутинного ежемесячного обслуживания.
-
-Они влияют на:
-
-- calendar capacity;
-- attention/context switching;
-- recovery;
-- risk tolerance;
-- financial runway;
-- доступ к equipment/education;
-- project/career choices;
-- narrative consequences.
-
-Ни один lifestyle choice не объявляется единственно правильным.
-
-## 12. Narrative policy
-
-Для rolling window в 24 месяца активной профессиональной жизни:
-
-- technical/project/career/open-source meaningful events: 55–70%;
-- relationships/health/finance/housing: 15–30%;
-- era/world/community: 10–20%;
-- philosophy/legacy-only до late career: 0–10%.
-
-Quiet month допустим, если отчёт показывает professional progress, maintenance, recovery или осознанную паузу.
-
-## 13. Monthly loop
-
-До MonthRun игрок видит:
-
-- professional focus;
-- active learning/projects/work commitments;
-- load/work-unit forecast;
-- likely skill/technology outcomes;
-- grade evidence gaps;
-- life constraints.
-
-Blocking разрешён только для значимого решения, которое нельзя разумно выполнить автоматически.
-
-Monthly Report начинается с:
-
-1. что изменилось в персонаже как в программисте;
-2. работа, задачи и проекты;
-3. evidence и readiness;
-4. technologies/opportunities;
-5. нагрузка, здоровье и отношения;
-6. деньги;
-7. история/delayed consequences.
+Абстрактные моральные диалоги без связи с simulation не являются core gameplay.
 
 ## 14. UI hierarchy
 
-Основная навигация:
+Normal UI:
 
-1. Today/Life Screen с programmer focus;
-2. Skills & Technologies;
-3. Projects;
-4. Career;
-5. Open Source/Public Work;
-6. Company;
-7. Life;
-8. Journal/History.
+1. professional focus;
+2. main activity/project;
+3. next milestone;
+4. critical constraint;
+5. next month/action.
 
-Normal UI показывает capabilities и причины. Advanced UI может показывать dimensions, evidence, transfer и lifecycle. Exact hidden weights не являются обязательным UI.
+Progression показывает capability и next step. Project показывает goal, current package, forecast, three qualities и one important risk.
 
-## 15. Balance gates
+Details/Advanced не должны быть нужны для обычного решения.
 
-Обязательные метрики:
+## 15. Feature acceptance test
 
-- programmer-core/direct technical decision share;
-- months with professional outcome;
-- evidence diversity;
-- time-to-grade;
-- course/easy-task/mentor farming;
-- technology breadth/depth;
-- specialization switch/reentry;
-- current market readiness recovery;
-- path parity;
-- Founder/CTO technical identity;
-- Top Programmer rarity.
+Feature входит в MVP только если:
 
-## 16. Vertical slice
+1. создаёт понятный choice или visible consequence;
+2. игрок понимает его без internal jargon;
+3. routine можно автоматизировать;
+4. state необходим прямо сейчас;
+5. content/testing cost оправдан;
+6. feature проверяет programmer fantasy;
+7. он не требует future systems для базовой работы.
 
-Первый январь 1990 включает:
+Feature откладывается, если обоснование — реализм, архитектурная полнота или гипотетическая поздняя игра.
 
-- одну historically available beginner technology;
-- hands-on activity;
-- problem-solving/debugging choice;
-- partial/assisted/independent/failure outcome;
-- mastery/fluency delta;
-- one `ExperienceEpisode`;
-- evidence claims;
-- capability/readiness explanation;
-- новый следующий шаг;
-- deterministic restart.
+## 16. Vertical Slice
 
-Infrastructure-only MonthRun без programmer fantasy не считается достаточным vertical slice.
+Vertical Slice доказывает:
 
-## 17. Feature acceptance test
+- понятен ли первый маленький проект;
+- интересен ли один technical trade-off;
+- понятны ли outcome и learning;
+- безопасен ли restart;
+- хочется ли перейти к февралю.
 
-Любая gameplay feature документирует:
+Он не доказывает полную Senior/Company/Product simulation.
 
-1. primary fantasy;
-2. professional connection;
-3. provider ownership;
-4. generated `ExperienceEpisode`/evidence либо отсутствие progression;
-5. commitments/opportunity cost;
-6. UI surface;
-7. automation boundary;
-8. failure/recovery;
-9. balance/content cost;
-10. почему feature не превращает игру в IDE, CRM, medical sim или generic life sim.
-
-## 18. Запрещённые дрейфы
+## 17. Запрещённые дрейфы
 
 - generic life simulator;
-- grade как XP/weighted average;
-- provider direct skill mutation;
-- narrative mastery без outcome;
-- сотни технологий/skills с одинаковым gameplay;
-- permanent mastery loss после короткого перерыва;
-- Founder как обязательный лучший путь;
-- project только как progress bar;
-- performance-review spreadsheet UI;
-- LLM judge в authoritative progression.
+- coding puzzle/IDE;
+- grade as XP;
+- project as one progress bar;
+- project as ticket dashboard;
+- evidence as performance-review UI;
+- full hidden simulation before gameplay need;
+- seven mandatory quality panels;
+- debt/bug maintenance clicking;
+- architecture completeness as release criterion;
+- Founder as universal best ending.
+
+## 18. Definition of Done
+
+Gameplay system готова для текущей phase, когда:
+
+- normal mode понятен;
+- visible concepts bounded;
+- one meaningful trade-off exists;
+- monthly causality explained;
+- deterministic/recovery guarantees pass;
+- deferred features are not implemented accidentally;
+- playtest hypothesis and success criterion documented.

@@ -2,139 +2,177 @@
 
 ## Статус
 
-Нормативная межсистемная спецификация. Решения об authoritative state, evidence и grade ownership зафиксированы в [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md).
+Нормативная межсистемная спецификация.
 
-Спецификация детализирует [Programmer-First Design](PROGRAMMER-FIRST-DESIGN.md) и не передаёт Progression Core владение проектами, работой, курсами или событиями.
+Решения ownership и persistence:
+
+- [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md);
+- [ADR-015](../adr/ADR-015-casual-first-abstraction-and-complexity-budget.md).
+
+Product/UX scope:
+
+- [Programmer-First Design](PROGRAMMER-FIRST-DESIGN.md);
+- [Casual Simulation Design](CASUAL-SIMULATION-DESIGN.md).
 
 ## 1. Назначение
 
-Подсистема отвечает на четыре вопроса:
+Подсистема отвечает на простые для игрока вопросы:
 
-1. Что персонаж понял и освоил как программист?
-2. Насколько уверенно он применяет skills и technologies сейчас?
-3. Что конкретный результат доказал о его профессиональных capabilities?
-4. Какие грейды и профессиональные возможности готовы или близки?
+1. Чему персонаж научился?
+2. Что он теперь может делать самостоятельно?
+3. Какая технология стала знакомее?
+4. Насколько он приблизился к следующему профессиональному уровню?
+5. Какой следующий опыт будет полезен?
 
-Центральная цепочка:
+Цепочка:
 
 ```text
-Experience Provider outcome
+provider outcome
 → ExperienceEpisode
-→ mastery / fluency / familiarity assessment
-→ ProfessionalEvidence or MonthlyPracticeAggregate
-→ GradeReadiness projections
-→ explainable progression delta
+→ professional progression result
+→ capability explanation
+→ awarded grade/readiness projection
 ```
 
 ## 2. Boundary map
 
 ```text
-Education ───────┐
-Projects ────────┤
-Career ──────────┤
-Open Source ─────┼──> ExperienceEpisode ──> Professional Progression Core
-Company ─────────┤                              │
-Events ──────────┘                              ├─ professional state delta
-                                               ├─ evidence candidates
-                                               ├─ readiness projections
-                                               └─ explanations
-
-MonthRunner: orchestration/checkpoints/RNG/commit
-Rust Persistence: authoritative atomic write
-UI: read models only
+Education / Projects / Career / Open Source / Company / Events
+                              │
+                              ▼
+                      ExperienceEpisode
+                              │
+                              ▼
+               Professional Progression Core
+                    ├─ mastery/fluency
+                    ├─ technology familiarity
+                    ├─ aggregated evidence
+                    ├─ grade readiness
+                    └─ explanations
 ```
 
-### Progression Core владеет
+Progression Core не владеет task/project/job/course lifecycle.
 
-- `CharacterProfessionalState`;
-- aptitude profile;
-- skill mastery/fluency;
-- technology familiarity;
-- professional focus;
-- monthly practice accumulators;
-- experience assessment;
-- evidence materialization rules;
-- grade profile/projection rules;
-- progression trace и explanations.
+## 3. Реализационные профили
 
-### Progression Core не владеет
+## 3.1. MVP Casual
 
-- project scope, debt, bugs и release lifecycle;
-- vacancy, salary, employer и promotion decisions;
-- course schedule и education institution;
-- event eligibility и narrative pacing;
-- health/fatigue authoritative state;
-- SQLite transaction;
-- UI navigation.
+Обязательно:
 
-## 3. Терминология
+- 2 aptitude modifiers;
+- 3–5 visible skills;
+- 1 active technology proficiency;
+- mastery/fluency/familiarity semantics;
+- 1 aggregated professional result за meaningful outcome;
+- simple readiness status;
+- human-readable report;
+- deterministic IDs/restart.
 
-| Понятие | Определение | Authoritative |
+Не обязательно:
+
+- full 13-skill graph;
+- evidence timeline;
+- detailed claims UI;
+- context-diversity dashboard;
+- complex grade profiles;
+- transfer matrix;
+- Senior/leadership progression.
+
+## 3.2. Recommended
+
+После успешного playtest:
+
+- больше skills по мере progression;
+- multiple technology families;
+- Intern/Junior grade gates;
+- basic context diversity;
+- Details mode;
+- specialization projection.
+
+## 3.3. Extended
+
+Поздние системы:
+
+- full evidence browser;
+- Senior/leadership/Top Programmer profiles;
+- complex market readiness;
+- long-term compaction;
+- advanced transfer/version models.
+
+## 4. Терминология
+
+| Понятие | Значение | Player-facing в MVP |
 |---|---|---:|
-| Aptitude | Медленно меняющаяся предрасположенность к reasoning/learning | Да |
-| Skill | Переносимая способность выполнять класс профессиональных действий | Да |
-| Facet | Детализация задачи для matching/explanation; не отдельная шкала | Обычно нет |
-| Capability | Понятное игроку утверждение о доказанной способности | Derived |
-| Technology | Язык/framework/platform/tool с gameplay-значимым lifecycle | Tier A/B |
-| Technology family | Группа transfer и общих mechanics | Definition |
-| Version band | Крупная compatibility/era-линия технологии | При необходимости |
-| Specialization | Derived профиль устойчивого опыта в домене | Derived |
-| Professional focus | Выбранный игроком приоритет развития | Да |
-| Mastery | Устойчивое переносимое понимание | Да |
-| Fluency | Текущая скорость и уверенность применения skill | Да |
-| Familiarity | Актуальная практическая близость к technology/version band | Да |
-| ExperienceEpisode | Нормализованный результат от provider | Draft/input |
-| Evidence | Неизменяемое доказательство capability в контексте | Append-only |
-| Grade award | Зафиксированный достигнутый professional grade | Да |
-| Grade readiness | Перестраиваемая оценка готовности | Derived |
-| Current market readiness | Оценка актуальности для рынка/роли | Derived |
-| Position/role/title | Организационная позиция; не professional grade | В Career domain |
+| Aptitude | Узкая предрасположенность к reasoning/learning | Нет/редко |
+| Skill | Переносимая профессиональная способность | Да |
+| Technology | Конкретная среда применения skills | Да |
+| Mastery | Устойчивое понимание | Через capability text |
+| Fluency | Текущая лёгкость применения | Через простой status |
+| Familiarity | Практическое знание технологии | Да |
+| ExperienceEpisode | Нормализованный provider outcome | Нет |
+| Evidence | Причинная запись о meaningful result | Как одна explanation |
+| Awarded grade | Подтверждённый достигнутый грейд | Да |
+| Grade readiness | Перестраиваемая готовность | Как простой status |
+| Current market readiness | Актуальность для рынка | Позднее/Details |
+| Specialization | Derived профиль пути | Позднее |
 
-## 4. Aptitudes
+## 5. Aptitudes
 
-Baseline использует две aptitude-характеристики:
+Baseline:
 
 - `reasoningAptitude`;
 - `learningAdaptability`.
 
-Они:
+Правила:
 
-- хранятся как integer score 0–1000;
-- обычно модифицируют learning в узком диапазоне около 9000–11000 bps;
+- integer 0–1000;
+- узкий modifier learning, примерно 9000–11000 bps;
 - не определяют grade;
-- не создают необратимо слабого персонажа;
-- изменяются редко через жизненные события/traits, а не обычный XP grind.
+- не создают permanent bad start;
+- обычно скрыты от игрока;
+- меняются редко.
 
-`Self-Organization` моделируется skill/facetами planning/delivery и текущими statuses. `Communication` моделируется `technical-communication`. Focus, fatigue и motivation принадлежат current capacity, а не aptitude.
+Focus, fatigue, motivation и self-organization принадлежат current capacity/statuses, а communication — skill/context.
 
-## 5. Baseline skill graph
+## 6. Skill graph
 
-### Tier 1 — всегда видимы
+## 6.1. MVP skills
 
-| ID | Skill | Что моделирует |
-|---|---|---|
-| `skill.problem-solving` | Problem Solving | Декомпозиция, алгоритмический подход, technical research |
-| `skill.programming` | Programming | Реализация понятого решения |
-| `skill.debugging` | Debugging | Чтение кода, поиск причины, проверка исправления |
-| `skill.data-modelling` | Data Modelling | Представление сущностей, данных и состояния |
-| `skill.testing-quality` | Testing & Quality | Проверка результата и предотвращение regressions |
-| `skill.codebase-evolution` | Codebase Evolution | Refactoring, legacy и безопасные изменения |
+- Problem Solving;
+- Programming;
+- Debugging;
+- Data Modelling;
+- Testing & Quality.
 
-### Tier 2 — открываются по мере роста
+В конкретном первом экране можно показывать только 3 наиболее релевантных.
 
-| ID | Skill | Что моделирует |
-|---|---|---|
-| `skill.requirements-design` | Requirements & Design | Уточнение проблемы и проектирование решения |
-| `skill.architecture` | Architecture | Системные границы и trade-offs |
-| `skill.delivery-operations` | Delivery & Operations | VCS, build, release, deployment, observability |
-| `skill.non-functional` | Non-functional Engineering | Performance, reliability и security |
-| `skill.technical-communication` | Technical Communication | Документация, объяснение решений и согласование |
-| `skill.review-leadership` | Review, Mentoring & Leadership | Review, mentoring, technical direction |
-| `skill.community-stewardship` | Community Stewardship | Governance и здоровье open-source сообщества |
+## 6.2. Recommended skills
 
-Version control, incident handling, security и performance могут быть task facets; отдельная authoritative шкала добавляется только новым review, если facet регулярно создаёт самостоятельные решения и progression.
+По мере открытия:
 
-## 6. Professional state
+- Codebase Evolution;
+- Requirements & Design;
+- Architecture;
+- Delivery & Operations;
+- Non-functional Engineering;
+- Technical Communication;
+- Review, Mentoring & Leadership;
+- Community Stewardship.
+
+## 6.3. Facets вместо новых bars
+
+Version control, research, performance, security, incident handling и documentation могут быть task facets.
+
+Отдельный skill добавляется только если он:
+
+- регулярно создаёт самостоятельные choices;
+- применяется в нескольких systems;
+- имеет собственную progression fantasy;
+- не дублирует существующий skill.
+
+## 7. Authoritative state
+
+MVP state:
 
 ```ts
 type CharacterProfessionalState = Readonly<{
@@ -144,31 +182,30 @@ type CharacterProfessionalState = Readonly<{
   technologies: Readonly<Record<TechnologyId, TechnologyProficiencyState>>;
   professionalFocus: ProfessionalFocus;
   awardedGrades: readonly ProfessionalGradeAward[];
-  monthlyPractice: Readonly<Record<PracticeAggregateKey, PracticeAccumulator>>;
 }>;
 
 type SkillState = Readonly<{
   skillId: SkillId;
-  mastery: MasteryPoint;       // integer 0..100000
-  fluency: FluencyPoint;       // integer 0..100000
+  mastery: MasteryPoint;
+  fluency: FluencyPoint;
   lastPracticedMonth: MonthIndex;
-  strongestDemonstratedBand: CapabilityBand;
 }>;
 
 type TechnologyProficiencyState = Readonly<{
   technologyId: TechnologyId;
   familyId: TechnologyFamilyId;
-  conceptualFamiliarity: FamiliarityPoint;
-  operationalFamiliarity: FamiliarityPoint;
-  versionBand?: TechnologyVersionBandId;
-  versionRecency: RecencyPoint;
+  familiarity: FamiliarityPoint;
   lastPracticedMonth: MonthIndex;
 }>;
 ```
 
-Values 0–100000 являются internal fixed-point progress и не показываются как обязательные UI percentages.
+Detailed conceptual/operational/version fields добавляются только вместе с gameplay, которому они нужны.
 
-## 7. Experience Provider contract
+Internal points не показываются как обязательные percentages.
+
+## 8. Experience Provider contract
+
+MVP contract:
 
 ```ts
 type ExperienceEpisode = Readonly<{
@@ -176,564 +213,324 @@ type ExperienceEpisode = Readonly<{
   provider: ExperienceProviderKind;
   source: ExperienceSourceRef;
   period: GameDateRange;
-  challenge: ChallengeProfile;
-  participation: ParticipationProfile;
-  practice: PracticeProfile;
-  outcome: OutcomeProfile;
-  feedback: FeedbackProfile;
-  skillApplications: readonly SkillApplication[];
-  technologyApplications: readonly TechnologyApplication[];
+  challenge: CasualChallengeBand;
+  participation: ParticipationKind;
+  outcome: ProfessionalOutcomeKind;
+  feedback: FeedbackBand;
+  skills: readonly SkillId[];
+  technologyId?: TechnologyId;
   contextFingerprint: ContextFingerprint;
 }>;
 ```
 
-Provider гарантирует:
+Participation:
 
-- source существовал и был eligible;
-- outcome соответствует состоянию provider domain;
-- вклад персонажа отделён от общего командного результата;
-- assistance/mentorship отражены;
-- episode ID стабилен в текущем MonthRun.
+- independent;
+- assisted;
+- team;
+- review-or-leadership.
 
-Progression гарантирует:
+Outcome:
 
-- deterministic assessment;
-- integer/fixed-point calculations;
-- anti-repeat/dedup;
-- evidence claims только для доказанных dimensions;
-- explainable delta.
+- completed;
+- partial;
+- failed-with-learning;
+- recovered.
 
-## 8. Challenge model
+Provider гарантирует domain truth. Progression гарантирует deterministic assessment и explanation.
 
-`ChallengeProfile` хранит несколько dimensions 0–7:
+Recommended/Extended могут добавлять multidimensional challenge/practice/outcome profiles без изменения ownership.
 
-- conceptual complexity;
-- implementation complexity;
-- ambiguity;
-- system scope;
-- integration surface;
-- quality criticality;
-- operational risk;
-- coordination requirement;
-- novelty.
+## 9. Learning model
 
-Не все dimensions обязаны быть ненулевыми.
+Learning и evidence/readiness не являются одной величиной.
 
-Human-readable summary использует основной band:
+### Mastery
+
+Растёт от:
+
+- meaningful practice;
+- подходящей сложности;
+- novelty;
+- feedback;
+- reflection;
+- available capacity;
+- diminishing returns.
+
+### Fluency
+
+Растёт от регулярного применения и успешного повторения. После длительного перерыва может медленно снижаться, но не ниже floor, связанного с mastery.
+
+### Familiarity
+
+Растёт при использовании technology. Краткий перерыв не обнуляет familiarity; reacquisition быстрее первоначального обучения.
+
+### Evidence/readiness
+
+Meaningful outcome подтверждает capability с учётом:
+
+- challenge;
+- completion;
+- самостоятельности;
+- качества результата;
+- context repetition.
+
+Помощь улучшает learning, но не завышает самостоятельность. Partial/failure не подтверждают full delivery.
+
+## 10. MVP deterministic formulas
+
+Формулы являются стартовыми rules, а не player-facing knowledge.
+
+```text
+masteryGain = roundHalfEven(
+  basePractice
+  × challengeBps
+  × noveltyBps
+  × feedbackBps
+  × capacityBps
+  × diminishingBps
+  / 10000^5
+)
+```
+
+```text
+fluencyGain = roundHalfEven(
+  baseFluency
+  × practiceBps
+  × outcomeBps
+  / 10000^2
+)
+```
+
+```text
+readinessEffect =
+  challengeBandBase
+  × completionBps
+  × autonomyBps
+  × qualityBps
+  × antiRepeatBps
+```
+
+Точные ranges versioned и калибруются fixtures/playtest. MVP не нуждается в отдельном visible evidence score.
+
+## 11. Challenge bands
+
+Normal mode:
+
+```text
+под руководством
+→ знакомая задача
+→ самостоятельная задача
+→ сложная задача
+```
+
+Recommended/Extended:
 
 ```text
 Observed → Guided → Routine → Independent → Complex → Systemic → Strategic → Frontier
 ```
 
-Общий band не является простым средним. Content/provider объявляет principal band, а semantic validator проверяет его согласованность с dimension profile.
+MVP не хранит/показывает девять challenge dimensions. Дополнительные facets могут быть content tags/reason codes.
 
-## 9. Activity и task ownership
+## 12. Optimal challenge
 
-- `ProfessionalActivityState` принадлежит provider, создающему commitment.
-- `ProfessionalTaskState`/`WorkPackageState` принадлежит Project/Career/Education provider.
-- Progression не хранит полный task lifecycle.
-- Для suspend/resume MonthRun provider checkpoint хранит промежуточное состояние, а progression checkpoint — уже созданные episode/delta/evidence candidates.
+| Ситуация | Learning | Readiness effect | Failure risk |
+|---|---|---|---|
+| Слишком просто | Низкий, поддерживает fluency | Почти нет | Низкий |
+| Подходяще сложно | Высокий | Хороший | Умеренный |
+| Сложно с помощью | Высокий learning | Низкая autonomy | Умеренный |
+| Слишком сложно | Ограниченный | Нет full delivery | Высокий |
 
-Задача может давать:
+Простая routine work сохраняет ценность для дохода, reliability и fluency, но не является быстрым путём к grade.
 
-- completed outcome;
-- partial progress;
-- diagnosis without fix;
-- failed attempt;
-- recovered outcome;
-- technical debt;
-- discovered uncertainty;
-- blocked/deferred state.
+## 13. Evidence and history
 
-Partial outcome не подтверждает full delivery.
-
-## 10. Три независимых расчёта
-
-### 10.1. Mastery gain
-
-```text
-masteryGain = roundHalfEven(
-  basePractice
-  × challengeMatchBps
-  × noveltyBps
-  × feedbackBps
-  × reflectionBps
-  × capacityBps
-  × diminishingBps
-  / 10000^6
-)
-```
-
-Autonomy не входит как прямой штраф к learning. Assisted task может дать сильное mastery при хорошем feedback.
-
-Стартовые ranges:
-
-- challenge match: 2500–12500 bps;
-- novelty: 1000–12000 bps;
-- feedback: 4000–13000 bps;
-- reflection: 5000–12000 bps;
-- capacity: 3000–11000 bps;
-- diminishing: 500–10000 bps.
-
-### 10.2. Fluency/familiarity
-
-Fluency растёт от применённой практики и outcome stability. Familiarity дополнительно зависит от technology/version use.
-
-```text
-fluencyGain = baseFluency × practiceBps × outcomeBps × recencyRecoveryBps
-familiarityGain = baseFamiliarity × useBps × ecosystemFeedbackBps × versionMatchBps
-```
-
-### 10.3. Evidence assessment
-
-Evidence не является суммой mastery gain.
-
-```text
-claimStrength =
-  challengeBandBase
-  × completionBps
-  × qualityBps
-  × autonomyBps
-  × confidenceBps
-  × contextNoveltyBps
-  × antiRepeatBps
-```
-
-Провал может дать Debugging/Recovery claim, но Delivery/Quality остаются отсутствующими.
-
-Все multiplications используют checked integer intermediate и explicit rounding.
-
-## 11. Optimal challenge zone
-
-| Состояние | Learning | Evidence | Failure risk | Fatigue |
-|---|---|---|---|---|
-| Слишком просто | Низкий mastery; поддерживает fluency | Routine/reliability aggregate | Низкий | Низкий |
-| Оптимально | Высокий mastery | Сильные claims текущего/следующего band | Умеренный | Умеренный |
-| Сложно с поддержкой | Высокий mastery | Низкая autonomy, хороший quality/learning | Средний | Средний–высокий |
-| Чрезмерно сложно | Ограниченный mastery | Diagnosis/recovery only | Высокий | Высокий |
-| Невозможно | Нет normal completion | Evidence не создаётся | Почти гарантирован | Blocking/refusal |
-
-Повторение простой работы может поддерживать доход, reliability reputation, mentoring и speed, но anti-repeat/diminishing запрещают грейдовый фарм.
-
-## 12. Mastery, fluency, familiarity и recency
-
-### Mastery
-
-- почти не снижается;
-- хранит устойчивое понимание;
-- определяет transfer floor;
-- не понижается обычным перерывом.
-
-### Fluency
-
-- имеет grace period;
-- после длительного неиспользования медленно стремится к floor, зависящему от mastery;
-- быстро восстанавливается через reacquisition bonus.
-
-### Familiarity
-
-- отражает operational use technology/version band;
-- может снижаться при ecosystem/version change;
-- conceptual familiarity снижается медленнее operational.
-
-### Evidence recency
-
-Не мутируется каждый месяц. Вычисляется projection:
-
-```text
-recencyWeight = halfLifeMonths × 10000 / (halfLifeMonths + ageMonths)
-```
-
-Recency влияет на current market readiness, но не стирает grade award.
-
-## 13. Technology model
-
-### Tier A
-
-Самостоятельная progression/lifecycle/choices.
-
-### Tier B
-
-Имеет identity и limited state; большая часть transfer/progression наследуется от family.
-
-### Tier C
-
-Requirement/tag/flavour; отдельного state/progress bar нет.
-
-`TechnologyVersionBand` создаётся только если существенно меняются минимум два фактора: paradigm/API, tooling/ecosystem, compatibility, market demand, project risk или learning burden.
-
-## 14. Transfer
-
-Runtime использует directed sparse edges:
-
-```ts
-type TransferEdge = Readonly<{
-  from: TechnologyFamilyId;
-  to: TechnologyFamilyId;
-  conceptualBps: BasisPoints;
-  initialLearningBps: BasisPoints;
-  fluencyReacquisitionBps: BasisPoints;
-  reasonTags: readonly TransferReasonTag[];
-}>;
-```
-
-Несколько transfer sources объединяются diminishing fold. Transfer не создаёт evidence и не повышает grade напрямую.
-
-## 15. Specialization
-
-- `ProfessionalFocus` — authoritative выбор/приоритет игрока;
-- `SpecializationProfile` — derived projection skills/evidence/technologies/contexts;
-- primary/secondary показываются только при достаточной confidence;
-- generalist определяется устойчивым evidence в нескольких domains, а не отсутствием specialization;
-- смена пути сохраняет mastery/transfer, но требует новых production contexts.
-
-## 16. Evidence
+MVP `ProfessionalEvidenceEvent` может быть компактным:
 
 ```ts
 type ProfessionalEvidenceEvent = Readonly<{
   id: ProfessionalEvidenceId;
-  schemaVersion: EvidenceSchemaVersion;
-  rulesVersion: RulesVersion;
   period: GameDateRange;
-  source: EvidenceSourceSnapshot;
-  context: EvidenceContextSnapshot;
-  outcome: EvidenceOutcome;
-  claims: readonly EvidenceClaim[];
-  assistance: AssistanceProfile;
-  antiRepeatKey: EvidenceAntiRepeatKey;
-  contentFingerprint: ContentFingerprint;
+  sourceSnapshot: EvidenceSourceSnapshot;
+  outcome: ProfessionalOutcomeKind;
+  summary: EvidenceSummary;
+  skills: readonly SkillId[];
+  participation: ParticipationKind;
+  rulesVersion: RulesVersion;
   traceHash: TraceHash;
 }>;
-
-type EvidenceClaim = Readonly<{
-  dimension: EvidenceDimension;
-  skillId?: SkillId;
-  technologyId?: TechnologyId;
-  demonstratedBand: CapabilityBand;
-  strength: EvidenceScore;   // 0..1000
-  confidence: EvidenceScore; // 0..1000
-  autonomy: EvidenceScore;   // 0..1000
-  reasonCodes: readonly EvidenceReasonCode[];
-}>;
 ```
 
-### Evidence dimensions
+Один meaningful outcome — одна aggregated entry.
 
-Core:
+Routine practice хранится monthly aggregate и не показывается карточками.
 
-- craft;
-- complexity;
-- autonomy;
-- quality;
-- delivery-ownership.
+Detailed claims добавляются только в Recommended/Extended. Missing content не уничтожает semantic snapshot.
 
-Profile:
+## 14. Grade model
 
-- depth;
-- breadth-transfer;
-- leverage-collaboration;
-- impact.
-
-### Materialization
+Grade:
 
 ```text
-candidate in MonthRun draft
-→ validate source/context
-→ anti-farming/dedup
-→ materialize immutable event
+Beginner → Intern → Junior → Middle → Senior
+```
+
+Top Programmer — отдельный late-game status.
+
+MVP не реализует promotion/award, но проектирует совместимый `ProfessionalGradeAward`.
+
+Normal readiness areas:
+
+- техническая база;
+- самостоятельность;
+- сложность задач;
+- надёжность результата.
+
+Statuses:
+
+- недостаточно опыта;
+- развивается;
+- почти готов;
+- готов.
+
+Grade award требует gates и history, а не average score.
+
+Intern/Junior gates реализуются в Recommended phase; Middle/Senior — позже после corpus/playtest.
+
+## 15. Technology policy
+
+MVP:
+
+- one technology family;
+- one historically available technology;
+- one familiarity state;
+- no version graph;
+- no full transfer matrix.
+
+Recommended:
+
+- Tier A/B/C;
+- directed family transfer;
+- lifecycle stage;
+- legacy/mainstream context.
+
+Transfer ускоряет learning, но не создаёт production evidence.
+
+## 16. MonthRun
+
+```text
+provider outcome
+→ episode
+→ mastery/fluency/familiarity delta
+→ aggregated professional result
+→ readiness projection
+→ invariants
 → atomic commit
-→ projection update
 ```
 
-Evidence ID:
+Draft содержит episode ID, provisional delta и explanation. Duplicate resume не применяет их дважды.
+
+## 17. Player-facing explanation
+
+После месяца normal mode показывает:
 
 ```text
-hash(saveId, monthRunId, episodeId, outcomeOrdinal, rulesVersion)
+Отладка улучшилась
+
+Вы с небольшой помощью нашли причину ошибки.
+Вы лучше понимаете, как проверять ввод, но пока не всегда решаете такие проблемы самостоятельно.
+
+Следующий шаг: похожая задача без подсказки.
 ```
 
-Routine practice создаёт `MonthlyPracticeAggregate`, а не full evidence event.
+Не обязательны слова mastery, fluency, evidence, claim или gate.
 
-## 17. Grade model
-
-### Capability bands
-
-```text
-Observed, Guided, Routine, Independent, Complex, Systemic, Strategic, Frontier
-```
-
-### Gate policy
-
-Грейд требует:
-
-1. floors по core dimensions;
-2. минимальное число qualifying claims;
-3. несколько distinct contexts;
-4. устойчивость в заданном периоде;
-5. подходящий profile gate;
-6. отсутствие critical deficit.
-
-Среднее значение девяти dimensions не используется как grade rule.
-
-### Grade state
+## 18. UI read model для MVP
 
 ```ts
-type ProfessionalGradeAward = Readonly<{
-  grade: ProfessionalGrade;
-  awardedAt: GameDate;
-  rulesVersion: RulesVersion;
-  evidenceSetHash: EvidenceSetHash;
-  profile: GradeProfileId;
+type CasualProfessionalSummary = Readonly<{
+  awardedGrade: ProfessionalGrade;
+  capabilityText: LocalizationKey;
+  relevantSkills: readonly CasualSkillSummary[];
+  activeTechnology?: CasualTechnologySummary;
+  readinessStatus: CasualReadinessStatus;
+  nextStep: LocalizationKey;
+  monthlyExplanation?: LocalizationKey;
 }>;
 ```
 
-`DemonstratedGradeReadiness` использует all-time evidence. `CurrentMarketReadiness` дополнительно учитывает recency, technology relevance и current fluency.
+Details mode может показывать причины и важные history entries. Advanced numeric view не входит в MVP.
 
-Grade не понижается автоматически. Рынок может считать Senior rusty/outdated, не переписывая достигнутый milestone.
+## 19. Anti-exploit
 
-## 18. Grade capability outline
+- repeated easy practice получает diminishing returns;
+- passive reading не создаёт delivery readiness;
+- failure не выдаёт full success;
+- assisted work не выдаёт independent capability;
+- project/team success не приписывается персонажу автоматически;
+- technology switching не создаёт evidence без target practice;
+- title/salary/fame не повышают grade.
 
-- **Beginner:** Guided/Routine learning tasks; понимает простые программы и меняет их с помощью.
-- **Intern:** supervised contribution; feedback обязателен; production ownership отсутствует.
-- **Junior:** Independent bounded task; debugging/testing/delivery в понятном scope.
-- **Middle:** feature/subsystem ownership end-to-end; ambiguity/design/collaboration.
-- **Senior:** Systemic ambiguity, risk, architecture, sustained delivery, mentoring/technical direction.
-- **Top Programmer:** отдельный редкий endgame status; требует длительного frontier/strategic impact и achievements, а не только readiness score.
+## 20. Balance and playtest
 
-Title, role, salary, reputation и fame не заменяют эти gates.
+MVP измеряет:
 
-## 19. Provider evidence rules
+- time to first visible learning;
+- понимание player explanation;
+- число visible skills;
+- repeated-easy-task dominance;
+- independent vs assisted outcomes;
+- months without professional result;
+- desire to continue;
+- no duplicate delta/evidence after restart.
 
-| Источник | Mastery | Fluency | Production evidence | Impact |
-|---|---:|---:|---:|---:|
-| Книга/лекция | Да | Нет | Нет | Нет |
-| Курс | Да | Низко | Учебное | Нет |
-| Упражнение | Да | Да | Нет/учебное | Нет |
-| Pet project | Да | Да | Да | Низко–средне |
-| Рабочая задача | Да | Да | Да | По scope |
-| Bug fix | Да | Да | Да | По criticality |
-| Code review | Да | Средне | Collaboration/review | По downstream result |
-| Incident | Да | Да | Reliability/recovery | Высоко |
-| Release | Низко | Да | Delivery | По вкладу |
-| OSS contribution | Да | Да | Да | По adoption |
-| Maintenance | Низко | Высоко | Aggregate | Низко–средне |
-| Mentoring | Да | Низко | Leverage | По learner outcome |
-| Architecture decision | Да | Средне | Architecture | Только при sustained result |
-| Talk/article | Consolidation | Нет | Communication | По качеству/reach |
-| Technical direction | Да | Низко | Leadership | По organisational result |
+Полный time-to-Senior и path parity не являются MVP gates.
 
-Narrative choice не создаёт mastery/evidence без provider outcome.
+## 21. Vertical Slice scope
 
-## 20. MonthRun integration
-
-Versioned phases:
-
-```text
-world/calendar
-→ life capacity
-→ commitments/work allocation
-→ provider task advancement
-→ uncertainty/blocking checkpoint
-→ provider outcomes
-→ ExperienceEpisode materialization
-→ progression assessment
-→ draft evidence/practice aggregates
-→ skill/technology updates
-→ grade/market projections
-→ cross-system invariants
-→ atomic commit
-```
-
-Checkpoint хранит:
-
-- episode candidates;
-- progression phase/step;
-- pending evidence IDs;
-- skill/technology draft deltas;
-- anti-repeat state;
-- progression trace hash.
-
-Duplicate resume не потребляет RNG и не создаёт новый evidence ID.
-
-## 21. Persistence logical model
-
-Authoritative snapshot:
-
-- `character_professional_state`;
-- `professional_skill_state`;
-- `technology_proficiency_state`;
-- `professional_focus_state`;
-- `professional_grade_awards`.
-
-Append-only:
-
-- `professional_evidence_events`;
-- `professional_evidence_claims`;
-- `monthly_practice_aggregates`;
-- `professional_progression_migrations`.
-
-Rebuildable:
-
-- readiness cache;
-- specialization profile;
-- evidence search/index;
-- capability cards;
-- monthly professional report.
-
-Evidence semantic snapshot сохраняется даже при missing mod/content. Compaction не входит в vertical slice.
-
-## 22. UI read models
-
-- `ProfessionalSummaryReadModel`;
-- `SkillCapabilityReadModel`;
-- `TechnologyProficiencyReadModel`;
-- `GradeReadinessReadModel`;
-- `EvidenceTimelineReadModel`;
-- `LearningOptionReadModel`;
-- `TaskChallengeReadModel`;
-- `ProgressionDeltaReadModel`;
-- `MonthlyProfessionalReportReadModel`.
-
-Normal mode показывает capabilities и причины. Advanced mode показывает dimensions, evidence, transfer и lifecycle. Exact hidden weights не являются обязательным UI.
-
-## 23. Anti-exploit policy
-
-- easy-task repeats: diminishing + routine aggregate;
-- parallel activity spam: work-unit/context-switching/capacity constraints;
-- evidence without completion: claims ограничены partial outcome;
-- intentional failure: anti-repeat и no delivery/quality claims;
-- mentor abuse: learning растёт, autonomy claim снижается;
-- technology hopping: transfer не создаёт evidence;
-- shallow breadth: distinct meaningful contexts и minimum strength;
-- title/salary/fame shortcuts: не входят в grade gates;
-- management shortcut: leadership evidence не заменяет craft/core floors;
-- save-scumming: deterministic draft RNG/state;
-- event farming: event не создаёт evidence без outcome.
-
-## 24. Vertical slice scope
-
-Январь 1990 реализует только:
-
-- 2 aptitudes;
-- 5 skills: Problem Solving, Programming, Debugging, Data Modelling, Testing & Quality;
-- 1 technology family;
+- 2 aptitudes без отдельного экрана;
+- 5 internal skills, максимум 3 visible одновременно;
 - 1 technology;
-- 1 hands-on activity;
-- 1 technical challenge;
-- bands Guided/Routine/Independent/Complex;
-- independent/assisted/partial/failure outcomes;
-- mastery и fluency;
-- 1 ExperienceEpisode;
-- evidence claims;
-- простой readiness summary;
-- deterministic restart fixture.
+- 1 project provider;
+- 1 meaningful ExperienceEpisode;
+- 1 aggregated evidence/result;
+- simple readiness status;
+- causal report;
+- deterministic restart.
 
-Не входят: Senior gates, endgame, full transfer matrix, evidence compaction, Founder/CTO evidence.
+## 22. Deferred
 
-## 25. Public Core API
-
-```ts
-evaluateExperienceEpisode(
-  state: CharacterProfessionalState,
-  episode: ExperienceEpisode,
-  rules: ProgressionRules,
-): ProfessionalAssessment;
-
-applyProfessionalAssessment(
-  state: CharacterProfessionalState,
-  assessment: ProfessionalAssessment,
-): ProfessionalProgressionDelta;
-
-materializeProfessionalEvidence(
-  context: EvidenceMaterializationContext,
-  assessment: ProfessionalAssessment,
-): readonly ProfessionalEvidenceEvent[];
-
-calculateDemonstratedGradeReadiness(
-  state: CharacterProfessionalState,
-  evidence: EvidenceProjectionInput,
-  profiles: GradeProfileRegistry,
-): DemonstratedGradeReadiness;
-
-calculateCurrentMarketReadiness(
-  demonstrated: DemonstratedGradeReadiness,
-  state: CharacterProfessionalState,
-  market: MarketReadinessContext,
-): CurrentMarketReadiness;
-
-buildProfessionalReport(
-  delta: ProfessionalProgressionDelta,
-  evidence: readonly ProfessionalEvidenceEvent[],
-  readiness: GradeReadinessProjection,
-): MonthlyProfessionalReportReadModel;
-```
-
-MonthRunner вызывает эти pure functions. Content lookup выполняется до вызова либо через immutable compiled registries. Persistence и UI не входят в Core API.
-
-## 26. Invariants
-
-- provider outcome является источником episode truth;
-- evidence всегда имеет source/context snapshot;
-- grade не создаётся XP threshold или weighted average;
-- transfer не создаёт production evidence;
-- partial outcome не становится full delivery;
-- помощь снижает autonomy evidence, но не learning автоматически;
-- short break не стирает mastery/grade;
-- technology unavailable in era не используется provider;
-- Tier C не имеет proficiency state;
-- duplicate run/resume не дублирует evidence;
-- awarded grade не понижается автоматически;
-- readiness projection rebuildable;
-- all calculations integer/fixed-point;
-- progression trace bounded и deterministic.
-
-## 27. Testing
-
-### Unit
-
-- challenge matching;
-- mastery/fluency/familiarity;
-- recency projection;
-- transfer fold;
-- evidence claims;
-- grade gates.
-
-### Property
-
-- no overflow;
-- deterministic ordering;
-- no duplicate evidence;
-- monotonic learning under equal/better feedback;
-- transfer never creates evidence;
-- reacquisition faster than initial acquisition;
-- grade award stability.
-
-### Golden
-
-- first programming result;
-- easy-task diminishing;
-- difficult task with mentor;
-- failed task with debugging evidence;
-- specialization switch;
-- career break/return;
-- Beginner→Intern→Junior→Middle→Senior fixtures later.
-
-### Mass simulation
-
-- time-to-grade;
-- course grinding;
-- easy-task farming;
-- newest-tech chasing;
-- breadth/depth;
-- career interruption;
-- founder/management shortcut;
-- soft locks.
-
-## 28. Deferred
-
-- Top Programmer formula;
-- full leadership evidence;
-- large technology version graph;
+- full evidence browser;
+- full challenge profile;
+- full transfer matrix;
+- context-diversity dashboard;
+- complex specialization;
+- Senior/leadership/Top Programmer;
 - evidence compaction;
-- Bayesian/IRT scoring;
-- LLM judge;
-- dynamic transfer calculation during MonthRun.
+- advanced market readiness;
+- detailed numeric player UI.
+
+## 23. Invariants
+
+- provider owns outcome;
+- progression does not mutate provider state;
+- learning and readiness effect are separate;
+- grade not XP/time/title;
+- short break preserves mastery/grade;
+- repeated routine is aggregated;
+- normal UI uses human language;
+- future state not added without gameplay;
+- deterministic/idempotent/atomic guarantees remain.
+
+## 24. Definition of Done
+
+MVP progression готова, когда:
+
+- игрок объясняет, чему научился;
+- видит не более 3–5 relevant skills;
+- понимает assisted vs independent outcome;
+- получает один полезный next step;
+- не видит evidence bureaucracy;
+- reload не меняет результат;
+- duplicate run не дублирует progression;
+- Storybook и usability fixtures подтверждают casual comprehension.

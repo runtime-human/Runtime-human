@@ -4,192 +4,156 @@
 
 - [ADR-005 — Suspended MonthRun](../adr/ADR-005-suspended-month-run.md);
 - [ADR-013 — Professional Progression](../adr/ADR-013-authoritative-professional-progression-evidence.md);
-- [ADR-014 — Project & Work Package](../adr/ADR-014-authoritative-project-work-package-model.md).
+- [ADR-014 — Project & Work Package](../adr/ADR-014-authoritative-project-work-package-model.md);
+- [ADR-015 — Casual-first Complexity](../adr/ADR-015-casual-first-abstraction-and-complexity-budget.md).
 
-## Проблема
+## 1. Проблема
 
-Blocking event/project decision может остановить месяц. Committed save нельзя оставлять наполовину изменённым.
+Blocking decision может остановить месяц. Committed save нельзя оставлять наполовину изменённым, а скрытый outcome не должен меняться после restart.
 
-Дополнительные atomicity risks:
+MVP risks:
 
-- latent work/defect/release outcome не должен reroll после restart;
-- package outcome, ProjectState delta и `ExperienceEpisode` не могут разойтись;
-- professional delta/evidence должен commit только вместе с provider outcome;
-- duplicate resume не создаёт второй release/incident/episode/evidence.
+- package outcome и professional result расходятся;
+- duplicate resume создаёт второй result/release;
+- hidden uncertainty reroll;
+- draft требует поля несуществующих Extended systems.
 
-## State machine
+## 2. State machine
 
 ```text
-ready
-→ running
-→ suspended-for-decision
-→ running
-→ completed
-→ committed
+ready → running → suspended-for-decision → running → completed → committed
 ```
 
 Exceptional:
 
 ```text
-failed
-incompatible-after-update
-recovery-required
-abandoned
+failed / incompatible-after-update / recovery-required / abandoned
 ```
 
-## Draft model
+## 3. Profile-aware draft
 
-`pending_month_runs` logically stores:
+Draft stores only state required by implemented systems.
+
+Common:
 
 - run/save IDs and revisions;
-- month/date;
-- save/rules/content/mod/project/progression schema versions;
-- fingerprints/Determinism Manifest;
-- RNG algorithm and scoped states;
+- date/month;
+- implemented schema/rules/content versions;
+- fingerprints/Manifest;
+- RNG states;
 - MonthPlan;
 - phase/step;
-- intermediate immutable state;
-- provider checkpoints;
-- project checkpoints;
-- stable package/release/incident/episode candidates;
-- progression draft deltas/evidence/practice;
-- anti-repeat/dedup state;
 - pending decision;
 - decision/input history;
-- phase/project/progression trace hashes;
-- infrastructure timestamps;
-- canonical payload hash.
+- canonical payload/trace hashes.
 
-Physical schema may store versioned blobs, but logical information must remain recoverable.
-
-## Project checkpoint
-
-Minimum:
+MVP project checkpoint:
 
 - project/package IDs and revisions;
-- scope/quality/debt/defect pre-state hashes;
-- allocated participant work;
-- package lifecycle/progress;
-- latent work realization and revealed amount;
-- project RNG states;
-- discovered uncertainty;
+- package progress;
+- deterministic hidden realization;
+- uncertainty;
 - pending project decision;
-- provisional package outcome;
-- release candidate/incident draft;
-- contribution draft;
-- episode draft;
-- project fingerprints/trace hashes.
+- provisional compact project outcome;
+- provisional quality/debt/risk/release change;
+- episode draft.
 
-Exact latent work realization and completed rolls are immutable inside run.
+MVP professional checkpoint:
 
-## Progression checkpoint
-
-Minimum:
-
-- stable episodes/source snapshots;
-- professional phase/step;
-- draft skill/technology deltas;
-- pending evidence IDs/claims;
-- practice accumulators;
-- anti-repeat state;
-- readiness input hash;
+- stable episode ID/snapshot;
+- provisional skill/technology delta;
+- aggregated professional result ID/summary;
 - progression trace hash.
 
-Draft project/progression records are not committed history.
+No draft fields for unimplemented defect ledgers, incidents, teams, detailed claims or rollout policies.
 
-## Rules
+## 4. Rules
 
-- Draft does not modify committed save.
+- Draft never mutates committed save.
 - One active run per save.
-- Begin fixes base revision and exact fingerprints.
-- Resume validates run/base revisions, decision ID, project/progression compatibility and checksums.
-- Duplicate request/decision does not reapply project/progression effects.
-- Package/release/incident/episode/evidence IDs remain stable across reloads.
-- Provider outcome and progression assessment use the same rules/content context.
-- App update/migration/restore/content change is blocked or requires controlled draft migration.
+- Begin fixes base revision and fingerprints.
+- Resume validates exact revisions, decision ID, compatibility and checksum.
+- Duplicate request/answer does not reapply effects.
+- IDs remain stable across reload.
+- Provider outcome and progression use same rules/content context.
+- Update/migration/content change is blocked or uses controlled migration.
 - Safe close only after durable checkpoint.
-- Abandon returns to committed save without applying project/professional drafts.
-- Active draft never silently continues with new project/progression rules.
+- Abandon returns to committed state without draft effects.
+- New Extended fields are not required when system is absent.
 
-## Checkpoint policy
+## 5. Checkpoint policy
 
 Persist:
 
-- before blocking project/event decision;
-- after answer before next blocking/random phase;
-- after latent work/defect/release random materialization;
-- after provider outcome before progression if needed;
-- after progression assessment before commit;
-- on explicit safe suspension;
+- before blocking event/project decision;
+- after answer before later random/materialized phase;
+- after hidden outcome realization when later suspend remains possible;
 - before completed → committed.
 
-Every microstep need not be stored if crash/replay tests prove recovery.
+Additional checkpoints are introduced with later systems, not predeclared as MVP requirements.
 
-## Deterministic IDs
+## 6. Deterministic IDs
 
 ```text
 WorkPackageId = hash(saveId, projectId, originId, creationMonth, ordinal, rulesVersion)
 ReleaseId = hash(saveId, projectId, releaseOrdinal, gameDate, rulesVersion)
-IncidentId = hash(saveId, projectId, riskOrDefectSource, monthRunId, ordinal)
 ExperienceEpisodeId = hash(saveId, monthRunId, providerSourceId, outcomeOrdinal)
-EvidenceId = hash(saveId, monthRunId, episodeId, outcomeOrdinal, progressionRulesVersion)
+ProfessionalResultId = hash(saveId, monthRunId, episodeId, progressionRulesVersion)
 ```
 
-Resume restores the same IDs/results and does not consume new RNG for already materialized outcomes.
+Resume restores same IDs/results and consumes no new RNG for already materialized state.
 
-## Commit
+## 7. Commit
 
 One Rust/SQLite transaction:
 
-1. validate base/run revisions and status;
+1. validate base/run revisions/status;
 2. validate final state/invariants/checksums;
-3. write normalized snapshot including ProjectState/professional state;
-4. append releases/incidents/major scope decisions/contribution summaries;
-5. append finance/history ledger;
-6. append evidence/practice/grade records;
-7. mark rebuildable projections stale/update cache metadata;
-8. increment save revision once;
-9. write committed run marker/trace;
-10. safely clear active draft;
-11. commit.
+3. write implemented normalized snapshot;
+4. append compact release/important decision/history records;
+5. append aggregated professional result/grade records when applicable;
+6. write finance/life history;
+7. increment save revision once;
+8. write committed-run marker/trace;
+9. clear draft;
+10. commit.
 
-Project outcome, release, episode and evidence cannot commit separately.
+Project outcome, episode and professional result cannot commit separately.
 
-Crash after commit before cleanup is guarded by committed run and deterministic record IDs.
-
-## Recovery
+## 8. Recovery
 
 Available:
 
 - exact-compatible resume;
-- controlled supported draft migration;
-- abandon draft and return to committed save;
+- supported draft migration;
+- abandon and return to committed save;
 - Safe Mode;
-- read-only diagnostic/export;
+- read-only export;
 - backup restore.
 
 Forbidden:
 
-- reroll latent work/defects/releases;
-- partial project commit without progression;
-- partial progression commit without provider truth;
-- silent fingerprint/rules substitution.
+- reroll hidden outcome;
+- partial project commit;
+- partial progression commit;
+- silent rules/fingerprint substitution;
+- requiring never-implemented Extended tables for recovery.
 
-If project checkpoint is intact but progression checkpoint corrupt, progression may be deterministically rebuilt only with exact compatible versions. If project random realization/checkpoint is corrupt and cannot be verified, draft must be abandoned/recovered, not rerolled.
+If provider checkpoint is intact but professional draft corrupt, professional result may be deterministically rebuilt with exact-compatible rules. If hidden provider realization cannot be verified, draft is abandoned/recovered, not rerolled.
 
-## Required tests
+## 9. MVP required tests
 
-- close/restart on scope/quality/release/incident decision;
+- close/restart at project/event decision;
 - duplicate answer/resume;
-- crash before/after latent work revelation;
-- crash after defect/release roll;
-- crash after project outcome before episode;
-- crash after episode/evidence before commit;
+- crash before/after hidden realization;
+- crash after project outcome before episode/result;
+- crash after episode/result before commit;
 - crash after commit before cleanup;
-- duplicate package/release/incident/episode/evidence IDs;
+- duplicate package/release/episode/result IDs;
 - incompatible project/content/progression fingerprint;
-- changed manifest/RNG rules;
-- abandon without ProjectState/professional changes;
-- exact progression rebuild from intact provider outcome;
-- corrupt project checkpoint recovery;
+- abandon without committed changes;
+- exact professional rebuild from intact provider outcome;
+- corrupted provider checkpoint recovery;
 - read-only export.
+
+Defect/incident/rollback tests are added with those systems.

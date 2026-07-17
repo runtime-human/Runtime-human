@@ -1,71 +1,72 @@
 # Vertical Slice Plan
 
-Нормативные спецификации:
+Нормативные источники:
 
+- [ADR-015](../adr/ADR-015-casual-first-abstraction-and-complexity-budget.md);
+- [Casual Simulation Design](../game-design/CASUAL-SIMULATION-DESIGN.md);
 - [Programmer-First Design](../game-design/PROGRAMMER-FIRST-DESIGN.md);
 - [Professional Progression Engine](../game-design/PROFESSIONAL-PROGRESSION-ENGINE.md);
-- [Project & Work Package Engine](../game-design/PROJECT-WORK-PACKAGE-ENGINE.md);
-- [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md);
-- [ADR-014](../adr/ADR-014-authoritative-project-work-package-model.md).
+- [Project & Work Package Engine](../game-design/PROJECT-WORK-PACKAGE-ENGINE.md).
 
-## Цель
+## 1. Цель
 
-Создать минимальную играбельную цепочку января 1990:
+Создать минимальный интересный январь 1990 года:
 
 ```text
-small personal project
-→ two Work Packages
-→ uncertainty/quality/release decision
-→ technical outcome/release
-→ contribution snapshot
-→ ExperienceEpisode
-→ mastery/fluency/evidence
-→ atomic commit/restart
+маленький программный проект
+→ один понятный technical trade-off
+→ автоматический MonthRun
+→ правдоподобный project outcome
+→ понятное learning explanation
+→ безопасный restart
+→ желание перейти к февралю
 ```
 
-Slice проверяет игру, а не только Tauri/save infrastructure.
+Slice проверяет удовольствие и comprehension, а не полноту долгосрочной архитектуры.
 
-## Gameplay question
+## 2. Главная продуктовая гипотеза
 
-> Интересно ли игроку создать первый маленький программный проект, понять technical trade-off, получить правдоподобный результат и увидеть, чему он научился?
+> Игрок без опыта программирования понимает цель и решение за несколько секунд, видит причинное последствие и хочет продолжить следующий месяц.
 
-Если игрок запомнил только progress bar/покупку/сохранение, slice невалиден.
+Если игрок помнит только интерфейс, покупку, progress bar или технически корректное сохранение, slice не прошёл.
 
-## Player flow
+## 3. Player flow
 
 1. Создать 12-летнего персонажа.
-2. Начать в комнате родителей с background доступа к технике.
-3. Получить/увидеть historically valid beginner environment.
-4. Выбрать обучение/professional focus.
-5. Создать маленький personal text-program project.
-6. Увидеть цель, scope и первый Work Package.
-7. Сделать свободную покупку при наличии денег.
-8. Увидеть pre-month commitments + project forecast range.
-9. Нажать `Следующий месяц`.
-10. Автоматически пройти school/home commitments.
-11. Продвинуть package `core-interaction-loop`.
-12. Обнаружить uncertainty/invalid-input problem.
-13. Получить meaningful choice: help/fix, cut validation/release risk, investigate next month, simplify scope.
-14. Закрыть приложение на blocking decision и восстановить тот же draft/hidden outcome.
-15. Resolve first/second package as independent/assisted/partial/failure.
-16. Update quality and optional debt/known defect.
-17. Decide release/delay/cut where outcome permits.
-18. Create immutable `ReleaseRecord` or recovery package.
-19. Create contribution snapshot and `ExperienceEpisode`.
-20. Progression updates mastery/fluency/familiarity/evidence.
-21. Show project/professional monthly report and February next step.
-22. Restart and load identical committed result without duplicate package/release/evidence.
+2. Начать в комнате родителей с одним background доступа к технике.
+3. Получить или увидеть путь к исторически допустимой beginner environment.
+4. Выбрать простое обучение/focus.
+5. Начать маленький текстовый project.
+6. Увидеть цель и два крупных этапа.
+7. Увидеть простой forecast: вероятно в этом или следующем месяце.
+8. Нажать `Следующий месяц`.
+9. Автоматически пройти школу и домашние обязательства.
+10. Продвинуть основной Work Package.
+11. Обнаружить проблему неправильного ввода.
+12. Принять один choice:
+    - исправить самостоятельно;
+    - попросить помощь;
+    - упростить первую версию;
+    - перенести исправление на февраль.
+13. При blocking choice закрыть приложение и восстановить тот же outcome.
+14. Получить independent/assisted/partial/failure result.
+15. Увидеть, как изменился project.
+16. Увидеть, чему персонаж научился.
+17. Получить один понятный next step.
+18. Перезапустить приложение и загрузить идентичный committed result.
 
-## Minimal professional model
+Release decision может быть частью этого choice, но отдельная сложная release flow не обязательна.
+
+## 4. MVP professional model
 
 ### Aptitudes
 
 - Reasoning Aptitude;
 - Learning Adaptability.
 
-No dedicated aptitude progression UI in slice.
+Они не получают отдельный player-facing экран.
 
-### Skills
+### Internal skills
 
 - Problem Solving;
 - Programming;
@@ -73,293 +74,270 @@ No dedicated aptitude progression UI in slice.
 - Data Modelling;
 - Testing & Quality.
 
+Одновременно normal UI показывает максимум три relevant skills.
+
 ### Technology
 
 - one technology family;
-- one historically available Tier A/B beginner technology;
-- conceptual/operational familiarity;
-- no version graph/full transfer matrix.
+- one historically available technology;
+- one familiarity status;
+- no version graph;
+- no transfer matrix UI.
 
-### Capability bands
+### Professional result
 
-- Guided;
-- Routine;
-- Independent;
-- Complex.
+- one `ExperienceEpisode`;
+- one aggregated progression/evidence summary;
+- one capability phrase;
+- one readiness status;
+- no evidence timeline;
+- no grade award required.
 
-## Minimal Project model
+## 5. MVP project model
 
 ### Project
 
-A small personal text program in January 1990.
+Small personal text program.
 
-Project lifecycle used:
+Player-facing stages used:
 
 ```text
-idea → active-development → released / maintenance
+idea → development → released / continue-next-month
 ```
-
-No Product users/revenue/company/OSS extension.
-
-### Scope slices
-
-- core interaction;
-- result output;
-- optional input validation/recovery.
-
-Normally 2 committed + 1 optional.
-
-### Quality dimensions
-
-Only:
-
-- functional correctness;
-- usability/experience;
-- maintainability.
-
-Each stores target/assessed/confidence.
 
 ### Work Packages
 
-1. `core-interaction-loop`;
-2. `input-validation-and-recovery`.
+1. `core-program`;
+2. `input-errors`.
 
-No daily tickets/backlog.
+Only one active package shown at a time.
+
+### Progress
+
+- started;
+- progressing;
+- almost ready;
+- completed;
+- needs rework.
 
 ### Uncertainty
 
-One deterministic latent realization:
+- low / medium / high;
+- forecast: this month / next month / unclear.
 
-- invalid/edge input requires more work;
-- can also reveal easier-than-expected branch in fixture corpus.
+One deterministic hidden realization is enough.
 
-UI shows optimistic/likely/cautious range, not exact hidden work.
+### Quality
 
-### Debt/defect
+Only:
 
-At most one meaningful branch:
+- работоспособность;
+- удобство;
+- поддерживаемость.
 
-- accepted validation debt/known issue;
-- or no debt after fix;
-- failure path creates recovery package for February.
+No confidence/trend UI.
 
-No full debt/defect ecosystem.
+### Debt and issue
 
-### Release
+At most one visible consequence:
 
-One release candidate/record with:
+- no debt;
+- minor debt;
+- known input issue;
+- February recovery path.
 
-- included scope;
-- quality/confidence snapshot;
-- known issue/accepted debt;
-- technical outcome;
-- contribution snapshot.
+No debt/defect ledger.
 
-No market adoption/revenue.
+### Release/outcome
 
-## Choices
+Possible states:
 
-- decompose/check input;
-- compare with example;
-- ask for help;
-- simplify scope;
-- accept known issue and release;
-- delay and investigate;
-- release only if gate/policy allows.
+- completed and released;
+- released with known limitation;
+- delayed to February;
+- partial result with recovery;
+- failed attempt with next step.
 
-Not an IDE/coding puzzle.
+No rollout/support/rollback policy.
 
-## Project → Episode
+### Contribution
 
-Project Engine owns:
+- independent;
+- assisted.
 
-- package/release outcome;
-- quality/debt/defect;
-- character contribution.
+No team contribution model in slice.
 
-Then creates one episode with:
+## 6. Meaningful decision
 
-- project/package/release source;
-- challenge/practice/feedback;
-- direct/assisted contribution;
-- outcome/quality;
-- skills/technology;
-- stable context fingerprint.
+Decision card:
 
-Partial/failure do not become full delivery.
+```text
+Программа работает с обычными данными, но неправильный ввод даёт непонятный результат.
 
-## First evidence
+Исправить самостоятельно
+— выпуск позже
+— больше самостоятельного опыта
 
-Claims may include:
+Попросить помощь
+— выше шанс закончить сейчас
+— меньше подтверждения самостоятельности
 
-- craft;
-- autonomy;
-- quality or debugging/recovery;
-- delivery only for completed/released valid outcome.
+Упростить первую версию
+— выпустить раньше
+— небольшой технический долг
 
-No grade award required. Read model shows capability/readiness movement.
+Перенести на февраль
+— сохранить качество
+— проект останется незавершённым
+```
 
-## Required technical elements
+Options and wording may be shortened after usability tests.
 
-- pnpm monorepo/TypeScript 7/Vite 8/Oxc;
-- Tauri/React/Storybook 10;
-- shared kernel IDs/GameDate/Money/WorkUnit/fixed-point;
-- TypeBox/Ajv schemas;
+## 7. Monthly report
+
+Maximum 5–7 primary rows:
+
+1. what character learned;
+2. project outcome;
+3. important quality/debt/issue consequence;
+4. one life constraint/result;
+5. noticeable money change if any;
+6. important event if any;
+7. February next step.
+
+Example:
+
+```text
+Вы лучше понимаете, как находить ошибки во вводе.
+
+Основная программа готова. Обработку неправильного ввода вы перенесли на февраль.
+Поддерживаемость остаётся хорошей, но первая версия ещё не выпущена.
+
+Следующий шаг: закончить обработку ошибок без подсказки.
+```
+
+## 8. Required technical elements
+
+- pnpm monorepo/TypeScript 7/Vite/Oxc;
+- Tauri/React/Storybook;
+- shared IDs/GameDate/Money/WorkUnit/fixed-point;
+- schemas/validation;
 - seeded deterministic RNG/Manifest;
 - Gregorian calendar;
 - Begin/Resume/Recover MonthRun;
-- Rust persistence/no SQL execute;
-- SQLite 3.51.3+ gate/schema migration/backup smoke;
-- JSONC content pack;
-- Event/Narrative minimum;
-- `CharacterProfessionalState`/episodes/evidence;
-- `ProjectState`/two packages/quality/release;
-- deterministic package/release/evidence IDs;
+- Rust persistence/SQLite gate;
+- minimal professional state;
+- minimal project state;
+- deterministic project/episode IDs;
+- atomic commit;
 - Russian localization;
-- Vitest/fast-check/Storybook/Playwright/WebdriverIO.
+- focused tests.
 
-## Storybook minimum
+Not required:
 
-### Foundation
+- full skill graph;
+- full evidence claims;
+- full ProjectState from Extended profile;
+- full debt/defect/release models;
+- Career/Product/Company/Open Source;
+- complex balance simulator.
 
-- shell/date/resources;
+## 9. Storybook minimum
+
+- Today screen;
+- professional summary;
+- three skill states;
+- project card;
+- active Work Package;
+- simple forecast;
+- three quality bands;
+- minor debt/known issue;
+- blocking decision;
+- monthly report;
+- suspended/recovery;
 - loading/empty/error;
-- RU long text;
-- keyboard/200%/contrast/reduced motion.
+- long RU/keyboard/200%/contrast/reduced motion.
 
-### Programmer
+## 10. Content minimum
 
-- focus/learning/technology;
-- skill capability/mastery vs fluency;
-- episode/evidence/readiness;
-- professional report.
+- one HomeCityProfile/era 1990–1994;
+- 2–3 access backgrounds without permanent bad start;
+- one full beginner technology;
+- five internal skills;
+- one project archetype;
+- two package templates;
+- one uncertainty rule;
+- one known-issue/debt branch;
+- four outcome variants;
+- one aggregated professional explanation template;
+- maximum 3 learning options;
+- 4–6 events, mainly access/learning/project context;
+- minimal equipment/housing context.
 
-### Project
+## 11. Decision budget
 
-- project summary;
-- Work Package ready/active/blocked/partial/resolved;
-- forecast narrow/wide/changed;
-- scope committed/optional/deferred;
-- quality target/confidence;
-- known issue/debt;
-- release ready/blocked/accepted risk;
-- contribution independent/assisted.
-
-### MonthRun/recovery
-
-- uncertainty decision;
-- release decision;
-- suspended run;
-- same hidden outcome after restart;
-- draft project/episode/evidence;
-- recovery/incompatible fingerprint;
-- quiet month.
-
-## Content minimum
-
-- one HomeCityProfile, era 1990–1994;
-- 3 access backgrounds without permanent bad start;
-- 5 early technologies catalogue; one full progression;
-- 1 technology family;
-- 5 skills;
-- 1 project archetype;
-- 3 scope slices;
-- 2 Work Package templates;
-- 1 quality profile;
-- 1 bounded latent-work/uncertainty rule;
-- 1 debt/known-defect branch;
-- 1 release policy;
-- 4 professional outcomes;
-- evidence reason codes;
-- ≤3 learning options;
-- 6–10 events, mostly professional/project/access context;
-- 3 equipment variants/2 housing states;
-- project/professional report templates.
-
-## Decision density
-
-- 2–4 meaningful decisions total;
-- minimum 2 programmer/project core;
-- maximum 1 life-only blocking;
-- ordinary package has ≤1 blocking choice in slice;
+- 1–3 meaningful decisions in first month;
+- only one project blocking decision;
+- maximum one life-only blocking decision, preferably zero;
+- ordinary routine auto-resolves;
 - no jargon requirement;
-- advanced details on demand.
+- Details not required to decide.
 
-## Deterministic fixture corpus
+## 12. Deterministic fixtures
 
-- average/low-income/no-home-computer;
-- high/low aptitudes;
-- independent/assisted;
-- partial/failure recovery;
-- latent work high/low realization;
-- release with/without known issue;
-- quiet month;
-- duplicate answer/restart.
-
-Every start has reachable programming/project outcome or explicit February access/recovery path.
-
-## Persistence/recovery fixtures
-
-- close before/after latent work revelation;
-- close at project/release decision;
+- independent success;
+- assisted success;
+- simplified release/minor debt;
+- partial/failure with February recovery;
+- low-income/no-home-computer access path;
+- close/restart at decision;
 - duplicate answer/resume;
-- crash after package outcome before episode;
-- crash after episode/evidence before commit;
-- crash after commit before cleanup;
-- duplicate package/release/episode/evidence IDs;
-- incompatible project/progression/content fingerprint;
-- failed migration/backup restore/Safe Mode/export.
+- quiet result variant.
 
-## Acceptance criteria
+## 13. Acceptance criteria
 
-### Project fantasy
+### Comprehension
 
-- player explains project goal/current package;
-- understands forecast uncertainty;
-- quality dimensions visible without one fake score;
-- choice changes scope/quality/debt/release meaningfully;
-- project not daily ticket clicking;
-- release/history/contribution understandable.
+- player states project goal correctly;
+- identifies current problem;
+- chooses within 10–20 seconds;
+- predicts direction of trade-off;
+- understands result after MonthRun;
+- finds February next step;
+- does not describe UI as Jira/CRM.
 
 ### Programmer fantasy
 
-- player explains learning and contribution;
-- skill vs technology distinct;
-- assistance helps learning but lowers autonomy evidence;
-- partial/failure not full delivery;
-- next February step clear.
+- player explains one learned capability;
+- distinguishes assisted and independent outcome;
+- project is more than a progress bar;
+- no coding puzzle/IDE needed.
 
-### Determinism/recovery
+### Technical
 
-- same seed/manifest gives same latent work/package/release/episode/evidence IDs and trace;
-- reload does not reroll defects/hidden work;
-- duplicate commands do not duplicate records;
-- Project outcome + professional delta atomic;
-- restart round-trip;
-- no raw SQL capability.
+- same seed/manifest gives same outcome;
+- close/restart does not reroll;
+- duplicate commands do not duplicate project/progression result;
+- atomic commit;
+- save reload works;
+- no raw SQL renderer capability.
 
-### UX/accessibility
+### Product
 
-- novice understands causality without guide;
-- expert can inspect quality/confidence/contribution;
-- keyboard/a11y/visual/RU long text/200% pass;
-- no default backlog/Jira/table overload.
+- majority of playtesters want to continue to February;
+- normal mode sufficient;
+- visible concepts fit casual complexity budget.
 
-### Verification
+## 14. Deferred
 
-- `pnpm verify` after scaffold;
-- architecture/docs/research traceability;
-- balance fixtures show no access/project/evidence farming or soft lock.
-
-## Not included
-
-- full work/Junior career;
-- multiple project archetypes/portfolio;
-- Product users/revenue/competition;
-- Company teams/payroll;
-- OSS community/governance;
-- full debt/defect/incident system;
-- full grade gates/transfer/specialization;
-- evidence/package compaction;
-- mods/updater/multiple eras/cities/backend/cloud VRT/Content Studio;
-- real IDE/code validation.
+- full Career/Junior progression;
+- full evidence browser;
+- detailed grade gates;
+- multiple projects/portfolio;
+- full debt/defect ledger;
+- incidents/rollback;
+- team/delegation;
+- Product users/revenue;
+- Company/Open Source;
+- Content Studio/modding;
+- long-term compaction.

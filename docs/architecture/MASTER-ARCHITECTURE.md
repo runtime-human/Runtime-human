@@ -1,69 +1,115 @@
 # Runtime Human — Master Architecture
 
-> **Статус:** архитектурный канон, редакция 1.3
-> **Дата:** 2026-07-16
-> **Полный план:** [`FULL-ARCHITECTURE-PLAN.md`](FULL-ARCHITECTURE-PLAN.md)
+> **Статус:** архитектурный канон, редакция 1.4
+> **Дата:** 2026-07-17
 > **Индекс:** [`../INDEX.md`](../INDEX.md)
-> **Research synthesis:** [`../research/DR-SYNTHESIS-2026-07-16.md`](../research/DR-SYNTHESIS-2026-07-16.md)
+> **Casual-first:** [`../game-design/CASUAL-SIMULATION-DESIGN.md`](../game-design/CASUAL-SIMULATION-DESIGN.md)
 
 ## 1. Продукт
 
-Runtime Human — бесплатный PC-first offline-first симулятор жизни и карьеры программиста. Игра объединяет событийную life simulation, RPG-прогрессию, idle-автоматизацию, software projects, open source, карьеру, отношения, имущество и управление компанией.
+Runtime Human — бесплатный PC-first offline-first казуальный текстовый симулятор становления, работы и наследия программиста.
+
+Игровая формула:
+
+```text
+понятная ситуация
+→ один содержательный выбор
+→ автоматический месяц
+→ правдоподобное последствие
+→ короткое объяснение
+→ следующий интересный вариант
+```
+
+Внутренняя модель может быть глубже normal UI, но архитектурная полнота и максимальный реализм не являются целями сами по себе.
 
 ## 2. Канонические решения
 
-- старт: январь 1990 года, персонажу 12 лет;
+- старт: январь 1990 года, возраст 12;
 - календарь: реальный григорианский;
-- пользовательский тик: один месяц;
-- внутри месяца: дни и целочисленные work units;
-- универсальных очков действий и обязательных процентных sliders нет;
-- покупки и управленческие операции не расходуют ход;
-- ограничения предметные и мягкие;
-- постоянное место действия — один вымышленный международный мегаполис;
-- страна неназванная и вымышленная;
-- постоянных переездов, виз, карт мира и разных национальных экономик нет;
-- поездки существуют только как bounded events;
-- реальные технологии и подтверждённые IT-вехи используются по источникам;
-- работодатели, университеты, локальные продукты, конференции и NPC вымышлены;
-- после июля 2026 года будущее явно альтернативное;
-- игра бесплатная, без Steam, магазинов, платежей, рекламы и обязательного backend.
+- один ход: один месяц;
+- внутри месяца: календарные дни и integer work units;
+- no universal action points/mandatory percentage sliders;
+- routine commitments automatic;
+- ordinary month normally 0–1 blocking decision;
+- one fictional metropolis;
+- real technologies/history with provenance;
+- fictional local employers/NPC/economy;
+- post-2026 future explicitly alternative;
+- free, no Steam/payment/mandatory backend;
+- programmer-first and casual-first;
+- normal UI uses bounded human-readable concepts;
+- extension seam does not require early implementation.
 
-## 3. Главный цикл
+## 3. Реализационные профили
+
+### MVP Casual
+
+Only mandatory profile for Foundation/Vertical Slice:
+
+- one small project;
+- two Work Packages;
+- three visible project qualities;
+- one uncertainty/debt/issue branch;
+- 3–5 relevant skills;
+- one technology;
+- one aggregated professional result;
+- short monthly report;
+- deterministic suspend/restart/atomic commit.
+
+### Recommended
+
+Added after successful first-month/year playtest:
+
+- more skills/technologies;
+- Intern/Junior career;
+- several project archetypes;
+- situational quality;
+- significant debt/issue records;
+- Details UI.
+
+### Extended Simulation
+
+Optional late-game:
+
+- full evidence browser;
+- complex grade profiles;
+- teams/delegation/company portfolios;
+- incidents/rollback;
+- debt/defect ledgers;
+- Senior/CTO/Founder/Top Programmer;
+- long-lived Product/Open Source ecosystems.
+
+Extended is not a Definition of Done for early phases.
+
+## 4. Главный цикл
 
 ```text
-свободное управление и покупки
-→ запуск/изменение длительных занятий
-→ «Следующий месяц»
-→ автоматическая симуляция обязательств
-→ остановка на важных событиях
-→ crash-safe suspend/resume при необходимости
-→ атомарный commit месяца
-→ отчёт и новые возможности
+current professional/life state
+→ choose learning/project/priority
+→ simple forecast
+→ next month
+→ automatic commitments
+→ optional blocking decision
+→ project/professional/life outcomes
+→ atomic commit
+→ short report and next option
 ```
 
-Работа, учёба, жильё, семья, продукты, open source и компания являются persistent commitments и продолжаются автоматически.
+## 5. Product hierarchy
 
-## 4. Основные системы
+1. Programmer Mastery Core.
+2. Professional Expression.
+3. Human Constraints and Values.
+4. Narrative, Era and Philosophy.
 
-- детство, образование и взросление;
-- навыки, технологии и специализации;
-- грейды Beginner/Intern/Junior/Middle/Senior/Top Programmer;
-- должности Developer/Team Lead/Tech Lead/Architect/CTO/Founder;
-- работа, вакансии, проекты и фриланс;
-- продукты и SaaS;
-- open source, contributors, governance и sponsorship;
-- статьи, конференции, репутация и слава;
-- жильё внутри города, ипотека, техника и home lab;
-- отношения, семья, здоровье, fatigue и burnout risk;
-- компания, сотрудники, делегирование и портфель продуктов;
-- поздняя карьера, пенсия, наследие и завершение жизни.
+Within every layer, understandable meaningful choice outranks process detail.
 
-## 5. Архитектурные слои
+## 6. Архитектурные слои
 
 ```text
 React 19 UI
   ↓
-Typed Application Facade / Use Cases
+Typed Application Facade
   ↓
 Pure TypeScript 7 Game Core
   ↓ typed ports
@@ -74,20 +120,21 @@ Rust Persistence and Platform Services
 SQLite / filesystem / Tauri
 ```
 
-### Жёсткие границы
+Hard boundaries:
 
-- core не импортирует React, Tauri, DOM, SQLite, filesystem, network и system time;
-- UI не содержит игровых формул и raw SQL;
-- production renderer не получает authoritative SQL execute capability;
-- Rust не содержит баланс, события и historical rules;
-- контент data-only и не исполняет код;
-- случайность только versioned seeded RNG;
-- авторитетная математика целочисленная/fixed-point;
-- `SaveGameState` — consistency boundary завершённого месяца;
-- pending MonthRun хранится отдельным persisted draft;
-- read projections и caches неавторитетны и перестраиваемы.
+- core has no React/Tauri/SQLite/filesystem/network/system-time imports;
+- UI has no gameplay formulas/raw SQL;
+- renderer has no authoritative SQL execute;
+- Rust persists but does not judge gameplay;
+- content data-only;
+- randomness versioned/seeded;
+- authoritative arithmetic integer/fixed-point;
+- SaveGameState month consistency boundary;
+- suspended MonthRun separate draft;
+- projections rebuildable;
+- schemas store only active implementation profile.
 
-## 6. Модули
+## 7. Modules
 
 ```text
 apps/desktop
@@ -103,182 +150,166 @@ packages/game-ui-fixtures
 content/**
 tools/**
 docs/**
-
-apps/content-studio          # после vertical slice
 ```
 
-Storybook находится рядом с `game-ui`/desktop tooling и использует `game-ui-fixtures`, не production platform adapters.
+Module boundary does not imply every future module is implemented in MVP. Empty/stub extension packages are avoided until needed.
 
-Подробности: [`REPOSITORY-STRUCTURE.md`](REPOSITORY-STRUCTURE.md), [`MODULE-BOUNDARIES.md`](MODULE-BOUNDARIES.md).
+## 8. Professional progression
 
-## 7. Домен
+Experience Providers own domain outcomes and create stable `ExperienceEpisode`.
 
-Авторитетное состояние включает character, people, relationships, employment, activities, projects, products, companies, inventory, housing, finance, world, narrative и achievements.
+Progression Core owns:
 
-Грейд и должность разделены. NPC имеют stable IDs и tiers active/background/archived. World state состоит из `HomeCityState`, `LocalMarketState`, `WorldTimelineState`, `EraId` и revision глобального технологического каталога.
+- active skill mastery/fluency;
+- technology familiarity;
+- aggregated professional result;
+- awarded grade;
+- readiness projection/explanation.
 
-Не создаются `CountrySimulation`, `VisaSystem`, `ImmigrationSystem`, `RelocationSystem` и `RegionalTaxEngine`.
+MVP normal UI shows capability text, up to 3–5 relevant skills, one technology, readiness status and next step.
 
-## 8. Месячная симуляция
+Grade is not XP/time/title/salary. Evidence details are not primary UI.
+
+## 9. Projects
+
+Project Engine owns technical project truth and uses aggregated Work Packages.
+
+MVP:
+
+- one goal;
+- two packages;
+- progress/uncertainty bands;
+- functional/usability/maintainability qualities;
+- one debt/risk/known issue;
+- compact release state;
+- independent/assisted contribution.
+
+Project is neither one progress bar nor a ticket dashboard.
+
+Product, Career, Company and Open Source extensions do not duplicate technical ProjectState.
+
+## 10. MonthRun
 
 ```text
 ready → running → suspended-for-decision → running → completed → committed
 ```
 
-Дополнительные состояния: `failed`, `incompatible-after-update`, `recovery-required`, `abandoned`.
+Draft contains only restart-critical state for implemented systems: revisions, RNG, hidden realization, pending decision, provisional project outcome, episode/professional result and trace.
 
-Draft хранит run/base revisions, versions/fingerprints, RNG state, MonthPlan, phase/checkpoint, intermediate state, pending decision, decision history и trace hash. Основной сейв изменяется только после завершения месяца одной транзакцией. Resume/commit имеют idempotency guards.
+One Rust/SQLite transaction commits project, professional and cross-system consequences.
 
-Подробности: [`../simulation/MONTH-SIMULATION.md`](../simulation/MONTH-SIMULATION.md), [`../simulation/SUSPENDED-MONTH-RUN.md`](../simulation/SUSPENDED-MONTH-RUN.md), [ADR-005](../adr/ADR-005-suspended-month-run.md).
+## 11. Events and narrative
 
-## 9. Event Engine и Narrative Director
+Event Engine owns eligibility/options/effects. Narrative Director owns pacing, anti-repeat, quiet months and crisis protection.
 
-Event Engine отвечает за допустимость, conditions, choices, effects, cooldown и chains. Narrative Director отвечает за pacing, diversity, anti-repeat, intensity, quiet months, crisis protection и milestone arcs.
+MVP events:
 
-События JSONC, валидируются TypeBox/Ajv и semantic/chronology validators. Arbitrary scripts запрещены.
+- 2–4 understandable options;
+- typed provider requests;
+- no direct skill/project mutation;
+- no repeated maintenance clicks;
+- no dependency on unimplemented systems.
 
-## 10. Историческая модель и город
+## 12. Historical model
 
-Технологии разделяют announcement, first public release, local availability, professional demand, mainstream, peak, decline и end-of-support. Каждая каноническая дата имеет provenance.
+Technology history distinguishes availability, adoption, demand, decline and legacy where gameplay needs it.
 
-Город проходит эпохи 1990–1994, 1995–2001, 2002–2006, 2007–2012, 2013–2019, 2020–2026 и альтернативное будущее после 2026-07.
+MVP implements one fully playable beginner technology and a small historical catalogue. Full technology version/transfer graph is deferred.
 
-## 11. Числа и детерминизм
-
-- money TS: branded `bigint` minor units;
-- Rust/SQLite: checked `i64`;
-- IPC/JSON: canonical decimal string;
-- проценты: basis points;
-- probabilities/weights: integers;
-- progress/time/XP: integer units;
-- coefficients: versioned fixed-point.
-
-Floating point запрещён в authoritative core/persistence contracts и допускается только в render-only/diagnostic projections.
-
-`DeterminismManifest` фиксирует rules, RNG, hash, numeric, calendar, sorting, effect ordering и canonical serialization versions. Запрещены `Math.random`, system `Date`, locale sorting и неявный порядок файлов.
-
-## 12. Persistence
-
-Модель:
+## 13. Persistence
 
 ```text
-normalized current snapshot
-+ append-only histories/ledger
-+ persisted pending month draft
+implemented normalized snapshot
++ bounded important histories
++ pending MonthRun draft
 + rolling backups
 + rebuildable projections
 ```
 
-SQLite minimum: `3.51.3+` либо версия с подтверждённым backport WAL fix. Используются WAL, foreign keys, busy timeout и atomic transactions.
+SQLite 3.51.3+ or confirmed WAL backport. WAL, foreign keys, busy timeout and atomic transactions.
 
-Backup создаётся через SQLite Online Backup API либо controlled `VACUUM INTO`, а не копированием active WAL database. Миграции выполняются после pre-migration backup и заканчиваются `foreign_key_check`, `quick_check` и application invariant validation.
+Rust is authoritative write boundary. Storage does not preallocate unused Extended tables.
 
-Rust является authoritative write-boundary: save writes, migrations, backup/restore, import/export и mod ingest выполняются через typed commands/repositories.
-
-## 13. Контент и моды
+## 14. Content
 
 - JSONC;
-- TypeBox + Ajv;
+- TypeBox/Ajv;
 - semantic/chronology/reference validation;
+- casual-complexity and reachability lint;
 - stable namespaced IDs;
-- tombstones/replacements;
-- localization keys;
-- historical source registry;
-- data-only mods после стабилизации content API;
-- manifest/version/dependencies/checksums;
-- quarantine, archive limits и path traversal protection.
+- semantic snapshots/tombstones;
+- data-only mods after stable current content API.
 
-## 14. UI и Storybook
+MVP content is intentionally small: one project archetype, two packages, one technology, five internal skills and several events.
 
-Стек: React 19, Tailwind CSS 4, Radix UI, Motion, TanStack Router, Zustand только для transient UI state.
+## 15. UI and Storybook
 
-Storybook 10 является обязательным Foundation workshop для:
+Normal UI is the primary product:
 
-- design system;
-- isolated components;
-- event/decision/content previews;
-- interaction tests;
-- accessibility checks;
-- visual baselines;
-- bug fixtures;
-- AI-assisted UI work.
+- 3–5 primary objects;
+- human-readable bands/statuses;
+- one main choice;
+- short monthly report;
+- no default evidence/debt/defect dashboards.
 
-Storybook использует typed mocks и не получает production SQL/filesystem/updater permissions. Обязательный cloud VRT SaaS не используется.
+Details/Advanced are optional and never change outcomes.
 
-UI использует semantic design tokens и игровые компоненты. Норматив доступности — WCAG 2.2 AA насколько применимо: keyboard, Narrator, focus, 200% text scale, high contrast, reduced motion и alternatives to drag.
+Storybook 10 covers normal/edge/accessibility/recovery states for implemented components only.
 
-## 15. Технологический стек
+## 16. Technology stack
 
 - Tauri 2;
 - React 19;
-- TypeScript 7 stable exact pinned;
-- Vite 8/Rolldown/Oxc;
-- Node.js 24 LTS;
-- pnpm;
-- Storybook 10 exact pinned;
-- SQLite 3.51.3+;
-- `rusqlite` preferred write adapter;
-- Oxfmt;
-- Oxlint fast + type-aware;
-- Knip, Lefthook;
-- Vitest, Testing Library, fast-check;
-- Storybook Vitest/a11y tests;
-- Playwright для renderer/VRT;
-- WebdriverIO + Tauri service для настоящего desktop E2E;
-- rustfmt, Clippy, cargo-deny, cargo-nextest, sccache.
+- TypeScript 7 exact;
+- Vite/Oxc;
+- Node 24 LTS/pnpm;
+- Storybook 10;
+- SQLite 3.51.3+ / rusqlite;
+- Vitest/Testing Library/fast-check;
+- Playwright/WebdriverIO;
+- rustfmt/Clippy/cargo-deny/cargo-nextest/sccache.
 
-TypeScript 7.0 не имеет публичного Compiler API. TS6 compatibility package разрешён только изолированному tooling consumer и не является production compiler.
+## 17. Testing and balance
 
-## 16. Дистрибуция
+MVP gates prioritize:
 
-Игра бесплатная. Alpha: private GitHub Releases. Публичная версия: подписанный NSIS per-user installer и подписанный Tauri updater. Backend, Steam, stores и payments отсутствуют.
+- first-time comprehension;
+- 10–20 second ordinary decision target;
+- causal monthly report;
+- bounded visible complexity;
+- deterministic restart/idempotency;
+- assisted/partial/failure semantics;
+- one real project trade-off;
+- accessibility/long Russian text;
+- desire to continue.
 
-CRA/CE не являются baseline release gates, поскольку проект не ориентирован на коммерческий рынок ЕС. Инженерные требования безопасности, privacy и лицензий сохраняются.
+Long-term Senior/team/debt-spiral/portfolio simulations are added with corresponding gameplay.
 
-## 17. Тесты
+## 18. Roadmap rule
 
-- unit/property/golden;
-- content/chronology;
-- balance simulations;
-- migration/backup/recovery;
-- Storybook render/interaction/a11y;
-- Playwright renderer/accessibility/visual;
-- WebdriverIO desktop integration;
-- Rust proptest/fuzz для import/archive после появления surface;
-- architecture dependency/capability tests;
-- release/install/update matrix.
+No additional simulation depth before current phase product exit criteria pass.
 
-## 18. CI/CD и supply chain
+Feature requires:
 
-```text
-check:fast:
-Oxfmt → Oxlint → TypeScript 7 tsc -b → content/architecture checks
+- observed player problem;
+- simpler alternatives considered;
+- clear choice/consequence;
+- normal UI;
+- playtest criterion;
+- state/content/test cost.
 
-verify:
-check:fast → Oxlint type-aware → core/story/Rust tests
+## 19. Distribution
 
-verify:release:
-verify → Playwright → WebdriverIO → security/package/release checks
-```
+Free Windows-first distribution through signed installer/updater when release-ready. No Steam, stores, payments or mandatory backend.
 
-Actions pinned по full SHA, permissions минимальны, dependency review/secret scanning обязательны, релизы публикуют checksums, SBOM и provenance/attestation. Updater private key хранится в protected environment и имеет offline escrow/runbook.
+## 20. Definition of Done
 
-## 19. Агентная разработка
+A phase is complete when:
 
-`main` содержит согласованный канон. Существенные изменения выполняются в branch/PR. ADR имеет приоритет. Workflows, capabilities, migrations, updater и signing требуют human review. Issues, mods, logs, external pages и third-party README считаются untrusted data.
-
-Storybook stories и deterministic fixtures являются предпочтительным feedback layer для UI/content agents.
-
-## 20. Реализация
-
-Порядок: Foundation → Vertical Slice → Education/Career → Projects/Open Source → Life/Property → Company → Endgame/Future/Modding.
-
-Foundation включает TypeScript 7, Storybook, Rust write-boundary, persisted MonthRun, SQLite runbook и базовую supply-chain verification.
-
-Подробности: [`../plans/ROADMAP.md`](../plans/ROADMAP.md) и [`../plans/VERTICAL-SLICE-PLAN.md`](../plans/VERTICAL-SLICE-PLAN.md).
-
-## 21. Статусы решений
-
-Accepted ADR: 001–012.
-
-Канон редакции 1.3 учитывает оба Deep Research от 2026-07-16. Исследовательские отчёты сохраняются для traceability, но нормативный приоритет имеют ADR и профильные спецификации.
+- normal mode works without advanced view;
+- gameplay is understandable and causal;
+- active schema contains no speculative future fields;
+- deterministic/recovery guarantees pass;
+- content/accessibility stories pass;
+- playtest exit criteria pass;
+- deferred complexity remains deferred.
