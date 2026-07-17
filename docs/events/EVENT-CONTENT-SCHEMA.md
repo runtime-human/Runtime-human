@@ -1,16 +1,18 @@
 # Схема контента событий
 
-Связанные спецификации:
+Нормативные источники:
 
-- [Narrative Director](NARRATIVE-DIRECTOR.md);
-- [Professional Progression Engine](../game-design/PROFESSIONAL-PROGRESSION-ENGINE.md);
-- [Project & Work Package Engine](../game-design/PROJECT-WORK-PACKAGE-ENGINE.md).
+- [ADR-015](../adr/ADR-015-casual-first-abstraction-and-complexity-budget.md);
+- [Casual Simulation Design](../game-design/CASUAL-SIMULATION-DESIGN.md);
+- [Narrative Director](NARRATIVE-DIRECTOR.md).
 
-## Format
+## 1. Format
 
-Events are JSONC, TypeBox defines TS/JSON Schema, Ajv validates runtime payload.
+Events are JSONC, TypeBox defines schemas, Ajv validates runtime payload.
 
-## Event definition
+Content describes situations and options. Core owns all state transitions.
+
+## 2. MVP EventDefinition
 
 ```ts
 type EventDefinition = Readonly<{
@@ -19,16 +21,13 @@ type EventDefinition = Readonly<{
   category: EventCategory;
   productLayer: ProductLayer;
   tags: readonly string[];
-  technicalTags?: readonly TechnicalTag[];
   availability: AvailabilityRule;
   requirements: readonly Condition[];
   weight: WeightInt;
   cooldownMonths?: number;
   blocking: boolean;
   participants?: readonly ParticipantSelector[];
-  relatedProfessionalContext?: ProfessionalContextSelector;
-  relatedProjectContext?: ProjectContextSelector;
-  professionalMilestone?: ProfessionalMilestoneTag;
+  relatedContext?: CasualEventContextSelector;
   choices: readonly EventChoice[];
   journal: LocalizationKey;
   metadata: ContentMetadata;
@@ -45,184 +44,166 @@ era-narrative
 philosophy-legacy
 ```
 
-## Choice
+MVP event does not require full technical tags, milestone profiles or multiple domain selectors unless current content uses them.
 
-Choice may contain:
+## 3. Casual event context
 
-- localization/requirements;
-- immediate/delayed effects;
+```ts
+type CasualEventContextSelector = Readonly<{
+  activityId?: ActivityId;
+  projectId?: ProjectId;
+  packageId?: WorkPackageId;
+  employmentId?: EmploymentId;
+  technologyId?: TechnologyId;
+}>;
+```
+
+Expected revisions are added to the runtime-resolved command context, not necessarily repeated in author-facing content.
+
+Missing/stale context makes event ineligible or returns typed conflict. It never silently retargets another entity.
+
+## 4. Choice
+
+Choice may include:
+
+- text/localization;
+- requirements;
+- preview direction;
 - chain transition;
-- preview policy;
-- typed provider/project decision modifier;
-- feedback/assistance modifier;
+- typed provider decision request;
+- assistance choice;
+- delayed hook;
 - failure/recovery transition.
 
 Choice cannot directly:
 
-- add mastery/fluency/evidence/grade;
-- add arbitrary project progress;
-- complete/cancel package without Project Engine transition;
-- set quality/debt/defect/release truth;
-- reroll hidden project state.
+- add mastery/grade/evidence;
+- add project progress;
+- set quality/debt/risk/release truth;
+- complete/cancel a package without provider transition;
+- reroll hidden state.
 
-## Professional context
+## 5. MVP technical decision types
 
-```ts
-type ProfessionalContextSelector = Readonly<{
-  activityId?: ActivityId;
-  taskId?: ProfessionalTaskId;
-  projectId?: ProjectId;
-  employmentId?: EmploymentId;
-  technologyIds?: readonly TechnologyId[];
-  skillIds?: readonly SkillId[];
-}>;
-```
+Only types needed by current content:
 
-## Project context
+- try independently / ask for help;
+- investigate / continue;
+- simplify / keep scope;
+- improve quality / move faster;
+- release / delay;
+- accept known limitation / fix;
+- life commitment conflict.
 
-```ts
-type ProjectContextSelector = Readonly<{
-  projectId: ProjectId;
-  expectedProjectRevision?: ProjectRevision;
-  packageId?: WorkPackageId;
-  expectedPackageRevision?: WorkPackageRevision;
-  scopeSliceIds?: readonly ScopeSliceId[];
-  releaseCandidateId?: ReleaseCandidateId;
-  defectId?: DefectId;
-  debtId?: TechnicalDebtId;
-}>;
-```
+Recommended/Extended may add architecture, migration, incident, delegation and governance types with corresponding systems.
 
-Required context is resolved before selection. Missing/stale refs make event ineligible or return typed conflict, never silently retarget another project.
+Decision type is metadata for UI/diversity/balance, not executable formula.
 
-## Technical decision types
+## 6. Event → Project integration
 
-- problem decomposition;
-- research vs implementation;
-- ask for help;
-- debug hypothesis;
-- test/review strategy;
-- scope/quality/deadline;
-- refactor vs patch;
-- debt accept/repay/contain;
-- defect fix/workaround/defer;
-- release/delay/cut/rollback;
-- incident response;
-- ownership/delegation;
-- architecture/technology trade-off.
+MVP event may:
 
-Decision type is metadata for diversity/UI/balance, not executable formula.
+- present a Project Engine-generated decision;
+- send typed answer/approach request;
+- provide assistance or external constraint;
+- create a future hook.
 
-## Event → Project integration
+It may not:
 
-Event may:
+- declare package completed;
+- mutate hidden work;
+- set quality to a chosen value;
+- erase debt/issue;
+- ship a release directly;
+- create professional progression without provider outcome.
 
-- request creation/defer/cancel of a package through typed Project command;
-- modify package approach/priority/guardrails through valid transition;
-- supply new constraint/signal/participant/assistance;
-- present Project Engine-generated uncertainty/release/incident decision;
-- create delayed typed project signal/hook;
-- materialize provider outcome only if the event domain owns that outcome.
+## 7. Typed operations
 
-Event may not:
+MVP operations:
 
-- declare package completed because narrative choice says so;
-- mutate `knownRemainingWork`/latent work directly;
-- set quality to excellent;
-- delete debt/defect;
-- ship a release without release gate/outcome;
-- attribute team result to player;
-- create evidence without `ExperienceEpisode`.
-
-## Typed project operations
-
-Allowed discriminators include:
-
-- `project.request-package`;
-- `project.set-approach`;
-- `project.change-scope-request`;
-- `project.set-quality-priority`;
-- `project.accept-risk`;
-- `project.select-defect-response`;
-- `project.select-debt-response`;
+- `project.select-approach`;
+- `project.request-scope-change`;
+- `project.accept-known-limitation`;
 - `project.select-release-action`;
-- `project.set-owner-guardrails`;
-- `project.add-external-signal`;
-- `project.record-decision-input`.
+- `project.record-decision-input`;
+- `professional.request-assistance`;
+- `activity.set-priority`.
 
-Handlers call Project Engine public API with expected revisions.
+Each operation has schema/version, pure handler, owning module, revision/idempotency policy and tests.
 
-Raw state patch/eval script is forbidden.
+Unknown operation blocks content pack.
 
-## Delayed consequences
+Additional discriminators are introduced with implemented systems.
+
+## 8. Delayed consequences
+
+MVP delayed hook:
 
 ```ts
-type DelayedProjectConsequence = Readonly<{
+type DelayedConsequence = Readonly<{
   id: ConsequenceId;
   triggerWindow: GameDateWindow;
-  context: ProjectContextRef;
-  signal: ProjectExternalSignal;
+  context: CasualEventContextRef;
+  signal: DelayedSignal;
   requirements: readonly Condition[];
   expirationPolicy: ExpirationPolicy;
 }>;
 ```
 
-It can influence future eligibility/constraints but cannot secretly materialize release/defect/evidence without future provider processing.
+A delayed hook changes future eligibility/context. It cannot secretly mint progression, release or defect truth.
 
-## Condition/effect registry
+## 9. Metadata
 
-Each operation has:
-
-- discriminator/schema/version;
-- pure evaluator/handler;
-- semantic checks;
-- tests;
-- allowed owning module;
-- revision/idempotency policy.
-
-Unknown discriminator blocks pack.
-
-## Metadata
+Required:
 
 - author/review/content version;
-- creation/review dates;
-- sensitivity tags;
-- arc/product layer;
-- target life/professional/project stage;
-- target frequency;
-- technical decision type;
-- sourceRefs.
+- category/product layer;
+- target era/life stage;
+- frequency/cooldown;
+- localization;
+- sourceRefs where historical.
 
-## Validation
+Do not require advanced technical metadata for simple life/flavour events.
 
-1. parse/source locations;
-2. schema/stable namespace;
-3. reference/revision policy;
-4. chronology/technology/project eligibility;
-5. chain/reachability;
-6. provider/project mapping;
-7. progression/project safety lint;
-8. localization;
-9. balance/pacing lint.
+## 10. Validation
 
-## Safety lint
+1. parse/schema/stable ID;
+2. references and context ownership;
+3. chronology/technology availability;
+4. chain/reachability;
+5. typed operation ownership;
+6. casual-complexity lint;
+7. localization/accessibility;
+8. balance/pacing lint.
+
+## 11. Casual-complexity lint
+
+Warns/blocks:
+
+- ordinary event with more than four options;
+- options without distinguishable trade-off;
+- internal jargon in normal copy;
+- repeated event requiring routine monthly click;
+- multiple unrelated blocking decisions in one event;
+- event depending on unimplemented system;
+- life event falsely tagged technical;
+- philosophy reward that directly changes professional/project truth.
+
+## 12. Safety lint
 
 Blocks:
 
-- direct mastery/grade/evidence effects;
-- direct project progress/quality/debt/defect/release mutation;
-- project decision without project context/revision policy;
-- package completion from narrative-only branch;
-- release action without gate/accepted-risk path;
-- defect/debt removal without Project transition;
+- direct mastery/grade/project mutation;
+- package completion from narrative text;
 - hidden-state reroll;
+- assisted branch inflating independence;
 - partial/failure mapped to full delivery;
-- assisted branch inflating autonomy;
-- unavailable-era technology/tool/distribution;
-- life-only event falsely tagged technical;
-- event farming without cooldown/anti-repeat;
-- philosophy answer with authoritative project/professional reward.
+- unavailable-era technology;
+- farming without cooldown/anti-repeat;
+- raw patch/eval/executable content.
 
-## Error UX
+## 13. Error UX
 
-Validator reports file, line/column, JSON path, rule ID and safe fix when unambiguous. Invalid mod pack is quarantined without damaging save/core content.
+Validator reports file, location, JSON path, rule ID and safe fix when unambiguous.
+
+Invalid mod pack is quarantined without damaging save/core content.
