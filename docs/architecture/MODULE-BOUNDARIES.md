@@ -1,8 +1,12 @@
 # Границы модулей
 
-Нормативные решения: [ADR-004](../adr/ADR-004-persistence-execution-boundary.md) и [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md).
+Нормативные решения:
 
-## Правило направления зависимостей
+- [ADR-004 — Persistence Boundary](../adr/ADR-004-persistence-execution-boundary.md);
+- [ADR-013 — Professional Progression](../adr/ADR-013-authoritative-professional-progression-evidence.md);
+- [ADR-014 — Project & Work Package](../adr/ADR-014-authoritative-project-work-package-model.md).
+
+## Dependency direction
 
 ```text
 React UI / Storybook
@@ -20,237 +24,280 @@ Rust Persistence and Platform Services
 SQLite / filesystem / Tauri
 ```
 
-Зависимость всегда направлена к более стабильному и чистому слою. Runtime adapters реализуют ports, но domain/application не знают конкретную инфраструктуру.
+Dependencies point toward stable pure layers.
 
 ## `shared-kernel`
 
-Содержит только стабильные value objects и примитивы:
+Only stable primitives:
 
 - branded IDs;
-- `GameDate`;
-- authoritative numeric types (`MoneyMinor`, `RateBps`, `ChancePpm`, `WorkUnit`);
-- `Result` и доменные ошибки;
-- version identifiers;
-- canonical serialization contracts.
+- `GameDate`/`MonthIndex`;
+- `MoneyMinor`, `BasisPoints`, `ChancePpm`, `WorkUnit`;
+- `Result`/domain errors;
+- version/fingerprint IDs;
+- canonical serialization.
 
-Не содержит игровых систем, React, SQL, Tauri и platform APIs.
+No gameplay systems, React, SQL, Tauri or platform APIs.
 
 ## `game-schema`
 
-Содержит TypeBox-схемы DTO, контента, save envelopes, IPC requests/results, Storybook fixtures и mod manifests. Не содержит поведения и side effects.
+TypeBox/JSON schemas for:
 
-Включает contracts для:
+- save/IPC/content/mod DTO;
+- professional state/evidence/episodes;
+- ProjectState/WorkPackage/release DTO;
+- project content definitions;
+- UI fixtures/read models.
 
-- `ExperienceEpisode`;
-- professional state/evidence DTO;
-- progression read models;
-- skill/technology/grade content definitions.
-
-Generated schemas/types имеют один source и не редактируются вручную.
+Generated types have one source.
 
 ## `game-core`
 
-Владеет:
+Owns pure:
 
-- доменными сущностями/state transitions;
-- integer/fixed-point формулами;
-- MonthRun engine;
-- Event Engine;
-- Narrative Director;
+- domain state transitions;
+- integer/fixed-point rules;
+- MonthRun;
+- Event/Narrative systems;
 - Professional Progression Core;
+- Project & Work Package Engine;
 - invariants;
-- deterministic randomness contracts;
-- calendar;
-- canonical outcome/trace model.
+- deterministic randomness;
+- canonical outcomes/traces.
 
-Запрещены импорты React, Tauri, Zustand, SQLite, filesystem, network, system `Date`, `Math.random` и production logger.
+Forbidden imports:
 
-Core не выполняет persistence. Он возвращает immutable result/checkpoint, который application layer передаёт в port.
+- React/DOM/Zustand;
+- Tauri/SQLite/filesystem/network;
+- system `Date`/`Math.random`/locale sorting;
+- production logger.
 
-## Professional Progression Core
+## Project & Work Package Engine
 
-Владеет:
+Owns:
 
-- `CharacterProfessionalState` transitions;
-- mastery/fluency/familiarity assessment;
-- experience assessment;
-- evidence materialization;
-- grade/readiness projections;
-- progression trace/explanations;
-- anti-repeat/dedup rules.
+- ProjectState transitions;
+- scope/requirements;
+- Work Package lifecycle;
+- project uncertainty/forecast inputs;
+- quality/debt/defects;
+- releases/maintenance;
+- participant contribution;
+- technical project outcome;
+- Project → `ExperienceEpisode` mapping.
 
-Не владеет:
+Does not own:
 
-- lifecycle проектов, work packages, вакансий, курсов и событий;
-- salary, employer, promotion и company state;
-- health/fatigue state;
-- provider-specific outcome truth;
+- product users/revenue/churn;
+- OSS governance/community;
+- company employment/payroll;
+- career salary/promotion;
+- character mastery/grade;
+- event selection/pacing;
+- global life capacity allocation;
 - persistence transaction;
 - UI formatting.
 
-Public input — immutable `ExperienceEpisode`. Public output — professional assessment/delta/evidence candidates/projections.
+Public inputs:
+
+- immutable project state;
+- allocated participant work;
+- provider/extension constraints/signals;
+- compiled definitions;
+- deterministic context/decision log.
+
+Public outputs:
+
+- project/package state delta;
+- pending project decision/checkpoint;
+- release/incident/history deltas;
+- contribution snapshot;
+- `ExperienceEpisode` candidates;
+- project trace/explanations.
+
+## Professional Progression Core
+
+Owns:
+
+- professional state transitions;
+- mastery/fluency/familiarity;
+- episode assessment;
+- evidence/grade/readiness;
+- anti-repeat/dedup;
+- progression explanations.
+
+Does not re-evaluate project technical truth.
 
 ## Experience Providers
 
-Provider modules:
-
 - Education;
-- Projects/Products;
+- Project Engine;
 - Career/Employment;
 - Open Source;
 - Company/Leadership;
-- Event Engine.
+- Event Engine where a real domain outcome exists.
 
-Каждый provider:
+Every provider:
 
-- владеет своим task/activity/outcome lifecycle;
-- проверяет eligibility и domain invariants;
-- отделяет вклад персонажа от командного результата;
-- материализует stable `ExperienceEpisode`;
-- не изменяет skills/technologies/grade напрямую.
+- owns its task/activity/outcome lifecycle;
+- checks eligibility/invariants;
+- separates player contribution from team/external result;
+- creates stable episode;
+- never mutates skills/grade directly.
 
-Provider может использовать compiled definitions из `game-content`, но не импортирует внутренности Progression Core.
+## Product/Market extension
+
+Owns:
+
+- adoption/users;
+- demand;
+- pricing/revenue/cost/churn;
+- market fit/competition;
+- product support demand.
+
+Consumes `ReleaseTechnicalOutcome`; returns demand/support signals.
+
+Must not import Project Engine internals or mutate quality/debt/defects directly.
+
+## Open Source extension
+
+Owns:
+
+- contributor/maintainer/community state;
+- governance/forks/sponsorship;
+- issue/PR community flow;
+- ownership transfer.
+
+Uses public Project contracts for technical state/releases.
+
+## Company/Leadership
+
+Owns:
+
+- employees/teams;
+- hiring/payroll/retention;
+- portfolio priorities;
+- budgets/tooling/process;
+- organizational debt;
+- organization-level delegation policies.
+
+Provides Project Engine capacity/ownership/constraints. It does not duplicate ProjectState.
+
+## Career/Employment
+
+Owns:
+
+- employer/job/position/title;
+- salary/promotion/firing;
+- stakeholders/deadlines/role expectations;
+- organizational consequences.
+
+Consumes project contribution/outcome summaries.
 
 ## `game-application`
 
-Оркестрирует use cases:
+Orchestrates:
 
-- создание/загрузку сейва;
+- save lifecycle;
 - begin/resume/recover/abandon MonthRun;
-- выполнение пользовательских команд;
-- проверку revisions/idempotency context;
-- сохранение результата через ports;
-- import/export;
-- backup/restore;
-- построение read models.
+- commands/revisions/idempotency;
+- persistence ports;
+- import/export/backup;
+- read-model composition.
 
-Не содержит формул баланса, raw SQL, progression math и Tauri calls.
+No balance/project/progression formulas, raw SQL or Tauri calls.
 
 ## `game-content`
 
-Загружает и компилирует data packs, строит deterministic registry и предоставляет core только валидированные immutable definitions.
+Loads/validates/compiles immutable definitions:
 
-Владеет:
+- skills/technologies/transfer/grade;
+- project archetypes/kinds;
+- scope/work-package templates;
+- quality profiles;
+- debt/defect/release/maintenance policies;
+- era project capabilities;
+- events/NPC/world/content.
 
-- schemas/semantic validation orchestration;
-- skill/technology family/transfer definitions;
-- activity/challenge/grade profile definitions;
-- references/chronology;
-- load order и fingerprints;
-- tombstones/remaps;
-- localization resources;
-- built-in/mod pack registry.
-
-Не исполняет произвольный код контента и не вычисляет runtime progression.
+No executable content, runtime project simulation or progression calculation.
 
 ## Persistence contracts
 
-Описывают typed repositories/services:
+Typed services for:
 
-- save snapshot/history;
-- professional snapshot/evidence ledger;
+- normalized save/project/professional snapshots;
+- append-only evidence/releases/incidents/history/ledger;
 - MonthRun draft/checkpoint/commit;
 - transaction/revision/idempotency;
-- migrations;
-- backup/restore;
-- import/export;
-- recovery.
+- migrations/compatibility;
+- backup/restore/import/export/recovery.
 
-Raw SQL и concrete SQLite types не входят в public TypeScript API.
+No raw SQL/concrete SQLite types in public TS API.
 
-## Platform contracts
+## Rust adapter
 
-Описывают filesystem, dialogs, window lifecycle, updater, logging и infrastructure clock. Системный clock не передаётся в игровую симуляцию.
+Rust:
 
-Platform contract не должен превращаться в универсальный `execute`, `readAnyPath` или shell bridge.
+- validates DTO/ranges/revisions;
+- executes transactions;
+- stores project/professional/history deltas atomically;
+- handles migration/backup/recovery.
 
-## Typed Tauri/Rust adapter
+Rust does not:
 
-Rust реализует persistence/platform contracts через узкие versioned commands. Production renderer не получает authoritative SQL execute, произвольный filesystem или shell capability.
-
-Rust не выбирает события, не вычисляет progression/grade, не создаёт evidence claims и не интерпретирует content rules. Он валидирует DTO, checked integer ranges, idempotency и transaction consistency.
+- advance Work Packages;
+- choose project outcomes;
+- calculate quality/debt/defects;
+- calculate progression/evidence;
+- interpret content rules.
 
 ## `game-ui`
 
-Содержит:
+Contains components/routes/view adapters/accessibility/stories.
 
-- design system;
-- presentational/game components;
-- view models/view adapters;
-- route-level composition;
-- accessibility behavior;
-- Storybook stories рядом с компонентами при выбранной структуре.
+Consumes application read models; never imports mutable ProjectState/progression internals or persistence implementation.
 
-Не импортирует persistence implementation, raw Tauri API, `game-core` mutable state и SQL.
+UI does not:
 
-UI получает capabilities, evidence, readiness и explanations через typed application/read-model facade. Он не пересчитывает grade или skill gain.
+- calculate hidden latent work;
+- reroll forecast/defects;
+- decide release gate;
+- calculate mastery/evidence;
+- issue raw SQL/platform commands.
 
 ## `game-ui-fixtures`
 
-Содержит deterministic serializable fixtures для:
+Deterministic serializable fixtures for Storybook/tests/bug reproduction:
 
-- Storybook;
-- component tests;
-- Playwright;
-- bug reproduction;
-- будущего Content Studio.
+- project/package/forecast/quality/debt/defect/release states;
+- professional/evidence states;
+- recovery/edge cases.
 
-Fixtures включают novice/advanced professional read models, но не используют system date/randomness, production save paths, сеть и privileged platform adapters.
-
-`game-ui-fixtures` может зависеть от schemas/read-model contracts, но не от desktop composition/Rust implementation.
-
-## Storybook boundary
-
-Storybook является development-only consumer `game-ui` и fixtures.
-
-Разрешено:
-
-- in-memory application/platform mocks;
-- deterministic professional/evidence read models;
-- interaction/a11y/visual tests.
-
-Запрещено:
-
-- production SQLite/save directory;
-- updater/signing;
-- arbitrary filesystem/network;
-- release secrets;
-- production Tauri capabilities;
-- grade/progression formula в story decorator.
-
-Storybook MCP, если включён, остаётся за той же boundary и не входит в release dependency graph.
+No production paths/network/clock/randomness/privileged adapters.
 
 ## Desktop composition root
 
-`apps/desktop` единственный слой, который связывает:
+`apps/desktop` wires UI, application facade, IPC and adapters only. No gameplay formulas.
 
-- React routes/UI;
-- application facade;
-- generated IPC client;
-- Tauri/Rust commands;
-- production adapters/configuration.
+## Architecture checks
 
-Composition root не содержит gameplay/progression formulas.
+CI blocks:
 
-## Архитектурные проверки
-
-CI обязан блокировать:
-
-- импорт `@tauri-apps/*` из shared-kernel/schema/core/application/game-ui;
-- импорт React/DOM/Zustand из core/application;
-- импорт persistence implementation из UI/Storybook;
-- импорт `game-core` internals из UI;
-- provider import внутренних progression modules вместо public contracts;
-- provider direct mutation `CharacterProfessionalState`;
-- grade calculation вне Progression Core;
-- evidence creation без `ExperienceEpisode`/source snapshot;
-- raw SQL strings вне Rust persistence module/migrations;
-- SQL execute capability у main production window;
-- production adapters/secrets в Storybook graph;
-- циклические package dependencies;
-- обход public package exports/deep imports;
-- игровые формулы внутри компонентов/application orchestration;
-- system `Date`/`Math.random`/locale sorting в core;
-- plain floating authoritative domain fields;
-- content/mod executable code;
-- test-only Tauri/WebdriverIO plugin в release build.
+- Tauri imports in kernel/schema/core/application/UI;
+- React/DOM imports in core/application;
+- persistence implementation in UI/Storybook;
+- UI direct mutable GameState imports;
+- Project Engine importing Product/Company/OSS internal state instead of contracts;
+- Product/Company/OSS direct mutation of ProjectState;
+- provider direct mutation of professional state;
+- project technical outcome calculated outside Project Engine;
+- grade/evidence calculation outside Progression Core;
+- release record mutation after commit;
+- raw SQL outside Rust persistence/migrations;
+- SQL execute capability in production renderer;
+- executable content/mod scripts;
+- system time/random/locale-order in core;
+- float authoritative fields;
+- circular/deep imports;
+- formulas in React/application orchestration;
+- test-only desktop plugins in release build.

@@ -1,6 +1,13 @@
 # Симуляция месяца
 
-Связанные решения: [ADR-005](../adr/ADR-005-suspended-month-run.md), [ADR-007](../adr/ADR-007-determinism-manifest.md), [ADR-009](../adr/ADR-009-narrative-director.md), [ADR-010](../adr/ADR-010-authoritative-save-state.md) и [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md).
+Связанные решения:
+
+- [ADR-005 — Suspended MonthRun](../adr/ADR-005-suspended-month-run.md);
+- [ADR-007 — Determinism Manifest](../adr/ADR-007-determinism-manifest.md);
+- [ADR-009 — Narrative Director](../adr/ADR-009-narrative-director.md);
+- [ADR-010 — Authoritative Save State](../adr/ADR-010-authoritative-save-state.md);
+- [ADR-013 — Professional Progression](../adr/ADR-013-authoritative-professional-progression-evidence.md);
+- [ADR-014 — Project & Work Package](../adr/ADR-014-authoritative-project-work-package-model.md).
 
 ## Public contracts
 
@@ -27,7 +34,7 @@ type MonthRunResult =
   | MonthRunFailed;
 ```
 
-Core-функции чистые. Application layer отвечает за загрузку committed state/pending draft, compatibility/idempotency checks и сохранение checkpoint/result через ports.
+Core pure. Application loads state/draft, validates revisions/compatibility/idempotency and persists through ports.
 
 ## State machine
 
@@ -35,243 +42,313 @@ Core-функции чистые. Application layer отвечает за заг
 ready → running → suspended-for-decision → running → completed → committed
 ```
 
-`failed`, `incompatible-after-update`, `recovery-required` и `abandoned` являются явными состояниями lifecycle.
+Explicit exceptional states:
+
+```text
+failed
+incompatible-after-update
+recovery-required
+abandoned
+```
 
 ## Deterministic context
 
-MonthRunner получает аргументами:
+MonthRunner inputs:
 
 - committed base state;
 - MonthPlan;
-- GameDate/calendar context;
+- GameDate/calendar;
 - compiled immutable content registry;
-- rules/content/mod fingerprints;
+- save/rules/content/mod/project/progression fingerprints;
 - Determinism Manifest;
 - root/fork RNG states;
-- previous decision/input log при resume;
-- phase/checkpoint position;
+- previous decision/input log;
+- phase/checkpoint;
 - provider checkpoints;
+- project checkpoints;
 - progression checkpoint.
 
-Он не читает filesystem, SQLite, system clock, locale, process environment или UI state.
+No filesystem/SQLite/system clock/locale/process/UI reads.
 
 ## Versioned pipeline
 
-1. Application layer загружает committed save и active draft.
-2. Проверяются save/run revisions, schema/rules/content/mod compatibility и idempotency.
-3. Создаётся/восстанавливается deterministic context и RNG streams.
-4. Определяются календарные дни месяца.
-5. Применяются scheduled/global world changes текущей даты.
-6. Рассчитываются life capacity, health/fatigue modifiers и постоянные обязательства.
-7. Распределяются integer work units по commitments/activities и приоритетам.
-8. Experience Providers продвигают education/employment/projects/products/open source/company/relationships и собственные task states.
-9. Providers открывают uncertainty/decision candidates; Event Engine добавляет eligible events в stable order.
-10. Narrative Director применяет pacing modifiers и выбирает display/decision set.
-11. При blocking decision создаётся immutable checkpoint; MonthRun возвращает `suspended`.
-12. После ответа provider/event state продолжается с сохранённого checkpoint без нового random roll.
-13. Providers материализуют domain outcomes и нормализованные `ExperienceEpisode`.
-14. Professional Progression Core оценивает episodes:
-    - mastery delta;
-    - fluency/familiarity delta;
+1. Load committed save and active draft.
+2. Validate revisions, schemas, fingerprints, manifest and idempotency.
+3. Restore/create deterministic context and RNG forks.
+4. Resolve month calendar days.
+5. Apply scheduled world/era changes.
+6. Calculate life capacity, health/fatigue and mandatory commitments.
+7. Allocate integer work units across activities/commitments/projects.
+8. Career/Company/Open Source/Education provide constraints, participants and signals.
+9. Project Engine allocates received project work to active Work Packages.
+10. Project Engine advances known work using project-specific capability/clarity/toolchain/coordination/continuity factors.
+11. Project Engine reveals deterministic latent work/uncertainty and materializes package decision candidates.
+12. Event Engine adds eligible events; Narrative Director selects blocking/display set.
+13. Before blocking decision, persist immutable provider/project/progression checkpoint and return `suspended`.
+14. Resume applies answer to the same package/event state and RNG state; no reroll.
+15. Project Engine resolves package outcomes and updates scope/quality/debt/defects.
+16. Evaluate release candidates, incidents, maintenance and immutable technical records.
+17. Build participant contribution snapshots.
+18. Experience Providers materialize stable `ExperienceEpisode`.
+19. Professional Progression evaluates episodes:
+    - mastery;
+    - fluency/familiarity;
     - evidence candidates;
-    - monthly practice aggregates;
+    - monthly practice;
     - explanations/trace.
-15. Evidence candidates проходят source/context validation, anti-repeat и deterministic ID materialization.
-16. Обновляются finance, housing/equipment, local market и остальные post-outcome systems.
-17. Строятся demonstrated/current-market readiness projections и monthly professional report.
-18. Проверяются cross-module invariants.
-19. Формируется immutable final state, append-only deltas, report read models и final trace hash.
-20. Application/Rust persistence выполняют atomic authoritative commit.
+20. Validate/materialize deterministic evidence IDs.
+21. Product/Open Source/Company/Career consume typed project outcomes and apply their domain consequences.
+22. Update finance/housing/world/relationships and other post-outcome systems.
+23. Build readiness/project/report projections.
+24. Validate cross-module invariants.
+25. Build immutable final state, append-only deltas and canonical trace.
+26. Application/Rust persistence performs one authoritative atomic commit.
 
-Порядок фаз является versioned rules contract и входит в effect ordering/trace policy.
+Phase order is a versioned rules contract.
 
-## Experience Provider contract
+## Project checkpoint
 
-Provider владеет domain truth:
+Minimum:
 
-- task/activity state;
-- completion/partial/failure;
-- project quality/debt/bugs;
-- work/employment result;
-- course/learning-source result;
-- participant contribution;
-- available feedback/assistance.
+- project/package revisions;
+- scope/quality/debt/defect pre-state hashes;
+- allocated participant work;
+- package phase/progress;
+- latent work realization/revealed amount;
+- project RNG states;
+- discovered uncertainty;
+- pending project decision;
+- provisional package outcome;
+- release candidate/incident draft;
+- contribution draft;
+- episode draft;
+- project trace hashes/fingerprints.
 
-Provider передаёт `ExperienceEpisode`. Он не начисляет skill mastery, technology familiarity или grade напрямую.
+Exact hidden latent work cannot change after restart except supported migration.
 
-Progression Core не меняет provider outcome и не пересчитывает его из description/content text.
+## Professional checkpoint
 
-## Progression checkpoint
-
-Checkpoint professional phase хранит минимум:
+Minimum:
 
 - stable episode IDs;
-- episode semantic snapshots либо provider refs + hashes;
-- progression phase/step;
+- source/context snapshots or refs+hashes;
 - draft skill/technology deltas;
 - pending evidence IDs;
-- evidence anti-repeat state;
+- anti-repeat state;
 - monthly practice accumulators;
-- readiness projection input hash;
-- progression trace hash;
-- related pending decision IDs.
+- readiness input hash;
+- progression trace hash.
 
-Draft evidence не считается committed history.
+Draft episodes/evidence/releases are not committed history.
 
-## Evidence ID и idempotency
-
-Evidence ID формируется детерминированно:
+## Project RNG scopes
 
 ```text
-hash(saveId, monthRunId, episodeId, outcomeOrdinal, rulesVersion)
+project/{projectId}/package/{packageId}/latent-work
+project/{projectId}/package/{packageId}/uncertainty
+project/{projectId}/package/{packageId}/defect
+project/{projectId}/release/{releaseId}/technical
+project/{projectId}/incident/{incidentId}
 ```
 
-Правила:
+Rules:
 
-- duplicate resume создаёт тот же evidence candidate;
-- duplicate decision не потребляет RNG и не меняет episode ID;
-- duplicate commit определяется committed MonthRun/evidence IDs;
-- один provider outcome не может материализовать два эквивалентных evidence event;
-- routine practice одного месяца агрегируется по stable aggregate key.
+- package latent work is generated once;
+- uncertainty/defect/release outcomes do not reroll on reload;
+- UI forecast does not consume RNG;
+- Progression does not reroll provider outcome;
+- event/narrative scopes remain separate.
 
-## Checkpoints
+## Work allocation
 
-Checkpoint содержит достаточно данных для crash-safe resume, но не обязан сохранять каждый микрошаг. Минимум:
+Global allocation already includes life capacity/fatigue. Project Engine applies only project factors.
 
-- phase/step;
-- intermediate immutable state;
-- provider checkpoints;
-- progression checkpoint;
-- RNG states;
-- decision/input history;
-- trace hashes;
-- compatibility fingerprints;
-- pending decision.
+```text
+effectiveWork = roundHalfEven(
+  allocatedWork
+  × capabilityFitBps
+  × clarityBps
+  × toolchainBps
+  × coordinationBps
+  × continuityBps
+  / 10000^5
+)
+```
 
-Checkpoint создаётся:
+Debt drag consumes part of effective work before scope progress. Revealed latent work can increase known remaining work without reversing completed work.
 
-- перед blocking decision;
-- после принятого ответа до следующей потенциально блокирующей фазы;
-- после provider outcomes до progression materialization, если фаза может быть длительной;
-- перед final commit boundary.
+## Project decision policy
+
+Blocking when:
+
+- material scope/quality/architecture/technology changes;
+- debt/risk acceptance is significant;
+- critical defect/incident response chosen;
+- release/delay/cut/rollback selected;
+- ownership/delegation commitment changes;
+- provider cannot safely apply configured policy;
+- ethics/security/relationship consequence is material.
+
+Routine implementation/maintenance does not block.
+
+## Project outcome → episode
+
+Project Engine finalizes technical truth first:
+
+- completion/partial/failure/recovery;
+- quality/debt/defect deltas;
+- release/incident state;
+- player/team contribution.
+
+Only then it builds `ExperienceEpisode`.
+
+Progression cannot:
+
+- change project quality/debt/defects;
+- turn partial into delivery;
+- attribute team outcome to player;
+- generate evidence from revenue/popularity alone.
+
+## Deterministic IDs
+
+Examples:
+
+```text
+WorkPackageId = hash(saveId, projectId, originId, creationMonth, ordinal, rulesVersion)
+ReleaseId = hash(saveId, projectId, releaseOrdinal, gameDate, rulesVersion)
+IncidentId = hash(saveId, projectId, sourceDefectOrRisk, monthRunId, ordinal)
+ExperienceEpisodeId = hash(saveId, monthRunId, providerSourceId, outcomeOrdinal)
+EvidenceId = hash(saveId, monthRunId, episodeId, outcomeOrdinal, progressionRulesVersion)
+```
+
+## Checkpoint policy
+
+Persist checkpoint:
+
+- before every blocking decision;
+- after accepted answer before next blocking phase;
+- after latent work/defect/release random materialization if later phases can suspend;
+- after provider outcomes before progression if needed;
+- before completed → committed.
+
+No need to persist every microstep if crash/replay tests prove recoverability.
+
+## Atomic authoritative commit
+
+One Rust/SQLite transaction writes:
+
+- normalized project/professional/other snapshot deltas;
+- resolved Work Package state;
+- quality/debt/defect state;
+- releases/incidents/major decisions;
+- contribution summaries;
+- episodes/evidence/practice/grade records;
+- finance/history/ledger;
+- save revision;
+- committed MonthRun marker/trace;
+- draft cleanup.
+
+Project outcome and evidence cannot commit separately.
 
 ## Side effects
 
-Core не выполняет IO. Side effects после результата разделяются:
-
 ### Authoritative
 
-- сохранить MonthRun draft/checkpoint;
-- commit normalized snapshot;
-- append histories/finance/evidence/practice/grade records;
-- увеличить save revision;
-- записать committed run marker.
+- draft/checkpoint;
+- normalized snapshot;
+- append-only histories/ledger/evidence/releases/incidents;
+- revision/committed marker.
 
 ### Non-authoritative
 
-- обновить UI/readiness/specialization projections;
-- показать notification/audio;
-- перестроить search/chart/evidence indexes;
-- записать redacted diagnostics.
+- UI read models;
+- project forecast/dashboard;
+- readiness/specialization;
+- charts/search indexes;
+- notifications/audio;
+- redacted diagnostics.
 
-Неавторитетный side effect не может изменить outcome или состояние следующего месяца.
+Non-authoritative effects do not change next month outcome.
 
 ## Idempotency
 
-Одинаковые base state, MonthPlan, content/rules/mod fingerprints, Determinism Manifest, RNG state и decision log дают одинаковый canonical result.
+- duplicate request does not rerun operation;
+- duplicate decision does not consume RNG;
+- duplicate committed run does not apply month twice;
+- duplicate package outcome/release/incident/episode/evidence ID is rejected/idempotent;
+- save revision increments once;
+- crash after commit uses committed marker;
+- active draft belongs to exact base revision/fingerprints.
 
-Дополнительно:
+## Cross-module invariants
 
-- duplicate `requestId` не запускает операцию повторно;
-- duplicate decision не потребляет RNG повторно;
-- duplicate committed `runId` не применяет месяц второй раз;
-- duplicate evidence ID не добавляется повторно;
-- save revision увеличивается только при первом успешном commit;
-- crash после commit до cleanup определяется committed marker;
-- project outcome и evidence не могут разойтись между разными transactions.
-
-## Invariants
-
-Минимум после каждой критической фазы и перед commit:
-
-- GameDate/MonthIndex не уменьшаются;
-- authoritative числа целые и в диапазоне;
-- деньги/ledger согласованы;
-- закрытые/удалённые entity/task/activity не получают прогресс;
-- employment/education commitments согласованы;
-- provider outcome имеет stable source/context;
-- evidence candidate ссылается на существующий episode;
-- partial outcome не подтверждает full delivery;
-- transfer не создаёт production evidence;
-- помощь не повышает autonomy claim;
-- awarded grade не понижается автоматически;
-- readiness projections построены из того же final state/evidence delta;
-- references и NPC/arc participants существуют либо имеют tombstone policy;
-- один active MonthRun на save;
-- effects applied order соответствует manifest;
-- final committed state не содержит draft-only evidence/accumulators.
-
-## Randomness
-
-Progression formula deterministic и не использует RNG там, где достаточно provider outcome/coefficients.
-
-Допустимые отдельные scopes:
-
-- `month/professional/uncertainty` — discovery неизвестности provider task;
-- `month/professional/outcome` — bounded outcome variability, если provider contract это допускает;
-- `month/events`/`month/narrative` — event selection;
-- cosmetic scopes — отдельно.
-
-Skill gain/evidence assessment не перебрасывает provider outcome и не получает новый roll после reload.
+- date/MonthIndex monotonic;
+- authoritative arithmetic integer/in-range;
+- terminal project/package does not progress;
+- package belongs to project and refs valid/tombstoned;
+- latent realization stable;
+- partial is not full completion;
+- release immutable and valid;
+- critical release gate bypass requires explicit risk acceptance/policy;
+- low confidence is not treated as low quality;
+- defect rolls stable;
+- Project Engine does not mutate professional state;
+- Product/Company/OSS do not mutate Project technical truth directly;
+- team outcome separated from character contribution;
+- episode references committed/provisional provider outcome;
+- assistance does not increase autonomy claim;
+- transfer does not create production evidence;
+- readiness/project projections built from same final state;
+- final state contains no draft-only values.
 
 ## Errors
 
-До запуска:
+Before run:
 
-- validation;
-- revision conflict;
+- validation/revision conflict;
 - unsupported schema/rules/manifest;
-- content/mod fingerprint mismatch;
-- malformed plan/answer.
+- content/mod/project/progression mismatch;
+- malformed plan/answer;
+- incompatible active package/draft.
 
-Во время запуска:
+During run:
 
 - invariant violation;
-- integer overflow;
-- invalid/missing provider episode source;
-- duplicate/inconsistent evidence candidate;
-- no valid outcome для обязательной фазы;
-- corrupted checkpoint/trace mismatch.
+- overflow;
+- invalid package transition;
+- missing scope/dependency/source;
+- inconsistent latent work realization;
+- duplicate release/episode/evidence;
+- impossible release gate/outcome;
+- corrupted checkpoint/trace.
 
-Ошибка core возвращает typed diagnostic result и не изменяет committed save. Persistence error после completed result оставляет run recoverable и не считается committed.
+Core error does not mutate committed save. Persistence failure keeps completed run recoverable.
 
-## Trace и observability
+## Trace
 
-Каждая фаза имеет stable ID, input/output hash, RNG scope и список applied effect/evidence IDs.
+Each phase stores stable ID, input/output hashes, RNG scope and applied IDs.
 
-Progression trace содержит:
+Project trace includes:
 
-- episode ID/provider/source;
-- applied skills/technologies;
-- challenge/outcome/assistance summary;
-- integer modifiers и rounding reason codes;
-- mastery/fluency/familiarity delta;
-- evidence claim reason codes;
-- anti-repeat decision;
-- readiness input/output hashes.
+- project/package IDs/revisions;
+- allocation/effective work and integer modifiers;
+- latent work revelation;
+- decision/answer;
+- quality/debt/defect deltas;
+- release gate/outcome;
+- contribution mapping;
+- episode IDs;
+- reason codes.
 
-Production trace bounded; debug trace расширен, но использует тот же canonical hash.
+Production trace bounded; debug trace shares canonical hash.
 
-## Производительность
+## Performance targets
 
-Цели на reference machine:
-
-- обычный месяц p95 ≤ 100 мс;
-- тяжёлый месяц p95 ≤ 500 мс;
-- progression assessment масштабируется по episodes текущего MonthRun, а не полной evidence history;
-- readiness projection использует cached aggregates/indexes и не перестраивает тысячи events на каждый UI render;
-- checkpoint serialization/write измеряется отдельно от pure core;
-- UI main thread не блокируется long task >50 мс: при необходимости pure core запускается в Worker;
-- массовые симуляции используют тот же core без React/Tauri/SQLite на каждом прогоне.
-
-Оптимизация не может менять deterministic result. Parallelization допускается только при стабильном reduction/order contract.
+- normal month p95 ≤ 100 ms;
+- heavy month p95 ≤ 500 ms;
+- project processing scales with active packages, not full project history;
+- routine resolved packages can compact;
+- releases/incidents/significant debt remain append-only;
+- read models use projections/indexes;
+- mass simulation uses pure core without React/Tauri/SQLite per run;
+- optimization cannot change deterministic result.

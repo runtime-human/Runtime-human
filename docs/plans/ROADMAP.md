@@ -2,217 +2,211 @@
 
 Нормативные спецификации:
 
-- [Programmer-First Design](../game-design/PROGRAMMER-FIRST-DESIGN.md);
-- [Professional Progression Engine](../game-design/PROFESSIONAL-PROGRESSION-ENGINE.md);
-- [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md).
+- [Programmer-First Design](../game-design/PROGRAMMER-FIRST-DESIGN.md)
+- [Professional Progression Engine](../game-design/PROFESSIONAL-PROGRESSION-ENGINE.md)
+- [Project & Work Package Engine](../game-design/PROJECT-WORK-PACKAGE-ENGINE.md)
+- [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md)
+- [ADR-014](../adr/ADR-014-authoritative-project-work-package-model.md)
 
-Roadmap строится вокруг programmer mastery spine. Life, economy, relationships, narrative и company systems добавляются как контекст, последствия и способы выражения профессионального развития.
+Roadmap строится вокруг programmer mastery и реальных project outcomes. Life, Product, Open Source и Company расширяют общий technical core.
 
 ## Phase 0 — Foundation
 
-- monorepo/toolchains;
-- TypeScript 7/Oxc verification;
+- monorepo, TypeScript 7, Oxc;
 - architecture tests;
 - schemas/content compiler;
-- deterministic primitives/manifest;
-- integer/fixed-point domain types;
-- Tauri/Rust persistence boundary;
-- SQLite/save envelope;
-- persisted MonthRun draft;
-- backup/migration/recovery;
-- Storybook workshop;
-- `CharacterProfessionalState` contracts;
-- `ExperienceEpisode` provider contract;
-- claims-based evidence DTO;
-- deterministic evidence ID policy;
-- grade award/readiness projection contracts;
-- progression metrics schema.
+- deterministic primitives, manifest, fixed-point;
+- Tauri/Rust/SQLite/save/recovery;
+- Storybook;
+- professional state, episode, evidence and grade contracts;
+- ProjectState, WorkPackage and Release contracts;
+- schema versions and semantic fingerprints;
+- deterministic package, release and evidence IDs;
+- persistence and migration fixtures;
+- balance report schemas.
 
 Exit:
 
-- core/application/adapters compile independently;
-- renderer has no SQL execute;
-- save/MonthRun fixture opens;
-- professional state/evidence fixture validates;
-- duplicate evidence ID test exists;
-- backup/restore smoke;
-- verification commands work.
+- package boundaries compile independently;
+- renderer has no SQL execute capability;
+- save, MonthRun, project and professional fixtures validate;
+- duplicate ID constraints exist;
+- backup/restore smoke passes;
+- verification commands exist.
 
-## Phase 1 — Programmer-First Vertical Slice
+## Phase 1 — Programmer + Project Vertical Slice
 
-Implement `VERTICAL-SLICE-PLAN.md` with deliberately small ADR-013 scope:
+Implement `VERTICAL-SLICE-PLAN.md`:
 
-- 2 aptitudes;
-- 5 skills;
-- 1 technology family/technology;
-- 1 provider activity/challenge;
-- assisted/independent/partial/failure outcomes;
-- 1 `ExperienceEpisode`;
-- mastery/fluency/familiarity delta;
-- evidence claims/practice aggregate;
-- capability/readiness explanation;
-- atomic suspend/resume/commit;
-- Storybook/browser/desktop tests;
-- access/failure/duplicate-evidence balance fixtures.
+- 2 aptitudes, 5 skills, 1 technology;
+- one small personal project;
+- 3 scope slices;
+- 2 Work Packages;
+- one deterministic uncertainty;
+- 3 quality dimensions;
+- one optional debt or known-defect branch;
+- one release or recovery outcome;
+- contribution snapshot;
+- one episode and evidence flow;
+- suspend, resume and atomic commit;
+- Storybook, browser, desktop and balance fixtures.
 
-Exit: January 1990 is playable; first programming result is traceable from provider outcome to committed evidence without duplicate effects after restart.
+Exit: January 1990 is playable from project start to release or recovery without rerolls or duplicate records.
 
-## Phase 2 — Beginner → Junior Progression Core
+## Phase 2 — Beginner → Junior + Project Core
 
-- full baseline 13-skill graph;
-- mastery/fluency/familiarity/reacquisition;
-- challenge bands/facets;
-- evidence claims/anti-repeat;
-- monthly practice aggregates;
-- directed sparse transfer;
-- technology Tier A/B/C;
-- ProfessionalFocus/derived specialization;
-- Beginner/Intern/Junior grade profiles;
-- demonstrated/current-market readiness;
-- education/school/university providers;
-- course/easy-task/mentor farming simulation.
+### Progression
+
+- full 13-skill graph;
+- mastery, fluency, familiarity and reacquisition;
+- challenge bands, evidence and anti-repeat;
+- directed transfer and technology tiers;
+- focus, specialization and Beginner/Intern/Junior profiles;
+- education providers.
+
+### Project
+
+- full WorkPackage lifecycle;
+- scope and requirements;
+- latent work and forecasts;
+- quality profiles and confidence;
+- debt aggregates and significant records;
+- latent and known defects;
+- releases and maintenance;
+- contribution mapping.
 
 Exit:
 
-- Beginner→Junior playable without XP-grade;
-- grade award requires gates/contexts;
-- interruption does not erase mastery;
-- transfer does not create evidence;
-- no permanent bad start/farming dominance.
+- Beginner to Junior works without XP-grade;
+- personal and learning projects support varied outcomes;
+- project is not one progress bar or daily-task simulator;
+- project random state is deterministic;
+- no dominant farming or permanent bad start.
 
 ## Phase 3 — Career and Work Projects
 
-- job market/vacancies/interviews;
-- company archetypes/task distributions;
-- Project/Career provider work packages;
-- quality/debt/bugs/incidents;
-- character contribution vs team outcome;
-- promotion/title/company level separate from grade;
-- unemployment/re-entry;
-- current market readiness;
-- Middle grade/profile;
-- professional pacing metrics.
+- vacancies, interviews and employment;
+- company archetypes and role expectations;
+- typed Career to Project requests;
+- work and freelance project archetypes;
+- team contribution and ownership;
+- deadline, quality, debt and incident flows;
+- promotion/title separate from grade;
+- unemployment and re-entry;
+- Middle profile and current market readiness.
 
 Exit:
 
-- path to Middle playable;
-- work creates varied evidence;
-- project outcome + evidence atomic;
-- promotion/title/grade differ;
-- layoffs/re-entry not soft lock.
+- path to Middle is playable;
+- work projects create varied traceable outcomes and evidence;
+- team result differs from character contribution;
+- project, progression and career consequences commit atomically;
+- job loss has recovery.
 
-## Phase 4 — Projects, Products and Open Source
+## Phase 4 — Products and Open Source
 
-- personal/freelance/research/product projects;
-- scope/quality/debt/release decisions;
-- releases/impact/support/legacy;
-- OSS contribution/governance/community health;
-- sponsorship/funding;
-- public expert path;
-- provider evidence for review, release, maintenance and impact;
-- Storybook content fixtures.
+- Product/Market extension for users, demand, revenue and support;
+- Open Source extension for contributors, governance, community and funding;
+- long-lived releases, maintenance and migrations;
+- typed extension signals;
+- public, freelance and maintainer paths;
+- release impact and support burden;
+- Storybook and Content Studio previews.
 
 Exit:
 
-- corporate, freelancer/product, OSS and public paths viable;
-- project is not one progress bar;
-- revenue/fame do not mint technical grade;
-- contribution separated from team/community success.
+- Product and Open Source do not duplicate technical ProjectState;
+- major professional paths remain viable;
+- revenue and popularity do not create technical grade;
+- project transfer, archive and failure are recoverable.
 
 ## Phase 5 — Human Constraints and Values
 
-- housing/equipment;
-- relationships/family;
-- health/fatigue/burnout;
-- richer NPC/mentor arcs;
-- life economy/debt/recovery;
-- career interruption/return;
-- current market readiness/reacquisition UX;
-- crisis/recovery pacing.
+- housing and equipment;
+- relationships and family;
+- health, fatigue and burnout;
+- mentor and NPC arcs;
+- life economy and recovery;
+- career interruption and return;
+- project continuity and key-person consequences;
+- crisis and recovery pacing.
 
 Exit:
 
-- life consequences matter without monthly chores;
-- family/health paths preserve programmer progression;
-- interruption affects fluency/readiness, not awarded grade;
-- life-only events do not starve professional core.
+- life changes capacity and risk without repetitive chores;
+- interruptions affect fluency, readiness and continuity without deleting mastery, grades or history;
+- family and health paths remain viable;
+- life events do not starve technical play.
 
-## Phase 6 — Middle → Senior, Leadership and Company
+## Phase 6 — Senior, Leadership and Company
 
-- Senior gate/profile model;
-- sustained evidence/context diversity;
-- architecture/technical direction/review/mentoring;
-- Team Lead/Tech Lead/Architect roles;
-- delegation/autonomy/downstream outcome;
-- company/team/product portfolio;
-- Founder/CTO differentiation;
-- management-to-IC return;
-- succession/temporary absence;
-- anti-management-shortcut balance.
+- Senior gates and evidence diversity;
+- architecture, review, mentoring and technical direction;
+- Team Lead, Tech Lead and Architect roles;
+- Company teams, hiring, payroll and portfolio;
+- project ownership, delegation and guardrails;
+- organizational versus technical debt;
+- Founder and CTO paths;
+- management-to-IC return, succession and absence;
+- multi-project portfolio abstraction.
 
 Exit:
 
-- Senior requires varied sustained evidence;
-- leadership evidence does not replace core craft floors;
-- founder/CTO playable without office micromanagement;
-- direct coding can decline without erasing programmer identity;
-- Founder not dominant across all dimensions.
+- Senior requires sustained varied evidence;
+- Company uses shared Project Engine;
+- delegation works without hourly micromanagement;
+- direct, team and delegated contribution remain distinct;
+- Founder is not universally dominant.
 
 ## Phase 7 — Late Career, Endgame and Future
 
-- Top Programmer status/achievements;
-- strategic/frontier impact;
+- Top Programmer achievements;
+- strategic and frontier projects;
+- ecosystem and industry impact;
 - mentoring generations;
-- retirement/legacy/succession;
+- ownership transfer, sale and legacy maintenance;
+- retirement and succession;
 - post-2026 future;
-- philosophy based on lived history;
-- evidence compaction only after real corpus;
-- Content Studio/mod API/release hardening;
-- Storybook MCP after security review.
+- philosophy grounded in lived history;
+- compaction after a real save corpus;
+- mod API and release hardening.
 
 Exit:
 
-- Top Programmer rare and multi-path;
-- all major career paths have endgame;
-- legacy preserves professional history;
-- philosophy interprets gameplay rather than replacing it.
+- Top Programmer is rare and multi-path;
+- major careers have endgames;
+- releases, evidence and project legacy remain preserved;
+- philosophy interprets gameplay outcomes.
 
 ## Cross-cutting gates
 
 - programmer-first metrics;
-- provider/progression boundary;
-- evidence integrity/dedup;
-- awarded-grade compatibility;
-- demonstrated/current readiness distinction;
-- course/easy-task/mentor/management farming;
-- path parity;
-- soft-lock/recovery;
-- migration corpus;
-- performance/accessibility/Storybook;
-- historical provenance/deterministic goldens;
-- supply chain/docs traceability;
-- no geography/backend without ADR.
+- Project, extension and Progression boundaries;
+- deterministic IDs and replay;
+- forecast calibration;
+- multidimensional quality and confidence;
+- debt, defect and release integrity;
+- team versus player contribution;
+- farming and overparallelization checks;
+- path parity, recovery and soft locks;
+- migration and compatibility corpus;
+- performance, accessibility and Storybook;
+- historical provenance and deterministic goldens;
+- supply-chain and documentation traceability;
+- no geography or backend expansion without ADR.
 
-Feature fails gate if:
-
-- provider ownership unclear;
-- provider mutates skills/grade directly;
-- progression/evidence is untraceable;
-- it adds routine micromanagement;
-- success is only money/popularity;
-- no failure/recovery/balance metrics;
-- it expands full Senior/endgame mechanics before lower phase proof.
+A feature fails the gate when ownership is duplicated, the project becomes repetitive task clicking, quality is reduced to one authoritative number, hidden outcomes change after reload, project success is confused with mastery or popularity, or recovery and balance tests are missing.
 
 ## Deferred
 
-- generic life-sim expansion;
-- other professions;
-- deep medical/family/tax simulation;
+- generic life-sim expansion and other professions;
+- deep medical, family or tax simulation;
+- full Product, Company or Open Source in vertical slice;
 - Top Programmer formula before Senior corpus;
 - full technology version graph;
-- evidence compaction before real saves;
-- Bayesian/IRT/LLM judge;
-- dynamic runtime transfer calculation;
-- mutation testing/Rust fuzzing until relevant surfaces stabilize;
-- offline WebView2 installer unless demanded;
-- external VRT SaaS.
+- package and evidence compaction before real saves;
+- Bayesian, IRT or LLM judge;
+- executable content and dynamic runtime transfer calculation;
+- daily employee or ticket simulation;
+- mutation testing and Rust fuzzing before relevant surfaces stabilize;
+- optional installer and external visual-testing services until needed.

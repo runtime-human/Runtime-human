@@ -1,8 +1,8 @@
 # Deep Research и System Design — индекс
 
-Этот каталог хранит нормализованные исследования и системные анализы Runtime Human.
+Каталог хранит нормализованные исследования и системные анализы Runtime Human.
 
-Исследование не является источником истины само по себе. Его выводы становятся каноном после отражения в accepted ADR и профильных спецификациях.
+Research/system-design становится каноном только после accepted ADR и synchronization профильных спецификаций.
 
 ## 2026-07-16
 
@@ -14,31 +14,48 @@
 
 1. [DR-003 — Programmer-First synthesis](DR-003-PROGRAMMER-FIRST-DESIGN-SYNTHESIS-2026-07-17.md)
 2. [SD-001 — Programmer Progression & Evidence Engine](SD-001-PROGRAMMER-PROGRESSION-EVIDENCE-ENGINE-2026-07-17.md)
+3. [SD-002 — Project & Technical Work Package Engine](SD-002-PROJECT-WORK-PACKAGE-ENGINE-2026-07-17.md)
 
-DR-003 закрепил programmer-first product hierarchy.
+## Нормативные результаты
 
-SD-001 спроектировал authoritative progression/evidence architecture:
+### DR-003
+
+- programmer-first hierarchy;
+- life/narrative as context and consequences.
+
+### SD-001 → ADR-013
 
 - Experience Providers → `ExperienceEpisode`;
 - mastery/fluency/familiarity;
 - claims-based append-only evidence;
-- awarded grade milestone;
-- demonstrated/current-market readiness projections;
-- deterministic MonthRun/persistence integration.
+- authoritative grade awards;
+- readiness projections;
+- deterministic MonthRun/persistence.
 
-Нормативные результаты SD-001:
+Normative spec: `docs/game-design/PROFESSIONAL-PROGRESSION-ENGINE.md`.
 
-- `docs/adr/ADR-013-authoritative-professional-progression-evidence.md`;
-- `docs/game-design/PROFESSIONAL-PROGRESSION-ENGINE.md`;
-- синхронизированные domain, MonthRun, persistence, content, project, NPC, balance, UI и plan documents.
+### SD-002 → ADR-014
+
+- Project Engine owns technical truth;
+- aggregated Work Packages, not tickets;
+- scope/requirements and deterministic uncertainty;
+- multidimensional quality/confidence;
+- technical debt pressure/records;
+- latent/known defects and incidents;
+- immutable releases and maintenance;
+- team vs character contribution;
+- typed Product/Open Source/Company/Career interfaces;
+- project outcome + episode/evidence atomic commit.
+
+Normative spec: `docs/game-design/PROJECT-WORK-PACKAGE-ENGINE.md`.
 
 ## Правила
 
-- официальная документация имеет приоритет над блогами/форумами;
-- secondary sources используются для failure modes и practical confirmation;
-- versions и current facts перепроверяются перед реализацией;
-- raw research нормализуется: citations, дубли и неподтверждённые формулировки очищаются;
-- fact, interpretation и applicability разделяются;
-- архитектурное решение требует ADR;
-- результат считается внедрённым только после synchronization канона, contracts, migrations, tests, plans и traceability;
-- formulas/thresholds, требующие playtest, остаются versioned hypotheses, а не неизменным каноном.
+- official documentation and primary research have priority;
+- secondary sources support failure modes/practical confirmation;
+- current versions/facts are checked before implementation;
+- raw research is normalized and duplicate/unsupported claims removed;
+- fact, interpretation and Runtime Human applicability separated;
+- architectural decisions require ADR;
+- integration requires canon/contracts/migrations/tests/plans/traceability synchronization;
+- formulas/thresholds requiring playtest remain versioned hypotheses.

@@ -1,10 +1,16 @@
 # Граница persistence
 
-Нормативные решения: [ADR-004](../adr/ADR-004-persistence-execution-boundary.md) и [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md).
+Нормативные решения:
+
+- [ADR-004 — Persistence Execution Boundary](../adr/ADR-004-persistence-execution-boundary.md);
+- [ADR-013 — Professional Progression](../adr/ADR-013-authoritative-professional-progression-evidence.md);
+- [ADR-014 — Project & Work Package](../adr/ADR-014-authoritative-project-work-package-model.md).
 
 ## Решение
 
-Авторитетные operations записи, migrations, MonthRun checkpoints/commit, professional state/evidence, backup, restore, import/export и mod ingest выполняются в Rust services/repositories. React renderer не получает raw SQL execute capability.
+Authoritative writes, migrations, MonthRun checkpoints/commit, project/professional history, backup, restore, import/export and mod ingest execute in Rust services/repositories.
+
+Renderer has no raw SQL execute.
 
 ```text
 React UI
@@ -16,122 +22,134 @@ React UI
 
 ## TypeScript responsibilities
 
-- чистая симуляция;
-- provider outcome/`ExperienceEpisode` creation;
-- progression assessment и evidence claims;
-- application commands/results;
-- DTO schemas;
-- repository/platform ports;
-- read model composition;
-- application orchestration;
-- validation результата core до передачи persistence command.
+- pure simulation;
+- WorkPackage/project outcome calculation;
+- quality/debt/defect/release state transitions;
+- contribution and `ExperienceEpisode` creation;
+- progression/evidence calculation;
+- application contracts/orchestration;
+- DTO schemas/ports/read models;
+- validating core result before persistence command.
 
 ## Rust responsibilities
 
-- open/close database и SQLite 3.51.3+ version gate;
-- pragmas и managed connection lifecycle;
+- database lifecycle/SQLite 3.51.3+ gate/pragmas;
 - schema migrations;
-- transactions и optimistic revision checks;
-- persisted MonthRun draft/checkpoints/commit;
-- professional snapshot/evidence/practice/grade persistence;
-- unique evidence/run constraints;
+- transactions/optimistic revisions/idempotency;
+- MonthRun draft/checkpoints/commit;
+- normalized project/professional snapshot;
+- releases/incidents/scope decisions/contributions;
+- evidence/practice/grade records;
+- unique record constraints;
 - projection cache invalidation/versioning;
-- serialization boundary;
-- checked `i64`/integer conversion;
-- backup/restore;
-- mod package quarantine/ingest;
-- atomic filesystem operations;
-- Safe Mode/recovery bootstrap;
-- diagnostics и stable error mapping.
+- serialization/checked integer conversion;
+- backup/restore/import/export;
+- mod quarantine;
+- Safe Mode/recovery/diagnostics.
 
-Rust не вычисляет mastery, fluency, evidence strength, grade gates или market readiness. Он проверяет schema, ranges, IDs, transaction consistency и version compatibility.
+Rust does not calculate project outcome, latent work, defects, releases, mastery, evidence or grade.
 
-## Professional commit contract
+## Authoritative commit contract
 
-Mutating MonthRun commit DTO включает:
+MonthRun commit DTO includes:
 
 - final normalized snapshot;
-- provider domain deltas;
-- professional state delta;
-- evidence events/claims;
-- monthly practice aggregates;
-- grade awards;
-- append-only histories/ledger;
+- ProjectState/WorkPackage/quality/debt/defect deltas;
+- release/incident/major decision records;
+- participant contribution summaries;
+- provider outcomes/episodes;
+- professional state/evidence/practice/grade deltas;
+- finance/other histories/ledger;
 - committed run marker/trace;
-- projection cache version/invalidation set.
+- projection invalidation metadata.
 
-Rust transaction проверяет:
+Rust validates:
 
-- expected save/run revision;
-- unique MonthRun/evidence IDs;
-- episode/evidence relationship;
-- awarded grade order/uniqueness;
-- integer ranges;
-- absence of draft-only state in committed snapshot;
-- snapshot/history/evidence consistency.
+- expected save/run/project/package revisions;
+- unique run/package/release/incident/episode/evidence IDs;
+- project/package lifecycle and references;
+- release immutability/reference snapshots;
+- latent realization/checksum consistency in draft;
+- project outcome → episode → evidence relation;
+- contribution refs;
+- grade order/uniqueness;
+- checked integer ranges;
+- no draft-only state in committed snapshot;
+- snapshot/history consistency.
 
-Нельзя отдельно commit project outcome, а затем evidence в другой transaction.
+Project outcome, release, episode and evidence cannot commit in separate transactions.
+
+## Draft/checkpoint persistence
+
+Project checkpoint stores:
+
+- project/package revisions;
+- progress/latent work/RNG states;
+- uncertainty/pending decision;
+- provisional quality/debt/defect/release/incident outcome;
+- contribution/episode draft;
+- hashes/fingerprints.
+
+Professional checkpoint stores episode assessment and evidence draft.
+
+Rust preserves payload exactly; it does not interpret gameplay formulas.
 
 ## IPC
 
-- versioned DTO;
-- runtime validation на boundary;
-- `bigint` передаётся canonical decimal string;
-- mutating commands имеют request/idempotency ID и expected save revision;
-- evidence IDs и schema/rules versions передаются явно;
-- payload limits проверяются до работы с persistence;
-- raw filesystem paths не возвращаются без необходимости;
-- error response не раскрывает secrets или private paths;
-- TS/Rust contract tests проверяют optional/null/enum/discriminated-union semantics.
+- versioned runtime-validated DTO;
+- `bigint` as canonical decimal string;
+- request/idempotency ID and expected revisions;
+- explicit project/professional schema/rules versions;
+- payload limits;
+- no unnecessary raw paths/secrets;
+- stable typed errors;
+- TS/Rust tests for optional/null/enum/union semantics.
 
 ## Capabilities
 
-Production main window не получает:
+Production main window has no:
 
 - `sql:allow-execute`;
 - shell proxy;
-- произвольный filesystem;
-- updater signing/release operations.
+- arbitrary filesystem;
+- updater/signing/release operations.
 
-Read-only SQL debug surface допускается только отдельным development capability и не является production dependency.
+Read-only SQL debug only in separate development capability.
 
-## Почему не прямой SQL plugin из UI
+## Rust boundary limit
 
-Архитектурный запрет должен быть техническим, а не только соглашением. Ограниченная Rust boundary уменьшает поверхность атаки WebView и централизует transaction, compatibility, evidence uniqueness и recovery policy.
+Rust does not:
 
-## Ограничение Rust слоя
+- choose events/narrative;
+- create or advance Work Packages;
+- reveal latent work/roll defects;
+- evaluate release gates;
+- create episodes/evidence claims;
+- calculate mastery/grade/readiness;
+- interpret content definitions.
 
-Rust не:
-
-- выбирает события;
-- применяет Narrative Director;
-- интерпретирует исторический контент;
-- создаёт `ExperienceEpisode`;
-- решает, что outcome доказал;
-- пересчитывает grade/readiness.
-
-Он получает рассчитанный, валидированный typed command/result и сохраняет его по принятой transaction policy.
+It persists validated canonical result according to transaction/compatibility policy.
 
 ## Concurrency
 
-- один managed writer;
-- month commit, migration, backup, restore и import activation mutually exclusive;
-- reads не удерживают UI-blocking transactions;
-- duplicate request обрабатывается idempotent либо отклоняется stable conflict error;
-- readiness/index rebuild не блокирует authoritative writer дольше необходимого;
-- duplicate evidence insert определяется unique constraint и committed run marker.
+- one managed writer;
+- commit/migration/backup/restore/import mutually exclusive;
+- reads avoid UI-blocking transactions;
+- duplicate requests idempotent/conflict;
+- projection rebuild bounded;
+- unique constraints guard duplicate records.
 
-## Тестирование
+## Tests
 
-- contract tests TS ↔ Rust;
-- professional DTO/evidence round trips;
-- integer boundary tests;
-- command permission/capability tests;
-- отсутствие SQL execute у renderer;
-- interrupted write recovery;
-- duplicate request/commit/evidence;
-- provider outcome + evidence atomicity;
+- TS ↔ Rust DTO round trips;
+- project/professional integer boundaries;
+- permissions/no SQL execute;
+- interrupted checkpoint/write recovery;
+- duplicate request/package/release/incident/episode/evidence;
+- latent work/RNG payload round trip;
+- project outcome + episode + evidence atomicity;
+- release immutability;
 - grade award persistence;
-- projection cache rebuild/invalidation;
-- backup/migration/restore integration;
-- incompatible pending MonthRun/progression version.
+- projection invalidation/rebuild;
+- backup/migration/restore;
+- incompatible pending project/progression draft.

@@ -1,112 +1,181 @@
 # Совместимость сохранений
 
-Нормативные решения: [ADR-010](../adr/ADR-010-authoritative-save-state.md) и [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md).
+Нормативные решения:
+
+- [ADR-010 — Authoritative Save State](../adr/ADR-010-authoritative-save-state.md);
+- [ADR-013 — Professional Progression](../adr/ADR-013-authoritative-professional-progression-evidence.md);
+- [ADR-014 — Project & Work Package](../adr/ADR-014-authoritative-project-work-package-model.md).
 
 ## Compatibility dimensions
 
-Сейв совместим по независимым измерениям:
+Independent dimensions:
 
-- save schema version;
-- professional state schema version;
-- evidence schema version;
-- rules/progression version;
-- readiness projection version;
-- content API version;
-- exact/compatible content fingerprint;
-- active MonthRun progression fingerprint.
+- save/database schema;
+- project/work-package/release schema;
+- professional/evidence schema;
+- game/project/progression rules;
+- project/professional projection versions;
+- content API;
+- exact/compatible content/mod fingerprint;
+- active MonthRun project/progression fingerprint;
+- Determinism Manifest/RNG algorithms.
 
-Projection version может быть несовместима только с cache и не обязана блокировать открытие: cache удаляется и перестраивается.
+Projection mismatch may rebuild cache without blocking open.
 
 ## Open policy
 
-Результат проверки:
-
-- `compatible` — открыть нормально;
-- `compatible-rebuild-projections` — открыть и перестроить readiness/specialization/indexes;
-- `requires-migration` — создать backup и мигрировать authoritative state/history;
-- `missing-content` — использовать semantic evidence snapshots/tombstones, предложить восстановить pack при критических active refs;
+- `compatible` — normal writable open;
+- `compatible-rebuild-projections` — rebuild project/readiness indexes;
+- `requires-migration` — backup + authoritative migration;
+- `missing-content-historical-only` — use snapshots/tombstones;
+- `missing-content-active` — block writable open until recovery;
 - `future-version` — read-only metadata/export;
-- `incompatible-draft` — отдельно обработать pending MonthRun;
-- `professional-history-damaged` — Safe Mode/read-only export/restore.
+- `incompatible-draft` — active MonthRun recovery flow;
+- `project-history-damaged` — Safe Mode/read-only/restore;
+- `professional-history-damaged` — Safe Mode/read-only/restore.
 
-## Content fingerprint
+## Semantic fingerprints
 
-Fingerprint строится из canonical manifest активных packs, их versions и compiled definitions. Cosmetic localization change не обязана ломать MonthRun, если semantic fingerprint не изменился.
+Project semantic fingerprint includes definitions affecting active outcome:
 
-Professional semantic fingerprint включает provider/task/skill/technology/grade profile definitions, влияющие на active run. Изменение только display label не меняет outcome fingerprint.
+- project archetype/kind;
+- Work Package template/kind/state rules;
+- challenge/latent work/forecast rules;
+- quality profile/gates;
+- debt/defect/materialization rules;
+- release/maintenance policies;
+- era project capabilities;
+- provider/extension contracts.
+
+Professional fingerprint includes episode/skill/technology/evidence/grade rules.
+
+Cosmetic localization does not break semantic fingerprint.
 
 ## Rules changes
 
-Изменение формул, RNG, effect/progression phase order, skill semantics, evidence claims или grade gates получает новую rules/progression version.
+New version required for changes to:
 
-- уже завершённые месяцы не пересчитываются;
-- awarded grades не отменяются молча;
-- readiness projections могут быть перестроены;
-- active draft требует exact-compatible rules либо migration/recovery;
-- transfer changes применяются к будущему learning, если migration не указывает обратное.
+- WorkPackage lifecycle/outcome;
+- progress/latent work/RNG;
+- quality dimension semantics/gates;
+- debt principal/drag/risk;
+- defect severity/materialization;
+- release technical outcome;
+- contribution attribution;
+- MonthRun project/progression order;
+- skill/evidence/grade semantics.
+
+Completed months/releases do not recalculate.
+
+Project/professional projections may rebuild.
+
+## Project history compatibility
+
+Committed `ReleaseRecord`, incident, major scope decision and significant contribution summary keep:
+
+- semantic snapshot;
+- rules/content versions;
+- trace/source hashes;
+- stable IDs.
+
+New code cannot silently change past technical outcome, quality snapshot, accepted debt/known issues or contribution.
+
+Corruption correction requires explicit repair record and backup.
+
+## Latent work and defects
+
+Active package stores deterministic latent work realization and RNG/checksum.
+
+Writable resume forbidden when:
+
+- latent realization algorithm/state cannot be preserved;
+- package uncertainty/defect semantics changed without exact migration;
+- completed random result would reroll;
+- project pre-state hashes mismatch.
+
+Historical latent aggregates may migrate only via exact transform. Known defects/incidents never reroll.
+
+## Scope/quality/debt compatibility
+
+- stable scope/requirement/quality/debt IDs not reused;
+- removed active refs need replacement/migration/recovery;
+- historical refs use tombstone/snapshot;
+- quality cache may rebuild, authoritative target/assessment/confidence cannot be dropped;
+- debt record origin/principal/drag/risk preserved;
+- package split/merge cannot duplicate release/episode/evidence.
 
 ## Professional grade compatibility
 
-`ProfessionalGradeAward` хранит:
+`ProfessionalGradeAward` remains historical milestone. New readiness may differ, but automatic grade demotion forbidden.
 
-- grade;
-- award date;
-- rules version;
-- evidence set hash;
-- profile ID.
-
-Новая версия может показать другой current market readiness, но не понижает исторически awarded grade автоматически.
-
-Если старый grade был получен моделью, которую новая версия считает ошибочной, требуется отдельная migration/compatibility policy и пользовательский audit trail; silent correction запрещён.
+Project content change does not delete evidence because evidence stores source/context snapshot.
 
 ## Missing content
 
-- stable IDs не переиспользуются;
-- removed entity получает tombstone;
-- replacement mapping может восстановить active reference;
-- evidence semantic snapshot остаётся читаемым без исходной definition;
-- historical evidence не блокирует normal open только из-за missing mod;
-- критически отсутствующий active project/company/task/technology definition блокирует normal writable open;
-- read-only export остаётся доступным.
+### Historical only
 
-## Active draft
+- keep tombstone/fallback label;
+- releases/debt/defects/evidence remain readable;
+- normal open allowed if no active dependencies.
 
-Pending MonthRun хранит provider/progression fingerprints, episodes, draft deltas и evidence IDs.
+### Active
 
-Нельзя продолжать draft, если:
+Missing archetype/package/quality/technology/project extension definition blocks writable open when exact outcome cannot continue.
 
-- provider outcome semantics изменились;
-- skill/evidence schema не имеет exact migration;
-- deterministic evidence ID inputs изменились;
-- progression phase/order изменён;
-- content required для active task отсутствует.
+Recovery options:
 
-Разрешены:
+- restore content pack;
+- replacement mapping;
+- controlled migration;
+- abandon active draft/package if policy permits;
+- read-only export;
+- exact compatible version.
+
+## Active MonthRun
+
+Draft contains project/progression fingerprints, package/release/incident/episode/evidence drafts and RNG states.
+
+Resume forbidden if:
+
+- package/provider outcome semantics changed;
+- latent/defect/release ID/RNG inputs changed;
+- project/progression phase order changed;
+- required active content absent;
+- exact migration unavailable.
+
+Allowed:
 
 - exact-compatible resume;
-- controlled draft migration с golden fixture;
-- abandon с возвратом к committed save;
-- read-only diagnostics/export.
+- controlled draft migration with golden fixture;
+- abandon to committed save;
+- Safe Mode/read-only export.
 
 ## Support window
 
-Поддерживаемое число старых версий фиксируется в release policy. Удаление migration path является отдельным breaking decision и отражается в release notes.
+Writable migration window defined by release policy. Removing path is breaking decision/release note.
 
-Read-only export professional history должен сохраняться дольше writable migration window, насколько это практически возможно.
+Read-only export of project/professional history should outlive writable window where practical.
 
-## Tests
+## Compatibility tests
 
-Compatibility matrix выполняется автоматически на corpus fixtures:
+Corpus matrix:
 
 - old app/current save;
 - current app/old save;
-- pre-ADR-013 save;
-- changed readiness projection only;
-- changed skill/evidence schema;
+- pre-ADR-013/014 save;
+- legacy one-progress project;
+- active package before/after latent revelation;
+- pending scope/quality/release decision;
+- committed release/incident;
+- changed project projection only;
+- changed package/quality/debt/defect schema;
+- changed project RNG;
+- missing project/mod historical content;
+- missing content active package;
+- package split/merge migration;
+- quality dimension transform;
+- project outcome + evidence refs;
+- pending draft before/after episode/evidence;
 - awarded grade old rules;
-- missing technology/mod with historical evidence;
-- missing content with active task;
-- pending draft before/after evidence materialization;
-- changed transfer graph;
 - future schema;
-- damaged evidence ledger/recovery.
+- damaged project/evidence ledger recovery.
