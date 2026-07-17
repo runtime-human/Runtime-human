@@ -1,195 +1,265 @@
 # Карьерная система
 
-Нормативная продуктовая иерархия: [Programmer-First Design](PROGRAMMER-FIRST-DESIGN.md).
+Связанные спецификации:
+
+- [Programmer-First Design](PROGRAMMER-FIRST-DESIGN.md);
+- [Professional Progression Engine](PROFESSIONAL-PROGRESSION-ENGINE.md);
+- [Project & Work Package Engine](PROJECT-WORK-PACKAGE-ENGINE.md).
 
 ## Цель
 
-Карьера превращает programmer mastery в задачи, professional evidence, доход, репутацию, влияние и новые варианты пути. Она должна давать регулярный автоматический ритм, но оставлять пространство для инициативы, конфликтов, переходов и специализации.
+Career domain turns professional capability into jobs, constraints, income, organizational consequences and new paths.
 
-Работа не заменяет развитие программиста автоматическим стажем. Она создаёт контексты, в которых способности подтверждаются или оказываются недостаточными.
+Work provides project/task contexts but does not grant mastery for tenure.
 
-## Работа как persistent commitment
+## Boundary
 
-После трудоустройства работа автоматически:
+Career owns:
 
-- занимает рабочее время;
-- начисляет зарплату;
-- создаёт work packages и technical tasks;
-- развивает профильные skills и technologies через task/evidence context;
-- изменяет отношения с коллегами;
-- двигает текущий проект;
-- создаёт quality/debt/incident outcomes;
-- обновляет promotion/firing risk;
-- меняет evidence recency.
+- vacancy/job/employment lifecycle;
+- position/title/company level;
+- contract/salary/schedule/remote mode;
+- role expectations;
+- stakeholders/deadlines;
+- promotion/firing/layoff;
+- interviews/negotiation;
+- organizational evaluation/politics;
+- career history/reputation consequences.
 
-Игрок не нажимает «работать» каждый месяц.
+Career does not own:
+
+- Project technical scope/quality/debt/defects/releases;
+- Company teams/payroll/portfolio state beyond typed refs/signals;
+- professional mastery/evidence/grade truth.
+
+## Work as persistent commitment
+
+After employment, work automatically:
+
+- occupies calendar/capacity;
+- pays salary;
+- links character to employer projects;
+- supplies role expectations, constraints and participant context;
+- receives project contribution/outcome summaries;
+- affects organizational performance/promotion/firing risk;
+- creates Career-specific episodes when organizational/interview/leadership outcome exists.
+
+Player does not press “work” each month.
 
 ## Job definition
 
-Вакансия задаёт:
+Vacancy defines:
 
-- company archetype;
-- position и grade range;
-- compensation;
-- schedule и remote mode;
-- technology requirements;
+- employer/company archetype;
+- position/title/company level and expected grade/readiness;
+- compensation/schedule/remote policy;
+- technology/project domains;
 - interview stages;
-- culture traits;
-- project domain;
-- task complexity distribution;
-- mentorship/feedback quality;
-- autonomy expectations;
-- growth opportunities;
-- stability и workload;
-- evidence opportunities;
+- culture/process/tooling;
+- stakeholder/deadline profile;
+- typical project archetypes/package challenge distribution;
+- quality/release policy;
+- mentorship/feedback/autonomy;
+- stability/workload/growth;
 - legacy/innovation balance.
 
-Компании отличаются сочетанием этих параметров и event/content profiles, а не отдельной уникальной системой для каждого работодателя.
+It does not embed separate technical project simulation.
 
 ## Job market
 
-Игрок обычно видит ограниченный, но объяснимый shortlist вакансий. Target range:
+Normal search presents:
 
-- 3–7 релевантных предложений в обычный период поиска;
-- 1–3 сильных кандидата для осознанного сравнения;
-- большее число доступно через расширенный поиск без превращения экрана в бесконечную доску.
+- 3–7 relevant offers;
+- 1–3 strong comparison candidates;
+- extended search on request.
 
-Вакансии формируются из:
+Generated from era/city market, company needs, roles, technologies, salary bands, network/reputation and search strategy.
 
-- era/city demand;
-- company state;
-- role/grade needs;
-- technology lifecycle;
-- salary bands;
-- character visibility, network и reputation;
-- search strategy.
+## Hiring and interview
 
-## Поиск работы
+Search/apply are management actions. Preparation/tests/interviews/negotiation may consume calendar time.
 
-Поиск вакансий и отправка резюме — мгновенные управленческие действия. Подготовка, тестовое задание, собеседование и переговоры могут занимать календарное время.
+Outcome uses:
 
-Interview outcome зависит от:
-
-- подтверждённых skills/technologies;
-- evidence recency и relevance;
-- interview preparation;
-- communication;
+- demonstrated/current-market readiness;
+- relevant evidence/technologies;
+- interview preparation/communication;
 - reputation/network;
 - company fit;
-- bounded randomness.
+- bounded deterministic randomness.
 
-Полностью случайный отказ запрещён. UI показывает reason categories, uncertainty и способы улучшить шанс, но не раскрывает точную формулу.
+No fully random rejection. UI shows reason categories/uncertainty, not exact formula.
 
-Для снижения save-scumming ключевые interview rolls используют заранее закреплённый deterministic scope и не меняются от reload.
+Interview assignment may use a temporary provider/project challenge but must not mint production evidence unless it produces a real eligible outcome under policy.
 
-## Рабочие события
+Key rolls are stable across reload.
 
-- сложная задача;
-- критический bug;
-- неясные requirements;
-- code review конфликт;
-- architectural trade-off;
-- performance/reliability problem;
-- security incident;
-- смена руководителя;
-- сокращение;
-- предложение повышения;
-- технический долг;
-- новый проект;
-- перенос сроков;
-- помощь коллеге;
-- mentoring opportunity;
-- публичный успех команды.
+## Career → Project contract
 
-События должны проверять разные dimensions mastery, а не только одну шкалу Programming.
+Career provides:
 
-## Грейд и должность
+```text
+employment/project refs
+role expectations
+stakeholders/client context
+deadline and priority constraints
+required quality/release policy
+autonomy/ownership expectation
+available mentorship/review
+organizational tooling/process signal
+```
 
-Professional grade выводится из `ProfessionalEvidence`. Position/title задаётся работодателем.
+Project Engine returns:
 
-Возможны состояния:
+```text
+package/release outcome
+forecast/deadline result
+quality/debt/defect/incident summary
+character/team contribution
+ownership/reliability summary
+```
 
-- фактический Middle на Junior-position;
-- завышенный title без достаточной зрелости;
-- Senior individual contributor без management role;
-- Team Lead с более слабой глубиной, но сильным leadership profile;
-- Architect как должность/роль, а не автоматический grade;
-- возвращение из management в IC path.
+Career cannot directly set package progress/quality/release success.
+
+## Work package creation
+
+Career/Employment may submit typed `ProjectWorkRequest`:
+
+- desired outcome/value;
+- project/scope context;
+- deadline/priority;
+- stakeholder constraints;
+- expected responsibility/autonomy;
+- organizational quality policy.
+
+Project Engine validates and creates/updates Work Packages. Career does not create arbitrary technical truth.
+
+## Workplace events
+
+Examples:
+
+- ambiguous requirement;
+- difficult package;
+- critical defect/incident;
+- review conflict;
+- architecture/technology trade-off;
+- debt/legacy pressure;
+- deadline/scope conflict;
+- ownership change;
+- manager/team change;
+- promotion/layoff;
+- mentoring/review opportunity;
+- public team success.
+
+Technical choices route through Project Engine. Organizational choices remain Career/Event.
+
+## Grade, title and project contribution
+
+- `ProfessionalGradeAward` is global professional milestone;
+- position/title/company level belong employer;
+- project contribution is technical record;
+- promotion is organizational decision.
+
+Possible:
+
+- Middle in Junior-position;
+- inflated title without capability;
+- Senior IC;
+- Team Lead/Tech Lead/Architect roles;
+- CTO/Founder;
+- strong open-source maintainer without corporate title;
+- return management → IC.
 
 ## Promotion review
 
-Promotion зависит от:
+Inputs:
 
-- grade readiness;
-- результатов и delivery reliability;
-- autonomy;
-- quality/impact;
-- collaboration;
-- relationships и politics;
-- наличия позиции;
-- budget/company state;
-- требований работодателя.
+- awarded/readiness profile;
+- relevant project contribution/outcomes;
+- delivery reliability/quality/ownership;
+- collaboration/leadership;
+- stakeholder/relationship/politics;
+- available role/budget/company state;
+- employer policy.
 
-Достижение readiness не гарантирует promotion в конкретной компании, но открывает внешний рынок и negotiation leverage.
+One team release or revenue spike does not automatically promote character. Contribution and sustained contexts matter.
 
 ## Target progression
 
-- Intern → Junior: 6–18 месяцев supervised work;
-- Junior → Middle: 24–48 месяцев;
-- Middle → Senior: 36–72 месяцев.
+Starting hypotheses:
 
-Диапазоны проверяются отдельно по company archetype, specialization, background и career interruption.
+- Intern → Junior: 6–18 months supervised work;
+- Junior → Middle: 24–48 months;
+- Middle → Senior: 36–72 months.
 
-## Переходы после Senior
+Validated across company archetypes/specializations/backgrounds/interruptions.
 
-- углубление до Top Programmer;
+## Senior paths
+
+- deep expert/Top Programmer candidate;
 - Tech Lead/Architect;
 - Team Lead/management;
-- CTO;
-- Founder;
+- CTO/Founder;
 - open-source maintainer;
 - public expert;
 - freelance/consulting;
-- редкая специализация.
+- rare specialization.
 
-Ни один путь не является обязательным повышением. Founder/CTO получает влияние и upside, но теряет часть direct craft time и принимает организационные риски.
+Founder/CTO not mandatory best path. Reduced direct coding shifts contribution toward architecture/review/mentoring/delegation, not automatic mastery.
 
 ## Career path parity
 
-Пути сравниваются по:
+Compare mastery, autonomy, income, stability, reputation, fame, freedom, influence, workload, risk and legacy.
 
-- mastery;
-- autonomy;
-- income;
-- stability;
-- reputation;
-- fame;
-- freedom;
-- influence;
-- workload;
-- risk;
-- legacy.
+Different rewards, viable independent fantasies/endgames.
 
-Равенство не означает одинаковые награды. Каждый путь должен иметь самостоятельную фантазию и достижимый endgame.
+## Employers
 
-## Компании
+Fictional companies evolve by era: stack/process/projects, growth, merger/crisis/closure.
 
-Работодатели вымышлены и развиваются вместе с эпохой города. Компания может открыться, вырасти, сменить stack, объединиться, пережить кризис или закрыться.
+Stack/process change alters Project inputs and market readiness, not historical mastery/evidence.
 
-Изменение stack влияет на evidence relevance, learning opportunities, legacy burden и риск смены работы.
+## Job loss and recovery
 
-## Увольнение и паузы
+Loss creates financial/career pressure but not instant fail.
 
-Потеря работы не является instant fail. Она создаёт финансовое давление, поиск работы, возможность обучения, фриланса, собственного продукта или смены направления.
+Recovery:
 
-Защита от soft lock:
+- job search/support/freelance;
+- retraining/project portfolio;
+- network/referrals;
+- lower-level re-entry without mastery reset;
+- legacy/maintenance niche;
+- own/open-source project;
+- debt restructuring;
+- reacquisition after break.
 
-- временная support work/freelance;
-- retraining paths;
-- network/referral opportunities;
-- lower-grade re-entry без удаления mastery;
-- used equipment/community resources;
-- debt restructuring в упрощённой экономике;
-- reacquisition bonus после перерыва.
+Break reduces fluency/current-market readiness, not awarded grade automatically.
 
-Длительный перерыв снижает fluency и evidence recency, но не стирает grade или mastery автоматически.
+## Invariants
+
+- Career does not duplicate/mutate Project technical state;
+- Career does not mutate professional grade/mastery directly;
+- salary/title/fame not technical evidence;
+- job tenure alone gives no mastery;
+- promotion uses contribution/evidence but remains employer decision;
+- employer work request validated by Project Engine;
+- team outcome separated from character contribution;
+- deterministic interview/organizational rolls stable;
+- employment/project/progression consequences commit atomically;
+- fired character receives no salary;
+- unavailable-era role/technology/project not generated.
+
+## Tests
+
+- job request → Project package;
+- project contribution → career review;
+- title vs grade mismatch;
+- team release vs player contribution;
+- deadline/quality conflict;
+- promotion/layoff determinism;
+- interview save-scumming resistance;
+- job loss/re-entry;
+- management → IC;
+- no tenure/salary → mastery;
+- Career/Project/Progression atomic commit.
