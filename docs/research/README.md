@@ -16,6 +16,7 @@ Research/system-design становится каноном только посл
 2. [SD-001 — Programmer Progression & Evidence Engine](SD-001-PROGRAMMER-PROGRESSION-EVIDENCE-ENGINE-2026-07-17.md)
 3. [SD-002 — Project & Technical Work Package Engine](SD-002-PROJECT-WORK-PACKAGE-ENGINE-2026-07-17.md)
 4. [DC-001 — Casual-first complexity correction](DC-001-CASUAL-FIRST-COMPLEXITY-CORRECTION-2026-07-17.md)
+5. [SD-003 — Professional Challenge & Capability Engine](SD-003-PROFESSIONAL-CHALLENGE-CAPABILITY-ENGINE-2026-07-17.md)
 
 ## Нормативные результаты
 
@@ -48,11 +49,24 @@ Research/system-design становится каноном только посл
 - evidence, debt, defects, contribution and release detail are staged;
 - expanded simulation requires playtest evidence.
 
+### SD-003 → ADR-016
+
+- concrete `TechnicalSituation`, not generic skill buttons;
+- 2–4 player approaches with contextual trade-offs;
+- deterministic challenge outcome and reason codes;
+- Provider owns domain application;
+- Progression owns capability/evidence/grade;
+- six reusable challenge archetypes;
+- no hidden correct-combination table, IDE or LLM judge;
+- challenge breadth expands only after playtest evidence.
+
 Normative specs:
 
 - `docs/game-design/CASUAL-SIMULATION-DESIGN.md`;
 - `docs/game-design/PROFESSIONAL-PROGRESSION-ENGINE.md`;
-- `docs/game-design/PROJECT-WORK-PACKAGE-ENGINE.md`.
+- `docs/game-design/PROFESSIONAL-CHALLENGE-ENGINE.md`;
+- `docs/game-design/PROJECT-WORK-PACKAGE-ENGINE.md`;
+- `docs/ui/PROFESSIONAL-CHALLENGE-UI.md`.
 
 ## Правила
 
