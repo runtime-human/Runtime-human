@@ -1,248 +1,259 @@
 # Professional Progression UI
 
-Нормативные источники:
+## Статус
+
+Нормативная UI-спецификация.
+
+Источники:
 
 - [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md);
+- [ADR-015](../adr/ADR-015-casual-first-abstraction-and-complexity-budget.md);
 - [Professional Progression Engine](../game-design/PROFESSIONAL-PROGRESSION-ENGINE.md);
-- [UI Architecture](UI-ARCHITECTURE.md).
+- [Casual Simulation Design](../game-design/CASUAL-SIMULATION-DESIGN.md).
 
-## Цель
+## 1. Цель
 
-Показывать развитие программиста понятно обычному игроку и правдоподобно технической аудитории, не превращая игру в performance-review spreadsheet.
+Игрок должен понимать профессиональный рост без знания терминов evidence, mastery, fluency, claims и gates.
 
-UI не пересчитывает mastery, evidence или grade. Он получает typed read models.
+Основной экран отвечает:
 
-## Два уровня раскрытия
+- что персонаж теперь умеет;
+- что изменилось за месяц;
+- что пока получается только с помощью;
+- какой следующий шаг полезен;
+- насколько близок следующий грейд.
 
-### Normal mode
+## 2. Уровни раскрытия
 
-Показывает:
-
-- capability text;
-- устойчивость/временность результата;
-- следующий полезный тип задачи/evidence;
-- human-readable challenge;
-- причины роста/стагнации;
-- current professional focus;
-- critical market-readiness gap.
-
-### Advanced mode
+### Normal — обязателен
 
 Показывает:
 
-- mastery/fluency/familiarity;
-- evidence claims и source/context;
-- capability bands;
-- grade gate coverage;
-- technology transfer/lifecycle;
-- demonstrated vs current market readiness;
-- detailed reason codes.
+- awarded grade;
+- capability phrase;
+- максимум 3–5 relevant skills;
+- active technology familiarity;
+- readiness status;
+- one next step;
+- monthly explanation.
 
-Exact hidden formula weights не являются обязательным UI и не должны стимулировать spreadsheet min-max.
+### Details — после MVP при необходимости
 
-## Read models
+Показывает:
+
+- важные source/outcome entries;
+- причины assisted/partial/failure result;
+- несколько readiness gaps;
+- temporary fluency/market issue;
+- historical milestone.
+
+### Advanced/Diagnostics — deferred
+
+Может показывать:
+
+- mastery/fluency/familiarity points;
+- evidence claims;
+- gate profile;
+- context diversity;
+- reason codes/trace.
+
+Advanced не является обязательной игровой поверхностью.
+
+## 3. Casual read model
 
 ```ts
-type ProfessionalSummaryReadModel = Readonly<{
+type CasualProfessionalSummary = Readonly<{
   awardedGrade: ProfessionalGrade;
-  demonstratedCapability: LocalizationKey;
-  currentMarketState: MarketReadinessLabel;
-  professionalFocus: ProfessionalFocusReadModel;
-  strongestSkills: readonly SkillCapabilityReadModel[];
-  nextUsefulEvidence: readonly EvidenceGapReadModel[];
-  warnings: readonly ProfessionalWarningReadModel[];
+  capabilityText: LocalizationKey;
+  relevantSkills: readonly CasualSkillSummary[];
+  activeTechnology?: CasualTechnologySummary;
+  readinessStatus: CasualReadinessStatus;
+  nextStep: LocalizationKey;
+  monthlyExplanation?: LocalizationKey;
+  warning?: CasualProfessionalWarning;
 }>;
 
-type SkillCapabilityReadModel = Readonly<{
+type CasualSkillSummary = Readonly<{
   skillId: SkillId;
   label: LocalizationKey;
-  capabilityBand: CapabilityBand;
-  capabilityText: LocalizationKey;
-  masteryTrend: ProgressTrend;
-  fluencyState: FluencyLabel;
-  lastPracticed?: GameDate;
-  evidenceSummary: EvidenceSummaryReadModel;
-}>;
-
-type GradeReadinessReadModel = Readonly<{
-  awardedGrade: ProfessionalGrade;
-  demonstrated: ReadinessProfileReadModel;
-  currentMarket: ReadinessProfileReadModel;
-  coreGates: readonly GradeGateReadModel[];
-  profileGates: readonly GradeGateReadModel[];
-  contextDiversity: ContextDiversityReadModel;
-  reasonsNotReady: readonly ReadinessReasonReadModel[];
-}>;
-
-type EvidenceTimelineReadModel = Readonly<{
-  entries: readonly EvidenceTimelineEntryReadModel[];
-  groupedRoutinePractice: readonly PracticeAggregateReadModel[];
-  filters: EvidenceTimelineFilters;
+  state: CasualCapabilityState;
+  change?: ProgressTrend;
+  explanation?: LocalizationKey;
 }>;
 ```
 
-## Awarded grade vs readiness
+`relevantSkills` normally has 3 items and never exceeds 5 on one screen.
 
-UI обязан различать:
+## 4. Capability language
 
-- **Ваш подтверждённый грейд** — achieved milestone;
-- **Готовность к следующему грейду** — demonstrated gaps;
-- **Актуальность для текущего рынка** — recency/technology/fluency.
+Examples:
+
+```text
+Учится с подсказками
+Справляется со знакомыми задачами
+Самостоятельно решает простые проблемы
+Готов к более сложным задачам
+Уверенно владеет этой областью
+```
+
+Не показывать normal mode как:
+
+```text
+Debugging mastery 18420
+Autonomy claim 0.67
+Gate coverage 3/7
+```
+
+## 5. Readiness
+
+Normal areas:
+
+- техническая база;
+- самостоятельность;
+- сложность задач;
+- надёжность результата.
+
+Status:
+
+- недостаточно опыта;
+- развивается;
+- почти готов;
+- готов.
 
 Пример:
+
+```text
+Готовность к Junior: развивается
+
+Вы уже самостоятельно завершаете знакомые задачи.
+Для следующего шага нужен опыт более сложной ошибки и стабильный результат без подсказок.
+```
+
+Exact formula hidden.
+
+## 6. Monthly professional result
+
+Один meaningful outcome создаёт одну primary explanation:
+
+```text
+Отладка улучшилась
+
+Вы с небольшой помощью нашли причину ошибки.
+Теперь вы лучше понимаете, как проверять ввод, но пока не всегда решаете такие проблемы самостоятельно.
+
+Следующий шаг: похожая задача без подсказки.
+```
+
+Routine practice grouped:
+
+> Продолжали практиковаться; уверенность постепенно растёт.
+
+Не создавать отдельные evidence cards за каждое действие.
+
+## 7. Assisted, partial and failure
+
+### Assisted
+
+> Вы разобрались в задаче благодаря подсказке. Знание выросло, но самостоятельность пока не подтверждена.
+
+### Partial
+
+> Вы нашли причину проблемы, но не успели завершить исправление.
+
+### Failure with learning
+
+> Решение не получилось, но вы исключили несколько неверных подходов и знаете, что проверить дальше.
+
+UI не выдаёт partial/failure как full delivery.
+
+## 8. Technology
+
+MVP card:
+
+- name;
+- familiarity: новая / знакомая / уверенно использует;
+- current relevance;
+- next learning context.
+
+Tier, transfer graph, version recency and lifecycle details are hidden/deferred unless they affect current choice.
+
+## 9. Awarded grade vs current state
+
+UI distinguishes:
+
+- подтверждённый грейд;
+- готовность к следующему;
+- временная потеря практики.
+
+Пример позднего режима:
 
 ```text
 Подтверждённый грейд: Senior
-Текущая готовность к рынку: требуется восстановить практику C#/.NET
-Профессиональное мастерство не потеряно; снизилась скорость и актуальность инструментов.
+Практика: требуется освежить современные инструменты
+
+Профессиональное мастерство не потеряно.
 ```
 
-Запрещено показывать rusty Senior как автоматическое понижение до Middle.
+Automatic grade downgrade forbidden.
 
-## Evidence card
+## 10. Warnings
 
-Карточка отвечает:
+MVP warnings only when actionable:
 
-- что произошло;
-- какую capability подтвердило;
-- challenge band;
-- самостоятельно или с помощью;
-- полный/частичный/failure outcome;
-- насколько evidence сильное/устойчивое;
-- какой следующий шаг полезен.
+- repeated easy tasks give little new growth;
+- too many active commitments;
+- technology access/equipment missing;
+- long break reduces fluency;
+- next grade needs another task type.
 
-Пример:
+One primary warning at a time.
 
-```text
-Debugging вырос
+## 11. Storybook baseline
 
-Вы самостоятельно нашли причину ошибки в программе средней сложности
-после проверки входных данных и двух неверных гипотез.
+- Beginner summary;
+- assisted learning;
+- independent success;
+- partial result;
+- failure with recovery;
+- readiness developing/almost-ready;
+- quiet month;
+- long Russian text;
+- keyboard/200%/high contrast/Narrator.
 
-Подтверждено:
-• Debugging — Independent
-• Problem Solving — Routine
+Deferred:
 
-Не подтверждено:
-• Delivery — исправление осталось частичным
+- full evidence timeline;
+- advanced gate matrix;
+- context-diversity dashboard;
+- long Senior history.
 
-Следующий шаг:
-найти ошибку, затрагивающую несколько компонентов.
-```
+## 12. Usability tests
 
-## Progression delta
+Player without programming experience should:
 
-Monthly report группирует изменения:
+- understand what changed;
+- distinguish skill from technology by context, not definition quiz;
+- understand assisted vs independent;
+- find next step;
+- explain readiness status;
+- avoid opening Details for ordinary decision.
 
-1. устойчивое mastery;
-2. текущая fluency/familiarity;
-3. evidence claims;
-4. readiness/gate changes;
-5. новые options/tasks/technologies.
+Technical player should:
 
-Мелкая routine practice не создаёт десятки карточек. Она показывается одной строкой/aggregate.
+- see credible cause/effect;
+- not perceive progression as one XP bar;
+- accept that help improves learning but not autonomy;
+- find enough detail when needed.
 
-## Challenge preview
+## 13. Definition of Done
 
-Игроку показываются human-readable labels:
+Progression UI is ready when:
 
-- под руководством;
-- знакомая задача;
-- самостоятельная задача;
-- сложная неоднозначная задача;
-- системная ответственность.
-
-Advanced detail может раскрыть facets: ambiguity, integration, quality criticality, operational risk.
-
-Forecast не гарантирует outcome и не показывает точную probability, если это создаёт save-scumming/min-max.
-
-## Technology UI
-
-Technology card показывает:
-
-- Tier A/B status только в advanced/debug, если tier не нужен игроку;
-- family/category;
-- lifecycle stage;
-- conceptual/operational familiarity;
-- version recency;
-- market/legacy value;
-- transfer explanations;
-- доступные learning/project contexts.
-
-Tier C не получает progress bar и отображается как requirement/tag.
-
-## Specialization UI
-
-Игрок выбирает professional focus, но specialization profile описывается как наблюдаемый путь:
-
-```text
-Фокус: Desktop Development
-Сформировавшийся профиль: Desktop / Backend
-Дополнительная сильная область: Tooling
-```
-
-Specialization не показывается как необратимый class selection.
-
-## Warnings
-
-- skill fluency rust;
-- technology version outdated;
-- market readiness gap;
-- evidence concentrated in one context;
-- repeated easy tasks give little new evidence;
-- excessive parallel commitments;
-- missing feedback/mentor;
-- grade gate requires different task type.
-
-Warning содержит cause и recovery action. Он не передаётся только цветом.
-
-## Storybook groups
-
-- Professional Summary: Beginner/Junior/Senior/Rusty Senior;
-- Skill Capability: no evidence/assisted/independent/strong but rusty;
-- Technology Familiarity: new/mainstream/legacy/outdated version;
-- Evidence Card: full/partial/failure/mentored/repeated;
-- Grade Readiness: one missing core gate/context concentration/profile choice;
-- Monthly Delta: quiet month/large gain/stagnation/reentry;
-- Evidence Timeline: long history/missing content/tombstone;
-- Accessibility: long RU, 200%, high contrast, keyboard, Narrator.
-
-## Usability tests
-
-Новичок за 10 минут должен:
-
-- отличить skill от technology;
-- понять, почему assisted task учит, но слабее подтверждает самостоятельность;
-- понять, почему grade не равен position;
-- найти следующий полезный шаг;
-- объяснить difference mastery/temporary fluency простыми словами.
-
-Эксперт должен:
-
-- увидеть provider outcome/evidence causality;
-- не воспринимать систему как XP bar;
-- понять current market readiness;
-- найти advanced evidence/gate details;
-- доверять partial/failure semantics.
-
-## Performance
-
-- evidence timeline virtualized;
-- readiness projection приходит готовой;
-- UI не пересчитывает полный ledger;
-- pagination/grouping stable;
-- missing-content fallback не требует network;
-- Storybook fixtures bounded, отдельный large-history performance fixture.
-
-## Definition of Done
-
-Progression UI change готово, когда:
-
-- использует typed read models;
-- не смешивает awarded grade/readiness/title;
-- normal/advanced modes согласованы;
-- claims/source/cause traceable;
-- routine practice агрегирована;
-- partial/failure не отображаются как full success;
-- accessibility/long RU/keyboard stories проходят;
-- нет raw formula/persistence/core import.
+- normal mode works without internal vocabulary;
+- visible skills bounded;
+- one primary monthly explanation exists;
+- routine aggregated;
+- readiness not a spreadsheet;
+- partial/failure honest;
+- accessibility stories pass;
+- advanced view is not required for MVP.
