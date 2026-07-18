@@ -40,6 +40,17 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [Professional Challenge Implementation Plan](plans/PROFESSIONAL-CHALLENGE-IMPLEMENTATION-PLAN.md)
 - [SD-003 analysis](research/SD-003-PROFESSIONAL-CHALLENGE-CAPABILITY-ENGINE-2026-07-17.md)
 
+## Professional situation content architecture
+
+- [ADR-020 — Professional Situation Content Composition](adr/ADR-020-authoritative-professional-situation-content-composition-model.md)
+- [Professional Situation Content Engine](game-design/PROFESSIONAL-SITUATION-CONTENT-ENGINE.md)
+- [Professional Situation Content](content/PROFESSIONAL-SITUATION-CONTENT.md)
+- [Content Studio UI](ui/PROFESSIONAL-SITUATION-CONTENT-UI.md)
+- [Balance, Coverage & Variety](simulation/PROFESSIONAL-SITUATION-CONTENT-BALANCE.md)
+- [Persistence & Compatibility](persistence/PROFESSIONAL-SITUATION-CONTENT-COMPATIBILITY.md)
+- [Implementation Plan](plans/PROFESSIONAL-SITUATION-CONTENT-IMPLEMENTATION-PLAN.md)
+- [SD-007 analysis](research/SD-007-PROFESSIONAL-SITUATION-CONTENT-ARCHITECTURE-2026-07-18.md)
+
 ## Programmer learning and access
 
 - [ADR-017 — Programmer Learning & Access Model](adr/ADR-017-authoritative-programmer-learning-access-model.md)
@@ -106,6 +117,7 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [Character Progression](game-design/CHARACTER-PROGRESSION.md)
 - [Skills & Technologies](game-design/SKILLS-AND-TECHNOLOGIES.md)
 - [Technology Ecosystem Engine](game-design/TECHNOLOGY-ECOSYSTEM-ENGINE.md)
+- [Professional Situation Content Engine](game-design/PROFESSIONAL-SITUATION-CONTENT-ENGINE.md)
 - [Monthly Loop](game-design/MONTHLY-GAME-LOOP.md)
 - [Career](game-design/CAREER-SYSTEM.md)
 - [Projects & Products Overview](game-design/PROJECTS-AND-PRODUCTS.md)
@@ -125,6 +137,7 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [Randomness](simulation/RANDOMNESS.md)
 - [Balance Simulation](simulation/BALANCE-SIMULATION.md)
 - [Professional Challenge Balance](simulation/PROFESSIONAL-CHALLENGE-BALANCE.md)
+- [Professional Situation Content Balance](simulation/PROFESSIONAL-SITUATION-CONTENT-BALANCE.md)
 - [Programmer Learning Balance](simulation/PROGRAMMER-LEARNING-BALANCE.md)
 - [Programmer Career Balance](simulation/PROGRAMMER-CAREER-BALANCE.md)
 - [Technology Ecosystem Balance](simulation/TECHNOLOGY-ECOSYSTEM-BALANCE.md)
@@ -139,10 +152,12 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [SQLite Architecture](persistence/SQLITE-ARCHITECTURE.md)
 - [Migrations](persistence/MIGRATIONS.md)
 - [Save Compatibility](persistence/SAVE-COMPATIBILITY.md)
+- [Professional Situation Compatibility](persistence/PROFESSIONAL-SITUATION-CONTENT-COMPATIBILITY.md)
 - [Technology Context Compatibility](persistence/TECHNOLOGY-CONTEXT-COMPATIBILITY.md)
 - [Backup/Restore](persistence/BACKUP-AND-RESTORE.md)
 - [Safe Mode](persistence/SAFE-MODE.md)
 - [Content Architecture](content/CONTENT-ARCHITECTURE.md)
+- [Professional Situation Content](content/PROFESSIONAL-SITUATION-CONTENT.md)
 - [Programmer Learning Content](content/PROGRAMMER-LEARNING-CONTENT.md)
 - [Programmer Career Content](content/PROGRAMMER-CAREER-CONTENT.md)
 - [Technology Ecosystem Content](content/TECHNOLOGY-ECOSYSTEM-CONTENT.md)
@@ -157,6 +172,7 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [Design System](ui/DESIGN-SYSTEM.md)
 - [Accessibility](ui/ACCESSIBILITY.md)
 - [Professional Challenge UI](ui/PROFESSIONAL-CHALLENGE-UI.md)
+- [Professional Situation Content Studio UI](ui/PROFESSIONAL-SITUATION-CONTENT-UI.md)
 - [Programmer Learning UI](ui/PROGRAMMER-LEARNING-UI.md)
 - [Programmer Career UI](ui/PROGRAMMER-CAREER-UI.md)
 - [Technology Ecosystem UI](ui/TECHNOLOGY-ECOSYSTEM-UI.md)
@@ -169,5 +185,6 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [Vertical Slice](plans/VERTICAL-SLICE-PLAN.md)
 - [Programmer Career Implementation Plan](plans/PROGRAMMER-CAREER-IMPLEMENTATION-PLAN.md)
 - [Technology Ecosystem Implementation Plan](plans/TECHNOLOGY-ECOSYSTEM-IMPLEMENTATION-PLAN.md)
+- [Professional Situation Content Implementation Plan](plans/PROFESSIONAL-SITUATION-CONTENT-IMPLEMENTATION-PLAN.md)
 - [Roadmap](plans/ROADMAP.md)
 - [ADR Index](adr/README.md)
