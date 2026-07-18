@@ -50,6 +50,18 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [Programmer Learning Implementation Plan](superpowers/plans/2026-07-18-programmer-learning-engine.md)
 - [SD-004 analysis](research/SD-004-PROGRAMMER-LEARNING-PRACTICE-MENTORSHIP-ACCESS-ENGINE-2026-07-18.md)
 
+## Programmer career, hiring and employment
+
+- [ADR-018 — Programmer Career, Hiring & Employment Model](adr/ADR-018-authoritative-programmer-career-employment-model.md)
+- [Programmer Career Engine](game-design/PROGRAMMER-CAREER-ENGINE.md)
+- [Career overview](game-design/CAREER-SYSTEM.md)
+- [Programmer Career UI](ui/PROGRAMMER-CAREER-UI.md)
+- [Programmer Career Balance](simulation/PROGRAMMER-CAREER-BALANCE.md)
+- [Programmer Career Content](content/PROGRAMMER-CAREER-CONTENT.md)
+- [Historical Labor Market Catalog](content/HISTORICAL-LABOR-MARKET-CATALOG.md)
+- [Programmer Career Implementation Plan](plans/PROGRAMMER-CAREER-IMPLEMENTATION-PLAN.md)
+- [SD-005 analysis](research/SD-005-PROGRAMMER-CAREER-HIRING-LABOR-MARKET-ENGINE-2026-07-18.md)
+
 ## Projects
 
 - [ADR-014 — Project & Work Package Model](adr/ADR-014-authoritative-project-work-package-model.md)
@@ -98,6 +110,9 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [Numeric Policy](simulation/NUMERIC-POLICY.md)
 - [Randomness](simulation/RANDOMNESS.md)
 - [Balance Simulation](simulation/BALANCE-SIMULATION.md)
+- [Professional Challenge Balance](simulation/PROFESSIONAL-CHALLENGE-BALANCE.md)
+- [Programmer Learning Balance](simulation/PROGRAMMER-LEARNING-BALANCE.md)
+- [Programmer Career Balance](simulation/PROGRAMMER-CAREER-BALANCE.md)
 - [Event Engine](events/EVENT-ENGINE.md)
 - [Narrative Director](events/NARRATIVE-DIRECTOR.md)
 - [NPC Memory](events/NPC-AND-NARRATIVE-MEMORY.md)
@@ -113,7 +128,9 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [Safe Mode](persistence/SAFE-MODE.md)
 - [Content Architecture](content/CONTENT-ARCHITECTURE.md)
 - [Programmer Learning Content](content/PROGRAMMER-LEARNING-CONTENT.md)
+- [Programmer Career Content](content/PROGRAMMER-CAREER-CONTENT.md)
 - [Historical Catalog](content/HISTORICAL-CATALOG.md)
+- [Historical Labor Market Catalog](content/HISTORICAL-LABOR-MARKET-CATALOG.md)
 - [Modding](content/MODDING.md)
 
 ## UI, engineering и plans
@@ -121,6 +138,9 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [UI Architecture](ui/UI-ARCHITECTURE.md)
 - [Design System](ui/DESIGN-SYSTEM.md)
 - [Accessibility](ui/ACCESSIBILITY.md)
+- [Professional Challenge UI](ui/PROFESSIONAL-CHALLENGE-UI.md)
+- [Programmer Learning UI](ui/PROGRAMMER-LEARNING-UI.md)
+- [Programmer Career UI](ui/PROGRAMMER-CAREER-UI.md)
 - [Tech Stack](engineering/TECH-STACK.md)
 - [TypeScript Policy](engineering/TYPESCRIPT-POLICY.md)
 - [Storybook Workflow](engineering/STORYBOOK-WORKFLOW.md)
@@ -128,5 +148,6 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [CI/CD](engineering/CI-CD.md)
 - [Security](engineering/SECURITY.md)
 - [Vertical Slice](plans/VERTICAL-SLICE-PLAN.md)
+- [Programmer Career Implementation Plan](plans/PROGRAMMER-CAREER-IMPLEMENTATION-PLAN.md)
 - [Roadmap](plans/ROADMAP.md)
 - [ADR Index](adr/README.md)
