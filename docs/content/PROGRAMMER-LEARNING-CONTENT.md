@@ -1,3 +1,12 @@
+---
+title: "Programmer Learning Content"
+type: content
+status: draft
+canon: true
+depends_on: [ADR-017]
+updated: 2026-07-18
+---
+
 # Programmer Learning Content
 
 ## Статус

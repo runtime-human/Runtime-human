@@ -1,3 +1,11 @@
+---
+title: "ADR-005: Приостановленный MonthRun"
+type: adr
+status: accepted
+canon: true
+updated: 2026-07-18
+---
+
 # ADR-005: Приостановленный MonthRun
 
 - **Статус:** Accepted

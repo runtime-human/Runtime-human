@@ -1,3 +1,12 @@
+---
+title: "ADR-019 — Авторитетная модель исторических технологий, tooling и ecosystem context"
+type: adr
+status: accepted
+canon: true
+depends_on: [ADR-001, ADR-003, ADR-007, ADR-010, ADR-013, ADR-014, ADR-015, ADR-016, ADR-017, ADR-018]
+updated: 2026-07-18
+---
+
 # ADR-019 — Авторитетная модель исторических технологий, tooling и ecosystem context
 
 - **Статус:** Accepted

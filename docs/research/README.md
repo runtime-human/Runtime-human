@@ -1,3 +1,12 @@
+---
+title: "Deep Research и System Design — индекс"
+type: research
+status: draft
+canon: false
+depends_on: [ADR-013, ADR-014, ADR-015, ADR-016, ADR-017, ADR-018, ADR-019, ADR-020]
+updated: 2026-07-18
+---
+
 # Deep Research и System Design — индекс
 
 Каталог хранит нормализованные исследования, системные анализы и design corrections Runtime Human.

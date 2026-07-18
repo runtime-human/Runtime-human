@@ -1,3 +1,12 @@
+---
+title: "Professional Situation Content — Persistence & Compatibility"
+type: engine
+status: draft
+canon: true
+depends_on: [ADR-005, ADR-007, ADR-010, ADR-016, ADR-020]
+updated: 2026-07-18
+---
+
 # Professional Situation Content — Persistence & Compatibility
 
 ## Статус

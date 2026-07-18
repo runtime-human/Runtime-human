@@ -1,3 +1,12 @@
+---
+title: "Тестовая стратегия"
+type: engine
+status: draft
+canon: true
+depends_on: [ADR-008, ADR-012]
+updated: 2026-07-18
+---
+
 # Тестовая стратегия
 
 ## Пирамида

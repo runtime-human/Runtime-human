@@ -1,3 +1,11 @@
+---
+title: "Sources"
+type: source
+status: draft
+canon: false
+updated: 2026-07-18
+---
+
 # Sources
 
 - [Historical Timeline Source Policy](HISTORICAL-TIMELINE-SOURCES.md)

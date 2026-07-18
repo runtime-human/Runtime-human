@@ -1,3 +1,12 @@
+---
+title: "Числовая политика"
+type: simulation
+status: draft
+canon: true
+depends_on: [ADR-006]
+updated: 2026-07-18
+---
+
 # Числовая политика
 
 Нормативное решение: [ADR-006](../adr/ADR-006-numeric-model.md).

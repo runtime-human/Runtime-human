@@ -1,3 +1,12 @@
+---
+title: "Совместимость сохранений"
+type: engine
+status: draft
+canon: true
+depends_on: [ADR-010, ADR-013, ADR-014, ADR-018]
+updated: 2026-07-18
+---
+
 # Совместимость сохранений
 
 Нормативные решения:

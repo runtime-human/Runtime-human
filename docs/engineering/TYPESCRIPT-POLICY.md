@@ -1,3 +1,12 @@
+---
+title: "TypeScript policy"
+type: engine
+status: draft
+canon: true
+depends_on: [ADR-011]
+updated: 2026-07-18
+---
+
 # TypeScript policy
 
 ## Production compiler

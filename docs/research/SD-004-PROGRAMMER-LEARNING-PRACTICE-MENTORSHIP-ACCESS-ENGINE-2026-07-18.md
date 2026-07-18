@@ -1,3 +1,12 @@
+---
+title: "SD-004 — Programmer Learning, Practice, Mentorship & Access Engine"
+type: research
+status: draft
+canon: false
+depends_on: [ADR-013, ADR-016, ADR-017]
+updated: 2026-07-18
+---
+
 # SD-004 — Programmer Learning, Practice, Mentorship & Access Engine
 
 - **Дата:** 2026-07-18

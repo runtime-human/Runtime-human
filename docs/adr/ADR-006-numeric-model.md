@@ -1,3 +1,11 @@
+---
+title: "ADR-006: Авторитетная числовая модель"
+type: adr
+status: accepted
+canon: true
+updated: 2026-07-18
+---
+
 # ADR-006: Авторитетная числовая модель
 
 - **Статус:** Accepted

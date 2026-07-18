@@ -1,3 +1,12 @@
+---
+title: "Professional Challenge UI"
+type: ui
+status: draft
+canon: true
+depends_on: [ADR-016]
+updated: 2026-07-18
+---
+
 # Professional Challenge UI
 
 ## Статус

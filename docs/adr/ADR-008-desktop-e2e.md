@@ -1,3 +1,11 @@
+---
+title: "ADR-008: Разделение browser и desktop E2E"
+type: adr
+status: accepted
+canon: true
+updated: 2026-07-18
+---
+
 # ADR-008: Разделение browser и desktop E2E
 
 - **Статус:** Accepted

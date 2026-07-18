@@ -1,3 +1,11 @@
+---
+title: "Моды"
+type: content
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Моды
 
 ## Scope

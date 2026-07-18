@@ -1,3 +1,12 @@
+---
+title: "Миграции"
+type: engine
+status: draft
+canon: true
+depends_on: [ADR-010, ADR-013, ADR-014]
+updated: 2026-07-18
+---
+
 # Миграции
 
 Нормативные решения:

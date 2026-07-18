@@ -1,3 +1,12 @@
+---
+title: "SD-007 — Professional Situation & Content Architecture"
+type: research
+status: draft
+canon: false
+depends_on: [ADR-020]
+updated: 2026-07-18
+---
+
 # SD-007 — Professional Situation & Content Architecture
 
 - **Дата:** 2026-07-18

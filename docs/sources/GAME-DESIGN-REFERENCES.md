@@ -1,3 +1,11 @@
+---
+title: "Game-design references"
+type: source
+status: draft
+canon: false
+updated: 2026-07-18
+---
+
 # Game-design references
 
 ## Назначение

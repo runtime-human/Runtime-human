@@ -1,3 +1,11 @@
+---
+title: "Engineering documents"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Engineering documents
 
 - [Tech Stack](TECH-STACK.md)

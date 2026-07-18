@@ -1,3 +1,11 @@
+---
+title: "Игровой канон"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Игровой канон
 
 Нормативные спецификации:

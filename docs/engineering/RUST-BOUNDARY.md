@@ -1,3 +1,12 @@
+---
+title: "Rust boundary"
+type: engine
+status: draft
+canon: true
+depends_on: [ADR-004]
+updated: 2026-07-18
+---
+
 # Rust boundary
 
 ## Назначение

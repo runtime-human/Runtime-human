@@ -1,3 +1,11 @@
+---
+title: "Календарь"
+type: simulation
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Календарь
 
 ## Канон

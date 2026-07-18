@@ -1,3 +1,11 @@
+---
+title: "Implementation guards"
+type: architecture
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Implementation guards
 
 - No game rule in React or Rust adapters.

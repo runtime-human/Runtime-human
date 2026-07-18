@@ -1,3 +1,12 @@
+---
+title: "Исторический каталог"
+type: content
+status: draft
+canon: true
+depends_on: [ADR-017, ADR-018, ADR-019]
+updated: 2026-07-18
+---
+
 # Исторический каталог
 
 ## Назначение

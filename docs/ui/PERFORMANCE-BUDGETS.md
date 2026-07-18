@@ -1,3 +1,11 @@
+---
+title: "Performance budgets"
+type: ui
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Performance budgets
 
 ## Reference machine

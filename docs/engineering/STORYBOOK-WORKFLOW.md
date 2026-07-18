@@ -1,3 +1,11 @@
+---
+title: "Storybook workflow"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Storybook workflow
 
 ## 1. Роль в проекте

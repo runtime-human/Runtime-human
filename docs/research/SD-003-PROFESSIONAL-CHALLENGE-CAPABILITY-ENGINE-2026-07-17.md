@@ -1,3 +1,12 @@
+---
+title: "SD-003 — Professional Challenge, Capability Milestone & Technical Situation Engine"
+type: research
+status: draft
+canon: false
+depends_on: [ADR-013, ADR-016]
+updated: 2026-07-18
+---
+
 # SD-003 — Professional Challenge, Capability Milestone & Technical Situation Engine
 
 - **Дата:** 2026-07-17

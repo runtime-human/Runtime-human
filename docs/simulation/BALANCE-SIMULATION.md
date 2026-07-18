@@ -1,3 +1,12 @@
+---
+title: "Баланс и массовые симуляции"
+type: simulation
+status: draft
+canon: true
+depends_on: [ADR-015]
+updated: 2026-07-18
+---
+
 # Баланс и массовые симуляции
 
 Нормативные источники:

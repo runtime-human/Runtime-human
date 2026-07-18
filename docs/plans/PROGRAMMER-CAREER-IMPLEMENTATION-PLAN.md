@@ -1,3 +1,12 @@
+---
+title: "Programmer Career Engine — Implementation Plan"
+type: plan
+status: draft
+canon: true
+depends_on: [ADR-018]
+updated: 2026-07-18
+---
+
 # Programmer Career Engine — Implementation Plan
 
 Нормативные источники:

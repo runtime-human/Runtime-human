@@ -1,3 +1,11 @@
+---
+title: "Локализация"
+type: content
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Локализация
 
 ## Baseline

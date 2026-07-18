@@ -1,3 +1,11 @@
+---
+title: "ADR-004: Граница выполнения persistence"
+type: adr
+status: accepted
+canon: true
+updated: 2026-07-18
+---
+
 # ADR-004: Граница выполнения persistence
 
 - **Статус:** Accepted

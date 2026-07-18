@@ -1,3 +1,12 @@
+---
+title: "Phase 0 entry criteria"
+type: plan
+status: draft
+canon: true
+depends_on: [ADR-004]
+updated: 2026-07-18
+---
+
 # Phase 0 entry criteria
 
 Implementation starts only after:

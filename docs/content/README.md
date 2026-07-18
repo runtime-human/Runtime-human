@@ -1,3 +1,11 @@
+---
+title: "Content documents"
+type: content
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Content documents
 
 - [Content Architecture](CONTENT-ARCHITECTURE.md)

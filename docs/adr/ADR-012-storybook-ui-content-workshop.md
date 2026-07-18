@@ -1,3 +1,11 @@
+---
+title: "ADR-012: Storybook как UI и content workshop"
+type: adr
+status: accepted
+canon: true
+updated: 2026-07-18
+---
+
 # ADR-012: Storybook как UI и content workshop
 
 - **Статус:** Accepted

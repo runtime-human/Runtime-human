@@ -1,3 +1,12 @@
+---
+title: "Приостановленный MonthRun"
+type: simulation
+status: draft
+canon: true
+depends_on: [ADR-005, ADR-013, ADR-014, ADR-015, ADR-018]
+updated: 2026-07-18
+---
+
 # Приостановленный MonthRun
 
 Нормативные решения:

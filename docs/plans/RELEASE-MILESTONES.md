@@ -1,3 +1,11 @@
+---
+title: "Release milestones"
+type: plan
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Release milestones
 
 ## Internal Prototype

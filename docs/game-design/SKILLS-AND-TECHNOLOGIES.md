@@ -1,3 +1,12 @@
+---
+title: "Навыки и технологии"
+type: engine
+status: draft
+canon: true
+depends_on: [ADR-013, ADR-019]
+updated: 2026-07-18
+---
+
 # Навыки и технологии
 
 Нормативные спецификации:

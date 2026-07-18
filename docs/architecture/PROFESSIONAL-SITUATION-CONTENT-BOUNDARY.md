@@ -1,3 +1,12 @@
+---
+title: "Professional Situation Content — Module Boundary"
+type: architecture
+status: draft
+canon: true
+depends_on: [ADR-005, ADR-020]
+updated: 2026-07-18
+---
+
 # Professional Situation Content — Module Boundary
 
 ## Статус

@@ -1,3 +1,12 @@
+---
+title: "Vertical Slice Plan"
+type: plan
+status: draft
+canon: true
+depends_on: [ADR-015, ADR-016, ADR-017]
+updated: 2026-07-18
+---
+
 # Vertical Slice Plan
 
 Нормативные источники:

@@ -1,3 +1,12 @@
+---
+title: "DC-001 — Casual-first correction после SD-001 и SD-002"
+type: research
+status: draft
+canon: false
+depends_on: [ADR-013, ADR-015]
+updated: 2026-07-18
+---
+
 # DC-001 — Casual-first correction после SD-001 и SD-002
 
 - **Дата:** 2026-07-17

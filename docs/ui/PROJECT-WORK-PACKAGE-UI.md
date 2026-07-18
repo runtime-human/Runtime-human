@@ -1,3 +1,12 @@
+---
+title: "Project & Work Package UI"
+type: ui
+status: draft
+canon: true
+depends_on: [ADR-014, ADR-015]
+updated: 2026-07-18
+---
+
 # Project & Work Package UI
 
 ## Статус

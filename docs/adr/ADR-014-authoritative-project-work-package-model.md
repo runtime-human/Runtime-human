@@ -1,3 +1,12 @@
+---
+title: "ADR-014 — Авторитетная модель Project & Work Package"
+type: adr
+status: accepted
+canon: true
+depends_on: [ADR-005, ADR-006, ADR-007, ADR-010, ADR-013, ADR-015]
+updated: 2026-07-18
+---
+
 # ADR-014 — Авторитетная модель Project & Work Package
 
 - **Статус:** Accepted

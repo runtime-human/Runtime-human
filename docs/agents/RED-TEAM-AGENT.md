@@ -1,3 +1,11 @@
+---
+title: "Red Team Agent"
+type: agent
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Red Team Agent
 
 ## Цель

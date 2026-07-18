@@ -1,3 +1,11 @@
+---
+title: "UI Agent"
+type: agent
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # UI Agent
 
 ## Scope

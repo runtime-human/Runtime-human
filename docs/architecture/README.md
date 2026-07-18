@@ -1,3 +1,11 @@
+---
+title: "Architecture documents"
+type: architecture
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Architecture documents
 
 - [Master Architecture](MASTER-ARCHITECTURE.md) — краткий действующий канон.

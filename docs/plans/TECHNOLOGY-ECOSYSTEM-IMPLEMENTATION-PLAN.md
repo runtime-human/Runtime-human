@@ -1,3 +1,12 @@
+---
+title: "Technology & Ecosystem Engine — Implementation Plan"
+type: plan
+status: draft
+canon: true
+depends_on: [ADR-019]
+updated: 2026-07-18
+---
+
 # Technology & Ecosystem Engine — Implementation Plan
 
 Нормативные источники:

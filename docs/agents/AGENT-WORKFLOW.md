@@ -1,3 +1,11 @@
+---
+title: "Workflow ИИ-агентов"
+type: agent
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Workflow ИИ-агентов
 
 ## Источник истины

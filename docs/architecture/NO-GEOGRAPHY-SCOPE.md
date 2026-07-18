@@ -1,3 +1,11 @@
+---
+title: "Geography scope guard"
+type: architecture
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Geography scope guard
 
 The core game contains exactly one persistent fictional metropolis.

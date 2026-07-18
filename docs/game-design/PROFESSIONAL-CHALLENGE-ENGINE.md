@@ -1,3 +1,12 @@
+---
+title: "Professional Challenge Engine"
+type: engine
+status: draft
+canon: true
+depends_on: [ADR-015, ADR-016]
+updated: 2026-07-18
+---
+
 # Professional Challenge Engine
 
 ## Статус

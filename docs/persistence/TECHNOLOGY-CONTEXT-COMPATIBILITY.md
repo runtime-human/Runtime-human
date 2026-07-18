@@ -1,3 +1,12 @@
+---
+title: "Technology Context Persistence & Compatibility"
+type: engine
+status: draft
+canon: true
+depends_on: [ADR-010, ADR-019]
+updated: 2026-07-18
+---
+
 # Technology Context Persistence & Compatibility
 
 Нормативные источники:

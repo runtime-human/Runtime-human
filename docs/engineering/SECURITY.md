@@ -1,3 +1,11 @@
+---
+title: "Security architecture"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Security architecture
 
 ## Активы

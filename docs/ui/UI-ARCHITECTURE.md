@@ -1,3 +1,12 @@
+---
+title: "UI Architecture"
+type: ui
+status: draft
+canon: true
+depends_on: [ADR-012, ADR-015]
+updated: 2026-07-18
+---
+
 # UI Architecture
 
 Нормативные источники:
