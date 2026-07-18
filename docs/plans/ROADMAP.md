@@ -5,12 +5,14 @@
 - [ADR-015](../adr/ADR-015-casual-first-abstraction-and-complexity-budget.md);
 - [ADR-016](../adr/ADR-016-authoritative-professional-challenge-model.md);
 - [ADR-017](../adr/ADR-017-authoritative-programmer-learning-access-model.md);
+- [ADR-018](../adr/ADR-018-authoritative-programmer-career-employment-model.md);
 - [Casual Simulation Design](../game-design/CASUAL-SIMULATION-DESIGN.md);
 - [Programmer-First Design](../game-design/PROGRAMMER-FIRST-DESIGN.md);
 - [Professional Progression Engine](../game-design/PROFESSIONAL-PROGRESSION-ENGINE.md);
 - [Professional Challenge Engine](../game-design/PROFESSIONAL-CHALLENGE-ENGINE.md);
 - [Programmer Learning Engine](../game-design/PROGRAMMER-LEARNING-ENGINE.md);
-- [Project & Work Package Engine](../game-design/PROJECT-WORK-PACKAGE-ENGINE.md).
+- [Project & Work Package Engine](../game-design/PROJECT-WORK-PACKAGE-ENGINE.md);
+- [Programmer Career Engine](../game-design/PROGRAMMER-CAREER-ENGINE.md).
 
 Roadmap строится не вокруг максимальной архитектурной модели, а вокруг последовательной проверки gameplay.
 
@@ -42,7 +44,7 @@ Roadmap строится не вокруг максимальной архите
 - full challenge/learning catalog;
 - daily learning schedule;
 - university/credentials/adaptive tutoring/AI;
-- Senior/Company/Product systems;
+- Career/Company/Product systems;
 - speculative fields without current gameplay.
 
 Exit:
@@ -135,36 +137,79 @@ Exit:
 - player distinguishes understanding, assistance, independent application and transfer;
 - no need for advanced UI to play.
 
-## Phase 3 — Beginner → Junior and Career
+## Phase 3 — Beginner → Junior and Career Slice
 
-- job market/vacancies/interviews;
-- employment as automatic commitment;
-- simple company archetypes;
+Goal: prove that professional history turns into understandable first-job opportunities and meaningful workplace contexts without job-board/HR micromanagement.
+
+Implementation source:
+
+- [Programmer Career Implementation Plan](PROGRAMMER-CAREER-IMPLEMENTATION-PLAN.md).
+
+Add only:
+
+- one provenance-backed era/region/industry labor-market profile;
+- three fictional employer archetypes;
+- one entry programmer role family;
+- three opportunity templates from 2–3 sources;
+- one persistent Career Intent;
+- search/application routine aggregation;
+- maximum 1–3 meaningful opportunities;
+- employer-visible signal projection from real portfolio/history;
+- one portfolio discussion and one shared `diagnose` interview situation;
+- 1–2 meaningful hiring stages with 2–4 approaches;
+- standard/conditional/alternate/rejection outcomes;
+- two multi-dimensional offer profiles;
+- one employment position as automatic commitment;
 - work project requests using shared Project/Challenge engines;
-- workplace learning and feedback using shared Learning Engine;
-- promotion/title separate from grade;
-- unemployment/re-entry;
-- Intern/Junior readiness;
-- additional skills/technology families only as required;
-- Details mode for progression/project/important learning history.
+- workplace preparation/onboarding/feedback using shared Learning Engine;
+- simple multi-dimensional workplace trust/allowed scope;
+- one scope-expanded or promotion-delayed outcome;
+- title/position separate from Professional Grade;
+- one rejection recovery;
+- layoff/re-entry contract fixture;
+- Details mode for career/progression/project/important learning history;
+- deterministic active search/hiring/offer/employment resume.
 
-Project/learning Recommended profile may add:
+Career Slice must not add:
 
-- meaningful debt/defect records;
-- simple team contribution;
-- maintenance arcs;
-- richer release history;
-- documentation/code-review/community learning sources;
-- transfer/reacquisition checks.
+- full CompanyState;
+- employee/team/payroll simulation;
+- management career;
+- global/remote labor market;
+- visas/relocation;
+- detailed compensation/contracts;
+- office politics;
+- multiple simultaneous jobs;
+- application spam or resume-editor mini-game;
+- exact hire probability or universal candidate/performance score;
+- embedded coding IDE, syntax-trivia gate or LLM judge.
+
+Shared project/learning Recommended profile may add only when required by Career Slice:
+
+- meaningful debt/defect record for workplace consequence;
+- simple team contribution summary;
+- maintenance arc;
+- documentation/code-review learning source;
+- transfer/reacquisition check;
+- one bounded employer mentorship profile.
 
 Exit:
 
-- path to Junior is playable and understandable;
-- work does not become weekly task management;
-- learning does not become course marketplace;
-- job loss has recovery;
+- path to first professional work and Junior is playable and understandable;
+- player explains why opportunities appeared and how they differ;
+- player distinguishes capability, visible signal, familiarity and hard access;
+- player distinguishes title/position from Professional Grade;
+- salary, referral and credential are useful but not globally dominant;
+- hiring outcome is causal and does not reroll;
+- rejection separates candidate gap from employer cancellation and has recovery;
+- employment creates programmer gameplay without weekly/daily task management;
+- workplace trust explanation is understandable without one performance score;
+- job loss/re-entry preserves grade/history and avoids soft lock;
 - professional and life decisions remain balanced;
-- no evidence/performance-review UX.
+- no evidence/performance-review UX;
+- player wants to continue after first offer and first work month.
+
+Failure to meet Career Slice exits blocks management, global market and detailed Company integration.
 
 ## Phase 4 — Products and Open Source
 
@@ -173,6 +218,7 @@ Exit:
 - long-lived project value/support;
 - public/freelance/maintainer paths;
 - community/review learning opportunities;
+- Career opportunity/reputation signals from public outcomes;
 - only necessary project depth for support/migrations;
 - Content preview tools as needed.
 
@@ -182,6 +228,7 @@ Exit:
 - popularity/revenue do not create technical grade;
 - support creates choices, not maintenance clicking;
 - community popularity does not replace learning/evidence;
+- public success creates Career signals, not guaranteed offers;
 - project failure/transfer/archive recoverable.
 
 ## Phase 5 — Human Constraints and Long-term Life
@@ -201,30 +248,35 @@ Exit:
 - interruptions preserve mastery/grade/history;
 - family/health paths viable;
 - access/equipment differences do not create permanent soft lock;
+- career re-entry explains fluency/familiarity/market visibility separately;
 - technical play not starved.
 
 ## Phase 6 — Middle/Senior, Leadership and Company
 
-Only after Beginner→Junior corpus and player demand.
+Only after Beginner→Junior Career Slice and player demand.
 
 - Middle/Senior grade profiles;
 - architecture/review/mentoring;
 - teaching/learning outcomes for others;
 - Team Lead/Tech Lead/Architect;
-- Company teams/hiring/payroll;
+- Company teams/headcount/payroll/budget;
+- hiring other employees through Company/Leadership contracts;
 - simple delegation/ownership;
 - project portfolio abstraction;
 - Founder/CTO paths;
-- management-to-IC return.
+- management-to-IC return;
+- deeper promotion/internal-transfer/organizational-transition contracts.
 
-Extended project/progression/learning features may be introduced selectively:
+Extended project/progression/learning/career features may be introduced selectively:
 
 - granular contribution when it changes leadership gameplay;
 - incidents/rollback for production projects;
 - advanced readiness detail;
 - delegation policies;
 - situational quality/debt depth;
-- mentoring styles and downstream learner outcomes.
+- mentoring styles and downstream learner outcomes;
+- IC/management career fork;
+- richer company sponsorship/position availability.
 
 Exit:
 
@@ -232,6 +284,7 @@ Exit:
 - mentoring is not a passive multiplier;
 - Senior remains understandable;
 - Founder not universally dominant;
+- management title does not replace Professional Grade;
 - Extended complexity proves product value.
 
 ## Phase 7 — Late Career and Endgame
@@ -243,7 +296,7 @@ Exit:
 - retirement/succession;
 - post-2026 future;
 - philosophy grounded in lived history;
-- historically valid AI-era and future learning ecosystems;
+- historically valid AI-era and future learning/hiring ecosystems;
 - mod/content API hardening;
 - compaction based on real save corpus.
 
@@ -262,7 +315,7 @@ A feature is blocked when:
 - normal mode requires advanced data;
 - it adds unused authoritative fields;
 - it increases visible concepts beyond budget;
-- it creates maintenance/schedule clicking;
+- it creates maintenance/schedule/application/performance clicking;
 - it is justified only by realism/future completeness;
 - no playtest hypothesis exists;
 - content/testing cost exceeds demonstrated value.
@@ -277,7 +330,11 @@ A feature is blocked when:
 - bounded blocking decisions;
 - guided/assisted/independent semantics;
 - access equity and recovery;
-- early learning → project transition;
+- early learning → project → career transition;
+- grade/title/role-fit/trust separation;
+- opportunity/offer trade-off comprehension;
+- rejection/layoff/re-entry recovery;
+- salary/referral/credential non-dominance;
 - accessibility/long RU;
 - recovery/soft locks;
 - historical provenance;
@@ -299,6 +356,12 @@ A feature is blocked when:
 - adaptive Bayesian learner model;
 - course marketplace/complete education institution simulation;
 - AI tutoring/judging before historically valid gameplay;
+- application/resume CRM;
+- exact candidate/performance scores;
+- detailed contracts/negotiation;
+- global labor market/visas/relocation;
+- full Company/HR/office-politics simulation;
+- multiple jobs;
 - portfolio dashboard;
 - long-term compaction before real saves;
 - Bayesian/IRT/LLM judge;
