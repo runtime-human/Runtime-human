@@ -71,6 +71,7 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [Technology Ecosystem Balance](simulation/TECHNOLOGY-ECOSYSTEM-BALANCE.md)
 - [Technology Ecosystem Content](content/TECHNOLOGY-ECOSYSTEM-CONTENT.md)
 - [Historical Technology Catalog](content/HISTORICAL-TECHNOLOGY-CATALOG.md)
+- [Technology Context Compatibility](persistence/TECHNOLOGY-CONTEXT-COMPATIBILITY.md)
 - [Technology Ecosystem Implementation Plan](plans/TECHNOLOGY-ECOSYSTEM-IMPLEMENTATION-PLAN.md)
 - [SD-006 analysis](research/SD-006-HISTORICAL-TECHNOLOGY-TOOLING-ECOSYSTEM-ENGINE-2026-07-18.md)
 
@@ -138,6 +139,7 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [SQLite Architecture](persistence/SQLITE-ARCHITECTURE.md)
 - [Migrations](persistence/MIGRATIONS.md)
 - [Save Compatibility](persistence/SAVE-COMPATIBILITY.md)
+- [Technology Context Compatibility](persistence/TECHNOLOGY-CONTEXT-COMPATIBILITY.md)
 - [Backup/Restore](persistence/BACKUP-AND-RESTORE.md)
 - [Safe Mode](persistence/SAFE-MODE.md)
 - [Content Architecture](content/CONTENT-ARCHITECTURE.md)
