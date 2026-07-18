@@ -23,6 +23,7 @@ Research/system-design становится каноном только посл
 1. [SD-004 — Programmer Learning, Practice, Mentorship & Access Engine](SD-004-PROGRAMMER-LEARNING-PRACTICE-MENTORSHIP-ACCESS-ENGINE-2026-07-18.md)
 2. [SD-005 — Programmer Career, Hiring & Labor Market Engine](SD-005-PROGRAMMER-CAREER-HIRING-LABOR-MARKET-ENGINE-2026-07-18.md)
 3. [SD-006 — Historical Technology, Tooling & Ecosystem Engine](SD-006-HISTORICAL-TECHNOLOGY-TOOLING-ECOSYSTEM-ENGINE-2026-07-18.md)
+4. [SD-007 — Professional Situation & Content Architecture](SD-007-PROFESSIONAL-SITUATION-CONTENT-ARCHITECTURE-2026-07-18.md)
 
 ## Нормативные результаты
 
@@ -105,24 +106,41 @@ Research/system-design становится каноном только посл
 - local city diffusion is explicitly fictional and low-access starts retain fallback routes;
 - committed project/history snapshots survive catalog changes.
 
+### SD-007 → ADR-020
+
+- professional situation semantics remain authored in reusable kernels;
+- context, pressure, provider consequence and presentation are separate typed components;
+- composition happens in content build, not runtime;
+- compiler materializes only explicit compatible tuples inside hard budgets;
+- Event Engine and Narrative Director keep chain/pacing ownership;
+- Challenge Engine keeps deterministic outcome ownership;
+- presentation-only variants do not count as new semantic variety or evade anti-repeat;
+- stable semantic signatures support duplicate detection and repetition control;
+- coverage uses critical tuples and selected pairwise interactions, not full Cartesian generation;
+- runtime LLM generation/judging remains forbidden; later offline suggestions produce ordinary reviewed data only.
+
 Normative specs:
 
 - `docs/game-design/CASUAL-SIMULATION-DESIGN.md`;
 - `docs/game-design/PROFESSIONAL-PROGRESSION-ENGINE.md`;
 - `docs/game-design/PROFESSIONAL-CHALLENGE-ENGINE.md`;
+- `docs/game-design/PROFESSIONAL-SITUATION-CONTENT-ENGINE.md`;
 - `docs/game-design/PROGRAMMER-LEARNING-ENGINE.md`;
 - `docs/game-design/PROJECT-WORK-PACKAGE-ENGINE.md`;
 - `docs/game-design/PROGRAMMER-CAREER-ENGINE.md`;
 - `docs/game-design/TECHNOLOGY-ECOSYSTEM-ENGINE.md`;
 - `docs/ui/PROFESSIONAL-CHALLENGE-UI.md`;
+- `docs/ui/PROFESSIONAL-SITUATION-CONTENT-UI.md`;
 - `docs/ui/PROGRAMMER-LEARNING-UI.md`;
 - `docs/ui/PROGRAMMER-CAREER-UI.md`;
 - `docs/ui/TECHNOLOGY-ECOSYSTEM-UI.md`;
+- `docs/content/PROFESSIONAL-SITUATION-CONTENT.md`;
 - `docs/content/PROGRAMMER-LEARNING-CONTENT.md`;
 - `docs/content/PROGRAMMER-CAREER-CONTENT.md`;
 - `docs/content/HISTORICAL-LABOR-MARKET-CATALOG.md`;
 - `docs/content/HISTORICAL-TECHNOLOGY-CATALOG.md`;
 - `docs/content/TECHNOLOGY-ECOSYSTEM-CONTENT.md`;
+- `docs/simulation/PROFESSIONAL-SITUATION-CONTENT-BALANCE.md`;
 - `docs/simulation/PROGRAMMER-LEARNING-BALANCE.md`;
 - `docs/simulation/PROGRAMMER-CAREER-BALANCE.md`;
 - `docs/simulation/TECHNOLOGY-ECOSYSTEM-BALANCE.md`.

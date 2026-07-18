@@ -1,8 +1,21 @@
 # Event Engine
 
+Нормативные решения:
+
+- [ADR-009 — Narrative Director](../adr/ADR-009-narrative-director.md)
+- [ADR-020 — Professional Situation Content Composition](../adr/ADR-020-authoritative-professional-situation-content-composition-model.md)
+
+Связанные спецификации:
+
+- [Professional Challenge Engine](../game-design/PROFESSIONAL-CHALLENGE-ENGINE.md)
+- [Professional Situation Content Engine](../game-design/PROFESSIONAL-SITUATION-CONTENT-ENGINE.md)
+- [Narrative Director](NARRATIVE-DIRECTOR.md)
+
 ## Ответственность
 
-Event Engine определяет, какие события допустимы, как выбираются варианты, какие эффекты применяются и как продолжаются цепочки.
+Event Engine определяет, какие события допустимы, как выбираются participants, как создаются PendingDecision и chains, какие allowlisted effects применяются и как сохраняются delayed consequences.
+
+Event Engine не компилирует professional-situation components, не создаёт approaches, не рассчитывает Challenge outcome и не выполняет Narrative Director pacing.
 
 ## Типы событий
 
@@ -25,19 +38,19 @@ Event Engine определяет, какие события допустимы,
 Содержит:
 
 - stable ID и version;
-- category/tags;
+- category/tags/product layer;
 - availability window;
-- requirements;
-- incompatibilities;
-- weight;
-- cooldown;
-- blocking policy;
+- requirements/incompatibilities;
+- weight/cooldown/blocking policy;
 - participants selector;
 - choices;
 - immediate/delayed effects;
 - chain transitions;
 - journal template;
-- source/provenance для исторического контента.
+- historical provenance;
+- optional reference to a compiled professional-situation variant or bounded lookup selector.
+
+Professional reference points only to compiled registry metadata. It does not embed kernel/context/pressure tuples and does not define provider outcome.
 
 ## Selection
 
@@ -45,27 +58,90 @@ Event Engine определяет, какие события допустимы,
 2. Проверить requirements.
 3. Исключить cooldown/unique/incompatible.
 4. Разрешить participants.
-5. Рассчитать integer weights.
-6. Передать candidates Narrative Director.
-7. Выполнить deterministic weighted choice.
+5. Для professional reference получить eligible compiled-situation candidates from provider/registry.
+6. Исключить event, если обязательная situation не materializable.
+7. Рассчитать integer weights.
+8. Передать candidates Narrative Director.
+9. Выполнить deterministic selection.
+10. Сохранить selected event, participants и situation snapshot до player choice.
+
+Reload не запускает повторный professional-situation selection.
+
+## Professional event flow
+
+```text
+EventDefinition
+→ requirements/participants
+→ provider lookup of compiled situations
+→ Narrative Director selection
+→ persisted event + situation snapshot
+→ Professional Challenge resolution
+→ provider application
+→ event/provider follow-up hooks
+```
+
+Event Engine owns chain stage and delayed event hooks. Provider owns domain application. Challenge Engine owns technical outcome.
 
 ## Effects
 
-Effects являются декларативными operations из allowlist. Они применяются к immutable draft state через versioned effect handlers.
+Effects являются declarative operations из allowlist и применяются через versioned handlers. Professional consequence bridge возвращает typed provider proposals; Event applies only event-owned effects/hooks.
+
+Event cannot grant mastery/evidence/grade or calculate Project/Career/Learning truth.
 
 ## Blocking policy
 
-Blocking событие создаёт PendingDecision и завершает текущий шаг MonthRun. Log-only событие записывается без остановки.
+Blocking event creates PendingDecision and stops current MonthRun step. Log-only event records without blocking.
 
-## Trace
+Ordinary event-wrapped professional situation should remain one coherent blocking decision, not two unrelated modals.
 
-Для каждого события сохраняются definition version, candidate reasons, weight, participants, choice, effects и resulting hashes. Trace предназначен для диагностики и golden tests.
+## Semantic repetition metadata
+
+Professional event candidate exposes Director:
+
+- exact variant key;
+- kernel/dilemma key;
+- approach-shape key;
+- cause/consequence/provider/archetype keys;
+- presentation-only group key;
+- stakes/intensity;
+- follow-up/arc metadata.
+
+Event Engine does not score novelty itself.
+
+## Persistence and trace
+
+Persist before choice:
+
+- event ID/version;
+- participants and chain stage;
+- compiled variant ID/version;
+- semantic/presentation/provider snapshots;
+- approaches and realized complication;
+- Director trace reference;
+- content/rules fingerprints.
+
+After answer one idempotency key guards Challenge outcome, provider application, event hook and ExperienceEpisode.
+
+Trace records definition, eligibility, lookup, weight/Director trace, participants, choice, effects and hashes.
+
+## Validation
+
+Reject when:
+
+- reference targets mutable authoring components rather than compiled lookup;
+- provider binding missing;
+- event duplicates provider consequence;
+- chain can reroll visible situation;
+- presentation-only variant evades semantic repetition;
+- arbitrary script/network/runtime generation required;
+- historical fact lacks sourceRefs.
 
 ## Запреты
 
-- arbitrary JS в контенте;
-- доступ события к SQLite/UI;
-- скрытый `Math.random`;
-- ссылки на несуществующего NPC;
-- изменение state вне effect registry;
-- создание реального исторического факта без sourceRefs.
+- arbitrary JS;
+- SQLite/UI access from content;
+- hidden `Math.random`;
+- missing persistent NPC;
+- effects outside registry;
+- runtime composition or LLM generation;
+- duplicate Director/Challenge/provider logic.
