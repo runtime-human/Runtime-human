@@ -20,6 +20,7 @@
 - [ADR-016 — Авторитетная модель профессиональных ситуаций и подходов](ADR-016-authoritative-professional-challenge-model.md)
 - [ADR-017 — Авторитетная модель обучения программированию и доступа](ADR-017-authoritative-programmer-learning-access-model.md)
 - [ADR-018 — Авторитетная модель карьеры программиста, найма и занятости](ADR-018-authoritative-programmer-career-employment-model.md)
+- [ADR-019 — Авторитетная модель исторических технологий, tooling и ecosystem context](ADR-019-authoritative-historical-technology-ecosystem-model.md)
 
 ## Decision sequence
 
@@ -30,8 +31,9 @@
 - ADR-016: SD-003 professional challenge boundary; concrete situation/approach/outcome bridges providers, projects and progression.
 - ADR-017: SD-004 learning/access boundary; source affordances, practice, feedback and access routes lead to `ExperienceEpisode` without XP or schedule ownership.
 - ADR-018: SD-005 career boundary; employer-visible signals lead to opportunities, hiring, offer, employment context and transitions without replacing grade/evidence or Company/Project truth.
+- ADR-019: SD-006 technology/ecosystem boundary; source-backed chronology and fictional local diffusion create immutable provider context without a tech tree, universal score or ownership drift.
 
-ADR-015 constrains implementation scope of ADR-013/014/016/017/018 without отмены their ownership, determinism and compatibility guarantees.
+ADR-015 constrains implementation scope of ADR-013/014/016/017/018/019 without отмены their ownership, determinism and compatibility guarantees.
 
 ## Proposed
 
@@ -58,3 +60,4 @@ ADR-015 constrains implementation scope of ADR-013/014/016/017/018 without от�
 - [SD-003 — Professional Challenge & Capability Engine](../research/SD-003-PROFESSIONAL-CHALLENGE-CAPABILITY-ENGINE-2026-07-17.md)
 - [SD-004 — Programmer Learning, Practice, Mentorship & Access](../research/SD-004-PROGRAMMER-LEARNING-PRACTICE-MENTORSHIP-ACCESS-ENGINE-2026-07-18.md)
 - [SD-005 — Programmer Career, Hiring & Labor Market](../research/SD-005-PROGRAMMER-CAREER-HIRING-LABOR-MARKET-ENGINE-2026-07-18.md)
+- [SD-006 — Historical Technology, Tooling & Ecosystem Engine](../research/SD-006-HISTORICAL-TECHNOLOGY-TOOLING-ECOSYSTEM-ENGINE-2026-07-18.md)
