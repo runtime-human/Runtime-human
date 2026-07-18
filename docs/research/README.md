@@ -21,6 +21,7 @@ Research/system-design становится каноном только посл
 ## 2026-07-18
 
 1. [SD-004 — Programmer Learning, Practice, Mentorship & Access Engine](SD-004-PROGRAMMER-LEARNING-PRACTICE-MENTORSHIP-ACCESS-ENGINE-2026-07-18.md)
+2. [SD-005 — Programmer Career, Hiring & Labor Market Engine](SD-005-PROGRAMMER-CAREER-HIRING-LABOR-MARKET-ENGINE-2026-07-18.md)
 
 ## Нормативные результаты
 
@@ -76,6 +77,20 @@ Research/system-design становится каноном только посл
 - AI assistance separates explanation/verification from full delegation;
 - no daily schedule, knowledge XP or course marketplace in baseline.
 
+### SD-005 → ADR-018
+
+- Career sees market-visible signals, not hidden professional truth;
+- Grade, readiness, role fit, position/title and workplace trust remain distinct;
+- search routine aggregates around one Career Intent and 1–3 meaningful opportunities;
+- requirements separate hard access, capability, familiarity, signals, trainable gaps and preferences;
+- hiring uses portfolio/situational/work-sample stages and shared Challenge/Learning engines;
+- offers compare professional and life trade-offs under partial uncertainty;
+- employment is an automatic commitment and provides project/challenge/learning contexts;
+- no single performance score; workplace trust controls allowed scope;
+- promotion is organizational and does not award Professional Grade;
+- layoff/closure do not erase grade/history;
+- labor market is compact and provenance-backed by era/region/industry/role family.
+
 Normative specs:
 
 - `docs/game-design/CASUAL-SIMULATION-DESIGN.md`;
@@ -83,10 +98,15 @@ Normative specs:
 - `docs/game-design/PROFESSIONAL-CHALLENGE-ENGINE.md`;
 - `docs/game-design/PROGRAMMER-LEARNING-ENGINE.md`;
 - `docs/game-design/PROJECT-WORK-PACKAGE-ENGINE.md`;
+- `docs/game-design/PROGRAMMER-CAREER-ENGINE.md`;
 - `docs/ui/PROFESSIONAL-CHALLENGE-UI.md`;
 - `docs/ui/PROGRAMMER-LEARNING-UI.md`;
+- `docs/ui/PROGRAMMER-CAREER-UI.md`;
 - `docs/content/PROGRAMMER-LEARNING-CONTENT.md`;
-- `docs/simulation/PROGRAMMER-LEARNING-BALANCE.md`.
+- `docs/content/PROGRAMMER-CAREER-CONTENT.md`;
+- `docs/content/HISTORICAL-LABOR-MARKET-CATALOG.md`;
+- `docs/simulation/PROGRAMMER-LEARNING-BALANCE.md`;
+- `docs/simulation/PROGRAMMER-CAREER-BALANCE.md`.
 
 ## Правила
 
