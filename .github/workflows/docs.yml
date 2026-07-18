@@ -1,40 +1,27 @@
-name: docs-bootstrap
+name: docs
 
 on:
   push:
-    branches:
-      - agent/docs-index-structure
+    paths:
+      - "docs/**"
+      - "scripts/build-toc.mjs"
+      - ".github/workflows/docs.yml"
+  pull_request:
     paths:
       - "docs/**"
       - "scripts/build-toc.mjs"
       - ".github/workflows/docs.yml"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  generate:
+  docs-lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref_name }}
-          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
-      - name: Generate metadata and manifest
-        run: node scripts/build-toc.mjs
-      - name: Verify generated state
+      - name: Verify docs front-matter and manifest
         run: node scripts/build-toc.mjs --check
-      - name: Commit generated documentation metadata
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs
-          if git diff --cached --quiet; then
-            echo "Documentation metadata is already current."
-          else
-            git commit -m "docs: generate front-matter and manifest"
-            git push origin "HEAD:${GITHUB_REF_NAME}"
-          fi
