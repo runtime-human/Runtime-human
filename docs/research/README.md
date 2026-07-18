@@ -18,6 +18,10 @@ Research/system-design становится каноном только посл
 4. [DC-001 — Casual-first complexity correction](DC-001-CASUAL-FIRST-COMPLEXITY-CORRECTION-2026-07-17.md)
 5. [SD-003 — Professional Challenge & Capability Engine](SD-003-PROFESSIONAL-CHALLENGE-CAPABILITY-ENGINE-2026-07-17.md)
 
+## 2026-07-18
+
+1. [SD-004 — Programmer Learning, Practice, Mentorship & Access Engine](SD-004-PROGRAMMER-LEARNING-PRACTICE-MENTORSHIP-ACCESS-ENGINE-2026-07-18.md)
+
 ## Нормативные результаты
 
 ### DR-003
@@ -60,13 +64,29 @@ Research/system-design становится каноном только посл
 - no hidden correct-combination table, IDE or LLM judge;
 - challenge breadth expands only after playtest evidence.
 
+### SD-004 → ADR-017
+
+- learning source differs by affordances, access and context rather than XP multiplier;
+- access is a projection from equipment/era/NPC/economy owners;
+- learning, practice, transfer and professional evidence remain distinct;
+- worked examples, self-explanation, retrieval, practice and feedback are approaches/factors, not separate score systems;
+- mentorship uses explicit assistance levels and cannot mint autonomy/grade;
+- low-access starts require alternative routes and recovery;
+- practical technical problems delegate to Professional Challenge Engine;
+- AI assistance separates explanation/verification from full delegation;
+- no daily schedule, knowledge XP or course marketplace in baseline.
+
 Normative specs:
 
 - `docs/game-design/CASUAL-SIMULATION-DESIGN.md`;
 - `docs/game-design/PROFESSIONAL-PROGRESSION-ENGINE.md`;
 - `docs/game-design/PROFESSIONAL-CHALLENGE-ENGINE.md`;
+- `docs/game-design/PROGRAMMER-LEARNING-ENGINE.md`;
 - `docs/game-design/PROJECT-WORK-PACKAGE-ENGINE.md`;
-- `docs/ui/PROFESSIONAL-CHALLENGE-UI.md`.
+- `docs/ui/PROFESSIONAL-CHALLENGE-UI.md`;
+- `docs/ui/PROGRAMMER-LEARNING-UI.md`;
+- `docs/content/PROGRAMMER-LEARNING-CONTENT.md`;
+- `docs/simulation/PROGRAMMER-LEARNING-BALANCE.md`.
 
 ## Правила
 
