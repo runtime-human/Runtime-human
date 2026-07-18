@@ -62,6 +62,18 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [Programmer Career Implementation Plan](plans/PROGRAMMER-CAREER-IMPLEMENTATION-PLAN.md)
 - [SD-005 analysis](research/SD-005-PROGRAMMER-CAREER-HIRING-LABOR-MARKET-ENGINE-2026-07-18.md)
 
+## Historical technology, tooling and ecosystems
+
+- [ADR-019 — Historical Technology & Ecosystem Model](adr/ADR-019-authoritative-historical-technology-ecosystem-model.md)
+- [Technology Ecosystem Engine](game-design/TECHNOLOGY-ECOSYSTEM-ENGINE.md)
+- [Skills & Technologies](game-design/SKILLS-AND-TECHNOLOGIES.md)
+- [Technology Ecosystem UI](ui/TECHNOLOGY-ECOSYSTEM-UI.md)
+- [Technology Ecosystem Balance](simulation/TECHNOLOGY-ECOSYSTEM-BALANCE.md)
+- [Technology Ecosystem Content](content/TECHNOLOGY-ECOSYSTEM-CONTENT.md)
+- [Historical Technology Catalog](content/HISTORICAL-TECHNOLOGY-CATALOG.md)
+- [Technology Ecosystem Implementation Plan](plans/TECHNOLOGY-ECOSYSTEM-IMPLEMENTATION-PLAN.md)
+- [SD-006 analysis](research/SD-006-HISTORICAL-TECHNOLOGY-TOOLING-ECOSYSTEM-ENGINE-2026-07-18.md)
+
 ## Projects
 
 - [ADR-014 — Project & Work Package Model](adr/ADR-014-authoritative-project-work-package-model.md)
@@ -92,6 +104,7 @@ MVP Casual → playtest → Recommended → proven Extended features
 
 - [Character Progression](game-design/CHARACTER-PROGRESSION.md)
 - [Skills & Technologies](game-design/SKILLS-AND-TECHNOLOGIES.md)
+- [Technology Ecosystem Engine](game-design/TECHNOLOGY-ECOSYSTEM-ENGINE.md)
 - [Monthly Loop](game-design/MONTHLY-GAME-LOOP.md)
 - [Career](game-design/CAREER-SYSTEM.md)
 - [Projects & Products Overview](game-design/PROJECTS-AND-PRODUCTS.md)
@@ -113,6 +126,7 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [Professional Challenge Balance](simulation/PROFESSIONAL-CHALLENGE-BALANCE.md)
 - [Programmer Learning Balance](simulation/PROGRAMMER-LEARNING-BALANCE.md)
 - [Programmer Career Balance](simulation/PROGRAMMER-CAREER-BALANCE.md)
+- [Technology Ecosystem Balance](simulation/TECHNOLOGY-ECOSYSTEM-BALANCE.md)
 - [Event Engine](events/EVENT-ENGINE.md)
 - [Narrative Director](events/NARRATIVE-DIRECTOR.md)
 - [NPC Memory](events/NPC-AND-NARRATIVE-MEMORY.md)
@@ -129,8 +143,10 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [Content Architecture](content/CONTENT-ARCHITECTURE.md)
 - [Programmer Learning Content](content/PROGRAMMER-LEARNING-CONTENT.md)
 - [Programmer Career Content](content/PROGRAMMER-CAREER-CONTENT.md)
+- [Technology Ecosystem Content](content/TECHNOLOGY-ECOSYSTEM-CONTENT.md)
 - [Historical Catalog](content/HISTORICAL-CATALOG.md)
 - [Historical Labor Market Catalog](content/HISTORICAL-LABOR-MARKET-CATALOG.md)
+- [Historical Technology Catalog](content/HISTORICAL-TECHNOLOGY-CATALOG.md)
 - [Modding](content/MODDING.md)
 
 ## UI, engineering и plans
@@ -141,6 +157,7 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [Professional Challenge UI](ui/PROFESSIONAL-CHALLENGE-UI.md)
 - [Programmer Learning UI](ui/PROGRAMMER-LEARNING-UI.md)
 - [Programmer Career UI](ui/PROGRAMMER-CAREER-UI.md)
+- [Technology Ecosystem UI](ui/TECHNOLOGY-ECOSYSTEM-UI.md)
 - [Tech Stack](engineering/TECH-STACK.md)
 - [TypeScript Policy](engineering/TYPESCRIPT-POLICY.md)
 - [Storybook Workflow](engineering/STORYBOOK-WORKFLOW.md)
@@ -149,5 +166,6 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [Security](engineering/SECURITY.md)
 - [Vertical Slice](plans/VERTICAL-SLICE-PLAN.md)
 - [Programmer Career Implementation Plan](plans/PROGRAMMER-CAREER-IMPLEMENTATION-PLAN.md)
+- [Technology Ecosystem Implementation Plan](plans/TECHNOLOGY-ECOSYSTEM-IMPLEMENTATION-PLAN.md)
 - [Roadmap](plans/ROADMAP.md)
 - [ADR Index](adr/README.md)
