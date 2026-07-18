@@ -6,18 +6,20 @@
 - [ADR-014 — Project & Work Package](../adr/ADR-014-authoritative-project-work-package-model.md)
 - [ADR-015 — Casual-first Complexity](../adr/ADR-015-casual-first-abstraction-and-complexity-budget.md)
 - [ADR-019 — Historical Technology & Ecosystem](../adr/ADR-019-authoritative-historical-technology-ecosystem-model.md)
+- [ADR-020 — Professional Situation Content Composition](../adr/ADR-020-authoritative-professional-situation-content-composition-model.md)
 
 Связанные спецификации:
 
 - [Casual Simulation Design](../game-design/CASUAL-SIMULATION-DESIGN.md)
-- [Professional Progression Engine](../game-design/PROFESSIONAL-PROGRESSION-ENGINE.md)
+- [Professional Challenge Engine](../game-design/PROFESSIONAL-CHALLENGE-ENGINE.md)
+- [Professional Situation Content Engine](../game-design/PROFESSIONAL-SITUATION-CONTENT-ENGINE.md)
+- [Professional Situation Content](PROFESSIONAL-SITUATION-CONTENT.md)
 - [Project & Work Package Engine](../game-design/PROJECT-WORK-PACKAGE-ENGINE.md)
 - [Technology Ecosystem Engine](../game-design/TECHNOLOGY-ECOSYSTEM-ENGINE.md)
-- [Technology Ecosystem Content](TECHNOLOGY-ECOSYSTEM-CONTENT.md)
 
 ## 1. Goal
 
-Content is immutable data without executable scripts. It creates a small number of understandable situations, choices and outcomes. A schema field or definition type exists only when current gameplay uses it.
+Content is immutable data without executable scripts. It creates a bounded number of understandable situations, choices and outcomes. A schema field or definition type exists only when current gameplay uses it.
 
 ## 2. Source format and pipeline
 
@@ -28,13 +30,16 @@ Content is immutable data without executable scripts. It creates a small number 
 
 ```text
 JSONC/source registry
-→ schema validation
-→ semantic/chronology/reference/source-scope validation
+→ schema/reference validation
+→ semantic/chronology/source-scope validation
+→ bounded professional-situation materialization
 → casual-complexity lint
-→ balance/reachability lint
+→ balance/reachability/coverage lint
 → immutable registries
 → semantic fingerprints/snapshots
 ```
+
+Professional-situation materialization happens only at content build. Runtime never combines kernels, contexts, pressures, bridges or presentation packs.
 
 ## 3. Implementation profiles
 
@@ -47,34 +52,51 @@ JSONC/source registry
 - 1 home and 1 low-access route;
 - learning activities;
 - 1 project archetype and 2 packages;
+- one authored professional-situation kernel represented as one compiled variant;
 - three base qualities;
 - one uncertainty/debt/issue branch;
 - 4–6 events;
 - minimal equipment/housing/era/localization.
 
-### Recommended
+### First Playable Year / Recommended entry
 
-- selected additional skills/technology families;
+Only after first-month proof:
+
+- selected additional skills/technology contexts;
+- 6–10 professional-situation kernels as a starting hypothesis;
+- 12–24 semantic variants across focused composition sets;
+- build/diagnose/improve/integrate coverage;
+- semantic anti-repeat and duplicate reports;
 - sparse transfer graph and meaningful migrations;
 - multiple project archetypes;
-- career/product/open-source content;
-- situational quality/debt/issue records;
+- career/product/open-source content when their phases require it;
 - richer local/technology contexts.
 
 ### Extended
 
 - broader historical technology catalog;
-- multiple platforms/toolchains;
-- richer compatibility/migrations;
-- incidents/rollback;
+- incidents/rollback and systemic situations;
 - teams/delegation/company portfolios;
-- open-source ecosystem health;
-- advanced grade/evidence profiles;
-- AI-era and alternate-future technology content.
+- Open Source and leadership contexts;
+- richer Content Studio coverage/sequence analysis;
+- offline authoring suggestions under human review;
+- AI-era and alternate-future content.
 
 Extended schemas are not required before the feature exists.
 
-## 4. Professional definitions
+## 4. Definition ownership
+
+- Content definitions are immutable data.
+- Content compiler validates and materializes definitions.
+- Core owns deterministic state transitions.
+- Provider owns domain context/application.
+- Professional Challenge Engine owns approach outcome.
+- Event Engine owns event requirements, participants, chains and declarative effects.
+- Narrative Director owns pacing/selection among eligible candidates.
+- Progression consumes `ExperienceEpisode` and owns professional interpretation.
+- Content cannot directly change mastery, grade, project, career, equipment, money or relationship state.
+
+## 5. Professional definitions
 
 ### SkillDefinition
 
@@ -88,33 +110,63 @@ Extended schemas are not required before the feature exists.
 
 Specialized contracts live in `TECHNOLOGY-ECOSYSTEM-CONTENT.md`.
 
-MVP uses:
-
-- `TechnologyFamilyDefinition`;
-- `TechnologyDefinition`;
-- `TechnologyVersionBandDefinition`;
-- `PlatformProfileDefinition`;
-- `ToolchainProfileDefinition`;
-- `EcosystemProfileDefinition`;
-- `CompatibilityProfileDefinition`;
-- `LocalTechnologyAvailabilityDefinition`;
-- `TechnologyContextTemplate`.
-
-Content does not own practical access, familiarity or provider outcome.
+MVP uses family, technology, version band, platform, toolchain, ecosystem, compatibility, local availability and context definitions. Content does not own practical access, familiarity or provider outcome.
 
 ### LearningActivityDefinition
 
-- goal;
+- goal and observable result;
 - required access;
 - relevant skills/technology context;
 - challenge band;
-- expected outcome classes;
+- outcome classes;
 - assistance options;
 - recovery/next step.
 
-Core derives professional interpretation from provider outcome tags. Content never mints evidence directly.
+Content never mints evidence directly.
 
-## 5. Project definitions
+## 6. Professional situation definitions
+
+Specialized contracts live in `PROFESSIONAL-SITUATION-CONTENT.md`.
+
+### SituationKernelDefinition
+
+Owns professional goal, archetype, invariant dilemma, 2–4 semantic approach intents, outcome pattern and stage limits.
+
+### SituationContextFrameDefinition
+
+Binds kernel to a provider/source, stage, era, technology selectors, participant role slots, access assumptions and provider contract.
+
+### SituationPressurePackageDefinition
+
+Adds at most two visible causes that materially change approach availability, forecast, stakes, compromise or recovery.
+
+### SituationConsequenceBridgeDefinition
+
+Maps semantic Challenge outcome classes to typed provider proposals, episode facts, follow-ups and recovery. It cannot apply effects directly.
+
+### SituationPresentationPackDefinition
+
+Owns localization, vocabulary, accessibility and result copy only. Presentation changes cannot alter semantic signature.
+
+### SituationCompositionSetDefinition
+
+Declares explicit allowed components, compatibility constraints, exclusions, materialization budget and coverage targets. Full Cartesian expansion is forbidden.
+
+### CompiledProfessionalSituationDefinition
+
+Immutable runtime definition containing:
+
+- stable materialized ID/version;
+- component refs;
+- compiled Technical Situation template;
+- eligibility/provider contract;
+- semantic signature;
+- repetition/follow-up profile;
+- semantic snapshot/fingerprint.
+
+Runtime receives compiled definitions only.
+
+## 7. Project definitions
 
 ### ProjectArchetypeDefinition
 
@@ -125,7 +177,7 @@ Core derives professional interpretation from provider outcome tags. Content nev
 - three base qualities;
 - simple uncertainty/debt/risk;
 - compact outcomes/releases;
-- UI copy.
+- optional compiled professional-situation selectors.
 
 ### WorkPackageTemplateDefinition
 
@@ -134,85 +186,31 @@ Core derives professional interpretation from provider outcome tags. Content nev
 - challenge/work/uncertainty bands;
 - relevant skills and technology constraints;
 - compact outcome classes;
-- optional meaningful decision hook;
+- optional meaningful compiled-situation hook;
 - anti-repeat key.
 
-Not required in MVP:
+Not required in MVP: component graph, detailed participant plan, debt/defect ledger, rollout/support policy or package dependency graph.
 
-- component/scope graph;
-- participant plan;
-- detailed debt/defect ledgers;
-- rollout/support policies;
-- package dependency graph.
+## 8. Technology ownership
 
-### Quality/outcome
+- Historical Technology Catalog owns source-backed global chronology/support/compatibility.
+- City/Era owns explicitly fictional local diffusion.
+- Equipment/School/NPC/Economy/Employment own practical access.
+- Technology Context Engine projects immutable context.
+- Learning/Project/Career own outcomes.
+- Progression owns familiarity/evidence.
 
-Base qualities: functional, usability, maintainability. Situational dimensions only with a current decision.
+Content cannot buy/install equipment, change access, change professional state, calculate project outcome or create career offer.
 
-Outcomes include completed, assisted, partial, failure-with-recovery, early-with-limitation and delayed as needed.
-
-## 6. Technology content ownership
-
-### Historical Technology Catalog
-
-Owns source-backed global chronology, support and compatibility evidence.
-
-### City/Era/local content
-
-Owns explicitly fictional local diffusion and institutions/channels.
-
-### Runtime owners
-
-Equipment/School/NPC/Economy/Employment own practical access. Technology Context Engine projects immutable context. Learning/Project/Career own outcomes. Progression owns familiarity/evidence.
-
-Content cannot directly:
-
-- buy/install equipment;
-- change access owner state;
-- change familiarity/mastery/grade;
-- change Work Package/project outcome;
-- create career offer/hire;
-- mutate save.
-
-## 7. Technology content tiers
+## 9. Content tiers and version bands
 
 - Tier A: persistent identity/familiarity and meaningful decisions.
 - Tier B: identity with shared family mechanics and limited unique content.
 - Tier C: context/tag/requirement without standalone progression.
 
-Libraries/packages/tools default to Tier C. Promotion to Tier A/B needs current gameplay justification.
+Libraries/packages/tools default to Tier C.
 
-## 8. Version-band policy
-
-Band exists only for meaningful change in current gameplay:
-
-- paradigm/API;
-- compatibility;
-- tooling/ecosystem;
-- platform/deployment;
-- support/maintenance;
-- market/project opportunity;
-- learning/migration burden.
-
-No semver/patch mirroring or runtime package solver.
-
-## 9. Historical/source metadata
-
-Every historical fact records:
-
-- source refs;
-- source class;
-- date precision;
-- observed period where relevant;
-- geography/platform/population/methodology;
-- supported claims;
-- limitations;
-- confidence;
-- observed versus inferred fields.
-
-Official sources preferred for release/standard/support/compatibility. Surveys, repository data, labor data and expert radars remain scoped to their claim class.
-
-Broad/mainstream ecosystem/adoption claims require source triangulation or explicit estimate/hypothesis.
+Technology band exists only for meaningful gameplay change in paradigm/API, compatibility, tooling/ecosystem, platform/deployment, support, market opportunity or learning/migration burden. No semver mirroring or runtime package solver.
 
 ## 10. Stable IDs
 
@@ -234,14 +232,22 @@ core.project-archetype.*
 core.work-package.*
 core.quality.*
 core.event.*
+core.situation-kernel.*
+core.situation-context.*
+core.situation-pressure.*
+core.situation-outcome-pattern.*
+core.situation-bridge.*
+core.situation-presentation.*
+core.situation-composition-set.*
+core.situation-coverage-target.*
 source.technology.*
 ```
 
-IDs never derive from display names and are never reused. Historical records preserve semantic snapshots/tombstones.
+IDs never derive from display names and are never reused. Generated professional-situation IDs depend only on stable component IDs/versions and compiler rules version, never file/object/display order.
 
 ## 11. Definition metadata
 
-Every relevant definition includes:
+Relevant definition includes only applicable fields:
 
 - version;
 - author/review status;
@@ -249,12 +255,20 @@ Every relevant definition includes:
 - era/availability;
 - source refs where historical;
 - compatibility/fingerprint metadata;
-- UI tier/profile;
-- migration/tombstone metadata when needed.
+- UI/profile tier;
+- migration/tombstone metadata.
 
 Do not require irrelevant metadata for simple fictional content.
 
-## 12. Semantic validation
+## 12. Historical/source metadata
+
+Every historical fact records source refs/class, date precision, observed scope/methodology, supported claims, limitations, confidence and observed versus inferred fields.
+
+Official sources are preferred for release/standard/support/compatibility. Surveys, repositories, labor data and expert radars remain scoped to their claim class. Broad adoption/ecosystem claims require triangulation or explicit estimate.
+
+Professional dilemmas that do not depend on a factual historical claim may use design provenance rather than fabricated source refs.
+
+## 13. Semantic validation
 
 ### Progression/learning
 
@@ -263,128 +277,142 @@ Do not require irrelevant metadata for simple fictional content.
 - assisted/partial/failure semantics preserved;
 - passive availability creates no familiarity/evidence;
 - provider mapping stable;
-- normal UI bounded.
+- Normal UI bounded.
+
+### Professional situations
+
+Reject when:
+
+- kernel lacks concrete dilemma;
+- ordinary situation has fewer than 2 or more than 4 approaches;
+- approach intents are semantic duplicates or universally dominated;
+- pressure does not change choice/outcome/recovery;
+- context violates provider/stage/era/technology constraints;
+- bridge targets effect outside provider ownership;
+- hiring/interview mints production evidence;
+- assisted/takeover maps to independent autonomy;
+- partial/failure lacks required recovery;
+- presentation changes semantics;
+- composition budget exceeded;
+- stable ID depends on order/text;
+- runtime generation/network/LLM is required.
 
 ### Technology
 
 - category/family/tier valid;
-- Tier A has a current consumer;
-- prerequisite/platform chronology valid;
-- version band justified and ordered;
+- prerequisites and version bands ordered;
 - support/adoption/ecosystem/local access separate;
-- ecosystem dimensions individually sourced or marked inferred;
-- local fictional basis explicit;
-- practical fallback exists;
-- compatibility/migration graph valid;
+- fictional local basis explicit;
+- fallback exists;
 - no universal score.
 
 ### Projects
 
-- clear goal and aggregated meaningful package;
+- clear goal and aggregated package;
 - reachable outcome/recovery;
 - no direct professional mutation;
-- active profile only;
-- base quality valid;
 - deterministic uncertainty;
 - no duplicate Product/Company/Career/Technology state.
 
-## 13. Casual-complexity lint
+## 14. Casual-complexity lint
 
 Blocks/warns:
 
 - too many visible skills/technology traits;
 - technology with no current decision;
 - every library/package as progression;
-- semver/patch content explosion;
 - required tech-tree navigation;
-- universal score/winner label;
-- exact popularity/benchmark numbers in Normal UI;
-- more than 2–5 packages or three base qualities without review;
-- package as daily ticket;
+- one universal score;
+- exact popularity/chance/reward numbers in Normal UI;
+- project package as daily ticket;
+- professional situation as syntax/API quiz;
+- presentation-only variants counted as new gameplay;
+- composition set with unbounded Cartesian expansion;
 - multiple unrelated blocking decisions;
-- unimplemented future-system fields;
-- source details required for ordinary choice.
+- source/coverage details required for ordinary choice;
+- future-system fields without current gameplay.
 
-## 14. Balance/reachability lint
+## 15. Balance/reachability/coverage lint
 
 - all declared outcomes reachable;
 - failure/blocked state has recovery;
-- low-income/no-home-device has technology route;
+- low-access path exists;
 - newest/mainstream not universally dominant;
 - legacy has value and exit route;
-- migration/transfer/easy switching cannot farm progression;
 - hidden context/outcome does not reroll;
-- one decision has distinguishable trade-offs;
+- professional approaches have distinguishable trade-offs;
+- no globally dominant approach in declared fixtures;
+- duplicate semantic signatures reviewed;
+- required coverage tuples satisfied;
+- presentation-only duplicate cannot satisfy semantic coverage;
+- materialization inside budget;
+- no never-eligible corpus explosion;
 - monthly report can explain result;
 - committed history remains readable after content change.
 
-## 15. Runtime registry
+## 16. Runtime registries
 
 MVP runtime receives only active:
 
-- skill/technology/family definitions;
-- one band/platform/toolchain/ecosystem/local context;
-- learning/project definitions;
-- event/era/access data;
-- source snapshots and fingerprints needed by active content.
+- skill/technology/context definitions;
+- learning/project/event definitions;
+- one compiled professional-situation variant;
+- era/access data;
+- source snapshots/fingerprints needed by active content.
 
-No empty Extended registries or live internet metrics.
+No authoring kernels, coverage report, duplicate cluster, empty Extended registry, live internet metrics or runtime generator is required by gameplay runtime.
 
-## 16. Fingerprints
+Development Content Studio may load authoring components and compiler diagnostics in a separate development-only surface.
 
-Separate semantic fingerprints:
+## 17. Fingerprints and snapshots
 
-- source registry;
-- technology identity/bands;
-- compatibility/migration;
-- ecosystem evidence/profile;
-- local availability;
-- provider context;
-- project/progression content;
-- localization-only.
+Separate semantic fingerprints cover source registry, technology context, project/progression content, professional-situation components, materialized variant semantics, presentation/localization and provider contract.
 
-Cosmetic localization does not invalidate active outcome; semantic context change may.
+Cosmetic localization does not alter semantic signature. Active visible situation stores semantic/presentation/provider snapshots to prevent reroll or meaning changes after update.
 
-## 17. Modding
+## 18. Modding
 
-Data-only mods may add content supported by current API.
+Data-only mods may add supported definitions and focused composition sets.
 
 Forbidden:
 
 - executable scripts/raw HTML/network fetch;
-- raw state patches;
-- direct professional/project/career/access mutations;
-- unbounded ticket/version/package content;
-- fake historical facts without source/fictional marking;
-- post-2026 invented real-product history;
-- missing migration/tombstone policy.
+- runtime LLM calls;
+- raw state patches or direct domain mutations;
+- unbounded ticket/version/package/situation expansion;
+- fake historical facts;
+- missing stable IDs/migration/tombstones;
+- presentation-only spam declared as semantic variety;
+- runtime generation required for compatibility.
 
-## 18. Content Studio
+## 19. Content Studio
 
-Initial previews:
+Initial professional-situation previews:
 
-- technology context card and 3–5 traits;
-- access fallback;
-- technology choice and disabled reason;
-- compatibility/support warning;
-- project/package/quality/outcome;
-- professional explanation;
-- source/confidence details;
-- localization/a11y;
-- deterministic fixture replay.
+- corpus overview;
+- kernel/dilemma/approach card;
+- context-pressure compatibility matrix/list;
+- materialized player preview;
+- provider bridge/result/follow-up;
+- semantic signature and duplicate cluster;
+- coverage/repetition report;
+- deterministic fixture;
+- RU long-text/accessibility.
 
-Full graph editors are deferred.
+Technology/project previews remain available. Full graph editors and automatic production generation are deferred.
 
-## 19. Forbidden drift
+## 20. Forbidden drift
 
 - schema completeness before gameplay;
 - executable content;
 - direct state/evidence effects;
-- one quality or technology score;
-- every library as progression;
+- universal quality/technology/content score;
 - content IDs from names;
-- project/ticket/version explosion;
+- project/ticket/version/situation explosion;
+- runtime free composition or LLM authority;
+- duplicated Event/Director/Challenge logic in content compiler;
+- embeddings as authoritative eligibility/duplicate decision;
 - dynamic web authority;
-- canonical historical claims without provenance;
+- historical claims without provenance;
 - global release treated as local/practical access;
 - catalog update rewriting committed history.
