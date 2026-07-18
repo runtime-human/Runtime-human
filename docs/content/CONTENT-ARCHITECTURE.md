@@ -1,3 +1,12 @@
+---
+title: "Архитектура контента"
+type: content
+status: draft
+canon: true
+depends_on: [ADR-013, ADR-014, ADR-015, ADR-019, ADR-020]
+updated: 2026-07-18
+---
+
 # Архитектура контента
 
 Нормативные решения:

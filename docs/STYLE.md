@@ -1,3 +1,12 @@
+---
+title: "Documentation metadata convention"
+type: index
+status: draft
+canon: true
+depends_on: [ADR-013, ADR-015]
+updated: 2026-07-18
+---
+
 # Documentation metadata convention
 
 Every `docs/**/*.md` file starts with YAML front-matter:

@@ -1,3 +1,12 @@
+---
+title: "Professional Progression & Evidence Engine"
+type: engine
+status: draft
+canon: true
+depends_on: [ADR-013, ADR-015]
+updated: 2026-07-18
+---
+
 # Professional Progression & Evidence Engine
 
 ## Статус

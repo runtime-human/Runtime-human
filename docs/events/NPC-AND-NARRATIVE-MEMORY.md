@@ -1,3 +1,12 @@
+---
+title: "NPC и narrative memory"
+type: events
+status: draft
+canon: true
+depends_on: [ADR-013, ADR-017]
+updated: 2026-07-18
+---
+
 # NPC и narrative memory
 
 Связанные спецификации:

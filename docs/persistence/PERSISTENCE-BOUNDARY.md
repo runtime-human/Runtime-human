@@ -1,3 +1,12 @@
+---
+title: "Граница persistence"
+type: engine
+status: draft
+canon: true
+depends_on: [ADR-004, ADR-013, ADR-014, ADR-015]
+updated: 2026-07-18
+---
+
 # Граница persistence
 
 Нормативные решения:

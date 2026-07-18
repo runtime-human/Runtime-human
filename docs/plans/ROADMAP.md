@@ -1,3 +1,12 @@
+---
+title: "Roadmap"
+type: plan
+status: draft
+canon: true
+depends_on: [ADR-015, ADR-016, ADR-017, ADR-018, ADR-019, ADR-020]
+updated: 2026-07-18
+---
+
 # Roadmap
 
 Нормативные источники:

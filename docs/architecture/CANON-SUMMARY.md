@@ -1,3 +1,11 @@
+---
+title: "Canon summary"
+type: architecture
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Canon summary
 
 - One fixed fictional international metropolis.

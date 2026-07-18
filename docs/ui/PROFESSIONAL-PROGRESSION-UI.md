@@ -1,3 +1,12 @@
+---
+title: "Professional Progression UI"
+type: ui
+status: draft
+canon: true
+depends_on: [ADR-013, ADR-015]
+updated: 2026-07-18
+---
+
 # Professional Progression UI
 
 ## Статус

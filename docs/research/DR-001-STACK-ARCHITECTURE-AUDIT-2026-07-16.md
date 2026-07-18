@@ -1,3 +1,12 @@
+---
+title: "DR-001 — Аудит стека и архитектуры Runtime Human"
+type: research
+status: draft
+canon: false
+depends_on: [ADR-004, ADR-005, ADR-006, ADR-007, ADR-008, ADR-009, ADR-010, ADR-011, ADR-012]
+updated: 2026-07-18
+---
+
 # DR-001 — Аудит стека и архитектуры Runtime Human
 
 - **Дата:** 2026-07-16

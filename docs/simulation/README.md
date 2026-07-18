@@ -1,3 +1,11 @@
+---
+title: "Simulation documents"
+type: simulation
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Simulation documents
 
 - [Month Simulation](MONTH-SIMULATION.md)

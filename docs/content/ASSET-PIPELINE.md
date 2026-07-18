@@ -1,3 +1,11 @@
+---
+title: "Asset pipeline"
+type: content
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Asset pipeline
 
 ## Asset manifest

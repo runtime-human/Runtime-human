@@ -1,3 +1,12 @@
+---
+title: "Historical Technology, Tooling & Ecosystem Engine"
+type: engine
+status: draft
+canon: true
+depends_on: [ADR-019]
+updated: 2026-07-18
+---
+
 # Historical Technology, Tooling & Ecosystem Engine
 
 Нормативные источники:

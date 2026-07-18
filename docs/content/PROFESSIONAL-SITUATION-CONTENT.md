@@ -1,3 +1,12 @@
+---
+title: "Professional Situation Content"
+type: content
+status: draft
+canon: true
+depends_on: [ADR-020]
+updated: 2026-07-18
+---
+
 # Professional Situation Content
 
 ## Статус

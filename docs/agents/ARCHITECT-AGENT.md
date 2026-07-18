@@ -1,3 +1,11 @@
+---
+title: "Architect Agent"
+type: agent
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Architect Agent
 
 ## Ответственность

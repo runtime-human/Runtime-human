@@ -1,3 +1,11 @@
+---
+title: "Backup и restore"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Backup и restore
 
 ## Цели

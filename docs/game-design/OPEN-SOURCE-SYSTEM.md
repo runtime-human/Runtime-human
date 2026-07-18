@@ -1,3 +1,11 @@
+---
+title: "Open-source система"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Open-source система
 
 Связанные спецификации:

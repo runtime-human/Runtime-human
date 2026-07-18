@@ -1,3 +1,12 @@
+---
+title: "Programmer-First Design"
+type: engine
+status: draft
+canon: true
+depends_on: [ADR-015]
+updated: 2026-07-18
+---
+
 # Programmer-First Design
 
 ## Статус

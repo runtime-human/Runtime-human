@@ -1,3 +1,12 @@
+---
+title: "Event Engine"
+type: events
+status: draft
+canon: true
+depends_on: [ADR-009, ADR-020]
+updated: 2026-07-18
+---
+
 # Event Engine
 
 Нормативные решения:

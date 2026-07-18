@@ -1,3 +1,12 @@
+---
+title: "ADR-015 — Casual-first abstraction и бюджет сложности"
+type: adr
+status: accepted
+canon: true
+depends_on: [ADR-005, ADR-009, ADR-012, ADR-013, ADR-014]
+updated: 2026-07-18
+---
+
 # ADR-015 — Casual-first abstraction и бюджет сложности
 
 - **Статус:** Accepted

@@ -1,3 +1,12 @@
+---
+title: "Границы модулей"
+type: architecture
+status: draft
+canon: true
+depends_on: [ADR-004, ADR-013, ADR-014, ADR-018, ADR-019]
+updated: 2026-07-18
+---
+
 # Границы модулей
 
 Нормативные решения:

@@ -1,3 +1,12 @@
+---
+title: "Decision status"
+type: architecture
+status: draft
+canon: true
+depends_on: [ADR-001, ADR-002, ADR-003, ADR-004, ADR-005, ADR-006, ADR-007, ADR-008, ADR-009, ADR-010]
+updated: 2026-07-18
+---
+
 # Decision status
 
 ## Accepted

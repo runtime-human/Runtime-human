@@ -1,3 +1,12 @@
+---
+title: "SD-005 — Programmer Career, Hiring & Labor Market Engine"
+type: research
+status: draft
+canon: false
+depends_on: [ADR-018]
+updated: 2026-07-18
+---
+
 # SD-005 — Programmer Career, Hiring & Labor Market Engine
 
 - **Дата:** 2026-07-18

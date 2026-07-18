@@ -1,3 +1,11 @@
+---
+title: "ADR-007: Determinism Manifest"
+type: adr
+status: accepted
+canon: true
+updated: 2026-07-18
+---
+
 # ADR-007: Determinism Manifest
 
 - **Статус:** Accepted

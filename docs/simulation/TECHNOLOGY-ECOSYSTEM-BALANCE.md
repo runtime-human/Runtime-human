@@ -1,3 +1,12 @@
+---
+title: "Technology & Ecosystem Balance"
+type: simulation
+status: draft
+canon: true
+depends_on: [ADR-019]
+updated: 2026-07-18
+---
+
 # Technology & Ecosystem Balance
 
 Нормативные источники:

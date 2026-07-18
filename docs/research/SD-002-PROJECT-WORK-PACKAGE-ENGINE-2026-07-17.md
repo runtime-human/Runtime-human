@@ -1,3 +1,12 @@
+---
+title: "SD-002 — Project & Technical Work Package Engine"
+type: research
+status: draft
+canon: false
+depends_on: [ADR-014]
+updated: 2026-07-18
+---
+
 # SD-002 — Project & Technical Work Package Engine
 
 - **Дата:** 2026-07-17

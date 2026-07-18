@@ -1,3 +1,12 @@
+---
+title: "Programmer Career Content"
+type: content
+status: draft
+canon: true
+depends_on: [ADR-018]
+updated: 2026-07-18
+---
+
 # Programmer Career Content
 
 Нормативные источники:

@@ -1,3 +1,11 @@
+---
+title: "Motion и audio"
+type: ui
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Motion и audio
 
 ## Motion principles

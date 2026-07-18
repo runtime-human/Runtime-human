@@ -1,3 +1,11 @@
+---
+title: "Отношения и здоровье"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Отношения и здоровье
 
 ## Назначение

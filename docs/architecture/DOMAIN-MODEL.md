@@ -1,3 +1,12 @@
+---
+title: "Доменная модель Runtime Human"
+type: architecture
+status: draft
+canon: true
+depends_on: [ADR-010, ADR-013, ADR-014, ADR-015, ADR-018]
+updated: 2026-07-18
+---
+
 # Доменная модель Runtime Human
 
 Нормативные решения:

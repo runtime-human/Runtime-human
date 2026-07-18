@@ -1,3 +1,12 @@
+---
+title: "Documentation review checklist"
+type: plan
+status: draft
+canon: true
+depends_on: [ADR-001, ADR-004]
+updated: 2026-07-18
+---
+
 # Documentation review checklist
 
 ## Канон

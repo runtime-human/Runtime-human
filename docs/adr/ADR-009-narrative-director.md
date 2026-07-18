@@ -1,3 +1,11 @@
+---
+title: "ADR-009: Narrative Director"
+type: adr
+status: accepted
+canon: true
+updated: 2026-07-18
+---
+
 # ADR-009: Narrative Director
 
 - **Статус:** Accepted

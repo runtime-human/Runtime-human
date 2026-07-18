@@ -1,3 +1,11 @@
+---
+title: "UI documents"
+type: ui
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # UI documents
 
 - [UI Architecture](UI-ARCHITECTURE.md)

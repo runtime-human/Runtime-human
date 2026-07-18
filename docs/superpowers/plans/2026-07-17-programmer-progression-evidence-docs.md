@@ -1,3 +1,12 @@
+---
+title: "Programmer Progression & Evidence Documentation Implementation Plan"
+type: plan
+status: completed
+canon: true
+depends_on: [ADR-013]
+updated: 2026-07-18
+---
+
 # Programmer Progression & Evidence Documentation Implementation Plan
 
 > **Status:** completed on branch `agent/sd001-progression-evidence`; published as draft PR #4.

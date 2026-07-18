@@ -1,3 +1,12 @@
+---
+title: "Programmer Learning, Practice, Mentorship & Access Engine"
+type: engine
+status: draft
+canon: true
+depends_on: [ADR-015, ADR-016, ADR-017]
+updated: 2026-07-18
+---
+
 # Programmer Learning, Practice, Mentorship & Access Engine
 
 ## Статус

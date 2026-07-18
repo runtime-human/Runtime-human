@@ -1,3 +1,12 @@
+---
+title: "Потоки данных"
+type: architecture
+status: draft
+canon: true
+depends_on: [ADR-005, ADR-018]
+updated: 2026-07-18
+---
+
 # Потоки данных
 
 Нормативные решения:

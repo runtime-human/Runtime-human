@@ -1,3 +1,12 @@
+---
+title: "Город и исторические эпохи"
+type: engine
+status: draft
+canon: true
+depends_on: [ADR-003, ADR-019]
+updated: 2026-07-18
+---
+
 # Город и исторические эпохи
 
 Нормативные источники:

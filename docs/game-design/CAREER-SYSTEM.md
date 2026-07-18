@@ -1,3 +1,12 @@
+---
+title: "Карьерная система"
+type: engine
+status: draft
+canon: true
+depends_on: [ADR-018]
+updated: 2026-07-18
+---
+
 # Карьерная система
 
 Нормативные источники:

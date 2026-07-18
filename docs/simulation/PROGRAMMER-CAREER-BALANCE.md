@@ -1,3 +1,12 @@
+---
+title: "Programmer Career Balance"
+type: simulation
+status: draft
+canon: true
+depends_on: [ADR-018]
+updated: 2026-07-18
+---
+
 # Programmer Career Balance
 
 Нормативные источники:

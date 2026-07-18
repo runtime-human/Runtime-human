@@ -1,3 +1,12 @@
+---
+title: "Professional Situation Content Composition — Implementation Plan"
+type: plan
+status: draft
+canon: true
+depends_on: [ADR-016, ADR-020]
+updated: 2026-07-18
+---
+
 # Professional Situation Content Composition — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. Steps use checkbox syntax for tracking.

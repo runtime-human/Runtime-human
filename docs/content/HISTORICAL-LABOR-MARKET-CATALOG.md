@@ -1,3 +1,12 @@
+---
+title: "Historical Labor Market Catalog"
+type: content
+status: draft
+canon: true
+depends_on: [ADR-018]
+updated: 2026-07-18
+---
+
 # Historical Labor Market Catalog
 
 Связанные документы:

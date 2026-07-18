@@ -1,3 +1,12 @@
+---
+title: "Historical Timeline Source Policy"
+type: source
+status: draft
+canon: false
+depends_on: [ADR-001, ADR-003]
+updated: 2026-07-18
+---
+
 # Historical Timeline Source Policy
 
 ## Назначение

@@ -1,3 +1,12 @@
+---
+title: "Professional Challenge Engine — Implementation Plan"
+type: plan
+status: draft
+canon: true
+depends_on: [ADR-016]
+updated: 2026-07-18
+---
+
 # Professional Challenge Engine — Implementation Plan
 
 ## Статус

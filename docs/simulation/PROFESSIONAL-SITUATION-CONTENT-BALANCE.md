@@ -1,3 +1,12 @@
+---
+title: "Professional Situation Content — Balance, Coverage & Variety"
+type: simulation
+status: draft
+canon: true
+depends_on: [ADR-020]
+updated: 2026-07-18
+---
+
 # Professional Situation Content — Balance, Coverage & Variety
 
 ## Статус

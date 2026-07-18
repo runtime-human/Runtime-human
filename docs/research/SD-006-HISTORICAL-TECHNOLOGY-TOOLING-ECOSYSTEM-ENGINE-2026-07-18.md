@@ -1,3 +1,12 @@
+---
+title: "SD-006 — Historical Technology, Tooling & Ecosystem Engine"
+type: research
+status: draft
+canon: false
+depends_on: [ADR-019]
+updated: 2026-07-18
+---
+
 # SD-006 — Historical Technology, Tooling & Ecosystem Engine
 
 - **Дата:** 2026-07-18

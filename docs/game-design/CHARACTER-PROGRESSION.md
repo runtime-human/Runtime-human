@@ -1,3 +1,12 @@
+---
+title: "Прогрессия персонажа"
+type: engine
+status: draft
+canon: true
+depends_on: [ADR-013]
+updated: 2026-07-18
+---
+
 # Прогрессия персонажа
 
 Нормативные спецификации:

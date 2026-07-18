@@ -1,3 +1,12 @@
+---
+title: "Проекты и продукты"
+type: engine
+status: draft
+canon: true
+depends_on: [ADR-013, ADR-014]
+updated: 2026-07-18
+---
+
 # Проекты и продукты
 
 Нормативная техническая модель: [Project & Technical Work Package Engine](PROJECT-WORK-PACKAGE-ENGINE.md).
