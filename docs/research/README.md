@@ -22,6 +22,7 @@ Research/system-design становится каноном только посл
 
 1. [SD-004 — Programmer Learning, Practice, Mentorship & Access Engine](SD-004-PROGRAMMER-LEARNING-PRACTICE-MENTORSHIP-ACCESS-ENGINE-2026-07-18.md)
 2. [SD-005 — Programmer Career, Hiring & Labor Market Engine](SD-005-PROGRAMMER-CAREER-HIRING-LABOR-MARKET-ENGINE-2026-07-18.md)
+3. [SD-006 — Historical Technology, Tooling & Ecosystem Engine](SD-006-HISTORICAL-TECHNOLOGY-TOOLING-ECOSYSTEM-ENGINE-2026-07-18.md)
 
 ## Нормативные результаты
 
@@ -91,6 +92,19 @@ Research/system-design становится каноном только посл
 - layoff/closure do not erase grade/history;
 - labor market is compact and provenance-backed by era/region/industry/role family.
 
+### SD-006 → ADR-019
+
+- global technology chronology, fictional local diffusion and practical access remain distinct;
+- technology identity, family, version band, platform/toolchain, ecosystem, familiarity, demand and support remain distinct;
+- lifecycle uses independent release/adoption/support/ecosystem/local/installed-base axes;
+- no universal technology/popularity/ecosystem score or latest-tech upgrade path;
+- version bands represent gameplay-relevant compatibility/support/tooling shifts rather than semver;
+- ecosystem is a set of affordances and risks, not a fixed multiplier;
+- Learning, Project and Career consume one immutable technology context but retain outcome ownership;
+- adoption evidence preserves source scope and methodology;
+- local city diffusion is explicitly fictional and low-access starts retain fallback routes;
+- committed project/history snapshots survive catalog changes.
+
 Normative specs:
 
 - `docs/game-design/CASUAL-SIMULATION-DESIGN.md`;
@@ -99,14 +113,19 @@ Normative specs:
 - `docs/game-design/PROGRAMMER-LEARNING-ENGINE.md`;
 - `docs/game-design/PROJECT-WORK-PACKAGE-ENGINE.md`;
 - `docs/game-design/PROGRAMMER-CAREER-ENGINE.md`;
+- `docs/game-design/TECHNOLOGY-ECOSYSTEM-ENGINE.md`;
 - `docs/ui/PROFESSIONAL-CHALLENGE-UI.md`;
 - `docs/ui/PROGRAMMER-LEARNING-UI.md`;
 - `docs/ui/PROGRAMMER-CAREER-UI.md`;
+- `docs/ui/TECHNOLOGY-ECOSYSTEM-UI.md`;
 - `docs/content/PROGRAMMER-LEARNING-CONTENT.md`;
 - `docs/content/PROGRAMMER-CAREER-CONTENT.md`;
 - `docs/content/HISTORICAL-LABOR-MARKET-CATALOG.md`;
+- `docs/content/HISTORICAL-TECHNOLOGY-CATALOG.md`;
+- `docs/content/TECHNOLOGY-ECOSYSTEM-CONTENT.md`;
 - `docs/simulation/PROGRAMMER-LEARNING-BALANCE.md`;
-- `docs/simulation/PROGRAMMER-CAREER-BALANCE.md`.
+- `docs/simulation/PROGRAMMER-CAREER-BALANCE.md`;
+- `docs/simulation/TECHNOLOGY-ECOSYSTEM-BALANCE.md`.
 
 ## Правила
 
