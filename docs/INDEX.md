@@ -40,6 +40,16 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [Professional Challenge Implementation Plan](plans/PROFESSIONAL-CHALLENGE-IMPLEMENTATION-PLAN.md)
 - [SD-003 analysis](research/SD-003-PROFESSIONAL-CHALLENGE-CAPABILITY-ENGINE-2026-07-17.md)
 
+## Programmer learning and access
+
+- [ADR-017 — Programmer Learning & Access Model](adr/ADR-017-authoritative-programmer-learning-access-model.md)
+- [Programmer Learning Engine](game-design/PROGRAMMER-LEARNING-ENGINE.md)
+- [Programmer Learning UI](ui/PROGRAMMER-LEARNING-UI.md)
+- [Programmer Learning Balance](simulation/PROGRAMMER-LEARNING-BALANCE.md)
+- [Programmer Learning Content](content/PROGRAMMER-LEARNING-CONTENT.md)
+- [Programmer Learning Implementation Plan](superpowers/plans/2026-07-18-programmer-learning-engine.md)
+- [SD-004 analysis](research/SD-004-PROGRAMMER-LEARNING-PRACTICE-MENTORSHIP-ACCESS-ENGINE-2026-07-18.md)
+
 ## Projects
 
 - [ADR-014 — Project & Work Package Model](adr/ADR-014-authoritative-project-work-package-model.md)
@@ -102,6 +112,7 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [Backup/Restore](persistence/BACKUP-AND-RESTORE.md)
 - [Safe Mode](persistence/SAFE-MODE.md)
 - [Content Architecture](content/CONTENT-ARCHITECTURE.md)
+- [Programmer Learning Content](content/PROGRAMMER-LEARNING-CONTENT.md)
 - [Historical Catalog](content/HISTORICAL-CATALOG.md)
 - [Modding](content/MODDING.md)
 
