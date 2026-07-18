@@ -17,6 +17,7 @@
 - [ADR-013 — Авторитетная модель профессиональной прогрессии и evidence](ADR-013-authoritative-professional-progression-evidence.md)
 - [ADR-014 — Авторитетная модель Project & Work Package](ADR-014-authoritative-project-work-package-model.md)
 - [ADR-015 — Casual-first abstraction и бюджет сложности](ADR-015-casual-first-abstraction-and-complexity-budget.md)
+- [ADR-016 — Авторитетная модель профессиональных ситуаций и подходов](ADR-016-authoritative-professional-challenge-model.md)
 
 ## Decision sequence
 
@@ -24,8 +25,9 @@
 - ADR-013: SD-001 professional progression boundary.
 - ADR-014: SD-002 project/work-package boundary.
 - ADR-015: DC-001 casual-first correction; architecture seams remain, but MVP/roadmap implement only gameplay-proven complexity.
+- ADR-016: SD-003 professional challenge boundary; concrete situation/approach/outcome bridges providers, projects and progression.
 
-ADR-015 constrains implementation scope of ADR-013/014 without отмены их ownership, determinism and compatibility guarantees.
+ADR-015 constrains implementation scope of ADR-013/014/016 without отмены их ownership, determinism and compatibility guarantees.
 
 ## Proposed
 
@@ -49,3 +51,4 @@ ADR-015 constrains implementation scope of ADR-013/014 without отмены их
 - [SD-001 — Programmer Progression & Evidence Engine](../research/SD-001-PROGRAMMER-PROGRESSION-EVIDENCE-ENGINE-2026-07-17.md)
 - [SD-002 — Project & Work Package Engine](../research/SD-002-PROJECT-WORK-PACKAGE-ENGINE-2026-07-17.md)
 - [DC-001 — Casual-first complexity correction](../research/DC-001-CASUAL-FIRST-COMPLEXITY-CORRECTION-2026-07-17.md)
+- [SD-003 — Professional Challenge & Capability Engine](../research/SD-003-PROFESSIONAL-CHALLENGE-CAPABILITY-ENGINE-2026-07-17.md)

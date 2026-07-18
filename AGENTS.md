@@ -43,10 +43,12 @@ Normative core:
 - [`CASUAL-SIMULATION-DESIGN.md`](docs/game-design/CASUAL-SIMULATION-DESIGN.md)
 - [`PROGRAMMER-FIRST-DESIGN.md`](docs/game-design/PROGRAMMER-FIRST-DESIGN.md)
 - [`PROFESSIONAL-PROGRESSION-ENGINE.md`](docs/game-design/PROFESSIONAL-PROGRESSION-ENGINE.md)
+- [`PROFESSIONAL-CHALLENGE-ENGINE.md`](docs/game-design/PROFESSIONAL-CHALLENGE-ENGINE.md)
 - [`PROJECT-WORK-PACKAGE-ENGINE.md`](docs/game-design/PROJECT-WORK-PACKAGE-ENGINE.md)
 - [`ADR-013`](docs/adr/ADR-013-authoritative-professional-progression-evidence.md)
 - [`ADR-014`](docs/adr/ADR-014-authoritative-project-work-package-model.md)
 - [`ADR-015`](docs/adr/ADR-015-casual-first-abstraction-and-complexity-budget.md)
+- [`ADR-016`](docs/adr/ADR-016-authoritative-professional-challenge-model.md)
 
 ## Casual-first invariants
 
@@ -76,6 +78,22 @@ Normative core:
 - Transfer needs target practice and creates no production evidence.
 - Grade award authoritative; readiness/specialization rebuildable.
 - Short break can reduce fluency/market readiness, not erase mastery/grade.
+
+## Professional challenge invariants
+
+- Professional gameplay uses concrete `TechnicalSituation`, not a generic skill/progress button.
+- Ordinary challenge exposes 2–4 meaningfully different approaches.
+- No approach is globally optimal across unrelated contexts.
+- Skills/technology may unlock or improve approaches, but do not expose a single correct answer.
+- Challenge Engine resolves approach deterministically and returns proposals/reason codes only.
+- Provider owns context and authoritative domain application.
+- Progression Core owns capability milestone, learning, evidence and grade effects.
+- Project Engine owns Work Package/quality/debt/issue/release effects.
+- Challenge failure may create learning/recovery but never false full delivery.
+- Visible situation/options/complication do not reroll after reload.
+- Content cannot mutate save, project, skills or grade directly.
+- No embedded IDE, syntax quiz, hidden correct-combination table or LLM judge in baseline.
+- Challenge breadth/complexity expands only after repetition/dominance/playtest evidence.
 
 ## Project invariants
 
@@ -140,8 +158,10 @@ pnpm verify:release
 
 MVP gameplay verification:
 
-- player goal/choice comprehension;
+- player goal/problem/choice comprehension;
 - 10–20 second ordinary decision target;
+- 2–4 approaches with understandable trade-offs;
+- no globally dominant approach in declared fixtures;
 - monthly causality;
 - bounded visible concepts;
 - no duplicate/reroll;

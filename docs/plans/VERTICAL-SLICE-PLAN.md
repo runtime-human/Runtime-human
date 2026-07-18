@@ -3,22 +3,26 @@
 Нормативные источники:
 
 - [ADR-015](../adr/ADR-015-casual-first-abstraction-and-complexity-budget.md);
+- [ADR-016](../adr/ADR-016-authoritative-professional-challenge-model.md);
 - [Casual Simulation Design](../game-design/CASUAL-SIMULATION-DESIGN.md);
 - [Programmer-First Design](../game-design/PROGRAMMER-FIRST-DESIGN.md);
 - [Professional Progression Engine](../game-design/PROFESSIONAL-PROGRESSION-ENGINE.md);
-- [Project & Work Package Engine](../game-design/PROJECT-WORK-PACKAGE-ENGINE.md).
+- [Professional Challenge Engine](../game-design/PROFESSIONAL-CHALLENGE-ENGINE.md);
+- [Project & Work Package Engine](../game-design/PROJECT-WORK-PACKAGE-ENGINE.md);
+- [Professional Challenge UI](../ui/PROFESSIONAL-CHALLENGE-UI.md).
 
 ## 1. Цель
 
 Создать минимальный интересный январь 1990 года:
 
 ```text
-маленький программный проект
-→ один понятный technical trade-off
-→ автоматический MonthRun
-→ правдоподобный project outcome
-→ понятное learning explanation
-→ безопасный restart
+маленький программный project
+→ concrete Technical Situation
+→ один понятный professional approach choice
+→ automatic MonthRun
+→ deterministic project outcome
+→ causal learning/capability explanation
+→ safe restart
 → желание перейти к февралю
 ```
 
@@ -26,36 +30,38 @@ Slice проверяет удовольствие и comprehension, а не по
 
 ## 2. Главная продуктовая гипотеза
 
-> Игрок без опыта программирования понимает цель и решение за несколько секунд, видит причинное последствие и хочет продолжить следующий месяц.
+> Игрок без опыта программирования понимает техническую проблему и различие подходов за несколько секунд, видит причинное последствие и хочет продолжить следующий месяц.
 
-Если игрок помнит только интерфейс, покупку, progress bar или технически корректное сохранение, slice не прошёл.
+Если игрок помнит только интерфейс, покупку, progress bar, скрытую «правильную кнопку» или технически корректное сохранение, slice не прошёл.
 
 ## 3. Player flow
 
 1. Создать 12-летнего персонажа.
 2. Начать в комнате родителей с одним background доступа к технике.
-3. Получить или увидеть путь к исторически допустимой beginner environment.
+3. Получить или увидеть путь к historically valid beginner environment.
 4. Выбрать простое обучение/focus.
-5. Начать маленький текстовый project.
-6. Увидеть цель и два крупных этапа.
-7. Увидеть простой forecast: вероятно в этом или следующем месяце.
+5. Начать маленький text project.
+6. Увидеть цель и два крупных Work Packages.
+7. Увидеть forecast: вероятно в этом или следующем месяце.
 8. Нажать `Следующий месяц`.
 9. Автоматически пройти школу и домашние обязательства.
-10. Продвинуть основной Work Package.
-11. Обнаружить проблему неправильного ввода.
-12. Принять один choice:
-    - исправить самостоятельно;
+10. Продвинуть `core-program`.
+11. Получить `diagnose` Technical Situation: неправильный ввод даёт непонятный результат.
+12. Понять две причины сложности: первый самостоятельный bug и planned release.
+13. Выбрать один approach:
+    - разобраться самостоятельно;
     - попросить помощь;
     - упростить первую версию;
     - перенести исправление на февраль.
-13. При blocking choice закрыть приложение и восстановить тот же outcome.
-14. Получить independent/assisted/partial/failure result.
-15. Увидеть, как изменился project.
-16. Увидеть, чему персонаж научился.
-17. Получить один понятный next step.
-18. Перезапустить приложение и загрузить идентичный committed result.
+14. При blocking choice закрыть приложение и восстановить те же situation/options/complication.
+15. Получить clean/compromise/partial/failure result.
+16. Project provider применяет outcome к `input-errors` Work Package.
+17. Provider создаёт один `ExperienceEpisode`.
+18. Progression показывает learning/capability без evidence bureaucracy.
+19. Получить один concrete February next step.
+20. Перезапустить приложение и загрузить идентичный committed result.
 
-Release decision может быть частью этого choice, но отдельная сложная release flow не обязательна.
+Release decision может быть частью approach, но отдельная сложная release flow не обязательна.
 
 ## 4. MVP professional model
 
@@ -74,7 +80,7 @@ Release decision может быть частью этого choice, но отд
 - Data Modelling;
 - Testing & Quality.
 
-Одновременно normal UI показывает максимум три relevant skills.
+Normal UI показывает максимум три relevant skills.
 
 ### Technology
 
@@ -93,13 +99,13 @@ Release decision может быть частью этого choice, но отд
 - no evidence timeline;
 - no grade award required.
 
+Capability candidate: `debug-simple-input-independently`; подтверждение принадлежит Progression Core.
+
 ## 5. MVP project model
 
 ### Project
 
 Small personal text program.
-
-Player-facing stages used:
 
 ```text
 idea → development → released / continue-next-month
@@ -110,7 +116,7 @@ idea → development → released / continue-next-month
 1. `core-program`;
 2. `input-errors`.
 
-Only one active package shown at a time.
+Only one active package is shown at a time.
 
 ### Progress
 
@@ -150,8 +156,6 @@ No debt/defect ledger.
 
 ### Release/outcome
 
-Possible states:
-
 - completed and released;
 - released with known limitation;
 - delayed to February;
@@ -167,39 +171,90 @@ No rollout/support/rollback policy.
 
 No team contribution model in slice.
 
-## 6. Meaningful decision
+## 6. MVP Professional Challenge
 
-Decision card:
+### Situation
 
 ```text
-Программа работает с обычными данными, но неправильный ввод даёт непонятный результат.
+Неправильный ввод
 
-Исправить самостоятельно
-— выпуск позже
-— больше самостоятельного опыта
+Основная программа работает, но если вместо числа ввести текст,
+она показывает непонятный результат.
 
-Попросить помощь
-— выше шанс закончить сейчас
-— меньше подтверждения самостоятельности
-
-Упростить первую версию
-— выпустить раньше
-— небольшой технический долг
-
-Перенести на февраль
-— сохранить качество
-— проект останется незавершённым
+Почему сложно:
+— вы ещё не исправляли такие ошибки самостоятельно;
+— выпуск планировался в этом месяце.
 ```
 
-Options and wording may be shortened after usability tests.
+### Approaches
 
-## 7. Monthly report
+```text
+Разобраться самостоятельно
+— сначала воспроизвести ошибку и проверить входные данные
++ больше самостоятельного опыта
+− выпуск может задержаться
+
+Попросить помощь
+— разобрать проблему вместе с более опытным человеком
++ выше шанс закончить сейчас
+− меньше подтверждения самостоятельности
+
+Упростить первую версию
+— ограничить допустимый ввод и выпустить сейчас
++ быстрее получить работающий результат
+− известное ограничение и minor debt
+
+Перенести на февраль
+— не выпускать, пока обработка ошибок не будет закончена
++ сохранить качество
+− проект останется незавершённым
+```
+
+Options may be shortened after usability tests. Exact probabilities/points are not shown.
+
+### Challenge ownership
+
+- Project provider owns context and applies project effects.
+- Challenge Engine owns deterministic approach resolution/reason codes.
+- Progression owns learning, evidence and capability confirmation.
+- Content cannot change project/skills/grade directly.
+
+## 7. Outcome fixtures
+
+### Independent clean success
+
+- input bug diagnosed/fixed;
+- release delayed or completed according to realized work;
+- independent participation;
+- Debugging capability candidate.
+
+### Assisted success
+
+- bug fixed;
+- strong learning/feedback;
+- autonomy remains assisted;
+- mentor relation consequence optional.
+
+### Simplified release
+
+- project released;
+- known limitation/minor debt;
+- no false full debugging capability.
+
+### Partial/failed with learning
+
+- cause partially identified or hypothesis narrowed;
+- no full delivery;
+- February recovery path;
+- learning explanation remains positive and accurate.
+
+## 8. Monthly report
 
 Maximum 5–7 primary rows:
 
 1. what character learned;
-2. project outcome;
-3. important quality/debt/issue consequence;
+2. challenge/project outcome;
+3. important compromise/debt/issue;
 4. one life constraint/result;
 5. noticeable money change if any;
 6. important event if any;
@@ -208,15 +263,16 @@ Maximum 5–7 primary rows:
 Example:
 
 ```text
-Вы лучше понимаете, как находить ошибки во вводе.
+Отладка улучшилась
+Вы самостоятельно нашли причину ошибки во вводе.
 
-Основная программа готова. Обработку неправильного ввода вы перенесли на февраль.
-Поддерживаемость остаётся хорошей, но первая версия ещё не выпущена.
+Основная программа готова, но выпуск перенесён на февраль.
+Помогло: вы сначала воспроизвели проблему и проверили данные.
 
 Следующий шаг: закончить обработку ошибок без подсказки.
 ```
 
-## 8. Required technical elements
+## 9. Required technical elements
 
 - pnpm monorepo/TypeScript 7/Vite/Oxc;
 - Tauri/React/Storybook;
@@ -228,8 +284,11 @@ Example:
 - Rust persistence/SQLite gate;
 - minimal professional state;
 - minimal project state;
-- deterministic project/episode IDs;
-- atomic commit;
+- minimal `TechnicalSituation`/approach/outcome contracts;
+- deterministic situation/outcome/episode IDs;
+- provider revision/input fingerprint;
+- persisted complication and selected approach;
+- atomic project + progression commit;
 - Russian localization;
 - focused tests.
 
@@ -237,12 +296,14 @@ Not required:
 
 - full skill graph;
 - full evidence claims;
+- all challenge archetypes;
+- generic challenge DSL/dynamic generator;
 - full ProjectState from Extended profile;
 - full debt/defect/release models;
 - Career/Product/Company/Open Source;
 - complex balance simulator.
 
-## 9. Storybook minimum
+## 10. Storybook minimum
 
 - Today screen;
 - professional summary;
@@ -250,15 +311,16 @@ Not required:
 - project card;
 - active Work Package;
 - simple forecast;
-- three quality bands;
-- minor debt/known issue;
-- blocking decision;
+- Professional Challenge situation;
+- four approach cards;
+- unavailable option explanation;
+- independent/assisted/compromise/partial/failure outcomes;
 - monthly report;
 - suspended/recovery;
 - loading/empty/error;
 - long RU/keyboard/200%/contrast/reduced motion.
 
-## 10. Content minimum
+## 11. Content minimum
 
 - one HomeCityProfile/era 1990–1994;
 - 2–3 access backgrounds without permanent bad start;
@@ -266,58 +328,71 @@ Not required:
 - five internal skills;
 - one project archetype;
 - two package templates;
-- one uncertainty rule;
+- one `diagnose` situation template;
+- four approach definitions;
+- one realized complication;
+- four outcome mappings;
+- stable reason codes and repetition fingerprint;
 - one known-issue/debt branch;
-- four outcome variants;
 - one aggregated professional explanation template;
 - maximum 3 learning options;
 - 4–6 events, mainly access/learning/project context;
 - minimal equipment/housing context.
 
-## 11. Decision budget
+## 12. Decision budget
 
 - 1–3 meaningful decisions in first month;
-- only one project blocking decision;
+- only one professional/project blocking decision;
+- 2–4 approaches for that decision;
 - maximum one life-only blocking decision, preferably zero;
 - ordinary routine auto-resolves;
 - no jargon requirement;
 - Details not required to decide.
 
-## 12. Deterministic fixtures
+## 13. Deterministic fixtures
 
-- independent success;
+- independent clean success;
 - assisted success;
 - simplified release/minor debt;
-- partial/failure with February recovery;
+- delayed release/good maintainability;
+- partial diagnosis;
+- failed attempt with February recovery;
 - low-income/no-home-computer access path;
-- close/restart at decision;
+- close/restart before answer;
+- close/restart after provisional outcome;
 - duplicate answer/resume;
-- quiet result variant.
+- provider revision conflict recovery;
+- quiet result variant;
+- declared fixture set has no universally best approach.
 
-## 13. Acceptance criteria
+## 14. Acceptance criteria
 
 ### Comprehension
 
-- player states project goal correctly;
-- identifies current problem;
+- player states project goal/problem correctly;
+- distinguishes at least two approaches;
 - chooses within 10–20 seconds;
 - predicts direction of trade-off;
 - understands result after MonthRun;
+- identifies at least two causal factors;
 - finds February next step;
-- does not describe UI as Jira/CRM.
+- does not describe UI as quiz/Jira/CRM.
 
 ### Programmer fantasy
 
 - player explains one learned capability;
 - distinguishes assisted and independent outcome;
 - project is more than a progress bar;
+- situation feels technical without requiring syntax/API knowledge;
 - no coding puzzle/IDE needed.
 
 ### Technical
 
-- same seed/manifest gives same outcome;
-- close/restart does not reroll;
-- duplicate commands do not duplicate project/progression result;
+- same seed/manifest gives same situation/complication/outcome;
+- visible decision does not reroll;
+- duplicate commands do not duplicate challenge/project/progression result;
+- Challenge Engine does not mutate provider/progression state directly;
+- provider revision mismatch recovers safely;
 - atomic commit;
 - save reload works;
 - no raw SQL renderer capability.
@@ -326,13 +401,17 @@ Not required:
 
 - majority of playtesters want to continue to February;
 - normal mode sufficient;
-- visible concepts fit casual complexity budget.
+- visible concepts fit casual complexity budget;
+- no approach is obviously globally optimal;
+- result feels causal rather than random/stat-driven.
 
-## 14. Deferred
+## 15. Deferred
 
 - full Career/Junior progression;
 - full evidence browser;
 - detailed grade gates;
+- all challenge archetypes;
+- dynamic challenge composition;
 - multiple projects/portfolio;
 - full debt/defect ledger;
 - incidents/rollback;
