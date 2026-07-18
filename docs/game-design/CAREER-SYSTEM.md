@@ -1,98 +1,180 @@
 # Карьерная система
 
-Связанные спецификации:
+Нормативные источники:
 
-- [Programmer-First Design](PROGRAMMER-FIRST-DESIGN.md);
+- [ADR-018 — Programmer Career, Hiring & Employment](../adr/ADR-018-authoritative-programmer-career-employment-model.md);
+- [Programmer Career Engine](PROGRAMMER-CAREER-ENGINE.md);
+- [Programmer Career UI](../ui/PROGRAMMER-CAREER-UI.md);
+- [Programmer Career Balance](../simulation/PROGRAMMER-CAREER-BALANCE.md);
+- [Programmer Career Content](../content/PROGRAMMER-CAREER-CONTENT.md);
+- [Historical Labor Market Catalog](../content/HISTORICAL-LABOR-MARKET-CATALOG.md);
 - [Professional Progression Engine](PROFESSIONAL-PROGRESSION-ENGINE.md);
 - [Project & Work Package Engine](PROJECT-WORK-PACKAGE-ENGINE.md).
 
+Этот документ является обзором Career domain. Полный нормативный контракт находится в `PROGRAMMER-CAREER-ENGINE.md`.
+
 ## Цель
 
-Career domain turns professional capability into jobs, constraints, income, organizational consequences and new paths.
+Career domain превращает профессиональную историю персонажа в доступные возможности, отбор, предложение, рабочий контекст, доход, ответственность и следующие переходы.
 
-Work provides project/task contexts but does not grant mastery for tenure.
+Карьера не выдаёт mastery или grade за стаж и не становится HR/company-management simulator.
+
+```text
+capability/evidence
+→ visible signals
+→ opportunity
+→ hiring
+→ offer
+→ employment context
+→ workplace outcomes/trust
+→ transition
+```
 
 ## Boundary
 
 Career owns:
 
-- vacancy/job/employment lifecycle;
-- position/title/company level;
-- contract/salary/schedule/remote mode;
-- role expectations;
-- stakeholders/deadlines;
-- promotion/firing/layoff;
-- interviews/negotiation;
-- organizational evaluation/politics;
-- career history/reputation consequences.
+- opportunity/search/hiring/offer lifecycle;
+- employer-visible candidate signals and role-fit projection;
+- position/title/role expectation;
+- employment contract references;
+- workplace trust;
+- promotion/lateral move/exit/firing/layoff/re-entry;
+- career history;
+- labor-market opportunity projection.
 
 Career does not own:
 
+- professional mastery/evidence/grade;
 - Project technical scope/quality/debt/defects/releases;
-- Company teams/payroll/portfolio state beyond typed refs/signals;
-- professional mastery/evidence/grade truth.
+- Learning outcome;
+- technical challenge resolution;
+- Company teams/payroll/budget/portfolio;
+- NPC relationships;
+- health/capacity;
+- actual money ledger.
+
+## Ключевое разделение
+
+Нормативно различаются:
+
+- Professional Grade;
+- Grade Readiness;
+- Market Competitiveness;
+- Employer Role Fit;
+- Employment Position/Title;
+- Workplace Trust.
+
+Поэтому допустимы:
+
+- Middle capability в Junior position;
+- inflated title без соответствующего grade;
+- grade сохранён после перерыва при сниженной market readiness;
+- новая ответственность без formal promotion;
+- lateral specialization move.
+
+Title, salary, tenure, fame и referral не являются technical evidence.
+
+## Career Opportunity
+
+Vacancy — один из источников opportunity наряду с:
+
+- school/community channel;
+- mentor/peer referral;
+- project/open-source invitation;
+- recruiter;
+- client;
+- internal transfer;
+- former employer.
+
+Opportunity содержит:
+
+- employer archetype;
+- role family/title/expected scope;
+- hard access requirements;
+- demonstrated capability expectations;
+- familiarity expectations;
+- visible market signals;
+- trainable gaps/preferences;
+- visible and uncertain conditions;
+- selection plan;
+- market context.
+
+Source может открыть доступ или улучшить информацию, но не гарантирует offer.
+
+## Search
+
+Игрок выбирает устойчивый Career Intent:
+
+- first entry;
+- mentorship;
+- specialization;
+- income;
+- stability;
+- flexibility;
+- portfolio;
+- network;
+- quiet search.
+
+Routine browsing, obvious mismatches, scheduling и ordinary rejection агрегируются. Обычный search month показывает максимум 1–3 meaningful opportunities.
+
+Player does not manually submit dozens of applications.
+
+## Hiring
+
+Meaningful stages:
+
+- portfolio/project discussion;
+- situational interview;
+- bounded work sample;
+- manager/team conversation;
+- offer discussion.
+
+Technical stages route through Professional Challenge Engine. Preparation/onboarding routes through Learning Engine.
+
+Hiring outcome может быть:
+
+- strong/standard/conditional offer;
+- internship/trial;
+- alternate role;
+- continue after preparation;
+- talent pool;
+- rejection with/without feedback;
+- candidate withdrawal;
+- employer cancellation.
+
+No fully random rejection. No syntax trivia, embedded coding IDE or LLM judge in baseline.
+
+## Offer
+
+Offer сравнивается по 4–6 relevant dimensions:
+
+- income;
+- stability;
+- mentorship;
+- task scope;
+- technology relevance;
+- workload;
+- autonomy;
+- growth;
+- flexibility.
+
+Часть условий может оставаться uncertain до interview/probation/first months. UI не показывает exact hidden probability или universal utility score.
 
 ## Work as persistent commitment
 
-After employment, work automatically:
+После employment работа автоматически:
 
-- occupies calendar/capacity;
-- pays salary;
-- links character to employer projects;
-- supplies role expectations, constraints and participant context;
-- receives project contribution/outcome summaries;
-- affects organizational performance/promotion/firing risk;
-- creates Career-specific episodes when organizational/interview/leadership outcome exists.
+- occupies capacity;
+- creates compensation contract;
+- supplies workplace Project/Challenge/Learning contexts;
+- aggregates routine work;
+- creates employer expectations and feedback;
+- may create career transition.
 
-Player does not press “work” each month.
+Player does not press “work” each month and does not schedule daily tasks.
 
-## Job definition
-
-Vacancy defines:
-
-- employer/company archetype;
-- position/title/company level and expected grade/readiness;
-- compensation/schedule/remote policy;
-- technology/project domains;
-- interview stages;
-- culture/process/tooling;
-- stakeholder/deadline profile;
-- typical project archetypes/package challenge distribution;
-- quality/release policy;
-- mentorship/feedback/autonomy;
-- stability/workload/growth;
-- legacy/innovation balance.
-
-It does not embed separate technical project simulation.
-
-## Job market
-
-Normal search presents:
-
-- 3–7 relevant offers;
-- 1–3 strong comparison candidates;
-- extended search on request.
-
-Generated from era/city market, company needs, roles, technologies, salary bands, network/reputation and search strategy.
-
-## Hiring and interview
-
-Search/apply are management actions. Preparation/tests/interviews/negotiation may consume calendar time.
-
-Outcome uses:
-
-- demonstrated/current-market readiness;
-- relevant evidence/technologies;
-- interview preparation/communication;
-- reputation/network;
-- company fit;
-- bounded deterministic randomness.
-
-No fully random rejection. UI shows reason categories/uncertainty, not exact formula.
-
-Interview assignment may use a temporary provider/project challenge but must not mint production evidence unless it produces a real eligible outcome under policy.
-
-Key rolls are stable across reload.
+Ordinary work month normally has 0–1 blocking professional decision.
 
 ## Career → Project contract
 
@@ -101,12 +183,11 @@ Career provides:
 ```text
 employment/project refs
 role expectations
-stakeholders/client context
-deadline and priority constraints
-required quality/release policy
+stakeholder/deadline constraints
+quality/release expectations
 autonomy/ownership expectation
 available mentorship/review
-organizational tooling/process signal
+organizational process/tooling signals
 ```
 
 Project Engine returns:
@@ -114,152 +195,151 @@ Project Engine returns:
 ```text
 package/release outcome
 forecast/deadline result
-quality/debt/defect/incident summary
+quality/debt/defect summary
 character/team contribution
 ownership/reliability summary
 ```
 
-Career cannot directly set package progress/quality/release success.
+Career cannot mutate ProjectState.
 
-## Work package creation
+## Workplace Trust
 
-Career/Employment may submit typed `ProjectWorkRequest`:
+Trust is not a friendship/loyalty/global performance meter. It describes what current employer is ready to delegate.
 
-- desired outcome/value;
-- project/scope context;
-- deadline/priority;
-- stakeholder constraints;
-- expected responsibility/autonomy;
-- organizational quality policy.
+Relevant dimensions:
 
-Project Engine validates and creates/updates Work Packages. Career does not create arbitrary technical truth.
+- delivery confidence;
+- autonomy confidence;
+- quality confidence;
+- collaboration confidence;
+- growth trajectory;
+- allowed scope.
 
-## Workplace events
+Trust uses contribution, risk disclosure, assistance and recovery. Team success without character contribution does not create personal trust. One failure does not automatically destroy trust.
 
-Examples:
+## Promotion
 
-- ambiguous requirement;
-- difficult package;
-- critical defect/incident;
-- review conflict;
-- architecture/technology trade-off;
-- debt/legacy pressure;
-- deadline/scope conflict;
-- ownership change;
-- manager/team change;
-- promotion/layoff;
-- mentoring/review opportunity;
-- public team success.
+Promotion possibility uses:
 
-Technical choices route through Project Engine. Organizational choices remain Career/Event.
+```text
+professional readiness
++ sustained workplace evidence
++ workplace trust
++ available position/scope
++ employer policy/sponsorship
++ company state
+```
 
-## Grade, title and project contribution
+Possible results:
 
-- `ProfessionalGradeAward` is global professional milestone;
-- position/title/company level belong employer;
-- project contribution is technical record;
-- promotion is organizational decision.
+- scope expansion;
+- salary adjustment;
+- formal promotion;
+- lateral transfer;
+- specialization transition;
+- promotion delay/denial;
+- external growth path.
 
-Possible:
+Promotion does not award Professional Grade. Grade does not force employer promotion.
 
-- Middle in Junior-position;
-- inflated title without capability;
-- Senior IC;
-- Team Lead/Tech Lead/Architect roles;
-- CTO/Founder;
-- strong open-source maintainer without corporate title;
-- return management → IC.
+## Employers and Company boundary
 
-## Promotion review
+Career MVP uses fictional employer archetypes, not full companies:
 
-Inputs:
+- small product team;
+- large stable organization;
+- service/contract team.
 
-- awarded/readiness profile;
-- relevant project contribution/outcomes;
-- delivery reliability/quality/ownership;
-- collaboration/leadership;
-- stakeholder/relationship/politics;
-- available role/budget/company state;
-- employer policy.
-
-One team release or revenue spike does not automatically promote character. Contribution and sustained contexts matter.
-
-## Target progression
-
-Starting hypotheses:
-
-- Intern → Junior: 6–18 months supervised work;
-- Junior → Middle: 24–48 months;
-- Middle → Senior: 36–72 months.
-
-Validated across company archetypes/specializations/backgrounds/interruptions.
-
-## Senior paths
-
-- deep expert/Top Programmer candidate;
-- Tech Lead/Architect;
-- Team Lead/management;
-- CTO/Founder;
-- open-source maintainer;
-- public expert;
-- freelance/consulting;
-- rare specialization.
-
-Founder/CTO not mandatory best path. Reduced direct coding shifts contribution toward architecture/review/mentoring/delegation, not automatic mastery.
-
-## Career path parity
-
-Compare mastery, autonomy, income, stability, reputation, fame, freedom, influence, workload, risk and legacy.
-
-Different rewards, viable independent fantasies/endgames.
-
-## Employers
-
-Fictional companies evolve by era: stack/process/projects, growth, merger/crisis/closure.
-
-Stack/process change alters Project inputs and market readiness, not historical mastery/evidence.
+Company Engine later owns teams, payroll, budgets, portfolio and restructuring. Career consumes typed signals and does not duplicate CompanyState.
 
 ## Job loss and recovery
 
-Loss creates financial/career pressure but not instant fail.
+Transition reason remains semantic:
+
+- voluntary exit;
+- contract end;
+- layoff;
+- closure/reorganization;
+- role mismatch;
+- performance dismissal;
+- misconduct;
+- health/life interruption;
+- burnout.
+
+Layoff/closure do not reduce grade. Performance dismissal may create employer signal damage but not erase mastery/history.
 
 Recovery:
 
-- job search/support/freelance;
-- retraining/project portfolio;
-- network/referrals;
-- lower-level re-entry without mastery reset;
-- legacy/maintenance niche;
-- own/open-source project;
-- debt restructuring;
-- reacquisition after break.
+- alternative employer/role;
+- portfolio/evidence;
+- learning/reacquisition;
+- referral/community;
+- bounded/trial role;
+- freelance/project route;
+- market recovery.
 
-Break reduces fluency/current-market readiness, not awarded grade automatically.
+## Labor market
+
+MVP uses compact `LaborMarketProfile` by:
+
+```text
+era + region + industry + role family
+```
+
+It influences opportunity frequency/type, competition/selectivity, credential bias, portfolio openness, referral leverage, trainable-gap tolerance, compensation pressure, stability, remote reach and common selection patterns.
+
+Historical claims require provenance. Employers remain fictional.
+
+## MVP Casual Career Slice
+
+- one labor-market profile;
+- three employer archetypes;
+- one role family;
+- three opportunity templates;
+- one Career Intent;
+- maximum three surfaced opportunities;
+- one portfolio discussion;
+- one diagnose interview situation;
+- four approaches;
+- standard/conditional/alternate/rejection outcomes;
+- two offer profiles;
+- one employment position;
+- one workplace challenge;
+- simple trust bands;
+- one promotion-delayed/scope-expanded preview;
+- one rejection recovery;
+- deterministic suspend/resume/no-reroll.
 
 ## Invariants
 
-- Career does not duplicate/mutate Project technical state;
-- Career does not mutate professional grade/mastery directly;
-- salary/title/fame not technical evidence;
-- job tenure alone gives no mastery;
-- promotion uses contribution/evidence but remains employer decision;
-- employer work request validated by Project Engine;
-- team outcome separated from character contribution;
-- deterministic interview/organizational rolls stable;
-- employment/project/progression consequences commit atomically;
-- fired character receives no salary;
-- unavailable-era role/technology/project not generated.
+- Career does not mutate professional state directly.
+- Career does not duplicate ProjectState or CompanyState.
+- Grade/title/position/role fit/trust remain distinct.
+- Employer sees signals, not hidden mastery points.
+- Search routine aggregates.
+- Referral/credential/tenure/salary are not technical evidence.
+- Interview outcomes do not mint production evidence.
+- Employment is automatic commitment.
+- No single authoritative performance score.
+- Promotion is organizational; grade is professional.
+- Job loss does not erase mastery/grade/history.
+- Path-blocking state has fallback/retry/alternative.
+- Key opportunity/interview/offer outcomes do not reroll.
 
-## Tests
+## Verification
 
-- job request → Project package;
-- project contribution → career review;
+Required fixtures:
+
+- strong capability / weak signal;
+- referral opens stage but does not guarantee offer;
+- trainable technology gap;
+- salary vs mentorship choice;
+- conditional/alternate/rejection outcomes;
 - title vs grade mismatch;
-- team release vs player contribution;
-- deadline/quality conflict;
-- promotion/layoff determinism;
-- interview save-scumming resistance;
-- job loss/re-entry;
-- management → IC;
-- no tenure/salary → mastery;
-- Career/Project/Progression atomic commit.
+- trust grows from reliable delivery/recovery;
+- promotion delayed by missing position;
+- layoff preserves grade;
+- performance dismissal recovery;
+- break/re-entry;
+- no reroll/duplicate salary/offer/transition;
+- long Russian and accessibility states.
