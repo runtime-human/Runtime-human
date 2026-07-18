@@ -1,3 +1,11 @@
+---
+title: "TOMBSTONES-AND-DEPRECATION"
+type: content
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Tombstones и deprecation
 
 ## Проблема

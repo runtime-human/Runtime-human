@@ -1,3 +1,11 @@
+---
+title: "MONTH-SIMULATION"
+type: simulation
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Симуляция месяца
 
 Связанные решения:

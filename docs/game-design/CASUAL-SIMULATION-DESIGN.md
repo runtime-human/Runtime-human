@@ -1,3 +1,11 @@
+---
+title: "CASUAL-SIMULATION-DESIGN"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Casual Simulation Design
 
 ## Статус

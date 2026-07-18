@@ -1,3 +1,11 @@
+---
+title: "DR-001-STACK-ARCHITECTURE-AUDIT-2026-07-16"
+type: research
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # DR-001 — Аудит стека и архитектуры Runtime Human
 
 - **Дата:** 2026-07-16

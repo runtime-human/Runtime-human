@@ -1,3 +1,11 @@
+---
+title: "README"
+type: events
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Events and NPC documents
 
 - [Event Engine](EVENT-ENGINE.md)

@@ -1,3 +1,11 @@
+---
+title: "ADR-011-typescript-7-baseline"
+type: adr
+status: accepted
+canon: true
+updated: 2026-07-18
+---
+
 # ADR-011: TypeScript 7 как production baseline
 
 - **Статус:** Accepted

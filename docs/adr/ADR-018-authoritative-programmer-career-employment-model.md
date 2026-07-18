@@ -1,3 +1,11 @@
+---
+title: "ADR-018-authoritative-programmer-career-employment-model"
+type: adr
+status: accepted
+canon: true
+updated: 2026-07-18
+---
+
 # ADR-018 — Авторитетная модель карьеры программиста, найма и занятости
 
 - **Статус:** Accepted

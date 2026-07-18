@@ -1,3 +1,11 @@
+---
+title: "VERTICAL-SLICE-PLAN"
+type: plan
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Vertical Slice Plan
 
 Нормативные источники:

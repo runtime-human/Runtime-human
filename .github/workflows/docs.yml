@@ -1,0 +1,30 @@
+name: docs
+
+on:
+  push:
+    paths:
+      - "docs/**"
+      - "scripts/build-toc.mjs"
+  pull_request:
+    paths:
+      - "docs/**"
+      - "scripts/build-toc.mjs"
+
+jobs:
+  docs-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Verify docs front-matter and manifest
+        run: node scripts/build-toc.mjs --check
+      - name: Regenerate manifest (no-op unless changed)
+        run: node scripts/build-toc.mjs
+      - name: Ensure MANIFEST is committed
+        run: |
+          if [ -n "$(git status --porcelain docs/MANIFEST.jsonc)" ]; then
+            echo "MANIFEST.jsonc is out of date. Run: node scripts/build-toc.mjs"
+            exit 1
+          fi

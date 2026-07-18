@@ -1,3 +1,11 @@
+---
+title: "README"
+type: adr
+status: accepted
+canon: true
+updated: 2026-07-18
+---
+
 # Architecture Decision Records
 
 ## Accepted

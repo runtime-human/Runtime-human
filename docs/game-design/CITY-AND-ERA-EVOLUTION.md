@@ -1,3 +1,11 @@
+---
+title: "CITY-AND-ERA-EVOLUTION"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Город и исторические эпохи
 
 ## Канон

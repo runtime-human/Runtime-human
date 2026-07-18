@@ -1,3 +1,11 @@
+---
+title: "PROFESSIONAL-CHALLENGE-ENGINE"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Professional Challenge Engine
 
 ## Статус

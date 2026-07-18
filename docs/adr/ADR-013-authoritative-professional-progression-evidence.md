@@ -1,3 +1,11 @@
+---
+title: "ADR-013-authoritative-professional-progression-evidence"
+type: adr
+status: accepted
+canon: true
+updated: 2026-07-18
+---
+
 # ADR-013 — Авторитетная модель профессиональной прогрессии и evidence
 
 - **Статус:** Accepted

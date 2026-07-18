@@ -1,3 +1,11 @@
+---
+title: "PROFESSIONAL-PROGRESSION-ENGINE"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Professional Progression & Evidence Engine
 
 ## Статус

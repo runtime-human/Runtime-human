@@ -1,3 +1,11 @@
+---
+title: "PROGRAMMER-FIRST-DESIGN"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Programmer-First Design
 
 ## Статус

@@ -1,3 +1,11 @@
+---
+title: "MONTHLY-GAME-LOOP"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Месячный игровой цикл
 
 Нормативная продуктовая иерархия: [Programmer-First Design](PROGRAMMER-FIRST-DESIGN.md).

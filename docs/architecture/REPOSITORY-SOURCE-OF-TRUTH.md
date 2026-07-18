@@ -1,3 +1,11 @@
+---
+title: "REPOSITORY-SOURCE-OF-TRUTH"
+type: architecture
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Repository source of truth
 
 The private GitHub repository `MrFr3di/Runtime-human` is the only canonical storage for architecture, ADR, schemas, plans, code and content.

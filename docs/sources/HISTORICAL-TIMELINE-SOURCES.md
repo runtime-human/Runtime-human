@@ -1,3 +1,11 @@
+---
+title: "HISTORICAL-TIMELINE-SOURCES"
+type: source
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Historical Timeline Source Policy
 
 ## Назначение

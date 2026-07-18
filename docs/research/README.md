@@ -1,3 +1,11 @@
+---
+title: "README"
+type: research
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Deep Research и System Design — индекс
 
 Каталог хранит нормализованные исследования, системные анализы и design corrections Runtime Human.

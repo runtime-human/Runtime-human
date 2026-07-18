@@ -1,3 +1,11 @@
+---
+title: "PROGRAMMER-CAREER-ENGINE"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Programmer Career, Hiring & Employment Engine
 
 Нормативные источники:

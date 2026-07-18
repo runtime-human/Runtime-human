@@ -1,0 +1,765 @@
+{
+  "_generated": "2026-07-18T20:51:26.624Z",
+  "_note": "Machine-generated. See docs/STYLE.md. Do not edit by hand.",
+  "count": 151,
+  "byType": {
+    "undefined": 151
+  },
+  "entries": [
+    {
+      "file": "docs/adr/ADR-001-historical-calendar-and-start.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/adr/ADR-002-free-non-eu-distribution.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/adr/ADR-003-fixed-fictional-metropolis.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/adr/ADR-004-persistence-execution-boundary.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/adr/ADR-005-suspended-month-run.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/adr/ADR-006-numeric-model.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/adr/ADR-007-determinism-manifest.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/adr/ADR-008-desktop-e2e.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/adr/ADR-009-narrative-director.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/adr/ADR-010-authoritative-save-state.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/adr/ADR-011-typescript-7-baseline.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/adr/ADR-012-storybook-ui-content-workshop.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/adr/ADR-013-authoritative-professional-progression-evidence.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/adr/ADR-014-authoritative-project-work-package-model.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/adr/ADR-015-casual-first-abstraction-and-complexity-budget.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/adr/ADR-016-authoritative-professional-challenge-model.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/adr/ADR-017-authoritative-programmer-learning-access-model.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/adr/ADR-018-authoritative-programmer-career-employment-model.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/adr/README.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/agents/AGENT-WORKFLOW.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/agents/ARCHITECT-AGENT.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/agents/CONTENT-AGENT.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/agents/CORE-AGENT.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/agents/QA-AGENT.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/agents/README.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/agents/RED-TEAM-AGENT.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/agents/UI-AGENT.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/architecture/CANON-SUMMARY.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/architecture/DATA-FLOW.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/architecture/DECISION-STATUS.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/architecture/DEPENDENCY-RULES.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/architecture/DOCUMENTATION-CHANGELOG.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/architecture/DOMAIN-MODEL.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/architecture/FULL-ARCHITECTURE-PLAN.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/architecture/IMPLEMENTATION-GUARDS.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/architecture/MASTER-ARCHITECTURE.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/architecture/MODULE-BOUNDARIES.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/architecture/NO-GEOGRAPHY-SCOPE.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/architecture/README.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/architecture/REPOSITORY-SOURCE-OF-TRUTH.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/architecture/REPOSITORY-STRUCTURE.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/architecture/REVIEW-ORDER.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/architecture/SYSTEM-CONTEXT.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/content/ASSET-PIPELINE.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/content/CONTENT-ARCHITECTURE.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/content/CONTENT-LIFECYCLE.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/content/HISTORICAL-CATALOG.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/content/HISTORICAL-LABOR-MARKET-CATALOG.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/content/LOCALIZATION.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/content/MODDING.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/content/PROGRAMMER-CAREER-CONTENT.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/content/PROGRAMMER-LEARNING-CONTENT.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/content/README.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/content/TOMBSTONES-AND-DEPRECATION.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/engineering/CI-CD.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/engineering/DEPENDENCY-POLICY.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/engineering/README.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/engineering/RELEASE-AND-UPDATER.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/engineering/RUST-BOUNDARY.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/engineering/SECURITY.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/engineering/STORYBOOK-WORKFLOW.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/engineering/TECH-STACK.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/engineering/TESTING-STRATEGY.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/engineering/TYPESCRIPT-POLICY.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/events/EVENT-CHAINS.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/events/EVENT-CONTENT-SCHEMA.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/events/EVENT-ENGINE.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/events/NARRATIVE-DIRECTOR.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/events/NPC-AND-NARRATIVE-MEMORY.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/events/README.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/game-design/CAREER-SYSTEM.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/game-design/CASUAL-SIMULATION-DESIGN.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/game-design/CHARACTER-PROGRESSION.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/game-design/CITY-AND-ERA-EVOLUTION.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/game-design/COMPANY-SYSTEM.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/game-design/GAMEPLAY-CANON.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/game-design/HOUSING-AND-EQUIPMENT.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/game-design/LIFE-CYCLE-AND-LEGACY.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/game-design/MONTHLY-GAME-LOOP.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/game-design/OPEN-SOURCE-SYSTEM.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/game-design/PROFESSIONAL-CHALLENGE-ENGINE.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/game-design/PROFESSIONAL-PROGRESSION-ENGINE.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/game-design/PROGRAMMER-CAREER-ENGINE.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/game-design/PROGRAMMER-FIRST-DESIGN.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/game-design/PROGRAMMER-LEARNING-ENGINE.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/game-design/PROJECT-WORK-PACKAGE-ENGINE.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/game-design/PROJECTS-AND-PRODUCTS.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/game-design/README.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/game-design/RELATIONSHIPS-AND-HEALTH.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/game-design/SKILLS-AND-TECHNOLOGIES.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/game-design/SOFT-LIMITS.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/INDEX.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/persistence/BACKUP-AND-RESTORE.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/persistence/MIGRATIONS.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/persistence/PERSISTENCE-BOUNDARY.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/persistence/README.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/persistence/SAFE-MODE.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/persistence/SAVE-COMPATIBILITY.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/persistence/SAVE-MODEL.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/persistence/SQLITE-ARCHITECTURE.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/plans/DOCUMENTATION-REVIEW-CHECKLIST.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/plans/PHASE-0-ENTRY-CRITERIA.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/plans/PROFESSIONAL-CHALLENGE-IMPLEMENTATION-PLAN.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/plans/PROGRAMMER-CAREER-IMPLEMENTATION-PLAN.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/plans/PROPOSED-ADR-DECISIONS.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/plans/README.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/plans/RELEASE-MILESTONES.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/plans/ROADMAP.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/plans/VERTICAL-SLICE-PLAN.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/README.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/research/DC-001-CASUAL-FIRST-COMPLEXITY-CORRECTION-2026-07-17.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/research/DR-001-STACK-ARCHITECTURE-AUDIT-2026-07-16.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/research/DR-002-MULTILINGUAL-GAMEDEV-STACK-RESEARCH-2026-07-16.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/research/DR-003-PROGRAMMER-FIRST-DESIGN-SYNTHESIS-2026-07-17.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/research/DR-SYNTHESIS-2026-07-16.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/research/README.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/research/SD-001-PROGRAMMER-PROGRESSION-EVIDENCE-ENGINE-2026-07-17.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/research/SD-002-PROJECT-WORK-PACKAGE-ENGINE-2026-07-17.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/research/SD-003-PROFESSIONAL-CHALLENGE-CAPABILITY-ENGINE-2026-07-17.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/research/SD-004-PROGRAMMER-LEARNING-PRACTICE-MENTORSHIP-ACCESS-ENGINE-2026-07-18.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/research/SD-005-PROGRAMMER-CAREER-HIRING-LABOR-MARKET-ENGINE-2026-07-18.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/simulation/BALANCE-SIMULATION.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/simulation/CALENDAR.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/simulation/DETERMINISM.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/simulation/MONTH-SIMULATION.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/simulation/NUMERIC-POLICY.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/simulation/PROFESSIONAL-CHALLENGE-BALANCE.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/simulation/PROGRAMMER-CAREER-BALANCE.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/simulation/PROGRAMMER-LEARNING-BALANCE.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/simulation/RANDOMNESS.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/simulation/README.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/simulation/SUSPENDED-MONTH-RUN.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/sources/GAME-DESIGN-REFERENCES.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/sources/HISTORICAL-TIMELINE-SOURCES.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/sources/README.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/sources/TECHNICAL-SOURCES.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/superpowers/plans/2026-07-17-programmer-progression-evidence-docs.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/superpowers/plans/2026-07-17-project-work-package-docs.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/superpowers/plans/2026-07-18-programmer-learning-engine.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/ui/ACCESSIBILITY.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/ui/DESIGN-SYSTEM.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/ui/MOTION-AND-AUDIO.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/ui/NAVIGATION.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/ui/PERFORMANCE-BUDGETS.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/ui/PROFESSIONAL-CHALLENGE-UI.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/ui/PROFESSIONAL-PROGRESSION-UI.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/ui/PROGRAMMER-CAREER-UI.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/ui/PROGRAMMER-LEARNING-UI.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/ui/PROJECT-WORK-PACKAGE-UI.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/ui/README.md",
+      "canon": true,
+      "dependsOn": []
+    },
+    {
+      "file": "docs/ui/UI-ARCHITECTURE.md",
+      "canon": true,
+      "dependsOn": []
+    }
+  ]
+}

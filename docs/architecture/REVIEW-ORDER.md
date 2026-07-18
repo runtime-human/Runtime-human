@@ -1,3 +1,11 @@
+---
+title: "REVIEW-ORDER"
+type: architecture
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Architecture review order
 
 1. `docs/adr/README.md`

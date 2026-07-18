@@ -1,3 +1,11 @@
+---
+title: "MASTER-ARCHITECTURE"
+type: architecture
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Runtime Human — Master Architecture
 
 > **Статус:** архитектурный канон, редакция 1.4

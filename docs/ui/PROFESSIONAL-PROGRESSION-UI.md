@@ -1,3 +1,11 @@
+---
+title: "PROFESSIONAL-PROGRESSION-UI"
+type: ui
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Professional Progression UI
 
 ## Статус

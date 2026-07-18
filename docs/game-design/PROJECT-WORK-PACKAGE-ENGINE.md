@@ -1,3 +1,11 @@
+---
+title: "PROJECT-WORK-PACKAGE-ENGINE"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Project & Technical Work Package Engine
 
 ## Статус

@@ -1,3 +1,11 @@
+---
+title: "CORE-AGENT"
+type: agent
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Core Agent
 
 ## Scope

@@ -1,3 +1,11 @@
+---
+title: "SAVE-MODEL"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Модель сохранения
 
 Нормативные решения:

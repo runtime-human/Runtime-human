@@ -1,3 +1,11 @@
+---
+title: "ADR-002-free-non-eu-distribution"
+type: adr
+status: accepted
+canon: true
+updated: 2026-07-18
+---
+
 # ADR-002: Бесплатное распространение без Steam и без целевого рынка ЕС
 
 - **Статус:** принято

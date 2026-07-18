@@ -1,3 +1,11 @@
+---
+title: "TYPESCRIPT-POLICY"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # TypeScript policy
 
 ## Production compiler

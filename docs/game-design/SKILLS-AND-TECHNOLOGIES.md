@@ -1,3 +1,11 @@
+---
+title: "SKILLS-AND-TECHNOLOGIES"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Навыки и технологии
 
 Нормативные спецификации:

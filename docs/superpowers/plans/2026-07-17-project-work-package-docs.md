@@ -1,3 +1,11 @@
+---
+title: "2026-07-17-project-work-package-docs"
+type: plan
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Project & Technical Work Package Documentation Implementation Plan
 
 > **Status:** completed and merged through PR #5 on 2026-07-17; squash commit `5cd8e94d6424bb29376dbf3d78a1af7c213433af`.

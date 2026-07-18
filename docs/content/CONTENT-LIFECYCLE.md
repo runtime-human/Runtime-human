@@ -1,3 +1,11 @@
+---
+title: "CONTENT-LIFECYCLE"
+type: content
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Жизненный цикл контента
 
 ## Статусы

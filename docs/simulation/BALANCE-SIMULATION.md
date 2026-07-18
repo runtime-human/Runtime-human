@@ -1,3 +1,11 @@
+---
+title: "BALANCE-SIMULATION"
+type: simulation
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Баланс и массовые симуляции
 
 Нормативные источники:

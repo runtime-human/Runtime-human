@@ -1,3 +1,11 @@
+---
+title: "PROFESSIONAL-CHALLENGE-IMPLEMENTATION-PLAN"
+type: plan
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Professional Challenge Engine — Implementation Plan
 
 ## Статус

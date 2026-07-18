@@ -1,3 +1,11 @@
+---
+title: "DOMAIN-MODEL"
+type: architecture
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Доменная модель Runtime Human
 
 Нормативные решения:

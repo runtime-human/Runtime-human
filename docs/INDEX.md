@@ -1,3 +1,11 @@
+---
+title: "INDEX"
+type: index
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Runtime Human — индекс документации
 
 ## Источник истины
@@ -93,7 +101,7 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [Character Progression](game-design/CHARACTER-PROGRESSION.md)
 - [Skills & Technologies](game-design/SKILLS-AND-TECHNOLOGIES.md)
 - [Monthly Loop](game-design/MONTHLY-GAME-LOOP.md)
-- [Career](game-design/CAREER-SYSTEM.md)
+- [Career overview](game-design/CAREER-SYSTEM.md) (see also [Programmer career section](#programmer-career-hiring-and-employment))
 - [Projects & Products Overview](game-design/PROJECTS-AND-PRODUCTS.md)
 - [Open Source](game-design/OPEN-SOURCE-SYSTEM.md)
 - [Company](game-design/COMPANY-SYSTEM.md)

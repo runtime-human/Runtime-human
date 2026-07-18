@@ -1,3 +1,11 @@
+---
+title: "DR-003-PROGRAMMER-FIRST-DESIGN-SYNTHESIS-2026-07-17"
+type: research
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # DR-003 — Programmer-First synthesis игрового дизайна Runtime Human
 
 - **Дата нормализации:** 2026-07-17

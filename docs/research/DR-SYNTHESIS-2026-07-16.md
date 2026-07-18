@@ -1,3 +1,11 @@
+---
+title: "DR-SYNTHESIS-2026-07-16"
+type: research
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Синтез двух Deep Research — 2026-07-16
 
 ## 1. Назначение

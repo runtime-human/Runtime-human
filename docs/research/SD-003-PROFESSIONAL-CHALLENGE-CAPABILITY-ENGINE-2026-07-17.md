@@ -1,3 +1,11 @@
+---
+title: "SD-003-PROFESSIONAL-CHALLENGE-CAPABILITY-ENGINE-2026-07-17"
+type: research
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # SD-003 — Professional Challenge, Capability Milestone & Technical Situation Engine
 
 - **Дата:** 2026-07-17

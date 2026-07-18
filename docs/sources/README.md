@@ -1,3 +1,11 @@
+---
+title: "README"
+type: source
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Sources
 
 - [Historical Timeline Source Policy](HISTORICAL-TIMELINE-SOURCES.md)

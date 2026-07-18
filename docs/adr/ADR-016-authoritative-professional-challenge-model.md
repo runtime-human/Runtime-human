@@ -1,3 +1,11 @@
+---
+title: "ADR-016-authoritative-professional-challenge-model"
+type: adr
+status: accepted
+canon: true
+updated: 2026-07-18
+---
+
 # ADR-016 — Авторитетная модель профессиональных ситуаций и подходов
 
 - **Статус:** Accepted

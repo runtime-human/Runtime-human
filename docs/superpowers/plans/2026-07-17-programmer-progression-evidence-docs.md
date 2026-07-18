@@ -1,3 +1,11 @@
+---
+title: "2026-07-17-programmer-progression-evidence-docs"
+type: plan
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Programmer Progression & Evidence Documentation Implementation Plan
 
 > **Status:** completed on branch `agent/sd001-progression-evidence`; published as draft PR #4.

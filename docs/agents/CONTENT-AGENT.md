@@ -1,3 +1,11 @@
+---
+title: "CONTENT-AGENT"
+type: agent
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Content Agent
 
 ## Scope

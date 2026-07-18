@@ -1,3 +1,11 @@
+---
+title: "DEPENDENCY-RULES"
+type: architecture
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Правила зависимостей
 
 ## Основной принцип

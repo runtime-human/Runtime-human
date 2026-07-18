@@ -1,3 +1,11 @@
+---
+title: "SAVE-COMPATIBILITY"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Совместимость сохранений
 
 Нормативные решения:

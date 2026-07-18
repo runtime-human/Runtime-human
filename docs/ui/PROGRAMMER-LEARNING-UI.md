@@ -1,3 +1,11 @@
+---
+title: "PROGRAMMER-LEARNING-UI"
+type: ui
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Programmer Learning UI
 
 ## Статус

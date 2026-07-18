@@ -1,3 +1,11 @@
+---
+title: "ADR-003-fixed-fictional-metropolis"
+type: adr
+status: accepted
+canon: true
+updated: 2026-07-18
+---
+
 # ADR-003: Fixed Fictional Metropolis and Compressed Geography
 
 - Status: Accepted

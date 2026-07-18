@@ -1,3 +1,11 @@
+---
+title: "PROGRAMMER-CAREER-CONTENT"
+type: content
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Programmer Career Content
 
 Нормативные источники:

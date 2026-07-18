@@ -1,3 +1,11 @@
+---
+title: "README"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Persistence documents
 
 - [Save Model](SAVE-MODEL.md)

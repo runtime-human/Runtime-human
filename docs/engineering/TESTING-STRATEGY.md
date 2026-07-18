@@ -1,3 +1,11 @@
+---
+title: "TESTING-STRATEGY"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Тестовая стратегия
 
 ## Пирамида

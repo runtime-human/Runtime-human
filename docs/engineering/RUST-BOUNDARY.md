@@ -1,3 +1,11 @@
+---
+title: "RUST-BOUNDARY"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Rust boundary
 
 ## Назначение

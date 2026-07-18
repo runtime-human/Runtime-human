@@ -1,3 +1,11 @@
+---
+title: "MODULE-BOUNDARIES"
+type: architecture
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Границы модулей
 
 Нормативные решения:

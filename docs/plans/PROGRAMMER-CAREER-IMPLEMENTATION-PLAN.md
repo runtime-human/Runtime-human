@@ -1,3 +1,11 @@
+---
+title: "PROGRAMMER-CAREER-IMPLEMENTATION-PLAN"
+type: plan
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Programmer Career Engine — Implementation Plan
 
 Нормативные источники:

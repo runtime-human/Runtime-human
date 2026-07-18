@@ -1,3 +1,11 @@
+---
+title: "COMPANY-SYSTEM"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Компания и tycoon-часть
 
 Связанные спецификации:

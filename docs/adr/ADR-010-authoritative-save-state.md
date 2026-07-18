@@ -1,3 +1,11 @@
+---
+title: "ADR-010-authoritative-save-state"
+type: adr
+status: accepted
+canon: true
+updated: 2026-07-18
+---
+
 # ADR-010: Авторитетное состояние сейва
 
 - **Статус:** Accepted

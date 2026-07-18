@@ -1,3 +1,11 @@
+---
+title: "RELEASE-AND-UPDATER"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Release и updater
 
 ## Distribution model

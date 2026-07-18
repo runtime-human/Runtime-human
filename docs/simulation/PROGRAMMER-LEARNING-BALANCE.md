@@ -1,3 +1,11 @@
+---
+title: "PROGRAMMER-LEARNING-BALANCE"
+type: simulation
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Programmer Learning Balance
 
 ## Статус

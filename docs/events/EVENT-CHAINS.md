@@ -1,3 +1,11 @@
+---
+title: "EVENT-CHAINS"
+type: events
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Цепочки событий
 
 ## Модель

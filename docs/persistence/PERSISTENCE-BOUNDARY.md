@@ -1,3 +1,11 @@
+---
+title: "PERSISTENCE-BOUNDARY"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Граница persistence
 
 Нормативные решения:

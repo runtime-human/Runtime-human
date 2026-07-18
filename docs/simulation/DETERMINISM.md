@@ -1,3 +1,11 @@
+---
+title: "DETERMINISM"
+type: simulation
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Детерминированность
 
 Нормативное решение: [ADR-007](../adr/ADR-007-determinism-manifest.md).

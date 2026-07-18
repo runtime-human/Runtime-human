@@ -1,3 +1,11 @@
+---
+title: "FULL-ARCHITECTURE-PLAN"
+type: architecture
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Runtime Human — полный архитектурный план
 
 > **Статус:** целевая архитектура с профильным внедрением

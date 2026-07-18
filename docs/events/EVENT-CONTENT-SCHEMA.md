@@ -1,3 +1,11 @@
+---
+title: "EVENT-CONTENT-SCHEMA"
+type: events
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Схема контента событий
 
 Нормативные источники:

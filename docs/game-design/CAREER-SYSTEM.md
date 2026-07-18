@@ -1,3 +1,11 @@
+---
+title: "CAREER-SYSTEM"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Карьерная система
 
 Нормативные источники:

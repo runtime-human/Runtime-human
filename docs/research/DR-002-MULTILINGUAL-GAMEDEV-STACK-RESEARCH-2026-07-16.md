@@ -1,3 +1,11 @@
+---
+title: "DR-002-MULTILINGUAL-GAMEDEV-STACK-RESEARCH-2026-07-16"
+type: research
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # DR-002 — Многоязычное исследование gamedev и desktop-практик
 
 - **Дата:** 2026-07-16

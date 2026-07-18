@@ -1,3 +1,11 @@
+---
+title: "DECISION-STATUS"
+type: architecture
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Decision status
 
 ## Accepted

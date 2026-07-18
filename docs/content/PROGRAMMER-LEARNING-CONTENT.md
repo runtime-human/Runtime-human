@@ -1,3 +1,11 @@
+---
+title: "PROGRAMMER-LEARNING-CONTENT"
+type: content
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Programmer Learning Content
 
 ## Статус

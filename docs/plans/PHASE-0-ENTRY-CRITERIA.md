@@ -1,3 +1,11 @@
+---
+title: "PHASE-0-ENTRY-CRITERIA"
+type: plan
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Phase 0 entry criteria
 
 Implementation starts only after:

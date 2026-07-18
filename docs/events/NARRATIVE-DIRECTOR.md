@@ -1,3 +1,11 @@
+---
+title: "NARRATIVE-DIRECTOR"
+type: events
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Narrative Director
 
 Нормативное решение: [ADR-009](../adr/ADR-009-narrative-director.md).

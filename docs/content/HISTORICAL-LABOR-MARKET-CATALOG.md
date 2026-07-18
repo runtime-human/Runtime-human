@@ -1,3 +1,11 @@
+---
+title: "HISTORICAL-LABOR-MARKET-CATALOG"
+type: content
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Historical Labor Market Catalog
 
 Связанные документы:

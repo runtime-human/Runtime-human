@@ -1,3 +1,11 @@
+---
+title: "HOUSING-AND-EQUIPMENT"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Жильё и компьютерная техника
 
 ## Географическая граница

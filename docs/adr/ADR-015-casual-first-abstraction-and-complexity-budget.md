@@ -1,3 +1,11 @@
+---
+title: "ADR-015-casual-first-abstraction-and-complexity-budget"
+type: adr
+status: accepted
+canon: true
+updated: 2026-07-18
+---
+
 # ADR-015 — Casual-first abstraction и бюджет сложности
 
 - **Статус:** Accepted

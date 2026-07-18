@@ -1,3 +1,11 @@
+---
+title: "DC-001-CASUAL-FIRST-COMPLEXITY-CORRECTION-2026-07-17"
+type: research
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # DC-001 — Casual-first correction после SD-001 и SD-002
 
 - **Дата:** 2026-07-17

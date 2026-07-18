@@ -1,3 +1,11 @@
+---
+title: "PROJECTS-AND-PRODUCTS"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Проекты и продукты
 
 Нормативная техническая модель: [Project & Technical Work Package Engine](PROJECT-WORK-PACKAGE-ENGINE.md).

@@ -1,3 +1,11 @@
+---
+title: "SAFE-MODE"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Safe Mode
 
 ## Запуск

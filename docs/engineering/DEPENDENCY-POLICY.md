@@ -1,3 +1,11 @@
+---
+title: "DEPENDENCY-POLICY"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Политика зависимостей
 
 ## Критерии добавления

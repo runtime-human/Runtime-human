@@ -1,3 +1,11 @@
+---
+title: "CONTENT-ARCHITECTURE"
+type: content
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Архитектура контента
 
 Нормативные решения:

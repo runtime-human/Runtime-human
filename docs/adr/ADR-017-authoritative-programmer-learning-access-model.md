@@ -1,3 +1,11 @@
+---
+title: "ADR-017-authoritative-programmer-learning-access-model"
+type: adr
+status: accepted
+canon: true
+updated: 2026-07-18
+---
+
 # ADR-017 — Авторитетная модель обучения программированию и доступа
 
 - **Статус:** Accepted

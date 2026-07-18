@@ -1,3 +1,11 @@
+---
+title: "UI-ARCHITECTURE"
+type: ui
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # UI Architecture
 
 Нормативные источники:

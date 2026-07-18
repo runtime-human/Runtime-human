@@ -1,3 +1,11 @@
+---
+title: "PROGRAMMER-CAREER-BALANCE"
+type: simulation
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Programmer Career Balance
 
 Нормативные источники:

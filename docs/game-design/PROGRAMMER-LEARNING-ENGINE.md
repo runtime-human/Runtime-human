@@ -1,3 +1,11 @@
+---
+title: "PROGRAMMER-LEARNING-ENGINE"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Programmer Learning, Practice, Mentorship & Access Engine
 
 ## Статус

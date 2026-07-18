@@ -1,3 +1,11 @@
+---
+title: "NPC-AND-NARRATIVE-MEMORY"
+type: events
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # NPC и narrative memory
 
 Связанные спецификации:

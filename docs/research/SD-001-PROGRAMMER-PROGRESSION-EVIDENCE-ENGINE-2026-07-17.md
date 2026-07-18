@@ -1,3 +1,11 @@
+---
+title: "SD-001-PROGRAMMER-PROGRESSION-EVIDENCE-ENGINE-2026-07-17"
+type: research
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # SD-001 — Programmer Progression & Evidence Engine
 
 - **Дата:** 2026-07-17

@@ -1,3 +1,11 @@
+---
+title: "DOCUMENTATION-CHANGELOG"
+type: architecture
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Documentation changelog
 
 ## 2026-07-16 — Complete architecture set

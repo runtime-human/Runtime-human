@@ -1,3 +1,11 @@
+---
+title: "SUSPENDED-MONTH-RUN"
+type: simulation
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Приостановленный MonthRun
 
 Нормативные решения:

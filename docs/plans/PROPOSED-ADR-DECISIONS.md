@@ -1,3 +1,11 @@
+---
+title: "PROPOSED-ADR-DECISIONS"
+type: plan
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Proposed ADR decision sheet
 
 Этот файл используется владельцем проекта при review PR.

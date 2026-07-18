@@ -1,3 +1,11 @@
+---
+title: "SD-005-PROGRAMMER-CAREER-HIRING-LABOR-MARKET-ENGINE-2026-07-18"
+type: research
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # SD-005 — Programmer Career, Hiring & Labor Market Engine
 
 - **Дата:** 2026-07-18

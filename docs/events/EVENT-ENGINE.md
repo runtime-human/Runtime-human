@@ -1,3 +1,11 @@
+---
+title: "EVENT-ENGINE"
+type: events
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Event Engine
 
 ## Ответственность

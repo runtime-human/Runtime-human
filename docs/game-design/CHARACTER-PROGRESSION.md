@@ -1,3 +1,11 @@
+---
+title: "CHARACTER-PROGRESSION"
+type: engine
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Прогрессия персонажа
 
 Нормативные спецификации:

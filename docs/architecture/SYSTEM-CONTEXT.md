@@ -1,3 +1,11 @@
+---
+title: "SYSTEM-CONTEXT"
+type: architecture
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # Runtime Human — System Context
 
 ## Назначение системы

@@ -1,3 +1,11 @@
+---
+title: "SD-002-PROJECT-WORK-PACKAGE-ENGINE-2026-07-17"
+type: research
+status: draft
+canon: true
+updated: 2026-07-18
+---
+
 # SD-002 — Project & Technical Work Package Engine
 
 - **Дата:** 2026-07-17
