@@ -2,9 +2,11 @@
 
 Нормативные спецификации:
 
-- [Programmer-First Design](PROGRAMMER-FIRST-DESIGN.md);
-- [Professional Progression & Evidence Engine](PROFESSIONAL-PROGRESSION-ENGINE.md);
-- [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md).
+- [Programmer-First Design](PROGRAMMER-FIRST-DESIGN.md)
+- [Professional Progression Engine](PROFESSIONAL-PROGRESSION-ENGINE.md)
+- [Technology Ecosystem Engine](TECHNOLOGY-ECOSYSTEM-ENGINE.md)
+- [ADR-013](../adr/ADR-013-authoritative-professional-progression-evidence.md)
+- [ADR-019](../adr/ADR-019-authoritative-historical-technology-ecosystem-model.md)
 
 ## Разделение понятий
 
@@ -12,13 +14,27 @@
 - **Skill** — переносимая профессиональная способность.
 - **Facet** — task-specific детализация без отдельной progression bar.
 - **Capability** — human-readable derived утверждение о доказанной способности.
-- **Technology** — язык/framework/platform/tool с gameplay-значимым lifecycle.
+- **Technology** — язык/runtime/framework/platform/tool с gameplay-значимой identity.
 - **Technology family** — группа transfer и общих mechanics.
-- **Version band** — крупная compatibility/era-линия, а не каждая версия.
+- **Version band** — крупная compatibility/ecosystem/support линия, не каждая версия.
+- **Platform/toolchain context** — среда, необходимая для практического использования.
+- **Ecosystem context** — affordances и risks вокруг технологии.
+- **Familiarity** — текущая способность персонажа работать с конкретной technology/band.
 - **Specialization** — derived профиль практики/evidence.
 - **Professional Evidence** — подтверждённое применение capability в контексте.
 
-Docker не является языком, C# не является специализацией, а Programming не является одной technology. Контент и UI обязаны сохранять категории.
+Docker не является языком, C# не является специализацией, Programming не является одной technology, а популярность не является proficiency.
+
+## Ownership
+
+- Historical Technology Catalog владеет global chronology, bands, prerequisites, compatibility и support facts.
+- City/Era content владеет fictional local diffusion.
+- Equipment/School/NPC/Economy/Employment владеют practical access.
+- Technology Context Engine создаёт immutable provider context.
+- Learning/Project/Career владеют своими outcomes.
+- Progression владеет familiarity, transfer, evidence и grade.
+
+TechnologyDefinition или ecosystem profile не меняют professional state напрямую.
 
 ## Baseline skill graph
 
@@ -47,7 +63,7 @@ Docker не является языком, C# не является специа
 
 ## Facets вместо десятков шкал
 
-Следующие понятия обычно являются facets/task tags:
+Обычно facets/task tags:
 
 - Algorithmic Reasoning;
 - Systems Thinking;
@@ -56,9 +72,7 @@ Docker не является языком, C# не является специа
 - Version Control;
 - Documentation;
 - Development Tools;
-- Performance;
-- Reliability;
-- Security;
+- Performance/Reliability/Security;
 - Incident Handling;
 - Legacy Modernization;
 - Planning/Estimation;
@@ -67,135 +81,131 @@ Docker не является языком, C# не является специа
 - Hiring/Delegation;
 - Product Discovery/Marketing/Sales.
 
-Facet становится отдельным skill только если:
+Facet становится skill только если регулярно создаёт самостоятельные decisions, имеет независимые providers/evidence, нужен нескольким paths и оправдывает content/UX cost.
 
-- регулярно создаёт самостоятельные decisions;
-- имеет независимые providers/evidence;
-- нужен нескольким paths;
-- его нельзя корректно объяснить через существующий skill;
-- content/UX cost оправдан.
+## Skill progress
 
-Публичные, предпринимательские и management capabilities могут иметь собственные systems/read models, но не заменяют programmer mastery.
-
-## Представление skill progress
-
-Authoritative state:
+Authoritative:
 
 - mastery;
 - fluency;
 - last practice;
 - strongest demonstrated capability band.
 
-Normal UI показывает capability text и broad level. Advanced UI показывает mastery/fluency/evidence. Не хранится общий XP, определяющий grade.
+Normal UI показывает capability text и broad level. Advanced может показывать mastery/fluency/evidence. Общего XP, определяющего grade, нет.
 
-## Learning и evidence разделены
+## Learning и evidence
 
-### Mastery gain
+Mastery зависит от challenge match, novelty, feedback, reflection, capacity и diminishing returns. Fluency зависит от текущей практики и reacquisition. Evidence зависит от demonstrated challenge, completion, quality, autonomy, confidence, context novelty и anti-repeat.
 
-Зависит от:
+Provider создаёт `ExperienceEpisode`; Progression возвращает skill/technology deltas, evidence claims, monthly aggregate и explanations.
 
-- challenge match;
-- novelty;
-- feedback;
-- reflection;
-- capacity;
-- diminishing returns.
+Курс/источник может дать learning, но production evidence требует project/work/open-source context. Assistance может повысить learning и снизить autonomy evidence.
 
-### Fluency
+## Technology identity and tiers
 
-Зависит от текущей практики, outcome stability и reacquisition.
+Technology categories:
 
-### Evidence
-
-Зависит от demonstrated challenge band, completion, quality, autonomy, confidence, context novelty и anti-repeat.
-
-Assistance может повысить learning и снизить autonomy evidence. Failure может дать debugging/recovery learning, но не full delivery/quality evidence.
-
-Все authoritative coefficients integer/fixed-point.
-
-## Professional Evidence
-
-Skill/technology progression не растёт только от прошедшего времени.
-
-Meaningful provider outcome создаёт `ExperienceEpisode`, который Progression Core превращает в:
-
-- skill/technology delta;
-- evidence claims;
-- monthly practice aggregate;
-- explanations.
-
-Курс даёт mastery/учебное evidence; production evidence требует project/work/open-source context. Mentoring evidence требует traceable learner/downstream outcome.
-
-## Technology definition
-
-Technology содержит:
-
-- stable ID/version;
-- content tier A/B/C;
-- category;
-- family;
-- paradigms/facets;
-- prerequisites;
-- historical lifecycle;
-- local availability;
-- hardware/platform requirements;
-- learning curve;
-- market demand by era;
-- compatible project kinds;
-- version band/compatibility profile;
-- ecosystem maturity;
-- documentation/community availability;
-- obsolescence/legacy/end-of-support profile.
-
-## Technology lifecycle
-
-```text
-announced
-→ available
-→ learnable locally
-→ early adoption
-→ growing demand
-→ mainstream
-→ mature
-→ declining
-→ legacy
-→ end-of-support
-```
-
-Creation, public release, local availability, production maturity и demand моделируются раздельно.
-
-## Content tiers
+- language;
+- runtime;
+- framework;
+- database;
+- operating system/platform;
+- toolchain/development/delivery tool;
+- standard;
+- assistant.
 
 ### Tier A
 
-Уникальный lifecycle, proficiency, trade-offs, market role и events.
+Уникальные meaningful lifecycle/decisions, familiarity, bands and fixtures.
 
 ### Tier B
 
-Technology identity с общей family mechanics и ограниченным unique content/state.
+Identity с общей family mechanics и ограниченным unique content/state.
 
 ### Tier C
 
-Requirement/tag/context без отдельной proficiency bar.
+Context/tag/requirement без отдельной proficiency bar. Библиотеки/packages/tools по умолчанию Tier C.
 
-UI не показывает Tier C как collectible progression.
+Tier повышается только при доказанном current gameplay.
+
+## Technology definition
+
+Содержит:
+
+- stable ID/family/category/tier;
+- historical identity/source refs;
+- paradigms/facets;
+- prerequisites;
+- meaningful version bands;
+- compatible project kinds;
+- platform/toolchain/ecosystem profile refs;
+- transfer context;
+- UI/localization metadata.
+
+Historical chronology, local availability, practical access, market demand and character familiarity хранятся/проецируются отдельными владельцами.
+
+## Multi-axis lifecycle
+
+### Release maturity
+
+`preview → experimental → available → established`
+
+### Adoption/demand
+
+`niche → emerging → growing → mainstream → concentrated/declining`
+
+### Support
+
+`active → maintenance → security-only → unsupported`
+
+### Ecosystem capability
+
+`sparse → developing → broad → mature → fragmented`
+
+### Local diffusion
+
+`unavailable → rare/shared → specialist → accessible → common`
+
+### Installed-base value
+
+`small → established → entrenched → legacy-critical`
+
+Оси независимы. Нет authoritative universal lifecycle stage или Technology Score.
+
+## Ecosystem context
+
+Отдельные dimensions:
+
+- tooling;
+- documentation/learning sources;
+- component breadth;
+- testing/delivery support;
+- interoperability;
+- community feedback;
+- maintenance/support channels;
+- dependency/verification burden.
+
+Большая ecosystem может ускорять delivery и одновременно повышать fragmentation/dependency/migration burden. Она не является фиксированным multiplier.
 
 ## Version bands
 
-Не хранится каждая semver version.
+Band создаётся, если текущий gameplay существенно меняется минимум по двум направлениям:
 
-Новый `TechnologyVersionBand` создаётся, если существенно меняются минимум два фактора:
-
-- paradigm/API model;
-- tooling/ecosystem;
+- paradigm/API;
 - compatibility;
-- market demand;
-- project risks;
-- learning burden.
+- tooling/ecosystem;
+- platform/deployment;
+- support/maintenance;
+- market/project opportunity;
+- learning burden;
+- migration risk.
+
+Compatibility/support break может оправдать band самостоятельно, если создаёт обязательное player decision.
+
+Не хранятся каждая semver, patch, package or IDE update. Runtime не является package solver.
 
 ## Directed transfer
-
-Transfer задаётся sparse directed edges:
 
 ```ts
 type TransferEdge = Readonly<{
@@ -208,57 +218,124 @@ type TransferEdge = Readonly<{
 }>;
 ```
 
-Content compiler валидирует dimensions и компилирует runtime edge. Runtime не вычисляет transfer динамически из строковой похожести.
+Compiler валидирует sparse directed graph. Runtime не вычисляет transfer по строковой похожести.
 
-Transfer:
+Transfer ускоряет learning/reacquisition, но не создаёт target familiarity без exposure/practice, production evidence или grade.
 
-- ускоряет initial learning;
-- ускоряет reacquisition;
-- не создаёт production evidence;
-- не повышает grade напрямую;
-- не заменяет familiarity в target technology.
-
-## Mastery, fluency, familiarity и recency
+## Mastery, fluency, familiarity and recency
 
 - mastery почти не деградирует;
-- fluency имеет grace period и затем медленно стремится к mastery-based floor;
-- technology familiarity снижается быстрее при major ecosystem shift;
+- fluency после grace period стремится к mastery-based floor;
+- familiarity быстрее теряет current relevance при major ecosystem/band shift;
 - reacquisition быстрее initial acquisition;
-- evidence recency вычисляется projection и влияет на current market readiness;
-- short break не отменяет grade.
+- evidence recency — projection для current readiness;
+- break не отменяет grade;
+- catalog/adoption change сам по себе не меняет familiarity.
+
+## Technology choices
+
+Meaningful options include:
+
+- знакомый стабильный context;
+- mainstream ecosystem;
+- emerging technology;
+- legacy compatibility;
+- version/technology migration;
+- tooling/verification improvement;
+- scope reduction for compatibility;
+- defer until access.
+
+Ни один тип не является globally best. Provider разрешает outcome; Technology Engine предоставляет context/reasons.
+
+## Historical and local availability
+
+```text
+global existence
+→ platform/toolchain availability
+→ fictional local diffusion
+→ institution/source access
+→ character practical access
+```
+
+Global release does not imply local access. Low-access path requires school/shared/mentor/employer/used-equipment/future-retry route.
+
+Historical facts use source refs/precision/confidence. Adoption data preserves platform, geography, population, methodology and observed period. Repository activity, survey usage/desire, job demand and expert recommendation remain different signals.
+
+## 1990 MVP
+
+Only:
+
+- one BASIC-like family/technology;
+- one aggregate band;
+- one PC/DOS-like platform;
+- one aggregate editor/interpreter/compiler toolchain;
+- printed manual/example route;
+- home and school/shared access;
+- one compatibility/support constraint;
+- one technology-informed learning/project choice.
+
+No full historical catalog, exact PC/IDE inventory or multiple progression bars.
+
+## AI-era
+
+AI assistant is a tool/ecosystem affordance, not a language, universal skill or fixed productivity bonus.
+
+Modes remain distinct:
+
+- explanation;
+- completion;
+- generation;
+- diagnosis;
+- review/verification;
+- agentic execution.
+
+Provider determines actual outcome/autonomy. Generated work needs verification/transfer before independent capability evidence.
 
 ## Specialization
 
-- `ProfessionalFocus` выбирается игроком;
-- `SpecializationProfile` выводится из evidence/skills/technologies/contexts;
-- primary/secondary показываются при достаточной confidence;
-- generalist требует устойчивой breadth/transfer evidence;
-- смена specialization сохраняет mastery и требует новых production contexts.
+`ProfessionalFocus` is selected; `SpecializationProfile` is derived from evidence/skills/technologies/contexts. Generalist requires breadth plus transfer evidence. Switching preserves mastery but needs new target practice/production contexts.
 
-## Баланс
+## Balance
 
-- latest technology не всегда оптимальна;
-- early adoption даёт opportunity и instability risk;
-- legacy сохраняет demand/support burden;
-- breadth без depth не закрывает high-complexity evidence;
-- depth повышает expertise и market concentration risk;
-- easy task repetition агрегируется и получает diminishing;
-- passive learning не создаёт Senior evidence;
-- wealth/fame/title не покупают mastery;
-- one technology/context не закрывает все Senior gates.
+- latest/mainstream not always optimal;
+- early adoption gives opportunity plus instability/access burden;
+- legacy preserves installed-base value plus support/maintenance risk;
+- breadth without depth does not satisfy high-complexity evidence;
+- one technology/context does not satisfy all Senior gates;
+- easy switching/migration/transfer cannot farm progression;
+- wealth/fame/title/popularity do not buy mastery;
+- technology context shows 3–5 relevant traits, not full graph.
 
-## Balance metrics
+Metrics:
 
-- skill gain by source/challenge/outcome;
-- mastery vs fluency;
-- evidence diversity/context concentration;
-- transfer efficiency;
-- reacquisition time;
+- mastery/fluency/familiarity;
+- transfer/reacquisition;
 - technology breadth/depth;
-- latest-tech dominance;
-- legacy viability;
-- Tier A/B/C exposure;
-- course/easy-task/mentor farming;
-- specialization switch;
-- current market readiness recovery;
-- grade contribution/gate coverage.
+- latest/mainstream/legacy choice distribution;
+- migration/transfer farming;
+- access equity;
+- source coverage/triangulation;
+- context comprehension;
+- restart/history compatibility.
+
+## Persistence and compatibility
+
+Active attempt/project stores immutable technology context snapshot/reference/fingerprint as needed. Committed release/episode/history preserves semantic technology/band/platform/toolchain/support/constraint snapshot.
+
+Catalog update cannot rewrite committed outcomes. Active mismatch requires exact-compatible content, controlled migration, abandon/recovery or Safe Mode/read-only history.
+
+## Invariants
+
+- technology is not skill or specialization;
+- no one-dimensional technology ranking;
+- no every-library progression;
+- version band needs current gameplay;
+- ecosystem dimensions remain separate;
+- provider ownership preserved;
+- familiarity only via Progression and practice;
+- local diffusion explicitly fictional;
+- source scope preserved;
+- active context restart-safe;
+- committed history immutable;
+- low-access fallback exists;
+- no dynamic web-driven authority or invented post-2026 real-product history.
