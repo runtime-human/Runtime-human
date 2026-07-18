@@ -44,11 +44,13 @@ Normative core:
 - [`PROGRAMMER-FIRST-DESIGN.md`](docs/game-design/PROGRAMMER-FIRST-DESIGN.md)
 - [`PROFESSIONAL-PROGRESSION-ENGINE.md`](docs/game-design/PROFESSIONAL-PROGRESSION-ENGINE.md)
 - [`PROFESSIONAL-CHALLENGE-ENGINE.md`](docs/game-design/PROFESSIONAL-CHALLENGE-ENGINE.md)
+- [`PROGRAMMER-LEARNING-ENGINE.md`](docs/game-design/PROGRAMMER-LEARNING-ENGINE.md)
 - [`PROJECT-WORK-PACKAGE-ENGINE.md`](docs/game-design/PROJECT-WORK-PACKAGE-ENGINE.md)
 - [`ADR-013`](docs/adr/ADR-013-authoritative-professional-progression-evidence.md)
 - [`ADR-014`](docs/adr/ADR-014-authoritative-project-work-package-model.md)
 - [`ADR-015`](docs/adr/ADR-015-casual-first-abstraction-and-complexity-budget.md)
 - [`ADR-016`](docs/adr/ADR-016-authoritative-professional-challenge-model.md)
+- [`ADR-017`](docs/adr/ADR-017-authoritative-programmer-learning-access-model.md)
 
 ## Casual-first invariants
 
@@ -64,7 +66,7 @@ Normative core:
 - Debt/bugs aggregate; detailed ledgers are deferred.
 - Evidence is not the main UI; routine practice aggregates.
 - Details/Advanced do not change outcome and are not required for MVP.
-- No daily ticket, employee-hour or maintenance-click simulation.
+- No daily ticket, employee-hour, learning-schedule or maintenance-click simulation.
 
 ## Professional progression invariants
 
@@ -94,6 +96,26 @@ Normative core:
 - Content cannot mutate save, project, skills or grade directly.
 - No embedded IDE, syntax quiz, hidden correct-combination table or LLM judge in baseline.
 - Challenge breadth/complexity expands only after repetition/dominance/playtest evidence.
+
+## Programmer learning invariants
+
+- Learning is not a generic XP button or daily schedule.
+- Learning source differs by affordances, access, feedback and context, not one fixed multiplier.
+- Access is a projection from Equipment/Housing/City-Era/School/Economy/NPC owners.
+- Learning Engine does not buy equipment, alter relationships or mutate professional state.
+- Understanding, guided practice, independent application, transfer and professional evidence remain distinct.
+- Worked examples should lead toward explanation, modification or transfer rather than copying loops.
+- Meaningful technical problems delegate to Professional Challenge Engine.
+- Progression Core alone confirms capability, evidence and grade.
+- Assistance levels are explicit; pair/takeover results never silently become solo autonomy.
+- Mentor is an opportunity/feedback provider, not a permanent multiplier.
+- Path-blocking access requires a fallback route or visible retry condition.
+- Income/equipment may change convenience and pace, not create a permanent programmer soft lock.
+- Routine review/practice aggregates and does not create modal spam.
+- Historical source/local availability requires provenance.
+- AI explanation, hint, example, full solution and verification remain semantically distinct.
+- Full AI delegation cannot mint independent capability without later verification/transfer.
+- No knowledge XP, course marketplace, exact spaced-repetition scheduler or adaptive tutor state in baseline.
 
 ## Project invariants
 
@@ -162,6 +184,9 @@ MVP gameplay verification:
 - 10–20 second ordinary decision target;
 - 2–4 approaches with understandable trade-offs;
 - no globally dominant approach in declared fixtures;
+- learning source/access/assistance comprehension;
+- guided vs independent distinction;
+- low-access recovery route;
 - monthly causality;
 - bounded visible concepts;
 - no duplicate/reroll;
