@@ -18,6 +18,7 @@
 - [ADR-014 — Авторитетная модель Project & Work Package](ADR-014-authoritative-project-work-package-model.md)
 - [ADR-015 — Casual-first abstraction и бюджет сложности](ADR-015-casual-first-abstraction-and-complexity-budget.md)
 - [ADR-016 — Авторитетная модель профессиональных ситуаций и подходов](ADR-016-authoritative-professional-challenge-model.md)
+- [ADR-017 — Авторитетная модель обучения программированию и доступа](ADR-017-authoritative-programmer-learning-access-model.md)
 
 ## Decision sequence
 
@@ -26,8 +27,9 @@
 - ADR-014: SD-002 project/work-package boundary.
 - ADR-015: DC-001 casual-first correction; architecture seams remain, but MVP/roadmap implement only gameplay-proven complexity.
 - ADR-016: SD-003 professional challenge boundary; concrete situation/approach/outcome bridges providers, projects and progression.
+- ADR-017: SD-004 learning/access boundary; source affordances, practice, feedback and access routes lead to `ExperienceEpisode` without XP or schedule ownership.
 
-ADR-015 constrains implementation scope of ADR-013/014/016 without отмены их ownership, determinism and compatibility guarantees.
+ADR-015 constrains implementation scope of ADR-013/014/016/017 without отмены their ownership, determinism and compatibility guarantees.
 
 ## Proposed
 
@@ -52,3 +54,4 @@ ADR-015 constrains implementation scope of ADR-013/014/016 without отмены 
 - [SD-002 — Project & Work Package Engine](../research/SD-002-PROJECT-WORK-PACKAGE-ENGINE-2026-07-17.md)
 - [DC-001 — Casual-first complexity correction](../research/DC-001-CASUAL-FIRST-COMPLEXITY-CORRECTION-2026-07-17.md)
 - [SD-003 — Professional Challenge & Capability Engine](../research/SD-003-PROFESSIONAL-CHALLENGE-CAPABILITY-ENGINE-2026-07-17.md)
+- [SD-004 — Programmer Learning, Practice, Mentorship & Access](../research/SD-004-PROGRAMMER-LEARNING-PRACTICE-MENTORSHIP-ACCESS-ENGINE-2026-07-18.md)
