@@ -2,102 +2,137 @@
 
 ## Назначение
 
-Каталог связывает реальную историю технологий, каналов обучения и рынка труда с вымышленным локальным рынком одного города.
+Общий каталог связывает реальную историю технологий, каналов обучения и рынка труда с вымышленным локальным контекстом одного города.
 
 Связанные решения:
 
-- [ADR-017 — Programmer Learning & Access](../adr/ADR-017-authoritative-programmer-learning-access-model.md);
-- [ADR-018 — Programmer Career, Hiring & Employment](../adr/ADR-018-authoritative-programmer-career-employment-model.md);
-- [Programmer Learning Content](PROGRAMMER-LEARNING-CONTENT.md);
-- [Programmer Career Content](PROGRAMMER-CAREER-CONTENT.md);
-- [Historical Labor Market Catalog](HISTORICAL-LABOR-MARKET-CATALOG.md).
+- [ADR-017 — Programmer Learning & Access](../adr/ADR-017-authoritative-programmer-learning-access-model.md)
+- [ADR-018 — Programmer Career, Hiring & Employment](../adr/ADR-018-authoritative-programmer-career-employment-model.md)
+- [ADR-019 — Historical Technology & Ecosystem](../adr/ADR-019-authoritative-historical-technology-ecosystem-model.md)
+- [Historical Technology Catalog](HISTORICAL-TECHNOLOGY-CATALOG.md)
+- [Historical Labor Market Catalog](HISTORICAL-LABOR-MARKET-CATALOG.md)
+- [Programmer Learning Content](PROGRAMMER-LEARNING-CONTENT.md)
+- [Programmer Career Content](PROGRAMMER-CAREER-CONTENT.md)
 
-Общий каталог владеет хронологией технологий/каналов. Специализированный labor-market catalog владеет provenance-backed предположениями о career channels, employer practices и market profiles.
+## Ownership split
 
-## Lifecycle
+### Общий Historical Catalog
+
+Владеет:
+
+- shared `HistoricalDate`/source registry conventions;
+- chronology/reference policy;
+- historical-through/future boundary;
+- global versus fictional-local separation;
+- cross-domain review rules.
+
+### Historical Technology Catalog
+
+Владеет:
+
+- technology/platform/tool public chronology;
+- major gameplay version bands;
+- prerequisites/compatibility/support facts;
+- scoped adoption/ecosystem evidence.
+
+### Historical Labor Market Catalog
+
+Владеет:
+
+- career channels and hiring practices;
+- era/region/industry/role-family market profiles;
+- scoped labor-market evidence.
+
+### Provider content
+
+Learning/Career/City content владеет fictional local adaptation and authored situations. Runtime owners resolve character access and outcomes.
+
+## Shared source model
 
 ```ts
-type HistoricalAvailability = Readonly<{
-  announcedAt?: HistoricalDate;
-  firstPublicReleaseAt: HistoricalDate;
-  locallyAvailableFrom?: HistoricalDate;
-  professionalDemandFrom?: HistoricalDate;
-  mainstreamFrom?: HistoricalDate;
-  peakFrom?: HistoricalDate;
-  declineFrom?: HistoricalDate;
-  endOfSupportAt?: HistoricalDate;
-  sourceRefs: readonly SourceRefId[];
-  confidence: 'primary' | 'secondary' | 'estimated';
+type HistoricalSourceRef = Readonly<{
+  id: SourceRefId;
+  sourceClass: HistoricalSourceClass;
+  title: string;
+  publisher: string;
+  url: string;
+  publishedAt?: HistoricalDate;
+  observedPeriod?: HistoricalDateRange;
+  geography?: string;
+  population?: string;
+  methodology?: string;
+  supportedClaims: readonly HistoricalClaimKind[];
+  limitations: readonly string[];
+  reviewedAt: GameDate;
 }>;
 ```
 
-`HistoricalDate` содержит precision: day, month, quarter или year.
+Source class and supported claim are mandatory for composite adoption/market/ecosystem evidence.
+
+## Historical date
+
+```ts
+type HistoricalDate = Readonly<{
+  value: string;
+  precision: 'day' | 'month' | 'quarter' | 'year';
+}>;
+```
+
+Year/quarter evidence cannot be converted into fictional day precision.
+
+## Confidence
+
+```ts
+type SourceConfidence =
+  | 'primary-confirmed'
+  | 'multi-source-supported'
+  | 'secondary-supported'
+  | 'estimated'
+  | 'hypothesis';
+```
+
+Estimated/hypothesis fields are explicit and cannot be displayed as precise real-world facts.
 
 ## Реальные сущности
 
 Допускаются:
 
-- языки;
-- frameworks/runtimes;
-- databases;
-- open-source tools;
-- standards;
-- нейтральные industry milestones;
-- устройства и ОС при фактическом описании;
-- реальные категории и каналы обучения;
-- occupational/labor-market statistics при явном region/era scope;
-- конкретные исторически значимые manuals/books/platforms, если их identity нужна gameplay и подтверждена source refs.
+- languages/runtimes/frameworks/databases/tools;
+- devices/operating systems/platforms;
+- standards and neutral industry milestones;
+- real learning channels/material categories;
+- occupational/labor statistics with explicit scope;
+- official support/compatibility policies;
+- scoped surveys/repository/package/ecosystem studies.
 
-Работодатели, локальные продукты, школы, кружки, mentors, recruiters и события компаний остаются вымышленными.
+Employers, local products, schools, clubs, mentors, recruiters and fictional city events remain fictional.
 
-Реальная company practice может использоваться как source evidence общего pattern, но не превращается в fictional employer identity или universal market rule.
+Real company practice may support a general pattern but never becomes a fictional employer identity or universal rule.
 
-## Prerequisites
+## Technology chronology handoff
 
-Технология не может стать доступной раньше prerequisite runtime/platform. Chronology validator проверяет dependency graph и release ordering.
+Detailed records live in `HISTORICAL-TECHNOLOGY-CATALOG.md`.
 
-Learning source не может появиться раньше:
-
-- своего publication/release;
-- required device/platform/network;
-- соответствующего distribution channel;
-- локальной доступности, если она моделируется отдельно.
-
-Career channel/role/interview pattern не может появиться раньше:
-
-- соответствующей коммуникационной инфраструктуры;
-- era-valid employer/industry context;
-- local professional demand;
-- required technology/platform availability;
-- region-valid legal/educational assumptions where modeled.
-
-AI-assistant source и AI-assisted hiring pattern не могут использоваться до historically allowed era/profile.
-
-## Локальная адаптация
-
-Global release не равен local availability. Доступность зависит от era profile, hardware, информационных каналов, образования, языка и цены входа. Multi-region table не используется в baseline.
-
-Для learning content разделяются:
+Shared sequence:
 
 ```text
-global existence
-→ distribution channel
-→ local availability
-→ practical access for this character
+global public existence
+→ required platform/toolchain exists
+→ fictional local diffusion
+→ institution/equipment access
+→ practical character access
 ```
 
-Для Career content:
+Rules:
 
-```text
-global/industry practice
-→ regional/era plausibility
-→ fictional local market profile
-→ opportunity access for this character
-```
+- technology cannot appear before prerequisites;
+- local availability cannot precede global release;
+- learning/project/career content cannot use unavailable context;
+- support/adoption/ecosystem/local access are separate;
+- AI tool cannot appear before allowed historical era;
+- after 2026-07 real products receive no invented releases/policies.
 
-Последний уровень является runtime projection из equipment/school/economy/NPC/professional/career state и не хранится как universal historical fact.
-
-## Historical learning availability
+## Learning availability
 
 ```ts
 type HistoricalLearningAvailability = Readonly<{
@@ -110,11 +145,11 @@ type HistoricalLearningAvailability = Readonly<{
   distributionChannels: readonly LearningDistributionChannel[];
   languageAvailability: readonly LanguageAvailabilityBand[];
   sourceRefs: readonly SourceRefId[];
-  confidence: 'primary' | 'secondary' | 'estimated';
+  confidence: SourceConfidence;
 }>;
 ```
 
-Distribution channels:
+Channels:
 
 - bundled manual;
 - printed book/magazine;
@@ -122,17 +157,17 @@ Distribution channels:
 - disk exchange;
 - BBS;
 - web page/forum;
-- downloadable documentation;
+- downloadable docs;
 - video platform;
 - Git repository;
 - interactive platform;
 - AI assistant.
 
-## Historical career availability
+Global source existence, fictional local availability and character access remain separate.
 
-Labor market detail lives in `HISTORICAL-LABOR-MARKET-CATALOG.md`.
+## Career availability
 
-Common fields:
+Detailed market model lives in `HISTORICAL-LABOR-MARKET-CATALOG.md`.
 
 ```ts
 type HistoricalCareerAvailability = Readonly<{
@@ -148,133 +183,185 @@ type HistoricalCareerAvailability = Readonly<{
   trainableGapTolerance: CasualOpportunityBand;
   remoteReach: CasualReachBand;
   sourceRefs: readonly SourceRefId[];
-  confidence: 'primary' | 'secondary' | 'estimated';
+  confidence: SourceConfidence;
 }>;
 ```
 
-Это source-backed constraint для fictional `LaborMarketProfile`, а не точная симуляция population.
+It constrains fictional market profiles; it is not a population simulation.
+
+## Local adaptation
+
+### Learning
+
+```text
+global source/channel
+→ era-valid local distribution
+→ fictional institution/access route
+→ character practical access
+```
+
+### Career
+
+```text
+global/industry practice
+→ regional/era plausibility
+→ fictional local market profile
+→ character opportunity access
+```
+
+### Technology
+
+```text
+global identity/band/platform
+→ fictional local diffusion
+→ equipment/institution/employer access
+→ immutable technology context
+```
+
+Local adaptation records their basis:
+
+- direct chronology constraint;
+- regional/era analogy;
+- fictional local assumption;
+- playtest/balance adjustment.
 
 ## Era profiles
 
-Era profile задаёт вероятные каналы, но не создаёт точную дату/market parameter без source refs.
+Era profiles suggest likely channels/contexts but do not create precise facts without source refs.
 
-### 1990-е
+### 1990–1994
 
-Learning:
+- PC/DOS-like home/school contexts;
+- print/manual/listing and clubs;
+- delayed/offline feedback;
+- local institutional/referral career channels;
+- technology access strongly tied to equipment/institutions;
+- no remote/global market baseline.
 
-- print/manual/listing;
-- school labs and clubs;
-- local peers/teachers;
-- disk exchange;
-- BBS/early network only where locally plausible;
-- delayed feedback and offline practice.
+### 1995–2001
 
-Career hypotheses requiring regional research:
+- wider network/web access;
+- web technologies and service companies;
+- early online communities and job channels;
+- new platform/browser compatibility contexts;
+- dot-com growth/correction as scoped market hypotheses.
 
-- local institutional/community/referral channels;
-- limited public vacancy reach;
-- employer-specific practical demonstration/training;
-- strong hardware/platform context;
-- no baseline remote market.
+### 2002–2006
 
-### 2000-е
+- broader web docs/forums/open source;
+- job boards, outsourcing and formalized hiring;
+- Git after historically valid release;
+- specialization and enterprise toolchains.
 
-Learning:
+### 2007–2012
 
-- web tutorials/forums/IRC;
-- downloadable docs;
-- growing open-source access;
-- wider home PC/internet availability.
+- mobile/SaaS/cloud adoption;
+- stronger repository/community signals;
+- more integrated testing/delivery tooling;
+- remote collaboration expands unevenly.
 
-Career hypotheses:
+### 2013–2019
 
-- broader job-board/service-company channels;
-- more formal multi-stage hiring;
-- growing specialization;
-- market corrections affect employer cancellations/layoffs.
+- containers/DevOps/cloud-native contexts after valid release milestones;
+- mature open-source ecosystems;
+- faster ecosystem/version shifts;
+- standardized assessments and specialization.
 
-### 2010-е
+### 2020–2026
 
-Learning:
+- remote reach and competition;
+- AI assistants/local models/agentic tooling after valid dates;
+- abundant sources with stronger verification/provenance concerns;
+- layoffs/re-entry significant in affected segments.
 
-- video courses;
-- Q&A platforms;
-- Git hosting;
-- interactive platforms and bootcamps;
-- fast ecosystem change.
+### After 2026-07
 
-Career hypotheses:
+Alternative future uses fictional technology, employer and platform IDs with separate future rules.
 
-- public repositories/community become stronger signals;
-- remote/global collaboration expands unevenly;
-- specialization and standardized technical assessments grow;
-- employer archetype matters more than one universal market score.
+## Source-scope rules
 
-### 2020-е
+### Direct facts
 
-Learning:
+Release, standard and support claims prefer official project/vendor/standards sources.
 
-- AI coding assistants;
-- interactive sandboxes;
-- abundant sources;
-- low search cost with stronger verification/recency concerns.
+### Composite observations
 
-Career hypotheses:
+Adoption/ecosystem/labor claims preserve:
 
-- remote reach and competition both expand;
-- restructuring/layoff/re-entry become significant in affected segments;
-- AI-assisted hiring may shift toward judgment, codebase navigation and verification;
-- traditional interview patterns remain valid in many employers/regions.
-
-## Источник качества и актуальности
-
-Historical availability не означает pedagogical, employer или career quality.
-
-Learning source отдельно хранит:
-
-- information quality;
-- source recency;
-- compatibility/version fit;
-- language availability;
-- feedback affordance.
-
-Labor-market source отдельно хранит:
-
-- region/era/industry/role-family scope;
-- source type;
-- supported claims;
+- geography/platform/audience;
+- sample/methodology;
+- observed period;
+- supported claim kind;
 - limitations;
-- observed vs inferred parameter;
-- uncertainty/confidence.
+- observed versus inferred fields.
 
-Старый источник может быть полезен для соответствующей legacy technology. Новый source не является автоматически лучшим или универсальным.
+Repository activity, survey use/desire, package activity, job demand and expert recommendation are different signals. They cannot become one universal popularity truth.
 
-## Будущее
+Broad/mainstream claims need two independent source classes or explicit estimated/hypothesis status.
 
-После `historicalThrough = 2026-07` реальные компании не получают придуманные релизы, hiring policies или market events. Future catalog использует fictional IDs и отдельный `futureRulesVersion`.
+## Historical-through and future
 
-Будущие learning platforms/AI products, employers и hiring ecosystems используют fictional IDs, если не существует подтверждённого реального релиза/practice.
+```text
+historicalThrough = 2026-07
+```
+
+After boundary:
+
+- real products do not receive invented releases/support;
+- real companies do not receive invented practices/events;
+- future entities use fictional IDs;
+- future content has explicit alternate-history marker and rules version.
+
+## Fingerprints
+
+Separate semantic fingerprints for:
+
+- source registry;
+- technology chronology/compatibility/support;
+- learning availability;
+- labor-market evidence;
+- fictional local adaptation;
+- provider content.
+
+Cosmetic localization change does not invalidate active outcome. Semantic chronology/context change may.
 
 ## Review
 
-Изменение canonical date/market claim требует sourceRefs, confidence, human review и обновления catalog snapshot. Secondary/estimated запись не должна маскироваться под точный primary fact.
+Technology review:
 
-Learning-source review проверяет:
+- release/support source;
+- date precision;
+- prerequisite chronology;
+- version-band justification;
+- adoption/ecosystem source scope;
+- global/local/access separation;
+- active history compatibility.
 
-- required platform chronology;
-- distribution channel chronology;
-- global vs local availability;
+Learning review:
+
+- source/distribution chronology;
+- platform/channel access;
 - language claim;
+- feedback affordance;
 - AI-era eligibility;
-- отсутствие вымышленной точности.
+- low-access fallback.
 
-Labor-market review проверяет:
+Labor review:
 
-- region/era/industry/role-family scope;
+- region/era/industry/role scope;
 - fictional employer separation;
-- sourced vs inferred fields;
-- hiring channel chronology;
-- remote/AI-era eligibility;
-- отсутствие прямого переноса modern U.S./single-company data в другой контекст;
-- отсутствие permanent career soft lock;
-- source update impact on content fingerprints and fixtures.
+- sourced versus inferred fields;
+- channel/remote/AI chronology;
+- no single-country/company universalization;
+- recovery/no permanent soft lock.
+
+## Forbidden
+
+- canonical dates without provenance/precision;
+- modern patterns projected backward silently;
+- global release treated as local access;
+- one metric used for adoption, quality and demand;
+- fictional local values presented as real data;
+- dynamic web state in authoritative simulation;
+- invented post-boundary history for real entities;
+- source update rewriting committed project/career/professional history.
