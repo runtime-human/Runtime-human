@@ -3,9 +3,13 @@
 Нормативные источники:
 
 - [ADR-015](../adr/ADR-015-casual-first-abstraction-and-complexity-budget.md);
+- [ADR-016](../adr/ADR-016-authoritative-professional-challenge-model.md);
+- [ADR-017](../adr/ADR-017-authoritative-programmer-learning-access-model.md);
 - [Casual Simulation Design](../game-design/CASUAL-SIMULATION-DESIGN.md);
 - [Programmer-First Design](../game-design/PROGRAMMER-FIRST-DESIGN.md);
 - [Professional Progression Engine](../game-design/PROFESSIONAL-PROGRESSION-ENGINE.md);
+- [Professional Challenge Engine](../game-design/PROFESSIONAL-CHALLENGE-ENGINE.md);
+- [Programmer Learning Engine](../game-design/PROGRAMMER-LEARNING-ENGINE.md);
 - [Project & Work Package Engine](../game-design/PROJECT-WORK-PACKAGE-ENGINE.md).
 
 Roadmap строится не вокруг максимальной архитектурной модели, а вокруг последовательной проверки gameplay.
@@ -23,8 +27,10 @@ Roadmap строится не вокруг максимальной архите
 - Storybook Foundation;
 - minimal professional state;
 - minimal project state;
+- minimal challenge contracts;
+- minimal learning/access contracts;
 - minimal `ExperienceEpisode`;
-- atomic project/progression commit;
+- atomic provider/progression commit;
 - Russian localization foundation;
 - focused fixture/test commands.
 
@@ -33,6 +39,9 @@ Roadmap строится не вокруг максимальной архите
 - full evidence schema/browser;
 - full ProjectState/debt/defect model;
 - complete skill graph;
+- full challenge/learning catalog;
+- daily learning schedule;
+- university/credentials/adaptive tutoring/AI;
 - Senior/Company/Product systems;
 - speculative fields without current gameplay.
 
@@ -42,15 +51,19 @@ Exit:
 - MonthRun suspend/resume works;
 - deterministic duplicate guards exist;
 - one casual screen/story can use public contracts;
+- provider/challenge/learning/progression ownership compiles conceptually;
 - no unused Extended schema burden.
 
 ## Phase 1 — Casual Programmer Vertical Slice
 
 Implement `VERTICAL-SLICE-PLAN.md`:
 
+- one historically valid beginner learning source;
+- one access snapshot and low-access fallback;
+- one short learning bridge without a second required modal decision;
 - one small project;
 - two Work Packages;
-- one technical trade-off;
+- one concrete technical situation and approach choice;
 - three quality bands;
 - one uncertainty/debt/known-issue branch;
 - one aggregated professional result;
@@ -60,30 +73,48 @@ Implement `VERTICAL-SLICE-PLAN.md`:
 
 Exit:
 
-- player understands first-month goal and choice;
-- chooses in 10–20 seconds;
+- player understands first-month learning/project goal and technical choice;
+- distinguishes guided result from independent capability;
+- chooses the project approach in 10–20 seconds;
 - explains outcome/learning;
+- low-access fixture reaches meaningful practice;
 - wants to continue to February;
-- screen is not perceived as CRM/Jira;
+- screen is not perceived as LMS/CRM/Jira;
 - normal mode sufficient.
 
 Failure to meet product exit criteria blocks additional simulation depth.
 
 ## Phase 2 — First Playable Year
 
-Goal: prove that the simple loop remains interesting beyond one month.
+Goal: prove that learning, practice, projects and life constraints remain interesting beyond one month.
 
 Add only:
 
 - 3–5 visible skills with gradual progression;
-- several learning activities;
+- 3–5 distinct learning source profiles;
+- 2–3 access routes including low-income/shared-device path;
+- 6–10 learning opportunities as a starting content budget;
+- worked-example → modification → independent practice → transfer progression;
+- one mentor/peer/community feedback route;
 - 2–3 beginner technologies;
-- several small projects;
+- several small projects beginning early in the year;
+- multiple challenge contexts without repeated-choice fatigue;
 - simple Intern readiness;
 - school/family/equipment constraints;
+- routine practice aggregation;
 - quiet months and event variety;
-- first meaningful recovery paths;
+- first meaningful interruption/recovery paths;
 - simple save migration corpus.
+
+Learning depth:
+
+- source affordances rather than XP multipliers;
+- no daily schedule;
+- one blocking learning decision maximum in an ordinary month;
+- assistance levels and guided/independent distinction;
+- at least one transfer milestone;
+- projects appear before course/stat grind dominates;
+- historical availability and access provenance.
 
 Project depth:
 
@@ -96,9 +127,12 @@ Project depth:
 Exit:
 
 - one year is replayable and understandable;
-- no repeated-choice fatigue;
+- no repeated-choice or source fatigue;
 - at least two viable learning/project strategies;
+- low-access start reaches project/capability milestones without permanent deficit;
+- mentor/help is useful but not dominant;
 - progression feels causal, not XP grind;
+- player distinguishes understanding, assistance, independent application and transfer;
 - no need for advanced UI to play.
 
 ## Phase 3 — Beginner → Junior and Career
@@ -106,24 +140,28 @@ Exit:
 - job market/vacancies/interviews;
 - employment as automatic commitment;
 - simple company archetypes;
-- work project requests using shared Project Engine;
+- work project requests using shared Project/Challenge engines;
+- workplace learning and feedback using shared Learning Engine;
 - promotion/title separate from grade;
 - unemployment/re-entry;
 - Intern/Junior readiness;
 - additional skills/technology families only as required;
-- Details mode for progression/project history.
+- Details mode for progression/project/important learning history.
 
-Project Recommended profile may add:
+Project/learning Recommended profile may add:
 
 - meaningful debt/defect records;
 - simple team contribution;
 - maintenance arcs;
-- richer release history.
+- richer release history;
+- documentation/code-review/community learning sources;
+- transfer/reacquisition checks.
 
 Exit:
 
 - path to Junior is playable and understandable;
 - work does not become weekly task management;
+- learning does not become course marketplace;
 - job loss has recovery;
 - professional and life decisions remain balanced;
 - no evidence/performance-review UX.
@@ -134,6 +172,7 @@ Exit:
 - Open Source extension for community/contributors;
 - long-lived project value/support;
 - public/freelance/maintainer paths;
+- community/review learning opportunities;
 - only necessary project depth for support/migrations;
 - Content preview tools as needed.
 
@@ -142,6 +181,7 @@ Exit:
 - Product/Open Source do not duplicate technical ProjectState;
 - popularity/revenue do not create technical grade;
 - support creates choices, not maintenance clicking;
+- community popularity does not replace learning/evidence;
 - project failure/transfer/archive recoverable.
 
 ## Phase 5 — Human Constraints and Long-term Life
@@ -149,16 +189,18 @@ Exit:
 - richer relationships/family;
 - health/fatigue/burnout;
 - housing/equipment progression;
-- mentors/NPC arcs;
+- deeper mentors/NPC arcs;
 - life economy;
 - career interruption/return;
-- long-term project continuity.
+- long-term project continuity;
+- learning interruption/reacquisition.
 
 Exit:
 
 - life systems change choices without monthly chores;
 - interruptions preserve mastery/grade/history;
 - family/health paths viable;
+- access/equipment differences do not create permanent soft lock;
 - technical play not starved.
 
 ## Phase 6 — Middle/Senior, Leadership and Company
@@ -167,6 +209,7 @@ Only after Beginner→Junior corpus and player demand.
 
 - Middle/Senior grade profiles;
 - architecture/review/mentoring;
+- teaching/learning outcomes for others;
 - Team Lead/Tech Lead/Architect;
 - Company teams/hiring/payroll;
 - simple delegation/ownership;
@@ -174,17 +217,19 @@ Only after Beginner→Junior corpus and player demand.
 - Founder/CTO paths;
 - management-to-IC return.
 
-Extended project/progression features may be introduced selectively:
+Extended project/progression/learning features may be introduced selectively:
 
 - granular contribution when it changes leadership gameplay;
 - incidents/rollback for production projects;
 - advanced readiness detail;
 - delegation policies;
-- situational quality/debt depth.
+- situational quality/debt depth;
+- mentoring styles and downstream learner outcomes.
 
 Exit:
 
 - leadership works without employee/hour micromanagement;
+- mentoring is not a passive multiplier;
 - Senior remains understandable;
 - Founder not universally dominant;
 - Extended complexity proves product value.
@@ -198,6 +243,7 @@ Exit:
 - retirement/succession;
 - post-2026 future;
 - philosophy grounded in lived history;
+- historically valid AI-era and future learning ecosystems;
 - mod/content API hardening;
 - compaction based on real save corpus.
 
@@ -216,7 +262,7 @@ A feature is blocked when:
 - normal mode requires advanced data;
 - it adds unused authoritative fields;
 - it increases visible concepts beyond budget;
-- it creates maintenance clicking;
+- it creates maintenance/schedule clicking;
 - it is justified only by realism/future completeness;
 - no playtest hypothesis exists;
 - content/testing cost exceeds demonstrated value.
@@ -229,6 +275,9 @@ A feature is blocked when:
 - provider/module boundaries;
 - causality in monthly report;
 - bounded blocking decisions;
+- guided/assisted/independent semantics;
+- access equity and recovery;
+- early learning → project transition;
 - accessibility/long RU;
 - recovery/soft locks;
 - historical provenance;
@@ -245,6 +294,11 @@ A feature is blocked when:
 - rollout/support/rollback simulation;
 - granular contribution percentages;
 - daily employee/ticket simulation;
+- daily learning timetable;
+- exact spaced-repetition scheduler;
+- adaptive Bayesian learner model;
+- course marketplace/complete education institution simulation;
+- AI tutoring/judging before historically valid gameplay;
 - portfolio dashboard;
 - long-term compaction before real saves;
 - Bayesian/IRT/LLM judge;
