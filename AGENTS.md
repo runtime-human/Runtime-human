@@ -46,11 +46,13 @@ Normative core:
 - [`PROFESSIONAL-CHALLENGE-ENGINE.md`](docs/game-design/PROFESSIONAL-CHALLENGE-ENGINE.md)
 - [`PROGRAMMER-LEARNING-ENGINE.md`](docs/game-design/PROGRAMMER-LEARNING-ENGINE.md)
 - [`PROJECT-WORK-PACKAGE-ENGINE.md`](docs/game-design/PROJECT-WORK-PACKAGE-ENGINE.md)
+- [`PROGRAMMER-CAREER-ENGINE.md`](docs/game-design/PROGRAMMER-CAREER-ENGINE.md)
 - [`ADR-013`](docs/adr/ADR-013-authoritative-professional-progression-evidence.md)
 - [`ADR-014`](docs/adr/ADR-014-authoritative-project-work-package-model.md)
 - [`ADR-015`](docs/adr/ADR-015-casual-first-abstraction-and-complexity-budget.md)
 - [`ADR-016`](docs/adr/ADR-016-authoritative-professional-challenge-model.md)
 - [`ADR-017`](docs/adr/ADR-017-authoritative-programmer-learning-access-model.md)
+- [`ADR-018`](docs/adr/ADR-018-authoritative-programmer-career-employment-model.md)
 
 ## Casual-first invariants
 
@@ -63,8 +65,10 @@ Normative core:
 - Normal progression shows 3–5 relevant skills, capability text, readiness status and next step.
 - Normal project has 2–5 Work Packages and shows at most 1–3 active packages.
 - Normal project quality uses three base dimensions; situational dimensions exist only when relevant.
+- Normal career search shows at most 1–3 meaningful opportunities and 4–6 comparison dimensions.
 - Debt/bugs aggregate; detailed ledgers are deferred.
 - Evidence is not the main UI; routine practice aggregates.
+- Search/application/work routine aggregates; no job-board or performance-review CRM.
 - Details/Advanced do not change outcome and are not required for MVP.
 - No daily ticket, employee-hour, learning-schedule or maintenance-click simulation.
 
@@ -116,6 +120,29 @@ Normative core:
 - AI explanation, hint, example, full solution and verification remain semantically distinct.
 - Full AI delegation cannot mint independent capability without later verification/transfer.
 - No knowledge XP, course marketplace, exact spaced-repetition scheduler or adaptive tutor state in baseline.
+
+## Programmer career invariants
+
+- Career owns opportunities, hiring, offers, positions, workplace trust and career transitions.
+- Career does not mutate mastery, evidence, capability or Professional Grade directly.
+- Career does not duplicate ProjectState, CompanyState, NPC relationship, life capacity or economy ledger.
+- Professional Grade, Grade Readiness, Market Competitiveness, Employer Role Fit, Position/Title and Workplace Trust remain distinct.
+- Employer sees market-visible signals/projections, not hidden authoritative mastery or exact readiness.
+- Opportunity requirements distinguish hard access, demonstrated capability, familiarity, market signals, trainable gaps and preferences.
+- Referral/credential/title/salary/tenure may affect access or signals but are not technical evidence and never guarantee hire.
+- Search and ordinary application routine aggregate; ordinary search surfaces at most 1–3 meaningful opportunities.
+- Meaningful hiring stage exposes 2–4 approaches and reuses Professional Challenge/Learning engines.
+- Interview/work-sample outcome does not mint production evidence without a real eligible provider outcome.
+- No exact hire probability, universal candidate score, embedded coding IDE, syntax-trivia gate or LLM interview judge in baseline.
+- Offer is multi-dimensional and may contain uncertainty; salary is not the universal utility function.
+- Employment is an automatic commitment and supplies Project/Challenge/Learning contexts; player does not press “work” monthly.
+- Workplace Trust is multi-dimensional allowed-scope confidence, not friendship, loyalty or one performance score.
+- Promotion is an employer decision and does not award Professional Grade; grade does not force promotion.
+- Layoff/company closure do not reduce grade or rewrite contribution history.
+- Performance dismissal may affect employer signals but does not erase mastery/grade/history.
+- Path-blocking career state requires fallback, retry condition or alternative route.
+- Opportunity/interview/offer/transition outcomes do not reroll after reload and cannot duplicate on resume/commit.
+- Labor-market facts require era/region/industry/role-family provenance; employers remain fictional.
 
 ## Project invariants
 
@@ -193,6 +220,12 @@ MVP gameplay verification:
 - assisted/partial/failure semantics;
 - one project trade-off;
 - first-month recovery;
+- career opportunity/offer trade-off comprehension;
+- title vs grade comprehension;
+- candidate gap vs employer cancellation comprehension;
+- rejection/layoff/re-entry recovery;
+- salary/referral/credential non-dominance;
+- employment routine aggregation and workplace trust comprehension;
 - accessibility/long RU;
 - desire to continue.
 
