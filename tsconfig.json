@@ -1,0 +1,16 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/shared-kernel" },
+    { "path": "packages/game-schema" },
+    { "path": "packages/game-core" },
+    { "path": "packages/game-persistence-contracts" },
+    { "path": "packages/game-platform-contracts" },
+    { "path": "packages/game-application" },
+    { "path": "packages/game-content" },
+    { "path": "packages/game-ui" },
+    { "path": "packages/game-ui-fixtures" },
+    { "path": "apps/desktop" },
+    { "path": "tests" }
+  ]
+}
