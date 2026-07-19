@@ -1,0 +1,50 @@
+{
+  "name": "runtime-human",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.11.0",
+  "engines": {
+    "node": ">=24 <25",
+    "pnpm": "11.11.0"
+  },
+  "scripts": {
+    "docs:check": "node scripts/build-toc.mjs --check",
+    "fmt": "oxfmt --no-error-on-unmatched-pattern package.json pnpm-workspace.yaml tsconfig.base.json tsconfig.json vitest.config.ts tests apps packages scripts/check-boundaries.mjs .github/workflows/foundation.yml",
+    "fmt:check": "oxfmt --check --no-error-on-unmatched-pattern package.json pnpm-workspace.yaml tsconfig.base.json tsconfig.json vitest.config.ts tests apps packages scripts/check-boundaries.mjs .github/workflows/foundation.yml",
+    "lint": "oxlint --no-error-on-unmatched-pattern scripts/check-boundaries.mjs tests apps packages",
+    "lint:type-aware": "oxlint --type-aware --no-error-on-unmatched-pattern tests apps packages",
+    "typecheck": "tsc -b --pretty false",
+    "boundaries:check": "node scripts/check-boundaries.mjs",
+    "test": "vitest run",
+    "build": "pnpm typecheck && pnpm --filter @runtime-human/desktop build",
+    "storybook": "pnpm --filter @runtime-human/desktop storybook",
+    "storybook:build": "pnpm --filter @runtime-human/desktop storybook:build",
+    "rust:fmt:check": "cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all -- --check",
+    "rust:check": "cargo check --locked --manifest-path apps/desktop/src-tauri/Cargo.toml",
+    "check:fast": "pnpm docs:check && pnpm fmt:check && pnpm lint && pnpm typecheck && pnpm boundaries:check && pnpm test",
+    "verify": "pnpm check:fast && pnpm lint:type-aware && pnpm build && pnpm storybook:build && pnpm rust:fmt:check && pnpm rust:check"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "10.4.1",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.2",
+    "@types/node": "24.13.3",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "jsdom": "29.1.1",
+    "oxfmt": "0.59.0",
+    "oxlint": "1.74.0",
+    "oxlint-tsgolint": "0.24.0",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "typescript": "7.0.2",
+    "vitest": "4.1.10"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@tauri-apps/cli",
+      "esbuild"
+    ]
+  }
+}
