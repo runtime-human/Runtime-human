@@ -14,8 +14,8 @@ describe("FoundationStatus", () => {
     expect(screen.getByRole("heading", { name: foundationReadyFixture.title })).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Состояние Foundation" })).toBeInTheDocument();
     expect(screen.getAllByRole("listitem")).toHaveLength(foundationReadyFixture.checks.length);
-    expect(screen.getByText("Готово")).toBeInTheDocument();
-    expect(screen.getByText("Запланировано")).toBeInTheDocument();
+    expect(screen.getAllByText("Готово")).toHaveLength(3);
+    expect(screen.getAllByText("Запланировано")).toHaveLength(1);
   });
 
   it("keeps long Russian copy intact", () => {
