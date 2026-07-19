@@ -1,3 +1,12 @@
+---
+title: "Determinism Kernel Implementation Plan"
+type: plan
+status: active
+canon: false
+depends_on: [ADR-006, ADR-007]
+updated: 2026-07-20
+---
+
 # Determinism Kernel Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
@@ -6,7 +15,7 @@
 
 **Architecture:** Reuse `canonicalize@3.0.0` for RFC 8785 JSON canonicalization, `@noble/hashes@2.2.0` for synchronous SHA-256, `pure-rand@8.4.2` for integer/bigint distributions, and `rand_xoshiro@0.8.1` as the Rust reference implementation. Project code is limited to strict authoritative-value validation, a small TypeScript compatibility port of the reference Xoshiro256** transition/state contract, stable ID/fingerprint policy, scoped seed derivation and adapters. No gameplay state, persistence or MonthRun behavior is introduced.
 
-**Tech Stack:** TypeScript 7, Vitest 4, canonicalize 3.0.0, @noble/hashes 2.2.0, pure-rand 8.4.2, Rust 1.97, rand_xoshiro 0.8.1, rand_core 0.9.3, serde 1.0.228.
+**Tech Stack:** TypeScript 7, Vitest 4, canonicalize 3.0.0, @noble/hashes 2.2.0, pure-rand 8.4.2, Rust 1.97, rand_xoshiro 0.8.1, rand_core 0.10.0, serde 1.0.228.
 
 ## Global Constraints
 
