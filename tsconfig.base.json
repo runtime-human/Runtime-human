@@ -12,9 +12,7 @@
       "@runtime-human/game-persistence-contracts": [
         "./packages/game-persistence-contracts/src/index.ts"
       ],
-      "@runtime-human/game-platform-contracts": [
-        "./packages/game-platform-contracts/src/index.ts"
-      ],
+      "@runtime-human/game-platform-contracts": ["./packages/game-platform-contracts/src/index.ts"],
       "@runtime-human/game-ui": ["./packages/game-ui/src/index.ts"],
       "@runtime-human/game-ui-fixtures": ["./packages/game-ui-fixtures/src/index.ts"]
     },
