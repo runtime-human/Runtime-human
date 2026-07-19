@@ -1,6 +1,6 @@
 ---
 title: "Determinism Runtime Integration"
-type: engineering
+type: engine
 status: draft
 canon: true
 depends_on: [ADR-006, ADR-007]
