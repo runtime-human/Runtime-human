@@ -3,7 +3,7 @@ title: "Runtime Human — полный каталог документации"
 type: index
 status: draft
 canon: false
-updated: 2026-07-18
+updated: 2026-07-19
 ---
 
 # Runtime Human — полный каталог документации
@@ -11,7 +11,7 @@ updated: 2026-07-18
 > Сгенерировано `node scripts/build-toc.mjs` из metadata документов. Не редактировать вручную.
 > Канонический навигационный вход и порядок источников истины: [INDEX.md](INDEX.md).
 
-Всего документов: **171**.
+Всего документов: **173**.
 
 ## Навигация
 
@@ -182,6 +182,8 @@ updated: 2026-07-18
 - [Project & Technical Work Package Documentation Implementation Plan](superpowers/plans/2026-07-17-project-work-package-docs.md) — `completed`, `canon`
 - [Proposed ADR decision sheet](plans/PROPOSED-ADR-DECISIONS.md) — `draft`, `canon`
 - [Release milestones](plans/RELEASE-MILESTONES.md) — `draft`, `canon`
+- [Repository Foundation design](superpowers/specs/2026-07-19-repository-foundation-design.md) — `draft`, `canon`
+- [Repository Foundation Implementation Plan](superpowers/plans/2026-07-19-repository-foundation.md) — `draft`, `canon`
 - [Roadmap](plans/ROADMAP.md) — `draft`, `canon`
 - [Technology & Ecosystem Engine — Implementation Plan](plans/TECHNOLOGY-ECOSYSTEM-IMPLEMENTATION-PLAN.md) — `draft`, `canon`
 - [Vertical Slice Plan](plans/VERTICAL-SLICE-PLAN.md) — `draft`, `canon`

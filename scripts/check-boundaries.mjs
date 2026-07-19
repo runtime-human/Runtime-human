@@ -102,7 +102,9 @@ export function validateWorkspace(root) {
     const allowed = ALLOWED_WORKSPACE_DEPENDENCIES.get(shortName);
 
     if (!allowed) {
-      diagnostics.push(`${path.relative(root, manifestPath)}: unknown workspace package ${packageName}`);
+      diagnostics.push(
+        `${path.relative(root, manifestPath)}: unknown workspace package ${packageName}`,
+      );
       continue;
     }
 

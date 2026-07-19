@@ -10,6 +10,18 @@
   "references": [
     {
       "path": "../shared-kernel"
+    },
+    {
+      "path": "../game-schema"
+    },
+    {
+      "path": "../game-core"
+    },
+    {
+      "path": "../game-persistence-contracts"
+    },
+    {
+      "path": "../game-platform-contracts"
     }
   ]
 }
