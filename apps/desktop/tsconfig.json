@@ -1,4 +1,8 @@
 {
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": ".tsbuild/solution.tsbuildinfo"
+  },
   "files": [],
   "references": [
     {
