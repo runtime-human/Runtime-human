@@ -1,6 +1,18 @@
+import { fileURLToPath } from "node:url";
+
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@runtime-human/game-ui": fileURLToPath(
+        new URL("./packages/game-ui/src/index.ts", import.meta.url),
+      ),
+      "@runtime-human/game-ui-fixtures": fileURLToPath(
+        new URL("./packages/game-ui-fixtures/src/index.ts", import.meta.url),
+      ),
+    },
+  },
   test: {
     environment: "jsdom",
     globals: true,
