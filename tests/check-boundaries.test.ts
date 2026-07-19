@@ -46,12 +46,31 @@ afterEach(() => {
 });
 
 describe("validateWorkspace", () => {
-  it("accepts the Foundation dependency graph", () => {
+  it("accepts the approved Foundation dependency graph", () => {
     const root = createRoot();
     addPackage(root, "packages", "shared-kernel");
     addPackage(root, "packages", "game-schema", ["shared-kernel"]);
-    addPackage(root, "packages", "game-ui");
-    addPackage(root, "packages", "game-ui-fixtures", ["game-ui"]);
+    addPackage(root, "packages", "game-core", ["shared-kernel", "game-schema"]);
+    addPackage(root, "packages", "game-persistence-contracts", [
+      "shared-kernel",
+      "game-schema",
+    ]);
+    addPackage(root, "packages", "game-platform-contracts", ["shared-kernel", "game-schema"]);
+    addPackage(root, "packages", "game-application", [
+      "shared-kernel",
+      "game-schema",
+      "game-core",
+      "game-persistence-contracts",
+      "game-platform-contracts",
+    ]);
+    addPackage(root, "packages", "game-ui", ["game-application"]);
+    addPackage(root, "packages", "game-ui-fixtures", [
+      "game-schema",
+      "game-application",
+      "game-persistence-contracts",
+      "game-platform-contracts",
+      "game-ui",
+    ]);
     addPackage(root, "apps", "desktop", ["game-ui", "game-ui-fixtures"]);
 
     expect(validateWorkspace(root)).toEqual([]);
