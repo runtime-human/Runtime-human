@@ -6,6 +6,7 @@ import {
   type SerializedXoshiro256State,
 } from "@runtime-human/game-schema";
 
+import { canonicalizeAuthoritative } from "./authoritative-json";
 import { sha256Hex } from "./hash";
 import type { RandomSource } from "./random-source";
 
@@ -113,7 +114,13 @@ export class Xoshiro256StarStar implements RandomGenerator, RandomSource {
       throw new TypeError("RNG scope must contain 1-1024 characters without NUL");
     }
 
-    let childState = sha256Hex(`runtime-human:rng-fork:v1\0${this.exportState()}\0${scope}`);
+    let childState = sha256Hex(
+      canonicalizeAuthoritative({
+        domain: "runtime-human:rng-fork:v1",
+        parentState: this.exportState(),
+        scope,
+      }),
+    );
     if (/^0{64}$/u.test(childState)) {
       childState = `01${childState.slice(2)}`;
     }
