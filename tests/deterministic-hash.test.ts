@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  fingerprint,
-  sha256Hex,
-  stableId,
-} from "@runtime-human/game-core";
+import { fingerprint, sha256Hex, stableId } from "@runtime-human/game-core";
 
 describe("deterministic hashing", () => {
   it("matches the SHA-256 standard vector", () => {
@@ -24,8 +20,6 @@ describe("deterministic hashing", () => {
   });
 
   it("separates stable IDs from fingerprints", () => {
-    expect(stableId("rules", { version: 1 })).not.toBe(
-      fingerprint("rules", { version: 1 }),
-    );
+    expect(stableId("rules", { version: 1 })).not.toBe(fingerprint("rules", { version: 1 }));
   });
 });

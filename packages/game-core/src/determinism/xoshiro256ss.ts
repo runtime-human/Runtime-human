@@ -66,12 +66,7 @@ export class Xoshiro256StarStar implements RandomGenerator, RandomSource {
     const nextS1 = (s1 ^ nextS2) & UINT64_MASK;
     const nextS0 = (s0 ^ nextS3) & UINT64_MASK;
 
-    this.state = [
-      nextS0,
-      nextS1,
-      (nextS2 ^ shifted) & UINT64_MASK,
-      rotateLeft64(nextS3, 45n),
-    ];
+    this.state = [nextS0, nextS1, (nextS2 ^ shifted) & UINT64_MASK, rotateLeft64(nextS3, 45n)];
     return result;
   }
 
@@ -118,9 +113,7 @@ export class Xoshiro256StarStar implements RandomGenerator, RandomSource {
       throw new TypeError("RNG scope must contain 1-1024 characters without NUL");
     }
 
-    let childState = sha256Hex(
-      `runtime-human:rng-fork:v1\0${this.exportState()}\0${scope}`,
-    );
+    let childState = sha256Hex(`runtime-human:rng-fork:v1\0${this.exportState()}\0${scope}`);
     if (/^0{64}$/u.test(childState)) {
       childState = `01${childState.slice(2)}`;
     }

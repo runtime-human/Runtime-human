@@ -4,9 +4,7 @@ import { canonicalizeAuthoritative } from "@runtime-human/game-core";
 
 describe("canonicalizeAuthoritative", () => {
   it("canonicalizes object keys without changing array order", () => {
-    expect(canonicalizeAuthoritative({ z: 1, a: [3, 2, 1] })).toBe(
-      '{"a":[3,2,1],"z":1}',
-    );
+    expect(canonicalizeAuthoritative({ z: 1, a: [3, 2, 1] })).toBe('{"a":[3,2,1],"z":1}');
     expect(canonicalizeAuthoritative({ a: [1, 2, 3], z: 1 })).not.toBe(
       canonicalizeAuthoritative({ a: [3, 2, 1], z: 1 }),
     );
