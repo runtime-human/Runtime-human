@@ -91,5 +91,22 @@ jobs:
           rustup default 1.97.0
       - name: Check Rust formatting
         run: cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all -- --check
-      - name: Check Tauri shell
-        run: cargo check --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
+      - name: Capture Tauri compile diagnostics
+        id: rustcheck
+        run: |
+          set +e
+          cargo check --locked --manifest-path apps/desktop/src-tauri/Cargo.toml > rust-diagnostics.txt 2>&1
+          status=$?
+          set -e
+          tail -n 200 rust-diagnostics.txt
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+      - name: Upload Tauri compile diagnostics
+        if: steps.rustcheck.outputs.status != '0'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: rust-diagnostics
+          path: rust-diagnostics.txt
+          retention-days: 1
+      - name: Enforce Tauri compile result
+        if: steps.rustcheck.outputs.status != '0'
+        run: exit 1
