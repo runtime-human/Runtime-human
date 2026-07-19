@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ES2024",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "paths": {
+      "@runtime-human/shared-kernel": ["./packages/shared-kernel/src/index.ts"],
+      "@runtime-human/game-schema": ["./packages/game-schema/src/index.ts"],
+      "@runtime-human/game-core": ["./packages/game-core/src/index.ts"],
+      "@runtime-human/game-application": ["./packages/game-application/src/index.ts"],
+      "@runtime-human/game-content": ["./packages/game-content/src/index.ts"],
+      "@runtime-human/game-persistence-contracts": [
+        "./packages/game-persistence-contracts/src/index.ts"
+      ],
+      "@runtime-human/game-platform-contracts": ["./packages/game-platform-contracts/src/index.ts"],
+      "@runtime-human/game-ui": ["./packages/game-ui/src/index.ts"],
+      "@runtime-human/game-ui-fixtures": ["./packages/game-ui-fixtures/src/index.ts"]
+    },
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "useUnknownInCatchVariables": true,
+    "noImplicitOverride": true,
+    "noUncheckedSideEffectImports": true,
+    "verbatimModuleSyntax": true,
+    "composite": true,
+    "incremental": true,
+    "declaration": true,
+    "declarationMap": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "outDir": "../.tsbuild/tests",
+    "tsBuildInfoFile": "../.tsbuild/tests.tsbuildinfo",
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "types": ["node", "vitest/globals", "@testing-library/jest-dom"]
+  },
+  "include": ["./**/*.ts", "./**/*.tsx", "../vitest.config.ts"],
+  "references": [{ "path": "../packages/game-ui" }, { "path": "../packages/game-ui-fixtures" }]
+}
