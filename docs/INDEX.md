@@ -1,199 +1,182 @@
----
-title: "Runtime Human — индекс документации"
-type: index
-status: draft
-canon: true
-depends_on: [ADR-013, ADR-014, ADR-015, ADR-016, ADR-017, ADR-018, ADR-019, ADR-020]
-updated: 2026-07-18
----
+# Runtime Human — Documentation Index
 
-# Runtime Human — индекс документации
+Generated from `docs/MANIFEST.jsonc`. Do not edit by hand.
 
-## Источник истины
+## Architecture Decision Records
 
-1. Accepted ADR.
-2. Специализированная спецификация.
-3. Master/Full Architecture.
-4. Implementation plans и PR.
-5. Research/system-design reports.
+- [ADR-001: Реальный исторический календарь и канонический старт в 1990 году](docs/adr/ADR-001-historical-calendar-and-start.md)
+- [ADR-002: Бесплатное распространение без Steam и без целевого рынка ЕС](docs/adr/ADR-002-free-non-eu-distribution.md)
+- [ADR-003: Fixed Fictional Metropolis and Compressed Geography](docs/adr/ADR-003-fixed-fictional-metropolis.md)
+- [ADR-004: Граница выполнения persistence](docs/adr/ADR-004-persistence-execution-boundary.md)
+- [ADR-005: Приостановленный MonthRun](docs/adr/ADR-005-suspended-month-run.md)
+- [ADR-006: Авторитетная числовая модель](docs/adr/ADR-006-numeric-model.md)
+- [ADR-007: Determinism Manifest](docs/adr/ADR-007-determinism-manifest.md)
+- [ADR-008: Разделение browser и desktop E2E](docs/adr/ADR-008-desktop-e2e.md)
+- [ADR-009: Narrative Director](docs/adr/ADR-009-narrative-director.md)
+- [ADR-010: Авторитетное состояние сейва](docs/adr/ADR-010-authoritative-save-state.md)
+- [ADR-011: TypeScript 7 как production baseline](docs/adr/ADR-011-typescript-7-baseline.md)
+- [ADR-012: Storybook как UI и content workshop](docs/adr/ADR-012-storybook-ui-content-workshop.md)
+- [ADR-013 — Авторитетная модель профессиональной прогрессии и evidence](docs/adr/ADR-013-authoritative-professional-progression-evidence.md)
+- [ADR-014 — Авторитетная модель Project & Work Package](docs/adr/ADR-014-authoritative-project-work-package-model.md)
+- [ADR-015 — Casual-first abstraction и бюджет сложности](docs/adr/ADR-015-casual-first-abstraction-and-complexity-budget.md)
+- [ADR-016 — Авторитетная модель профессиональных ситуаций и подходов](docs/adr/ADR-016-authoritative-professional-challenge-model.md)
+- [ADR-017 — Авторитетная модель обучения программированию и доступа](docs/adr/ADR-017-authoritative-programmer-learning-access-model.md)
+- [ADR-018 — Авторитетная модель карьеры программиста, найма и занятости](docs/adr/ADR-018-authoritative-programmer-career-employment-model.md)
+- [ADR-019 — Авторитетная модель исторических технологий, tooling и ecosystem context](docs/adr/ADR-019-authoritative-historical-technology-ecosystem-model.md)
+- [ADR-020 — Авторитетная модель композиции профессиональных ситуаций](docs/adr/ADR-020-authoritative-professional-situation-content-composition-model.md)
+- [Architecture Decision Records](docs/adr/README.md)
 
-Research не становится каноном без ADR/spec synchronization.
+## Architecture
 
-## Ключевой продуктовый канон
+- [Architecture documents](docs/architecture/README.md)
+- [Architecture review order](docs/architecture/REVIEW-ORDER.md)
+- [Canon summary](docs/architecture/CANON-SUMMARY.md)
+- [Decision status](docs/architecture/DECISION-STATUS.md)
+- [Documentation changelog](docs/architecture/DOCUMENTATION-CHANGELOG.md)
+- [Geography scope guard](docs/architecture/NO-GEOGRAPHY-SCOPE.md)
+- [Implementation guards](docs/architecture/IMPLEMENTATION-GUARDS.md)
+- [Professional Situation Content — Module Boundary](docs/architecture/PROFESSIONAL-SITUATION-CONTENT-BOUNDARY.md)
+- [Repository source of truth](docs/architecture/REPOSITORY-SOURCE-OF-TRUTH.md)
+- [Runtime Human — Master Architecture](docs/architecture/MASTER-ARCHITECTURE.md)
+- [Runtime Human — System Context](docs/architecture/SYSTEM-CONTEXT.md)
+- [Runtime Human — полный архитектурный план](docs/architecture/FULL-ARCHITECTURE-PLAN.md)
+- [Границы модулей](docs/architecture/MODULE-BOUNDARIES.md)
+- [Доменная модель Runtime Human](docs/architecture/DOMAIN-MODEL.md)
+- [Потоки данных](docs/architecture/DATA-FLOW.md)
+- [Правила зависимостей](docs/architecture/DEPENDENCY-RULES.md)
+- [Структура репозитория](docs/architecture/REPOSITORY-STRUCTURE.md)
 
-- [ADR-015 — Casual-first abstraction и бюджет сложности](adr/ADR-015-casual-first-abstraction-and-complexity-budget.md)
-- [Casual Simulation Design](game-design/CASUAL-SIMULATION-DESIGN.md)
-- [Gameplay Canon](game-design/GAMEPLAY-CANON.md)
-- [Programmer-First Design](game-design/PROGRAMMER-FIRST-DESIGN.md)
-- [DC-001 — Casual-first correction](research/DC-001-CASUAL-FIRST-COMPLEXITY-CORRECTION-2026-07-17.md)
+## Engines
 
-Приоритет реализации:
+- [Backup и restore](docs/persistence/BACKUP-AND-RESTORE.md)
+- [Casual Simulation Design](docs/game-design/CASUAL-SIMULATION-DESIGN.md)
+- [CI/CD](docs/engineering/CI-CD.md)
+- [Engineering documents](docs/engineering/README.md)
+- [Game design documents](docs/game-design/README.md)
+- [Historical Technology, Tooling & Ecosystem Engine](docs/game-design/TECHNOLOGY-ECOSYSTEM-ENGINE.md)
+- [Open-source система](docs/game-design/OPEN-SOURCE-SYSTEM.md)
+- [Persistence documents](docs/persistence/README.md)
+- [Professional Challenge Engine](docs/game-design/PROFESSIONAL-CHALLENGE-ENGINE.md)
+- [Professional Progression & Evidence Engine](docs/game-design/PROFESSIONAL-PROGRESSION-ENGINE.md)
+- [Professional Situation Content — Persistence & Compatibility](docs/persistence/PROFESSIONAL-SITUATION-CONTENT-COMPATIBILITY.md)
+- [Professional Situation Content Composition Engine](docs/game-design/PROFESSIONAL-SITUATION-CONTENT-ENGINE.md)
+- [Programmer Career, Hiring & Employment Engine](docs/game-design/PROGRAMMER-CAREER-ENGINE.md)
+- [Programmer Learning, Practice, Mentorship & Access Engine](docs/game-design/PROGRAMMER-LEARNING-ENGINE.md)
+- [Programmer-First Design](docs/game-design/PROGRAMMER-FIRST-DESIGN.md)
+- [Project & Technical Work Package Engine](docs/game-design/PROJECT-WORK-PACKAGE-ENGINE.md)
+- [Release и updater](docs/engineering/RELEASE-AND-UPDATER.md)
+- [Rust boundary](docs/engineering/RUST-BOUNDARY.md)
+- [Safe Mode](docs/persistence/SAFE-MODE.md)
+- [Security architecture](docs/engineering/SECURITY.md)
+- [SQLite architecture](docs/persistence/SQLITE-ARCHITECTURE.md)
+- [Storybook workflow](docs/engineering/STORYBOOK-WORKFLOW.md)
+- [Technology Context Persistence & Compatibility](docs/persistence/TECHNOLOGY-CONTEXT-COMPATIBILITY.md)
+- [TypeScript policy](docs/engineering/TYPESCRIPT-POLICY.md)
+- [Город и исторические эпохи](docs/game-design/CITY-AND-ERA-EVOLUTION.md)
+- [Граница persistence](docs/persistence/PERSISTENCE-BOUNDARY.md)
+- [Жизненный цикл и наследие](docs/game-design/LIFE-CYCLE-AND-LEGACY.md)
+- [Жильё и компьютерная техника](docs/game-design/HOUSING-AND-EQUIPMENT.md)
+- [Игровой канон](docs/game-design/GAMEPLAY-CANON.md)
+- [Карьерная система](docs/game-design/CAREER-SYSTEM.md)
+- [Компания и tycoon-часть](docs/game-design/COMPANY-SYSTEM.md)
+- [Месячный игровой цикл](docs/game-design/MONTHLY-GAME-LOOP.md)
+- [Миграции](docs/persistence/MIGRATIONS.md)
+- [Модель сохранения](docs/persistence/SAVE-MODEL.md)
+- [Мягкие ограничения](docs/game-design/SOFT-LIMITS.md)
+- [Навыки и технологии](docs/game-design/SKILLS-AND-TECHNOLOGIES.md)
+- [Отношения и здоровье](docs/game-design/RELATIONSHIPS-AND-HEALTH.md)
+- [Политика зависимостей](docs/engineering/DEPENDENCY-POLICY.md)
+- [Прогрессия персонажа](docs/game-design/CHARACTER-PROGRESSION.md)
+- [Проекты и продукты](docs/game-design/PROJECTS-AND-PRODUCTS.md)
+- [Совместимость сохранений](docs/persistence/SAVE-COMPATIBILITY.md)
+- [Тестовая стратегия](docs/engineering/TESTING-STRATEGY.md)
+- [Технологический стек](docs/engineering/TECH-STACK.md)
 
-```text
-MVP Casual → playtest → Recommended → proven Extended features
-```
+## Simulation & Balance
 
-## Professional progression
+- [Professional Challenge Balance](docs/simulation/PROFESSIONAL-CHALLENGE-BALANCE.md)
+- [Professional Situation Content — Balance, Coverage & Variety](docs/simulation/PROFESSIONAL-SITUATION-CONTENT-BALANCE.md)
+- [Programmer Career Balance](docs/simulation/PROGRAMMER-CAREER-BALANCE.md)
+- [Programmer Learning Balance](docs/simulation/PROGRAMMER-LEARNING-BALANCE.md)
+- [Simulation documents](docs/simulation/README.md)
+- [Technology & Ecosystem Balance](docs/simulation/TECHNOLOGY-ECOSYSTEM-BALANCE.md)
+- [Баланс и массовые симуляции](docs/simulation/BALANCE-SIMULATION.md)
+- [Детерминированность](docs/simulation/DETERMINISM.md)
+- [Календарь](docs/simulation/CALENDAR.md)
+- [Приостановленный MonthRun](docs/simulation/SUSPENDED-MONTH-RUN.md)
+- [Симуляция месяца](docs/simulation/MONTH-SIMULATION.md)
+- [Случайность](docs/simulation/RANDOMNESS.md)
+- [Числовая политика](docs/simulation/NUMERIC-POLICY.md)
 
-- [ADR-013 — Professional Progression & Evidence](adr/ADR-013-authoritative-professional-progression-evidence.md)
-- [Professional Progression Engine](game-design/PROFESSIONAL-PROGRESSION-ENGINE.md)
-- [Professional Progression UI](ui/PROFESSIONAL-PROGRESSION-UI.md)
-- [SD-001 analysis](research/SD-001-PROGRAMMER-PROGRESSION-EVIDENCE-ENGINE-2026-07-17.md)
+## Content
 
-## Professional challenges
+- [Asset pipeline](docs/content/ASSET-PIPELINE.md)
+- [Content documents](docs/content/README.md)
+- [Historical Labor Market Catalog](docs/content/HISTORICAL-LABOR-MARKET-CATALOG.md)
+- [Historical Technology Catalog](docs/content/HISTORICAL-TECHNOLOGY-CATALOG.md)
+- [Professional Situation Content](docs/content/PROFESSIONAL-SITUATION-CONTENT.md)
+- [Programmer Career Content](docs/content/PROGRAMMER-CAREER-CONTENT.md)
+- [Programmer Learning Content](docs/content/PROGRAMMER-LEARNING-CONTENT.md)
+- [Technology & Ecosystem Content](docs/content/TECHNOLOGY-ECOSYSTEM-CONTENT.md)
+- [Tombstones и deprecation](docs/content/TOMBSTONES-AND-DEPRECATION.md)
+- [Архитектура контента](docs/content/CONTENT-ARCHITECTURE.md)
+- [Жизненный цикл контента](docs/content/CONTENT-LIFECYCLE.md)
+- [Исторический каталог](docs/content/HISTORICAL-CATALOG.md)
+- [Локализация](docs/content/LOCALIZATION.md)
+- [Моды](docs/content/MODDING.md)
 
-- [ADR-016 — Professional Challenge Model](adr/ADR-016-authoritative-professional-challenge-model.md)
-- [Professional Challenge Engine](game-design/PROFESSIONAL-CHALLENGE-ENGINE.md)
-- [Professional Challenge UI](ui/PROFESSIONAL-CHALLENGE-UI.md)
-- [Professional Challenge Balance](simulation/PROFESSIONAL-CHALLENGE-BALANCE.md)
-- [Professional Challenge Implementation Plan](plans/PROFESSIONAL-CHALLENGE-IMPLEMENTATION-PLAN.md)
-- [SD-003 analysis](research/SD-003-PROFESSIONAL-CHALLENGE-CAPABILITY-ENGINE-2026-07-17.md)
+## UI
 
-## Professional situation content architecture
+- [Design System](docs/ui/DESIGN-SYSTEM.md)
+- [Motion и audio](docs/ui/MOTION-AND-AUDIO.md)
+- [Performance budgets](docs/ui/PERFORMANCE-BUDGETS.md)
+- [Professional Challenge UI](docs/ui/PROFESSIONAL-CHALLENGE-UI.md)
+- [Professional Progression UI](docs/ui/PROFESSIONAL-PROGRESSION-UI.md)
+- [Professional Situation Content Studio UI](docs/ui/PROFESSIONAL-SITUATION-CONTENT-UI.md)
+- [Programmer Career UI](docs/ui/PROGRAMMER-CAREER-UI.md)
+- [Programmer Learning UI](docs/ui/PROGRAMMER-LEARNING-UI.md)
+- [Project & Work Package UI](docs/ui/PROJECT-WORK-PACKAGE-UI.md)
+- [Technology & Ecosystem UI](docs/ui/TECHNOLOGY-ECOSYSTEM-UI.md)
+- [UI Architecture](docs/ui/UI-ARCHITECTURE.md)
+- [UI documents](docs/ui/README.md)
+- [Доступность](docs/ui/ACCESSIBILITY.md)
+- [Навигация](docs/ui/NAVIGATION.md)
 
-- [ADR-020 — Professional Situation Content Composition](adr/ADR-020-authoritative-professional-situation-content-composition-model.md)
-- [Professional Situation Content Engine](game-design/PROFESSIONAL-SITUATION-CONTENT-ENGINE.md)
-- [Professional Situation Content](content/PROFESSIONAL-SITUATION-CONTENT.md)
-- [Content Studio UI](ui/PROFESSIONAL-SITUATION-CONTENT-UI.md)
-- [Balance, Coverage & Variety](simulation/PROFESSIONAL-SITUATION-CONTENT-BALANCE.md)
-- [Persistence & Compatibility](persistence/PROFESSIONAL-SITUATION-CONTENT-COMPATIBILITY.md)
-- [Implementation Plan](plans/PROFESSIONAL-SITUATION-CONTENT-IMPLEMENTATION-PLAN.md)
-- [SD-007 analysis](research/SD-007-PROFESSIONAL-SITUATION-CONTENT-ARCHITECTURE-2026-07-18.md)
+## Events & Narrative
 
-## Programmer learning and access
+- [Event Engine](docs/events/EVENT-ENGINE.md)
+- [Events and NPC documents](docs/events/README.md)
+- [Narrative Director](docs/events/NARRATIVE-DIRECTOR.md)
+- [NPC и narrative memory](docs/events/NPC-AND-NARRATIVE-MEMORY.md)
+- [Professional Situation Pacing Integration](docs/events/PROFESSIONAL-SITUATION-PACING-INTEGRATION.md)
+- [Схема контента событий](docs/events/EVENT-CONTENT-SCHEMA.md)
+- [Цепочки событий](docs/events/EVENT-CHAINS.md)
 
-- [ADR-017 — Programmer Learning & Access Model](adr/ADR-017-authoritative-programmer-learning-access-model.md)
-- [Programmer Learning Engine](game-design/PROGRAMMER-LEARNING-ENGINE.md)
-- [Programmer Learning UI](ui/PROGRAMMER-LEARNING-UI.md)
-- [Programmer Learning Balance](simulation/PROGRAMMER-LEARNING-BALANCE.md)
-- [Programmer Learning Content](content/PROGRAMMER-LEARNING-CONTENT.md)
-- [Programmer Learning Implementation Plan](superpowers/plans/2026-07-18-programmer-learning-engine.md)
-- [SD-004 analysis](research/SD-004-PROGRAMMER-LEARNING-PRACTICE-MENTORSHIP-ACCESS-ENGINE-2026-07-18.md)
+## Plans
 
-## Programmer career, hiring and employment
+- [Documentation review checklist](docs/plans/DOCUMENTATION-REVIEW-CHECKLIST.md)
+- [Phase 0 entry criteria](docs/plans/PHASE-0-ENTRY-CRITERIA.md)
+- [Plans](docs/plans/README.md)
+- [Professional Challenge Engine — Implementation Plan](docs/plans/PROFESSIONAL-CHALLENGE-IMPLEMENTATION-PLAN.md)
+- [Professional Situation Content Composition — Implementation Plan](docs/plans/PROFESSIONAL-SITUATION-CONTENT-IMPLEMENTATION-PLAN.md)
+- [Programmer Career Engine — Implementation Plan](docs/plans/PROGRAMMER-CAREER-IMPLEMENTATION-PLAN.md)
+- [Programmer Learning Engine Implementation Plan](docs/superpowers/plans/2026-07-18-programmer-learning-engine.md)
+- [Programmer Progression & Evidence Documentation Implementation Plan](docs/superpowers/plans/2026-07-17-programmer-progression-evidence-docs.md)
+- [Project & Technical Work Package Documentation Implementation Plan](docs/superpowers/plans/2026-07-17-project-work-package-docs.md)
+- [Proposed ADR decision sheet](docs/plans/PROPOSED-ADR-DECISIONS.md)
+- [Release milestones](docs/plans/RELEASE-MILESTONES.md)
+- [Roadmap](docs/plans/ROADMAP.md)
+- [Technology & Ecosystem Engine — Implementation Plan](docs/plans/TECHNOLOGY-ECOSYSTEM-IMPLEMENTATION-PLAN.md)
+- [Vertical Slice Plan](docs/plans/VERTICAL-SLICE-PLAN.md)
 
-- [ADR-018 — Programmer Career, Hiring & Employment Model](adr/ADR-018-authoritative-programmer-career-employment-model.md)
-- [Programmer Career Engine](game-design/PROGRAMMER-CAREER-ENGINE.md)
-- [Career overview](game-design/CAREER-SYSTEM.md)
-- [Programmer Career UI](ui/PROGRAMMER-CAREER-UI.md)
-- [Programmer Career Balance](simulation/PROGRAMMER-CAREER-BALANCE.md)
-- [Programmer Career Content](content/PROGRAMMER-CAREER-CONTENT.md)
-- [Historical Labor Market Catalog](content/HISTORICAL-LABOR-MARKET-CATALOG.md)
-- [Programmer Career Implementation Plan](plans/PROGRAMMER-CAREER-IMPLEMENTATION-PLAN.md)
-- [SD-005 analysis](research/SD-005-PROGRAMMER-CAREER-HIRING-LABOR-MARKET-ENGINE-2026-07-18.md)
+## Agents
 
-## Historical technology, tooling and ecosystems
+- [Agent guides](docs/agents/README.md)
+- [Architect Agent](docs/agents/ARCHITECT-AGENT.md)
+- [Content Agent](docs/agents/CONTENT-AGENT.md)
+- [Core Agent](docs/agents/CORE-AGENT.md)
+- [QA Agent](docs/agents/QA-AGENT.md)
+- [Red Team Agent](docs/agents/RED-TEAM-AGENT.md)
+- [UI Agent](docs/agents/UI-AGENT.md)
+- [Workflow ИИ-агентов](docs/agents/AGENT-WORKFLOW.md)
 
-- [ADR-019 — Historical Technology & Ecosystem Model](adr/ADR-019-authoritative-historical-technology-ecosystem-model.md)
-- [Technology Ecosystem Engine](game-design/TECHNOLOGY-ECOSYSTEM-ENGINE.md)
-- [Skills & Technologies](game-design/SKILLS-AND-TECHNOLOGIES.md)
-- [Technology Ecosystem UI](ui/TECHNOLOGY-ECOSYSTEM-UI.md)
-- [Technology Ecosystem Balance](simulation/TECHNOLOGY-ECOSYSTEM-BALANCE.md)
-- [Technology Ecosystem Content](content/TECHNOLOGY-ECOSYSTEM-CONTENT.md)
-- [Historical Technology Catalog](content/HISTORICAL-TECHNOLOGY-CATALOG.md)
-- [Technology Context Compatibility](persistence/TECHNOLOGY-CONTEXT-COMPATIBILITY.md)
-- [Technology Ecosystem Implementation Plan](plans/TECHNOLOGY-ECOSYSTEM-IMPLEMENTATION-PLAN.md)
-- [SD-006 analysis](research/SD-006-HISTORICAL-TECHNOLOGY-TOOLING-ECOSYSTEM-ENGINE-2026-07-18.md)
-
-## Projects
-
-- [ADR-014 — Project & Work Package Model](adr/ADR-014-authoritative-project-work-package-model.md)
-- [Project & Work Package Engine](game-design/PROJECT-WORK-PACKAGE-ENGINE.md)
-- [Project & Work Package UI](ui/PROJECT-WORK-PACKAGE-UI.md)
-- [SD-002 analysis](research/SD-002-PROJECT-WORK-PACKAGE-ENGINE-2026-07-17.md)
-
-## Исследования
-
-- [Research/System Design Index](research/README.md)
-- [DR-001](research/DR-001-STACK-ARCHITECTURE-AUDIT-2026-07-16.md)
-- [DR-002](research/DR-002-MULTILINGUAL-GAMEDEV-STACK-RESEARCH-2026-07-16.md)
-- [Technical synthesis](research/DR-SYNTHESIS-2026-07-16.md)
-- [DR-003 Programmer-First](research/DR-003-PROGRAMMER-FIRST-DESIGN-SYNTHESIS-2026-07-17.md)
-
-## Архитектура
-
-- [Master Architecture](architecture/MASTER-ARCHITECTURE.md)
-- [Full Architecture](architecture/FULL-ARCHITECTURE-PLAN.md)
-- [System Context](architecture/SYSTEM-CONTEXT.md)
-- [Module Boundaries](architecture/MODULE-BOUNDARIES.md)
-- [Domain Model](architecture/DOMAIN-MODEL.md)
-- [Repository Structure](architecture/REPOSITORY-STRUCTURE.md)
-- [Dependency Rules](architecture/DEPENDENCY-RULES.md)
-- [Data Flow](architecture/DATA-FLOW.md)
-
-## Игровой дизайн
-
-- [Character Progression](game-design/CHARACTER-PROGRESSION.md)
-- [Skills & Technologies](game-design/SKILLS-AND-TECHNOLOGIES.md)
-- [Technology Ecosystem Engine](game-design/TECHNOLOGY-ECOSYSTEM-ENGINE.md)
-- [Professional Situation Content Engine](game-design/PROFESSIONAL-SITUATION-CONTENT-ENGINE.md)
-- [Monthly Loop](game-design/MONTHLY-GAME-LOOP.md)
-- [Career](game-design/CAREER-SYSTEM.md)
-- [Projects & Products Overview](game-design/PROJECTS-AND-PRODUCTS.md)
-- [Open Source](game-design/OPEN-SOURCE-SYSTEM.md)
-- [Company](game-design/COMPANY-SYSTEM.md)
-- [Relationships & Health](game-design/RELATIONSHIPS-AND-HEALTH.md)
-- [Life Cycle & Legacy](game-design/LIFE-CYCLE-AND-LEGACY.md)
-- [City & Era](game-design/CITY-AND-ERA-EVOLUTION.md)
-
-## Симуляция и события
-
-- [Month Simulation](simulation/MONTH-SIMULATION.md)
-- [Suspended MonthRun](simulation/SUSPENDED-MONTH-RUN.md)
-- [Calendar](simulation/CALENDAR.md)
-- [Determinism](simulation/DETERMINISM.md)
-- [Numeric Policy](simulation/NUMERIC-POLICY.md)
-- [Randomness](simulation/RANDOMNESS.md)
-- [Balance Simulation](simulation/BALANCE-SIMULATION.md)
-- [Professional Challenge Balance](simulation/PROFESSIONAL-CHALLENGE-BALANCE.md)
-- [Professional Situation Content Balance](simulation/PROFESSIONAL-SITUATION-CONTENT-BALANCE.md)
-- [Programmer Learning Balance](simulation/PROGRAMMER-LEARNING-BALANCE.md)
-- [Programmer Career Balance](simulation/PROGRAMMER-CAREER-BALANCE.md)
-- [Technology Ecosystem Balance](simulation/TECHNOLOGY-ECOSYSTEM-BALANCE.md)
-- [Event Engine](events/EVENT-ENGINE.md)
-- [Narrative Director](events/NARRATIVE-DIRECTOR.md)
-- [NPC Memory](events/NPC-AND-NARRATIVE-MEMORY.md)
-
-## Persistence и content
-
-- [Save Model](persistence/SAVE-MODEL.md)
-- [Persistence Boundary](persistence/PERSISTENCE-BOUNDARY.md)
-- [SQLite Architecture](persistence/SQLITE-ARCHITECTURE.md)
-- [Migrations](persistence/MIGRATIONS.md)
-- [Save Compatibility](persistence/SAVE-COMPATIBILITY.md)
-- [Professional Situation Compatibility](persistence/PROFESSIONAL-SITUATION-CONTENT-COMPATIBILITY.md)
-- [Technology Context Compatibility](persistence/TECHNOLOGY-CONTEXT-COMPATIBILITY.md)
-- [Backup/Restore](persistence/BACKUP-AND-RESTORE.md)
-- [Safe Mode](persistence/SAFE-MODE.md)
-- [Content Architecture](content/CONTENT-ARCHITECTURE.md)
-- [Professional Situation Content](content/PROFESSIONAL-SITUATION-CONTENT.md)
-- [Programmer Learning Content](content/PROGRAMMER-LEARNING-CONTENT.md)
-- [Programmer Career Content](content/PROGRAMMER-CAREER-CONTENT.md)
-- [Technology Ecosystem Content](content/TECHNOLOGY-ECOSYSTEM-CONTENT.md)
-- [Historical Catalog](content/HISTORICAL-CATALOG.md)
-- [Historical Labor Market Catalog](content/HISTORICAL-LABOR-MARKET-CATALOG.md)
-- [Historical Technology Catalog](content/HISTORICAL-TECHNOLOGY-CATALOG.md)
-- [Modding](content/MODDING.md)
-
-## UI, engineering и plans
-
-- [UI Architecture](ui/UI-ARCHITECTURE.md)
-- [Design System](ui/DESIGN-SYSTEM.md)
-- [Accessibility](ui/ACCESSIBILITY.md)
-- [Professional Challenge UI](ui/PROFESSIONAL-CHALLENGE-UI.md)
-- [Professional Situation Content Studio UI](ui/PROFESSIONAL-SITUATION-CONTENT-UI.md)
-- [Programmer Learning UI](ui/PROGRAMMER-LEARNING-UI.md)
-- [Programmer Career UI](ui/PROGRAMMER-CAREER-UI.md)
-- [Technology Ecosystem UI](ui/TECHNOLOGY-ECOSYSTEM-UI.md)
-- [Tech Stack](engineering/TECH-STACK.md)
-- [TypeScript Policy](engineering/TYPESCRIPT-POLICY.md)
-- [Storybook Workflow](engineering/STORYBOOK-WORKFLOW.md)
-- [Testing Strategy](engineering/TESTING-STRATEGY.md)
-- [CI/CD](engineering/CI-CD.md)
-- [Security](engineering/SECURITY.md)
-- [Vertical Slice](plans/VERTICAL-SLICE-PLAN.md)
-- [Programmer Career Implementation Plan](plans/PROGRAMMER-CAREER-IMPLEMENTATION-PLAN.md)
-- [Technology Ecosystem Implementation Plan](plans/TECHNOLOGY-ECOSYSTEM-IMPLEMENTATION-PLAN.md)
-- [Professional Situation Content Implementation Plan](plans/PROFESSIONAL-SITUATION-CONTENT-IMPLEMENTATION-PLAN.md)
-- [Roadmap](plans/ROADMAP.md)
-- [ADR Index](adr/README.md)

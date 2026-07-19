@@ -31,12 +31,22 @@ const TYPE_BY_DIR = {
   superpowers: "plan",
 };
 
+const DEPENDS_ON_BY_DIR = {
+  "game-design": ["ADR-013", "ADR-014", "ADR-016", "ADR-017", "ADR-018"],
+  ui: ["ADR-013", "ADR-014", "ADR-016", "ADR-017", "ADR-018"],
+  simulation: ["ADR-013", "ADR-014", "ADR-016", "ADR-017", "ADR-018"],
+  plans: ["ADR-013", "ADR-014", "ADR-016", "ADR-017", "ADR-018"],
+  superpowers: ["ADR-013", "ADR-014", "ADR-016", "ADR-017", "ADR-018"],
+};
+
 function walk(dir) {
   return fs.readdirSync(dir, { withFileTypes: true })
     .flatMap((entry) => {
       const full = path.join(dir, entry.name);
       return entry.isDirectory() ? walk(full) : entry.name.endsWith(".md") ? [full] : [];
     })
+    .filter((f) => !f.endsWith(path.join("docs", "INDEX.md")))
+    .filter((f) => !f.endsWith(path.join("docs", "MANIFEST.jsonc")))
     .sort((a, b) => a.localeCompare(b, "en"));
 }
 
@@ -61,6 +71,15 @@ function deriveStatus(file, type) {
 
 function deriveCanon(type) {
   return !["research", "source"].includes(type);
+}
+
+function smartDependsOn(file, type) {
+  const parts = path.relative(DOCS, file).split(path.sep);
+  for (let i = parts.length - 2; i >= 0; i--) {
+    const dir = parts[i];
+    if (DEPENDS_ON_BY_DIR[dir]) return DEPENDS_ON_BY_DIR[dir];
+  }
+  return [];
 }
 
 function titleFromBody(raw, file) {
@@ -125,7 +144,7 @@ function metadataFor(file, raw) {
     type,
     status: deriveStatus(file, type),
     canon: deriveCanon(type),
-    depends_on: adrDependencies(raw, file),
+    depends_on: [...new Set([...smartDependsOn(file, type), ...adrDependencies(raw, file)])].sort(),
     updated: TODAY,
   };
 }
@@ -203,6 +222,47 @@ if (CHECK) {
   else if (fs.readFileSync(MANIFEST, "utf8") !== manifestText) errors.push("docs/MANIFEST.jsonc: stale; run node scripts/build-toc.mjs");
 } else {
   fs.writeFileSync(MANIFEST, manifestText, "utf8");
+  generateIndex(entries);
+}
+
+function generateIndex(entries) {
+  const canon = entries.filter((e) => e.canon);
+  const sections = [
+    { key: "adr", title: "Architecture Decision Records", type: "adr" },
+    { key: "architecture", title: "Architecture", type: "architecture" },
+    { key: "engine", title: "Engines", type: "engine" },
+    { key: "simulation", title: "Simulation & Balance", type: "simulation" },
+    { key: "content", title: "Content", type: "content" },
+    { key: "ui", title: "UI", type: "ui" },
+    { key: "events", title: "Events & Narrative", type: "events" },
+    { key: "plan", title: "Plans", type: "plan" },
+    { key: "research", title: "Research", type: "research" },
+    { key: "source", title: "Sources", type: "source" },
+    { key: "agent", title: "Agents", type: "agent" },
+  ];
+
+  const lines = [
+    "# Runtime Human — Documentation Index",
+    "",
+    "Generated from `docs/MANIFEST.jsonc`. Do not edit by hand.",
+    "",
+  ];
+
+  for (const section of sections) {
+    const items = canon.filter((e) => e.type === section.type).sort((a, b) => a.title.localeCompare(b.title, "en"));
+    if (!items.length) continue;
+    lines.push(`## ${section.title}`);
+    lines.push("");
+    for (const item of items) {
+      const link = item.file;
+      lines.push(`- [${item.title}](${link})`);
+    }
+    lines.push("");
+  }
+
+  const indexPath = path.join(DOCS, "INDEX.md");
+  fs.writeFileSync(indexPath, lines.join("\n") + "\n", "utf8");
+  console.log(`[docs] INDEX.md generated (${canon.length} canon entries)`);
 }
 
 if (errors.length) {
