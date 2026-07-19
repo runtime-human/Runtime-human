@@ -1,0 +1,13 @@
+$ oxlint --no-error-on-unmatched-pattern scripts/check-boundaries.mjs tests apps packages
+::warning file=scripts/check-boundaries.mjs,line=48,endLine=48,col=6,endColumn=10,title=unicorn(no-array-sort)::Use `Array#toSorted()` instead of `Array#sort()`.
+::warning file=scripts/check-boundaries.mjs,line=67,endLine=67,col=6,endColumn=10,title=unicorn(no-array-sort)::Use `Array#toSorted()` instead of `Array#sort()`.
+::warning file=scripts/check-boundaries.mjs,line=79,endLine=79,col=6,endColumn=10,title=unicorn(no-array-sort)::Use `Array#toSorted()` instead of `Array#sort()`.
+::warning file=scripts/check-boundaries.mjs,line=218,endLine=218,col=22,endColumn=26,title=unicorn(no-array-sort)::Use `Array#toSorted()` instead of `Array#sort()`.
+::warning file=packages/shared-kernel/src/index.ts,line=1,endLine=1,col=8,endColumn=10,title=unicorn(require-module-specifiers)::Empty export specifier is not allowed
+::warning file=packages/game-content/src/index.ts,line=1,endLine=1,col=8,endColumn=10,title=unicorn(require-module-specifiers)::Empty export specifier is not allowed
+::warning file=packages/game-persistence-contracts/src/index.ts,line=1,endLine=1,col=8,endColumn=10,title=unicorn(require-module-specifiers)::Empty export specifier is not allowed
+::warning file=packages/game-platform-contracts/src/index.ts,line=1,endLine=1,col=8,endColumn=10,title=unicorn(require-module-specifiers)::Empty export specifier is not allowed
+::warning file=packages/game-application/src/index.ts,line=1,endLine=1,col=8,endColumn=10,title=unicorn(require-module-specifiers)::Empty export specifier is not allowed
+
+Found 9 warnings and 0 errors.
+Finished in 18ms on 30 files with 132 rules using 2 threads.
