@@ -105,7 +105,14 @@ function shortPackageName(directory, manifest) {
   };
 }
 
-function declaredDependencyDiagnostic(root, manifestPath, shortName, allowed, knownPackages, dependency) {
+function declaredDependencyDiagnostic(
+  root,
+  manifestPath,
+  shortName,
+  allowed,
+  knownPackages,
+  dependency,
+) {
   if (!knownPackages.has(dependency)) {
     return `${path.relative(root, manifestPath)}: unknown workspace dependency ${WORKSPACE_PREFIX}${dependency}`;
   }
@@ -115,7 +122,14 @@ function declaredDependencyDiagnostic(root, manifestPath, shortName, allowed, kn
   return null;
 }
 
-function validateDeclaredDependencies(root, manifestPath, manifest, shortName, allowed, knownPackages) {
+function validateDeclaredDependencies(
+  root,
+  manifestPath,
+  manifest,
+  shortName,
+  allowed,
+  knownPackages,
+) {
   return workspaceDependencies(manifest)
     .map((dependency) =>
       declaredDependencyDiagnostic(
@@ -130,7 +144,14 @@ function validateDeclaredDependencies(root, manifestPath, manifest, shortName, a
     .filter(Boolean);
 }
 
-function workspaceImportDiagnostics(root, file, shortName, allowed, knownPackages, workspaceImport) {
+function workspaceImportDiagnostics(
+  root,
+  file,
+  shortName,
+  allowed,
+  knownPackages,
+  workspaceImport,
+) {
   const diagnostics = [];
   if (workspaceImport.deep) {
     diagnostics.push(
