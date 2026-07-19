@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
@@ -15,7 +16,7 @@ type GoldenFixture = Readonly<{
 
 const fixture = parseFixture(
   JSON.parse(
-    readFileSync(new URL("../fixtures/determinism/xoshiro256ss-v1.json", import.meta.url), "utf8"),
+    readFileSync(resolve(process.cwd(), "fixtures/determinism/xoshiro256ss-v1.json"), "utf8"),
   ) as unknown,
 );
 
