@@ -28,7 +28,7 @@ All versions are exact in manifests and lockfiles. Upgrading any component that 
 
 Project-owned code is limited to:
 
-- validation of the authoritative JSON subset before RFC 8785 canonicalization;
+- validation and snapshotting of the authoritative JSON subset before RFC 8785 canonicalization;
 - domain-separated stable-ID and fingerprint envelopes;
 - the TypeScript compatibility port of the published Xoshiro256** transition and SplitMix64 seed expansion;
 - exact state serialization and restoration;
@@ -42,22 +42,23 @@ The project does not reimplement SHA-256, JCS property ordering or unbiased inte
 
 The canonicalization boundary accepts only:
 
-- `null`, booleans and strings;
+- `null`, booleans and well-formed Unicode strings;
 - safe integer numbers except negative zero;
 - dense arrays;
-- plain objects with enumerable data properties and string keys.
+- plain objects with enumerable data properties and well-formed string keys.
 
 It rejects values that normal JSON processing could silently erase, coerce or execute:
 
 - `undefined`, functions, symbols and bigint values;
 - fractional, non-finite and unsafe numbers;
+- lone UTF-16 surrogates in values or keys;
 - sparse arrays or arrays with additional named properties;
 - accessors, non-enumerable properties and symbol keys;
 - class instances, dates and other non-plain prototypes;
 - cyclic graphs;
 - payloads beyond the configured depth/node limits.
 
-Repeated acyclic references are allowed because they have the same canonical tree representation. Big integers cross JSON/IPC boundaries only through separately validated canonical decimal strings.
+Validation creates a fresh plain snapshot from property descriptors. The upstream canonicalizer receives that snapshot rather than the caller-owned object, so getters and proxy traps cannot change data after validation but before hashing. Repeated acyclic references are allowed because they have the same canonical tree representation. Big integers cross JSON/IPC boundaries only through separately validated canonical decimal strings.
 
 ## Hashing and domain separation
 
@@ -96,15 +97,17 @@ The authoritative TypeScript API exposes integer operations only. Floating-point
 
 ## Named streams
 
-`fork(scope)` derives a child state from:
+`fork(scope)` hashes the canonical JSON envelope:
 
 ```text
-runtime-human:rng-fork:v1
-+ parent serialized state
-+ explicit scope
+{
+  domain: "runtime-human:rng-fork:v1",
+  parentState: <serialized parent state>,
+  scope: <explicit well-formed scope>
+}
 ```
 
-through SHA-256. Forking does not consume or mutate the parent stream. Equal parent state and scope reproduce the same child; different scopes are isolated. Scope names are part of the versioned rules contract and must not be derived from localized display text or container iteration order.
+Forking does not consume or mutate the parent stream. Equal parent state and scope reproduce the same child; different scopes are isolated. Scope names are bounded, reject NUL and lone surrogates, and are part of the versioned rules contract. They must not be derived from localized display text or container iteration order.
 
 This hash-derived fork policy is distinct from Xoshiro `jump()` and is used for stable named simulation scopes. Changing it requires a new RNG/stream compatibility version.
 
