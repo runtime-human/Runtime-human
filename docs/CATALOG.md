@@ -11,7 +11,7 @@ updated: 2026-07-20
 > Сгенерировано `node scripts/build-toc.mjs` из metadata документов. Не редактировать вручную.
 > Канонический навигационный вход и порядок источников истины: [INDEX.md](INDEX.md).
 
-Всего документов: **174**.
+Всего документов: **175**.
 
 ## Навигация
 
@@ -87,6 +87,7 @@ updated: 2026-07-20
 - [Backup и restore](persistence/BACKUP-AND-RESTORE.md) — `draft`, `canon`
 - [Casual Simulation Design](game-design/CASUAL-SIMULATION-DESIGN.md) — `draft`, `canon`
 - [CI/CD](engineering/CI-CD.md) — `draft`, `canon`
+- [Determinism Runtime Integration](engineering/DETERMINISM-RUNTIME-INTEGRATION.md) — `draft`, `canon`
 - [Engineering documents](engineering/README.md) — `draft`, `canon`
 - [Game design documents](game-design/README.md) — `draft`, `canon`
 - [Historical Technology, Tooling & Ecosystem Engine](game-design/TECHNOLOGY-ECOSYSTEM-ENGINE.md) — `draft`, `canon`
