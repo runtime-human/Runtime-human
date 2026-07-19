@@ -1,6 +1,6 @@
 use rand_xoshiro::{
-    rand_core::{RngCore, SeedableRng},
     Xoshiro256StarStar,
+    rand_core::{RngCore, SeedableRng},
 };
 use serde::Deserialize;
 
@@ -32,7 +32,10 @@ fn rand_xoshiro_matches_shared_golden_fixture() {
         .collect();
 
     assert_eq!(actual_outputs, fixture.outputs_u64_decimal);
-    assert_eq!(encode_state(random.state()), fixture.state_after_outputs_hex);
+    assert_eq!(
+        encode_state(random.state()),
+        fixture.state_after_outputs_hex
+    );
 
     let seeded = Xoshiro256StarStar::seed_from_u64(42);
     assert_eq!(encode_state(seeded.state()), fixture.seed42_state_hex);
@@ -47,7 +50,10 @@ fn decode_state(value: &str) -> [u8; 32] {
         *byte = u8::from_str_radix(&value[offset..offset + 2], 16)
             .expect("state must contain lowercase hexadecimal bytes");
     }
-    assert!(bytes.iter().any(|byte| *byte != 0), "state cannot be all zeroes");
+    assert!(
+        bytes.iter().any(|byte| *byte != 0),
+        "state cannot be all zeroes"
+    );
     bytes
 }
 

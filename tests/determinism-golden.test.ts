@@ -15,10 +15,7 @@ type GoldenFixture = Readonly<{
 
 const fixture = parseFixture(
   JSON.parse(
-    readFileSync(
-      new URL("../fixtures/determinism/xoshiro256ss-v1.json", import.meta.url),
-      "utf8",
-    ),
+    readFileSync(new URL("../fixtures/determinism/xoshiro256ss-v1.json", import.meta.url), "utf8"),
   ) as unknown,
 );
 
