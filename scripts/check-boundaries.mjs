@@ -95,6 +95,69 @@ function findWorkspaceImports(file) {
   return imports;
 }
 
+function shortPackageName(directory, manifest) {
+  const packageName = String(manifest.name ?? path.basename(directory));
+  return {
+    packageName,
+    shortName: packageName.startsWith(WORKSPACE_PREFIX)
+      ? packageName.slice(WORKSPACE_PREFIX.length)
+      : packageName,
+  };
+}
+
+function declaredDependencyDiagnostic(root, manifestPath, shortName, allowed, knownPackages, dependency) {
+  if (!knownPackages.has(dependency)) {
+    return `${path.relative(root, manifestPath)}: unknown workspace dependency ${WORKSPACE_PREFIX}${dependency}`;
+  }
+  if (!allowed.has(dependency)) {
+    return `${path.relative(root, manifestPath)}: ${shortName} cannot depend on ${dependency}`;
+  }
+  return null;
+}
+
+function validateDeclaredDependencies(root, manifestPath, manifest, shortName, allowed, knownPackages) {
+  return workspaceDependencies(manifest)
+    .map((dependency) =>
+      declaredDependencyDiagnostic(
+        root,
+        manifestPath,
+        shortName,
+        allowed,
+        knownPackages,
+        dependency,
+      ),
+    )
+    .filter(Boolean);
+}
+
+function workspaceImportDiagnostics(root, file, shortName, allowed, knownPackages, workspaceImport) {
+  const diagnostics = [];
+  if (workspaceImport.deep) {
+    diagnostics.push(
+      `${path.relative(root, file)}: deep workspace import ${workspaceImport.specifier} is forbidden`,
+    );
+  }
+  if (workspaceImport.dependency === shortName) return diagnostics;
+  if (!knownPackages.has(workspaceImport.dependency)) {
+    diagnostics.push(
+      `${path.relative(root, file)}: unknown workspace import ${WORKSPACE_PREFIX}${workspaceImport.dependency}`,
+    );
+  } else if (!allowed.has(workspaceImport.dependency)) {
+    diagnostics.push(
+      `${path.relative(root, file)}: ${shortName} cannot import ${workspaceImport.dependency}`,
+    );
+  }
+  return diagnostics;
+}
+
+function validateSourceImports(root, directory, shortName, allowed, knownPackages) {
+  return walkSourceFiles(path.join(directory, "src")).flatMap((file) =>
+    findWorkspaceImports(file).flatMap((workspaceImport) =>
+      workspaceImportDiagnostics(root, file, shortName, allowed, knownPackages, workspaceImport),
+    ),
+  );
+}
+
 export function validateWorkspace(root) {
   const diagnostics = [];
   const packageDirectories = [
@@ -110,50 +173,25 @@ export function validateWorkspace(root) {
   );
 
   for (const { directory, manifestPath, manifest } of packages) {
-    const packageName = String(manifest.name ?? path.basename(directory));
-    const shortName = packageName.startsWith(WORKSPACE_PREFIX)
-      ? packageName.slice(WORKSPACE_PREFIX.length)
-      : packageName;
+    const { packageName, shortName } = shortPackageName(directory, manifest);
     const allowed = ALLOWED_WORKSPACE_DEPENDENCIES.get(shortName);
-
     if (!allowed) {
       diagnostics.push(
         `${path.relative(root, manifestPath)}: unknown workspace package ${packageName}`,
       );
       continue;
     }
-
-    for (const dependency of workspaceDependencies(manifest)) {
-      if (!knownPackages.has(dependency)) {
-        diagnostics.push(
-          `${path.relative(root, manifestPath)}: unknown workspace dependency ${WORKSPACE_PREFIX}${dependency}`,
-        );
-      } else if (!allowed.has(dependency)) {
-        diagnostics.push(
-          `${path.relative(root, manifestPath)}: ${shortName} cannot depend on ${dependency}`,
-        );
-      }
-    }
-
-    for (const file of walkSourceFiles(path.join(directory, "src"))) {
-      for (const workspaceImport of findWorkspaceImports(file)) {
-        if (workspaceImport.deep) {
-          diagnostics.push(
-            `${path.relative(root, file)}: deep workspace import ${workspaceImport.specifier} is forbidden`,
-          );
-        }
-        if (workspaceImport.dependency === shortName) continue;
-        if (!knownPackages.has(workspaceImport.dependency)) {
-          diagnostics.push(
-            `${path.relative(root, file)}: unknown workspace import ${WORKSPACE_PREFIX}${workspaceImport.dependency}`,
-          );
-        } else if (!allowed.has(workspaceImport.dependency)) {
-          diagnostics.push(
-            `${path.relative(root, file)}: ${shortName} cannot import ${workspaceImport.dependency}`,
-          );
-        }
-      }
-    }
+    diagnostics.push(
+      ...validateDeclaredDependencies(
+        root,
+        manifestPath,
+        manifest,
+        shortName,
+        allowed,
+        knownPackages,
+      ),
+      ...validateSourceImports(root, directory, shortName, allowed, knownPackages),
+    );
   }
 
   return diagnostics.sort((left, right) => left.localeCompare(right, "en"));
