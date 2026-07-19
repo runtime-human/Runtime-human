@@ -1,0 +1,34 @@
+[WARN] The "pnpm" field in package.json is no longer read by pnpm. The following keys were ignored: "pnpm.onlyBuiltDependencies". See https://pnpm.io/settings for the new home of each setting.
+Scope: all 11 workspace projects
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Progress: resolved 17, reused 0, downloaded 16, added 0
+Progress: resolved 20, reused 0, downloaded 19, added 0
+Progress: resolved 174, reused 0, downloaded 48, added 0
+Progress: resolved 180, reused 0, downloaded 90, added 0
+Progress: resolved 295, reused 0, downloaded 114, added 0
+Progress: resolved 340, reused 0, downloaded 166, added 0
+Progress: resolved 411, reused 0, downloaded 229, added 0
+Packages: +244
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 411, reused 0, downloaded 254, added 235
+Progress: resolved 411, reused 0, downloaded 254, added 244, done
+
+devDependencies:
++ @testing-library/dom 10.4.1
++ @testing-library/jest-dom 6.9.1
++ @testing-library/react 16.3.2
++ @types/node 24.13.3 (26.1.1 is available)
++ @types/react 19.2.17
++ @types/react-dom 19.2.3
++ jsdom 29.1.1
++ oxfmt 0.59.0
++ oxlint 1.74.0
++ oxlint-tsgolint 0.24.0 (0.25.0 is available)
++ react 19.2.7
++ react-dom 19.2.7
++ typescript 7.0.2
++ vitest 4.1.10
+
+[ERR_PNPM_IGNORED_BUILDS] Ignored build scripts: esbuild@0.28.1
+
+Run "pnpm approve-builds" to pick which dependencies should be allowed to run scripts.
