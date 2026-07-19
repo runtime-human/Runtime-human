@@ -1,0 +1,59 @@
+$ vitest run
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/home/runner/work/Runtime-human/Runtime-human[39m
+
+ [32m✓[39m tests/check-boundaries.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [31m❯[39m tests/xoshiro256ss.test.ts [2m([22m[2m6 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 62[2mms[22m[39m
+     [32m✓[39m matches the rand_xoshiro reference sequence and state[32m 3[2mms[22m[39m
+     [32m✓[39m matches SplitMix64 seed expansion[32m 0[2mms[22m[39m
+     [32m✓[39m restores an identical continuation[32m 0[2mms[22m[39m
+     [32m✓[39m generates integers inside a half-open safe-integer range[32m 45[2mms[22m[39m
+     [32m✓[39m selects weighted candidates and rejects invalid weights[32m 3[2mms[22m[39m
+[31m     [31m×[31m forks repeatable isolated streams without consuming the parent[39m[32m 9[2mms[22m[39m
+ [31m❯[39m tests/authoritative-json.test.ts [2m([22m[2m4 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 15[2mms[22m[39m
+     [32m✓[39m canonicalizes object keys without changing array order[32m 4[2mms[22m[39m
+     [32m✓[39m allows repeated acyclic references[32m 0[2mms[22m[39m
+     [32m✓[39m canonicalizes a validated snapshot instead of rereading the source[32m 0[2mms[22m[39m
+[31m     [31m×[31m rejects values that JSON canonicalization would erase or reinterpret[39m[32m 9[2mms[22m[39m
+ [32m✓[39m tests/determinism-golden.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m tests/determinism-manifest.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m tests/foundation-status.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 260[2mms[22m[39m
+ [32m✓[39m tests/deterministic-hash.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 2 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m tests/authoritative-json.test.ts[2m > [22mcanonicalizeAuthoritative[2m > [22mrejects values that JSON canonicalization would erase or reinterpret
+[31m[1mAssertionError[22m: expected [Function] to throw an error[39m
+[36m [2m❯[22m tests/authoritative-json.test.ts:[2m96:54[22m[39m
+    [90m 94|[39m
+    [90m 95|[39m     [35mfor[39m ([35mconst[39m value [35mof[39m invalidValues) {
+    [90m 96|[39m       [34mexpect[39m(() [33m=>[39m [34mcanonicalizeAuthoritative[39m(value))[33m.[39m[34mtoThrow[39m()[33m;[39m
+    [90m   |[39m                                                      [31m^[39m
+    [90m 97|[39m     }
+    [90m 98|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m tests/xoshiro256ss.test.ts[2m > [22mXoshiro256StarStar[2m > [22mforks repeatable isolated streams without consuming the parent
+[31m[1mAssertionError[22m: expected [Function] to throw an error[39m
+[36m [2m❯[22m tests/xoshiro256ss.test.ts:[2m76:41[22m[39m
+    [90m 74|[39m     [34mexpect[39m(emoji[33m.[39m[34mexportState[39m())[33m.[39m[34mtoMatch[39m([36m/^[0-9a-f]{64}$/u[39m)[33m;[39m
+    [90m 75|[39m     [34mexpect[39m(() [33m=>[39m parent[33m.[39m[34mfork[39m([32m""[39m))[33m.[39m[34mtoThrow[39m()[33m;[39m
+    [90m 76|[39m     [34mexpect[39m(() [33m=>[39m parent[33m.[39m[34mfork[39m([32m"\ud800"[39m))[33m.[39m[34mtoThrow[39m()[33m;[39m
+    [90m   |[39m                                         [31m^[39m
+    [90m 77|[39m   })[33m;[39m
+    [90m 78|[39m })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m5 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m20 passed[39m[22m[90m (22)[39m
+[2m   Start at [22m 21:33:41
+[2m   Duration [22m 7.39s[2m (transform 219ms, setup 423ms, import 406ms, tests 380ms, environment 5.11s)[22m
+
+
+::error file=/home/runner/work/Runtime-human/Runtime-human/tests/authoritative-json.test.ts,title=tests/authoritative-json.test.ts > canonicalizeAuthoritative > rejects values that JSON canonicalization would erase or reinterpret,line=96,column=54::AssertionError: expected [Function] to throw an error%0A ❯ tests/authoritative-json.test.ts:96:54%0A%0A
+
+::error file=/home/runner/work/Runtime-human/Runtime-human/tests/xoshiro256ss.test.ts,title=tests/xoshiro256ss.test.ts > Xoshiro256StarStar > forks repeatable isolated streams without consuming the parent,line=76,column=41::AssertionError: expected [Function] to throw an error%0A ❯ tests/xoshiro256ss.test.ts:76:41%0A%0A
+[ELIFECYCLE] Test failed. See above for more details.
