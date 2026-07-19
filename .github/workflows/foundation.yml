@@ -32,6 +32,35 @@ permissions:
   contents: read
 
 jobs:
+  diagnostics:
+    if: github.event_name == 'pull_request' && github.head_ref == 'agent/determinism-kernel'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Check documentation
+        run: pnpm docs:check
+      - name: Check formatting
+        run: pnpm fmt:check
+      - name: Run lint
+        run: pnpm lint
+      - name: Run typecheck
+        run: pnpm typecheck
+      - name: Check boundaries
+        run: pnpm boundaries:check
+      - name: Run tests
+        run: pnpm test
+
   javascript:
     runs-on: ubuntu-latest
     steps:
