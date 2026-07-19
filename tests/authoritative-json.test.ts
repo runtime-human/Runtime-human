@@ -19,7 +19,8 @@ describe("canonicalizeAuthoritative", () => {
   });
 
   it("rejects values that JSON canonicalization would erase or reinterpret", () => {
-    const sparse = new Array<unknown>(1);
+    const sparse: unknown[] = [];
+    sparse.length = 1;
     const cyclic: Record<string, unknown> = {};
     cyclic.self = cyclic;
 
