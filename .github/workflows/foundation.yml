@@ -47,29 +47,29 @@ jobs:
           corepack prepare pnpm@11.11.0 --activate
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Capture TypeScript diagnostics
-        id: typecheck
-        run: |
-          set +e
-          pnpm typecheck > typecheck-diagnostics.txt 2>&1
-          status=$?
-          set -e
-          cat typecheck-diagnostics.txt
-          echo "status=$status" >> "$GITHUB_OUTPUT"
-      - name: Upload TypeScript diagnostics
-        if: steps.typecheck.outputs.status != '0'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: typecheck-diagnostics
-          path: typecheck-diagnostics.txt
-          retention-days: 1
-      - name: Enforce TypeScript result
-        if: steps.typecheck.outputs.status != '0'
-        run: exit 1
+      - name: Typecheck project references
+        run: pnpm typecheck
       - name: Verify documentation derivatives
         run: pnpm docs:check
-      - name: Check formatting
-        run: pnpm fmt:check
+      - name: Capture formatting diagnostics
+        id: formatting
+        run: |
+          set +e
+          pnpm fmt:check > formatting-diagnostics.txt 2>&1
+          status=$?
+          set -e
+          cat formatting-diagnostics.txt
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+      - name: Upload formatting diagnostics
+        if: steps.formatting.outputs.status != '0'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: formatting-diagnostics
+          path: formatting-diagnostics.txt
+          retention-days: 1
+      - name: Enforce formatting result
+        if: steps.formatting.outputs.status != '0'
+        run: exit 1
       - name: Run fast lint
         run: pnpm lint
       - name: Check package boundaries
