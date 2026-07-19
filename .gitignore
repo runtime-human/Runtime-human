@@ -46,6 +46,7 @@ web_modules/
 
 # TypeScript cache
 *.tsbuildinfo
+.tsbuild/
 
 # Optional npm cache directory
 .npm
@@ -77,17 +78,14 @@ web_modules/
 # Next.js build output
 .next
 out
+.output
 
 # Nuxt.js build / generate output
 .nuxt
 dist
-.output
 
 # Gatsby files
 .cache/
-# Comment in the public line in if your project uses Gatsby and not Next.js
-# https://nextjs.org/blog/next-9-1#public-directory-support
-# public
 
 # vuepress build output
 .vuepress/dist
@@ -141,3 +139,9 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Foundation outputs
+storybook-static/
+apps/desktop/storybook-static/
+apps/desktop/src-tauri/target/
+.DS_Store
