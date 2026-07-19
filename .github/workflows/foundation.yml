@@ -36,6 +36,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          show-progress: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: "24"
@@ -44,15 +46,15 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Typecheck project references
+        run: pnpm typecheck
       - name: Verify documentation derivatives
         run: pnpm docs:check
       - name: Check formatting
         run: pnpm fmt:check
       - name: Run fast lint
         run: pnpm lint
-      - name: Typecheck project references
-        run: pnpm typecheck
       - name: Check package boundaries
         run: pnpm boundaries:check
       - name: Run unit tests
@@ -68,6 +70,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          show-progress: false
       - name: Install Tauri system dependencies
         run: |
           sudo apt-get update
