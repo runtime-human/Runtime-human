@@ -1,0 +1,13 @@
+{
+  "name": "@runtime-human/game-persistence-contracts",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@runtime-human/game-schema": "workspace:*",
+    "@runtime-human/shared-kernel": "workspace:*"
+  }
+}
