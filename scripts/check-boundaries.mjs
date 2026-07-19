@@ -24,8 +24,17 @@ const ALLOWED_WORKSPACE_DEPENDENCIES = new Map([
   ["game-content", new Set(["shared-kernel", "game-schema"])],
   ["game-persistence-contracts", new Set(["shared-kernel", "game-schema"])],
   ["game-platform-contracts", new Set(["shared-kernel", "game-schema"])],
-  ["game-ui", new Set()],
-  ["game-ui-fixtures", new Set(["game-ui"])],
+  ["game-ui", new Set(["game-application"])],
+  [
+    "game-ui-fixtures",
+    new Set([
+      "game-schema",
+      "game-application",
+      "game-persistence-contracts",
+      "game-platform-contracts",
+      "game-ui",
+    ]),
+  ],
   ["desktop", new Set(["game-ui", "game-ui-fixtures"])],
 ]);
 
