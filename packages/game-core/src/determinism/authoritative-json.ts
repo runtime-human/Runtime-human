@@ -151,7 +151,11 @@ function assertWellFormedUnicode(value: string, path: string): void {
     const codeUnit = value.charCodeAt(index);
     if (codeUnit >= HIGH_SURROGATE_START && codeUnit <= HIGH_SURROGATE_END) {
       const nextCodeUnit = value.charCodeAt(index + 1);
-      if (nextCodeUnit < LOW_SURROGATE_START || nextCodeUnit > LOW_SURROGATE_END) {
+      if (
+        index + 1 >= value.length ||
+        nextCodeUnit < LOW_SURROGATE_START ||
+        nextCodeUnit > LOW_SURROGATE_END
+      ) {
         throw new TypeError(`Lone Unicode surrogate is forbidden at ${path}`);
       }
       index += 1;
