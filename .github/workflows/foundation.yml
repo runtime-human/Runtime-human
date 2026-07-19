@@ -33,14 +33,11 @@ permissions:
 
 jobs:
   diagnostics:
-    if: github.event_name == 'pull_request' && github.head_ref == 'agent/determinism-kernel' && github.actor != 'github-actions[bot]'
-    permissions:
-      contents: write
+    if: github.event_name == 'pull_request' && github.head_ref == 'agent/determinism-kernel'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
-          ref: agent/determinism-kernel
           show-progress: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
@@ -51,15 +48,18 @@ jobs:
           corepack prepare pnpm@11.11.0 --activate
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Capture golden test diagnostics
-        run: pnpm exec vitest run tests/determinism-golden.test.ts > golden-test-diagnostics.txt 2>&1 || true
-      - name: Commit diagnostics
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add golden-test-diagnostics.txt
-          git commit -m "chore: capture golden test diagnostics"
-          git push origin HEAD:agent/determinism-kernel
+      - name: Check documentation
+        run: pnpm docs:check
+      - name: Check formatting
+        run: pnpm fmt:check
+      - name: Run lint
+        run: pnpm lint
+      - name: Run typecheck
+        run: pnpm typecheck
+      - name: Check boundaries
+        run: pnpm boundaries:check
+      - name: Run tests
+        run: pnpm test
 
   javascript:
     runs-on: ubuntu-latest
