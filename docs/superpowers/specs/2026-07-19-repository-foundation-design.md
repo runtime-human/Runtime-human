@@ -148,24 +148,39 @@ docs/
 
 ```text
 shared-kernel
-    ↑
-game-schema
-    ↑
-game-core
-    ↑
-game-application
-    ↑
-game-ui
-    ↑
-apps/desktop
+├─ game-schema
+│  ├─ game-core
+│  ├─ game-content
+│  ├─ game-persistence-contracts
+│  ├─ game-platform-contracts
+│  └─ game-ui-fixtures
+├─ game-core
+├─ game-content
+├─ game-persistence-contracts
+└─ game-platform-contracts
+
+shared-kernel + game-schema + game-core + game-content
++ persistence/platform contracts
+→ game-application
+
+shared-kernel + game-schema + game-application
+→ game-ui
+
+shared-kernel + game-schema
+→ game-ui-fixtures
+
+game-application + game-ui + game-ui-fixtures
++ game-platform-contracts
+→ apps/desktop
 ```
 
 Дополнительные правила:
 
-- `game-content` зависит только от `shared-kernel` и `game-schema`;
-- persistence/platform contracts зависят только от `shared-kernel` и `game-schema`;
-- `game-ui-fixtures` может зависеть от public contracts и `game-ui`, но не от Tauri/Rust;
+- `game-ui` не импортирует `game-core` напрямую и получает только application read models/public contracts;
+- `game-ui-fixtures` не зависит от React components, Tauri или Rust;
 - `game-core` не зависит от UI, React, Tauri, filesystem или persistence adapter;
+- `game-content` не зависит от application/UI/platform adapters;
+- persistence/platform contracts не содержат concrete adapters;
 - `apps/desktop` является composition root и не содержит gameplay formulas.
 
 `scripts/check-boundaries.mjs` проверяет workspace `package.json` dependencies по allow-list. AST/import scanner и сторонний dependency-cruiser не добавляются в Foundation.
@@ -233,7 +248,7 @@ Foundation включает:
 - Lefthook не добавляется до стабилизации команд;
 - Playwright/WebdriverIO не входят в Foundation.
 
-Type-aware Oxlint запускается в `verify`, но при несовместимости с TypeScript 7 допускается только явный documented временный non-blocking lane в этом PR; silent disable запрещён.
+Type-aware Oxlint является blocking частью `verify`. Если текущая stable-версия несовместима с закреплённым TypeScript 7 scaffold, PR не считается готовым: совместимость исправляется либо оформляется отдельным изменением канона до merge.
 
 ## Команды
 
@@ -284,7 +299,7 @@ verify
 Foundation test corpus:
 
 1. `check-boundaries` positive fixture для разрешённого graph.
-2. `check-boundaries` negative fixture для запрещённой UI → core обратной зависимости.
+2. `check-boundaries` negative fixtures для запрещённых `game-ui → game-core` и `game-core → game-ui` dependencies.
 3. React smoke render `FoundationStatus`.
 4. Storybook build smoke.
 5. TypeScript project-reference clean build.
@@ -317,7 +332,7 @@ Foundation test corpus:
 
 Existing `docs.yml` остаётся отдельным и не дублируется.
 
-GitHub Actions third-party references должны быть pinned по full commit SHA либо получить отдельное documented follow-up до защиты `main`. Release secrets отсутствуют.
+Все third-party GitHub Actions references закрепляются по full commit SHA. Release secrets отсутствуют.
 
 ## Error handling и recovery
 
@@ -327,7 +342,7 @@ Foundation scripts:
 - печатают конкретный package/path и нарушенное правило;
 - не исправляют файлы в `--check` режимах;
 - не обновляют snapshots автоматически;
-- не используют network после frozen install;
+- не выполняют собственные network requests; network разрешён только package managers на явных install/fetch stages;
 - не скрывают ошибку retry-loop.
 
 Если Rust/Tauri не компилируется на CI из-за отсутствующего system package, исправляется CI environment, а не отключается `rust:check`.
@@ -360,7 +375,7 @@ PR готов к review, если:
 - desktop frontend собирается;
 - Tauri shell проходит `cargo check`;
 - Storybook собирает canonical и long-RU story;
-- UI не импортирует Tauri/SQL;
+- UI не импортирует core/Tauri/SQL напрямую;
 - package graph не содержит циклов и deep imports;
 - в PR нет gameplay/persistence/content implementation;
 - docs manifest остаётся актуальным.
