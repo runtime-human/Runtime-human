@@ -65,11 +65,14 @@ describe("Xoshiro256StarStar", () => {
     const projectA = parent.fork("project/alpha");
     const projectB = parent.fork("project/alpha");
     const event = parent.fork("event/alpha");
+    const emoji = parent.fork("project/😀");
 
     expect(parent.exportState()).toBe(before);
     expect(projectA.exportState()).toBe(projectB.exportState());
     expect(projectA.nextUint64()).toBe(projectB.nextUint64());
     expect(projectA.exportState()).not.toBe(event.exportState());
+    expect(emoji.exportState()).toMatch(/^[0-9a-f]{64}$/u);
     expect(() => parent.fork("")).toThrow();
+    expect(() => parent.fork("\ud800")).toThrow();
   });
 });
