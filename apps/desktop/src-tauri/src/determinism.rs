@@ -43,12 +43,18 @@ fn rand_xoshiro_matches_shared_golden_fixture() {
 
 fn decode_state(value: &str) -> [u8; 32] {
     assert_eq!(value.len(), 64, "state must contain 32 hexadecimal bytes");
+    assert!(
+        value
+            .bytes()
+            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte)),
+        "state must contain lowercase hexadecimal bytes"
+    );
 
     let mut bytes = [0_u8; 32];
     for (index, byte) in bytes.iter_mut().enumerate() {
         let offset = index * 2;
         *byte = u8::from_str_radix(&value[offset..offset + 2], 16)
-            .expect("state must contain lowercase hexadecimal bytes");
+            .expect("validated hexadecimal bytes must parse");
     }
     assert!(
         bytes.iter().any(|byte| *byte != 0),
