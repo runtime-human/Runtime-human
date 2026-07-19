@@ -32,7 +32,7 @@ permissions:
   contents: read
 
 jobs:
-  format-refresh:
+  maintenance-refresh:
     if: github.event_name == 'pull_request' && github.head_ref == 'agent/determinism-kernel' && github.actor != 'github-actions[bot]'
     permissions:
       contents: write
@@ -51,18 +51,25 @@ jobs:
           corepack prepare pnpm@11.11.0 --activate
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Apply repository formatter
-        run: pnpm fmt
-      - name: Commit formatter output
+      - name: Install Rust 1.97.0
+        run: |
+          rustup toolchain install 1.97.0 --profile minimal --component rustfmt
+          rustup default 1.97.0
+      - name: Refresh formatted and locked files
+        run: |
+          pnpm fmt
+          cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all
+          cargo metadata --manifest-path apps/desktop/src-tauri/Cargo.toml --format-version 1 > /dev/null
+      - name: Commit generated output
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add packages/game-core/src/determinism tests .github/workflows/foundation.yml
+          git add packages/game-core/src/determinism tests apps/desktop/src-tauri/Cargo.lock apps/desktop/src-tauri/src .github/workflows/foundation.yml
           if git diff --cached --quiet; then
-            echo "Formatting is already current."
+            echo "Generated output is already current."
             exit 0
           fi
-          git commit -m "style: format determinism hardening"
+          git commit -m "chore: refresh determinism formatted and locked files"
           git push origin HEAD:agent/determinism-kernel
 
   javascript:
