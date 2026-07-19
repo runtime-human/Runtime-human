@@ -79,14 +79,20 @@ function walkSourceFiles(directory) {
     .sort((left, right) => left.localeCompare(right, "en"));
 }
 
-function findDeepImports(file) {
+function findWorkspaceImports(file) {
   const source = fs.readFileSync(file, "utf8");
-  const matches = [];
-  const pattern = /["'](@runtime-human\/[^/"']+\/[^"']+)["']/g;
+  const imports = [];
+  const pattern = /["'](@runtime-human\/([^/"']+)(\/[^"']+)?)['"]/g;
   for (const match of source.matchAll(pattern)) {
-    if (match[1]) matches.push(match[1]);
+    if (match[1] && match[2]) {
+      imports.push({
+        specifier: match[1],
+        dependency: match[2],
+        deep: Boolean(match[3]),
+      });
+    }
   }
-  return matches;
+  return imports;
 }
 
 export function validateWorkspace(root) {
@@ -130,10 +136,22 @@ export function validateWorkspace(root) {
     }
 
     for (const file of walkSourceFiles(path.join(directory, "src"))) {
-      for (const deepImport of findDeepImports(file)) {
-        diagnostics.push(
-          `${path.relative(root, file)}: deep workspace import ${deepImport} is forbidden`,
-        );
+      for (const workspaceImport of findWorkspaceImports(file)) {
+        if (workspaceImport.deep) {
+          diagnostics.push(
+            `${path.relative(root, file)}: deep workspace import ${workspaceImport.specifier} is forbidden`,
+          );
+        }
+        if (workspaceImport.dependency === shortName) continue;
+        if (!knownPackages.has(workspaceImport.dependency)) {
+          diagnostics.push(
+            `${path.relative(root, file)}: unknown workspace import ${WORKSPACE_PREFIX}${workspaceImport.dependency}`,
+          );
+        } else if (!allowed.has(workspaceImport.dependency)) {
+          diagnostics.push(
+            `${path.relative(root, file)}: ${shortName} cannot import ${workspaceImport.dependency}`,
+          );
+        }
       }
     }
   }
