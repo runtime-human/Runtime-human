@@ -18,6 +18,29 @@ describe("canonicalizeAuthoritative", () => {
     );
   });
 
+  it("canonicalizes a validated snapshot instead of rereading the source", () => {
+    let propertyReads = 0;
+    const source = new Proxy(
+      {},
+      {
+        ownKeys: () => ["value"],
+        getOwnPropertyDescriptor: () => ({
+          configurable: true,
+          enumerable: true,
+          value: 1,
+          writable: true,
+        }),
+        get: () => {
+          propertyReads += 1;
+          return 2;
+        },
+      },
+    );
+
+    expect(canonicalizeAuthoritative(source)).toBe('{"value":1}');
+    expect(propertyReads).toBe(0);
+  });
+
   it("rejects values that JSON canonicalization would erase or reinterpret", () => {
     const sparse: unknown[] = [];
     sparse.length = 1;
