@@ -1,0 +1,55 @@
+name: foundation-bootstrap
+
+on:
+  push:
+    branches:
+      - agent/repository-foundation
+    paths:
+      - "scripts/bootstrap-foundation.mjs"
+      - ".github/workflows/foundation-bootstrap.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Generate scaffold sources
+        run: node scripts/bootstrap-foundation.mjs
+      - name: Activate exact pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Generate pnpm lockfile
+        run: pnpm install --no-frozen-lockfile
+      - name: Format generated JS and configuration
+        run: pnpm fmt
+      - name: Generate Cargo lockfile
+        run: cargo generate-lockfile --manifest-path apps/desktop/src-tauri/Cargo.toml
+      - name: Regenerate documentation indexes
+        run: node scripts/build-toc.mjs
+      - name: Commit generated Foundation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            package.json pnpm-workspace.yaml pnpm-lock.yaml \
+            tsconfig.base.json tsconfig.json vitest.config.ts tests \
+            .oxfmtrc.json .oxlintrc.json rust-toolchain.toml \
+            scripts/check-boundaries.mjs scripts/check-boundaries.d.mts \
+            apps packages .github/workflows/foundation.yml \
+            docs/MANIFEST.jsonc docs/CATALOG.md
+          if git diff --cached --quiet; then
+            echo "Foundation generated files are current."
+          else
+            git commit -m "build: generate repository Foundation scaffold"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
