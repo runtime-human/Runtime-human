@@ -3,7 +3,7 @@ title: "Runtime Human — полный каталог документации"
 type: index
 status: draft
 canon: false
-updated: 2026-07-19
+updated: 2026-07-20
 ---
 
 # Runtime Human — полный каталог документации
@@ -11,7 +11,7 @@ updated: 2026-07-19
 > Сгенерировано `node scripts/build-toc.mjs` из metadata документов. Не редактировать вручную.
 > Канонический навигационный вход и порядок источников истины: [INDEX.md](INDEX.md).
 
-Всего документов: **173**.
+Всего документов: **174**.
 
 ## Навигация
 
@@ -171,6 +171,7 @@ updated: 2026-07-19
 
 ## Планы
 
+- [Determinism Kernel Implementation Plan](superpowers/plans/2026-07-20-determinism-kernel.md) — `active`, `non-canon`
 - [Documentation review checklist](plans/DOCUMENTATION-REVIEW-CHECKLIST.md) — `draft`, `canon`
 - [Phase 0 entry criteria](plans/PHASE-0-ENTRY-CRITERIA.md) — `draft`, `canon`
 - [Plans](plans/README.md) — `draft`, `canon`
