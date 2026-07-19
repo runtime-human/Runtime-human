@@ -1,13 +1,11 @@
 import { sha256 } from "@noble/hashes/sha2.js";
-import { bytesToHex } from "@noble/hashes/utils.js";
+import { bytesToHex, utf8ToBytes } from "@noble/hashes/utils.js";
 import type { Fingerprint, StableId } from "@runtime-human/game-schema";
 
 import { canonicalizeAuthoritative } from "./authoritative-json";
 
-const textEncoder = new TextEncoder();
-
 export function sha256Hex(value: string | Uint8Array): string {
-  const bytes = typeof value === "string" ? textEncoder.encode(value) : value;
+  const bytes = typeof value === "string" ? utf8ToBytes(value) : value;
   return bytesToHex(sha256(bytes));
 }
 
