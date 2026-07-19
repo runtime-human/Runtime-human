@@ -83,6 +83,16 @@ describe("validateWorkspace", () => {
     );
   });
 
+  it("rejects source imports that bypass the declared dependency graph", () => {
+    const root = createRoot();
+    addPackage(root, "packages", "game-core");
+    addPackage(root, "packages", "game-ui", [], 'import "@runtime-human/game-core";\n');
+
+    expect(validateWorkspace(root)).toContainEqual(
+      expect.stringContaining("game-ui cannot import game-core"),
+    );
+  });
+
   it("rejects deep workspace imports", () => {
     const root = createRoot();
     addPackage(root, "packages", "game-ui");
