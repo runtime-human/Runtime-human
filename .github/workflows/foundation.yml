@@ -57,25 +57,8 @@ jobs:
         run: pnpm lint
       - name: Check package boundaries
         run: pnpm boundaries:check
-      - name: Capture unit test diagnostics
-        id: tests
-        run: |
-          set +e
-          pnpm test > test-diagnostics.txt 2>&1
-          status=$?
-          set -e
-          cat test-diagnostics.txt
-          echo "status=$status" >> "$GITHUB_OUTPUT"
-      - name: Upload unit test diagnostics
-        if: steps.tests.outputs.status != '0'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: test-diagnostics
-          path: test-diagnostics.txt
-          retention-days: 1
-      - name: Enforce unit test result
-        if: steps.tests.outputs.status != '0'
-        run: exit 1
+      - name: Run unit tests
+        run: pnpm test
       - name: Run type-aware lint
         run: pnpm lint:type-aware
       - name: Build renderer
