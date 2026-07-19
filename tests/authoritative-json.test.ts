@@ -8,6 +8,7 @@ describe("canonicalizeAuthoritative", () => {
     expect(canonicalizeAuthoritative({ a: [1, 2, 3], z: 1 })).not.toBe(
       canonicalizeAuthoritative({ a: [3, 2, 1], z: 1 }),
     );
+    expect(canonicalizeAuthoritative({ emoji: "😀" })).toBe('{"emoji":"😀"}');
   });
 
   it("allows repeated acyclic references", () => {
@@ -63,6 +64,9 @@ describe("canonicalizeAuthoritative", () => {
       value: 2,
     });
 
+    const withLoneSurrogateKey = Object.create(null) as Record<string, number>;
+    withLoneSurrogateKey["\ud800"] = 1;
+
     const arrayWithProperty = [1] as number[] & { extra?: number };
     arrayWithProperty.extra = 2;
 
@@ -74,6 +78,8 @@ describe("canonicalizeAuthoritative", () => {
       1.5,
       Number.MAX_SAFE_INTEGER + 1,
       -0,
+      "\ud800",
+      "\udc00",
       Symbol("value"),
       () => 1,
       new Date(0),
@@ -82,6 +88,7 @@ describe("canonicalizeAuthoritative", () => {
       cyclic,
       withAccessor,
       withHidden,
+      withLoneSurrogateKey,
       arrayWithProperty,
     ];
 
