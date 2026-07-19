@@ -6,6 +6,7 @@ import {
 } from "@runtime-human/game-schema";
 
 const VALID_STATE = "0100000000000000020000000000000003000000000000000400000000000000";
+const LOWERCASE_HEX_STATE = "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789";
 
 describe("determinism contracts", () => {
   it("exposes the exact immutable v1 manifest", () => {
@@ -24,13 +25,14 @@ describe("determinism contracts", () => {
 
   it("accepts only canonical non-zero 32-byte state hex", () => {
     expect(parseSerializedXoshiro256State(VALID_STATE)).toBe(VALID_STATE);
+    expect(parseSerializedXoshiro256State(LOWERCASE_HEX_STATE)).toBe(LOWERCASE_HEX_STATE);
 
     for (const invalid of [
       null,
       42,
       "",
       "00".repeat(32),
-      VALID_STATE.toUpperCase(),
+      LOWERCASE_HEX_STATE.toUpperCase(),
       `${VALID_STATE}00`,
       VALID_STATE.slice(2),
       `g${VALID_STATE.slice(1)}`,
