@@ -10,6 +10,10 @@ export type AuthoritativeJsonValue =
 
 const MAX_DEPTH = 64;
 const MAX_NODES = 100_000;
+const HIGH_SURROGATE_START = 0xd800;
+const HIGH_SURROGATE_END = 0xdbff;
+const LOW_SURROGATE_START = 0xdc00;
+const LOW_SURROGATE_END = 0xdfff;
 
 type ValidationContext = {
   readonly ancestors: Set<object>;
@@ -43,7 +47,11 @@ function normalizeValue(
     throw new RangeError(`Authoritative value exceeds depth ${MAX_DEPTH} at ${path}`);
   }
 
-  if (value === null || typeof value === "boolean" || typeof value === "string") {
+  if (value === null || typeof value === "boolean") {
+    return value;
+  }
+  if (typeof value === "string") {
+    assertWellFormedUnicode(value, path);
     return value;
   }
   if (typeof value === "number") {
@@ -127,6 +135,7 @@ function normalizeObject(
     if (typeof key !== "string") {
       throw new TypeError(`Symbol keys are forbidden at ${path}`);
     }
+    assertWellFormedUnicode(key, `${path} key`);
     const descriptor = Object.getOwnPropertyDescriptor(value, key);
     if (descriptor === undefined) {
       throw new TypeError(`Missing authoritative property descriptor at ${path}.${key}`);
@@ -135,6 +144,23 @@ function normalizeObject(
     snapshot[key] = normalizeValue(descriptor.value, `${path}.${key}`, depth + 1, context);
   }
   return snapshot;
+}
+
+function assertWellFormedUnicode(value: string, path: string): void {
+  for (let index = 0; index < value.length; index += 1) {
+    const codeUnit = value.charCodeAt(index);
+    if (codeUnit >= HIGH_SURROGATE_START && codeUnit <= HIGH_SURROGATE_END) {
+      const nextCodeUnit = value.charCodeAt(index + 1);
+      if (nextCodeUnit < LOW_SURROGATE_START || nextCodeUnit > LOW_SURROGATE_END) {
+        throw new TypeError(`Lone Unicode surrogate is forbidden at ${path}`);
+      }
+      index += 1;
+      continue;
+    }
+    if (codeUnit >= LOW_SURROGATE_START && codeUnit <= LOW_SURROGATE_END) {
+      throw new TypeError(`Lone Unicode surrogate is forbidden at ${path}`);
+    }
+  }
 }
 
 function validateDataDescriptor(descriptor: PropertyDescriptor, path: string): void {
