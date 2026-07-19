@@ -30,7 +30,22 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
       - name: Generate pnpm lockfile
-        run: pnpm install --no-frozen-lockfile
+        run: |
+          set +e
+          pnpm install --no-frozen-lockfile 2>&1 | tee foundation-install.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "$status" -ne 0 ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add foundation-install.log
+            if ! git diff --cached --quiet; then
+              git commit -m "ci: capture Foundation install failure"
+              git push origin "HEAD:${{ github.head_ref }}"
+            fi
+            exit "$status"
+          fi
+          rm foundation-install.log
       - name: Format generated JS and configuration
         run: pnpm fmt
       - name: Generate Cargo lockfile
