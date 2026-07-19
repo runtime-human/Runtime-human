@@ -83,3 +83,42 @@ jobs:
         run: cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all -- --check
       - name: Check Tauri shell
         run: cargo check --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
+
+  full-verification:
+    if: github.event_name == 'pull_request'
+    needs: [javascript, rust]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Install Tauri system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            build-essential \
+            curl \
+            file \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libssl-dev \
+            libwebkit2gtk-4.1-dev \
+            libxdo-dev \
+            wget
+      - name: Install Rust 1.97.0
+        run: |
+          rustup toolchain install 1.97.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.97.0
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Run pre-merge fast gate
+        run: pnpm check:fast
+      - name: Run full verification
+        run: pnpm verify
