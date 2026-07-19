@@ -85,16 +85,18 @@ game-core
   ↑
 game-application
   ↑
+game-ui
+  ↑
 apps/desktop
 ```
 
 Дополнительные ветви:
 
-- `game-content` → `shared-kernel`, `game-schema`;
-- persistence/platform contracts → `shared-kernel`, `game-schema`;
-- `game-ui` не импортирует `game-core`;
-- `game-ui-fixtures` → `game-ui`;
-- desktop → `game-ui`, но не gameplay internals;
+- `game-content` → только `shared-kernel`, `game-schema`;
+- persistence/platform contracts → только `shared-kernel`, `game-schema`;
+- `game-ui` → `game-application`, но не `game-core` напрямую;
+- `game-ui-fixtures` → public contracts и `game-ui`;
+- desktop остаётся composition root и не импортирует gameplay internals;
 - core не импортирует React, DOM, Tauri, filesystem или persistence adapters.
 
 `scripts/check-boundaries.mjs` проверяет declared workspace dependencies и запрещённые deep imports. Сторонний dependency graph framework в Foundation не добавляется.
