@@ -1,0 +1,56 @@
+name: determinism-bootstrap
+
+on:
+  push:
+    branches:
+      - agent/determinism-kernel
+    paths:
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "packages/**/package.json"
+      - "apps/desktop/src-tauri/Cargo.toml"
+      - "apps/desktop/src-tauri/Cargo.lock"
+      - "docs/**/*.md"
+      - "scripts/build-toc.mjs"
+      - ".github/workflows/determinism-bootstrap.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-generated-files:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: agent/determinism-kernel
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Refresh pnpm lockfile
+        run: pnpm install --no-frozen-lockfile --reporter=silent
+      - name: Install Rust 1.97.0
+        run: |
+          rustup toolchain install 1.97.0 --profile minimal
+          rustup default 1.97.0
+      - name: Refresh Cargo lockfile
+        run: cargo metadata --manifest-path apps/desktop/src-tauri/Cargo.toml --format-version 1 --no-deps > /dev/null
+      - name: Refresh documentation metadata
+        run: node scripts/build-toc.mjs
+      - name: Commit generated files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pnpm-lock.yaml apps/desktop/src-tauri/Cargo.lock docs/MANIFEST.jsonc docs/CATALOG.md
+          if git diff --cached --quiet; then
+            echo "Generated files are already current."
+            exit 0
+          fi
+          git commit -m "chore: refresh determinism generated files"
+          git push origin HEAD:agent/determinism-kernel
