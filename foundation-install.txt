@@ -1,16 +1,14 @@
-[WARN] The "pnpm" field in package.json is no longer read by pnpm. The following keys were ignored: "pnpm.onlyBuiltDependencies". See https://pnpm.io/settings for the new home of each setting.
 Scope: all 11 workspace projects
 Progress: resolved 1, reused 0, downloaded 0, added 0
 Progress: resolved 17, reused 0, downloaded 16, added 0
-Progress: resolved 20, reused 0, downloaded 19, added 0
-Progress: resolved 174, reused 0, downloaded 48, added 0
-Progress: resolved 180, reused 0, downloaded 90, added 0
-Progress: resolved 295, reused 0, downloaded 114, added 0
-Progress: resolved 340, reused 0, downloaded 166, added 0
-Progress: resolved 411, reused 0, downloaded 229, added 0
+Progress: resolved 24, reused 0, downloaded 19, added 0
+Progress: resolved 175, reused 0, downloaded 69, added 0
+Progress: resolved 193, reused 0, downloaded 100, added 0
+Progress: resolved 329, reused 0, downloaded 144, added 0
+Progress: resolved 375, reused 0, downloaded 186, added 0
+Progress: resolved 411, reused 0, downloaded 254, added 0
 Packages: +244
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Progress: resolved 411, reused 0, downloaded 254, added 235
 Progress: resolved 411, reused 0, downloaded 254, added 244, done
 
 devDependencies:
