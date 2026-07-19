@@ -1,9 +1,9 @@
 name: foundation-bootstrap
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/repository-foundation
+      - main
     paths:
       - "scripts/bootstrap-foundation.mjs"
       - ".github/workflows/foundation-bootstrap.yml"
@@ -13,11 +13,12 @@ permissions:
 
 jobs:
   generate:
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ github.head_ref }}
           fetch-depth: 0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
@@ -51,5 +52,5 @@ jobs:
             echo "Foundation generated files are current."
           else
             git commit -m "build: generate repository Foundation scaffold"
-            git push origin "HEAD:${GITHUB_REF_NAME}"
+            git push origin "HEAD:${{ github.head_ref }}"
           fi
