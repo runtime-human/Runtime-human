@@ -21,21 +21,20 @@ export function canonicalizeAuthoritative(value: unknown): string {
     ancestors: new Set<object>(),
     nodes: 0,
   };
-
-  validateValue(value, "$", 0, context);
-  const result = canonicalize(value);
+  const snapshot = normalizeValue(value, "$", 0, context);
+  const result = canonicalize(snapshot);
   if (result === undefined) {
     throw new TypeError("Authoritative value cannot be represented as canonical JSON");
   }
   return result;
 }
 
-function validateValue(
+function normalizeValue(
   value: unknown,
   path: string,
   depth: number,
   context: ValidationContext,
-): asserts value is AuthoritativeJsonValue {
+): AuthoritativeJsonValue {
   context.nodes += 1;
   if (context.nodes > MAX_NODES) {
     throw new RangeError(`Authoritative value exceeds ${MAX_NODES} nodes`);
@@ -45,13 +44,13 @@ function validateValue(
   }
 
   if (value === null || typeof value === "boolean" || typeof value === "string") {
-    return;
+    return value;
   }
   if (typeof value === "number") {
     if (!Number.isSafeInteger(value) || Object.is(value, -0)) {
       throw new TypeError(`Authoritative number must be a safe integer at ${path}`);
     }
-    return;
+    return value;
   }
   if (typeof value !== "object") {
     throw new TypeError(`Unsupported authoritative value at ${path}`);
@@ -62,27 +61,37 @@ function validateValue(
 
   context.ancestors.add(value);
   try {
-    if (Array.isArray(value)) {
-      validateArray(value, path, depth, context);
-      return;
-    }
-    validateObject(value, path, depth, context);
+    return Array.isArray(value)
+      ? normalizeArray(value, path, depth, context)
+      : normalizeObject(value, path, depth, context);
   } finally {
     context.ancestors.delete(value);
   }
 }
 
-function validateArray(
+function normalizeArray(
   value: readonly unknown[],
   path: string,
   depth: number,
   context: ValidationContext,
-): void {
-  if (value.length > MAX_NODES) {
-    throw new RangeError(`Authoritative array is too large at ${path}`);
+): readonly AuthoritativeJsonValue[] {
+  const lengthDescriptor = Object.getOwnPropertyDescriptor(value, "length");
+  if (
+    lengthDescriptor === undefined ||
+    !("value" in lengthDescriptor) ||
+    !Number.isSafeInteger(lengthDescriptor.value) ||
+    lengthDescriptor.value < 0 ||
+    lengthDescriptor.value > MAX_NODES
+  ) {
+    throw new TypeError(`Invalid authoritative array length at ${path}`);
   }
+
+  const length = lengthDescriptor.value;
+  const keys = Reflect.ownKeys(value);
   const expectedKeys = new Set<string>(["length"]);
-  for (let index = 0; index < value.length; index += 1) {
+  const snapshot: AuthoritativeJsonValue[] = [];
+
+  for (let index = 0; index < length; index += 1) {
     const key = String(index);
     expectedKeys.add(key);
     const descriptor = Object.getOwnPropertyDescriptor(value, key);
@@ -90,27 +99,30 @@ function validateArray(
       throw new TypeError(`Sparse authoritative array at ${path}[${key}]`);
     }
     validateDataDescriptor(descriptor, `${path}[${key}]`);
-    validateValue(descriptor.value, `${path}[${key}]`, depth + 1, context);
+    snapshot.push(normalizeValue(descriptor.value, `${path}[${key}]`, depth + 1, context));
   }
 
-  for (const key of Reflect.ownKeys(value)) {
+  for (const key of keys) {
     if (typeof key !== "string" || !expectedKeys.has(key)) {
       throw new TypeError(`Unexpected authoritative array property at ${path}`);
     }
   }
+
+  return snapshot;
 }
 
-function validateObject(
+function normalizeObject(
   value: object,
   path: string,
   depth: number,
   context: ValidationContext,
-): void {
+): { readonly [key: string]: AuthoritativeJsonValue } {
   const prototype = Object.getPrototypeOf(value);
   if (prototype !== Object.prototype && prototype !== null) {
     throw new TypeError(`Authoritative object must be plain at ${path}`);
   }
 
+  const snapshot = Object.create(null) as Record<string, AuthoritativeJsonValue>;
   for (const key of Reflect.ownKeys(value)) {
     if (typeof key !== "string") {
       throw new TypeError(`Symbol keys are forbidden at ${path}`);
@@ -120,8 +132,9 @@ function validateObject(
       throw new TypeError(`Missing authoritative property descriptor at ${path}.${key}`);
     }
     validateDataDescriptor(descriptor, `${path}.${key}`);
-    validateValue(descriptor.value, `${path}.${key}`, depth + 1, context);
+    snapshot[key] = normalizeValue(descriptor.value, `${path}.${key}`, depth + 1, context);
   }
+  return snapshot;
 }
 
 function validateDataDescriptor(descriptor: PropertyDescriptor, path: string): void {
