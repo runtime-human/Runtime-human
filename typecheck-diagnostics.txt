@@ -1,0 +1,31 @@
+$ tsc -b --pretty false
+packages/game-core/src/determinism/hash.ts(7,25): error TS2552: Cannot find name 'TextEncoder'. Did you mean 'textEncoder'?
+packages/game-core/src/determinism/hash.ts(3,44): error TS6307: File '/home/runner/work/Runtime-human/Runtime-human/packages/game-schema/src/index.ts' is not listed within the file list of project '/home/runner/work/Runtime-human/Runtime-human/tests/tsconfig.json'. Projects must list all files or use an 'include' pattern.
+  The file is in the program because:
+    Imported via "@runtime-human/game-schema" from file '/home/runner/work/Runtime-human/Runtime-human/packages/game-core/src/determinism/hash.ts'
+    Imported via "@runtime-human/game-schema" from file '/home/runner/work/Runtime-human/Runtime-human/packages/game-core/src/determinism/random-source.ts'
+    Imported via "@runtime-human/game-schema" from file '/home/runner/work/Runtime-human/Runtime-human/packages/game-core/src/determinism/xoshiro256ss.ts'
+    Imported via "@runtime-human/game-schema" from file '/home/runner/work/Runtime-human/Runtime-human/tests/determinism-manifest.test.ts'
+packages/game-core/src/index.ts(4,8): error TS6307: File '/home/runner/work/Runtime-human/Runtime-human/packages/game-core/src/determinism/authoritative-json.ts' is not listed within the file list of project '/home/runner/work/Runtime-human/Runtime-human/tests/tsconfig.json'. Projects must list all files or use an 'include' pattern.
+  The file is in the program because:
+    Imported via "./determinism/authoritative-json" from file '/home/runner/work/Runtime-human/Runtime-human/packages/game-core/src/index.ts'
+    Imported via "./authoritative-json" from file '/home/runner/work/Runtime-human/Runtime-human/packages/game-core/src/determinism/hash.ts'
+packages/game-core/src/index.ts(5,50): error TS6307: File '/home/runner/work/Runtime-human/Runtime-human/packages/game-core/src/determinism/hash.ts' is not listed within the file list of project '/home/runner/work/Runtime-human/Runtime-human/tests/tsconfig.json'. Projects must list all files or use an 'include' pattern.
+  The file is in the program because:
+    Imported via "./determinism/hash" from file '/home/runner/work/Runtime-human/Runtime-human/packages/game-core/src/index.ts'
+    Imported via "./hash" from file '/home/runner/work/Runtime-human/Runtime-human/packages/game-core/src/determinism/xoshiro256ss.ts'
+packages/game-core/src/index.ts(6,35): error TS6307: File '/home/runner/work/Runtime-human/Runtime-human/packages/game-core/src/determinism/random-source.ts' is not listed within the file list of project '/home/runner/work/Runtime-human/Runtime-human/tests/tsconfig.json'. Projects must list all files or use an 'include' pattern.
+  The file is in the program because:
+    Imported via "./determinism/random-source" from file '/home/runner/work/Runtime-human/Runtime-human/packages/game-core/src/index.ts'
+    Imported via "./random-source" from file '/home/runner/work/Runtime-human/Runtime-human/packages/game-core/src/determinism/xoshiro256ss.ts'
+packages/game-core/src/index.ts(7,36): error TS6307: File '/home/runner/work/Runtime-human/Runtime-human/packages/game-core/src/determinism/xoshiro256ss.ts' is not listed within the file list of project '/home/runner/work/Runtime-human/Runtime-human/tests/tsconfig.json'. Projects must list all files or use an 'include' pattern.
+packages/game-schema/src/index.ts(1,73): error TS6307: File '/home/runner/work/Runtime-human/Runtime-human/packages/game-schema/src/determinism.ts' is not listed within the file list of project '/home/runner/work/Runtime-human/Runtime-human/tests/tsconfig.json'. Projects must list all files or use an 'include' pattern.
+  The file is in the program because:
+    Imported via "./determinism" from file '/home/runner/work/Runtime-human/Runtime-human/packages/game-schema/src/index.ts'
+    Imported via "./determinism" from file '/home/runner/work/Runtime-human/Runtime-human/packages/game-schema/src/index.ts'
+tests/authoritative-json.test.ts(3,43): error TS6307: File '/home/runner/work/Runtime-human/Runtime-human/packages/game-core/src/index.ts' is not listed within the file list of project '/home/runner/work/Runtime-human/Runtime-human/tests/tsconfig.json'. Projects must list all files or use an 'include' pattern.
+  The file is in the program because:
+    Imported via "@runtime-human/game-core" from file '/home/runner/work/Runtime-human/Runtime-human/tests/authoritative-json.test.ts'
+    Imported via "@runtime-human/game-core" from file '/home/runner/work/Runtime-human/Runtime-human/tests/deterministic-hash.test.ts'
+    Imported via "@runtime-human/game-core" from file '/home/runner/work/Runtime-human/Runtime-human/tests/xoshiro256ss.test.ts'
+[ELIFECYCLE] Command failed with exit code 2.
