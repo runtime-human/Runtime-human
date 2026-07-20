@@ -25,7 +25,7 @@ defaults:
 
 jobs:
   docs-lint:
-    runs-on: [self-hosted, windows, x64]
+    runs-on: self-hosted
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
