@@ -32,12 +32,15 @@ permissions:
   contents: read
 
 jobs:
-  diagnostics:
-    if: github.event_name == 'pull_request' && github.head_ref == 'agent/month-run-protocol'
+  format:
+    if: github.event_name == 'pull_request' && github.head_ref == 'agent/month-run-protocol' && github.actor != 'github-actions[bot]'
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
+          ref: agent/month-run-protocol
           show-progress: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
@@ -48,18 +51,16 @@ jobs:
           corepack prepare pnpm@11.11.0 --activate
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Check documentation
-        run: pnpm docs:check
-      - name: Check formatting
-        run: pnpm fmt:check
-      - name: Run lint
-        run: pnpm lint
-      - name: Run typecheck
-        run: pnpm typecheck
-      - name: Check boundaries
-        run: pnpm boundaries:check
-      - name: Run tests
-        run: pnpm test
+      - name: Format MonthRun review changes
+        run: pnpm fmt
+      - name: Commit formatting
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packages/game-core/src/index.ts packages/game-core/src/month-run tests/month-run-checkpoint.test.ts tests/month-run-schema.test.ts tests/month-run-transition.test.ts
+          git diff --cached --quiet && exit 0
+          git commit -m "style: format month-run review fixes"
+          git push origin HEAD:agent/month-run-protocol
 
   javascript:
     runs-on: ubuntu-latest
