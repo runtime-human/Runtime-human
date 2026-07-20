@@ -30,7 +30,7 @@ defaults:
 
 jobs:
   full-verification:
-    if: github.actor == 'MrFr3di' && github.ref == 'refs/heads/agent/month-run-persistence'
+    if: github.ref == 'refs/heads/agent/month-run-persistence'
     permissions:
       contents: write
       statuses: write
