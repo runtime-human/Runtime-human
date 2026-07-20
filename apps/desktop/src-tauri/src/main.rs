@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod determinism;
+mod persistence;
 
 fn main() {
     tauri::Builder::default()
