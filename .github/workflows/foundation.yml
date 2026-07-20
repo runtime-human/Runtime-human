@@ -23,6 +23,7 @@ concurrency:
 defaults:
   run:
     shell: pwsh
+    working-directory: ci-worktree
 
 jobs:
   full-verification:
@@ -35,6 +36,7 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           clean: true
+          path: ci-worktree
           persist-credentials: false
           show-progress: false
       - name: Normalize tracked files
