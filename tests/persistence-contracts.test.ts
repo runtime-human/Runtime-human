@@ -77,4 +77,51 @@ describe("persistence contracts", () => {
       }),
     ).toThrow(/durable MonthRun boundary/u);
   });
+
+  it("rejects begin envelopes that disagree with the checkpoint identity", () => {
+    const command = fixture.beginMonthRunCommand as Record<string, unknown>;
+
+    expect(() => parseBeginPersistedMonthRunCommand({ ...command, saveId: "save-other" })).toThrow(
+      /checkpoint saveId/u,
+    );
+    expect(() => parseBeginPersistedMonthRunCommand({ ...command, runId: "run-other" })).toThrow(
+      /checkpoint runId/u,
+    );
+    expect(() =>
+      parseBeginPersistedMonthRunCommand({ ...command, expectedSaveRevision: 1 }),
+    ).toThrow(/checkpoint baseSaveRevision/u);
+  });
+
+  it("rejects begin compatibility that disagrees with the checkpoint", () => {
+    const command = fixture.beginMonthRunCommand as Record<string, unknown>;
+    const compatibility = command.compatibility as Record<string, unknown>;
+
+    expect(() =>
+      parseBeginPersistedMonthRunCommand({
+        ...command,
+        compatibility: {
+          ...compatibility,
+          json: '{"checkpointSchema":"month-run-checkpoint-v1"}',
+          sha256: "0".repeat(64),
+        },
+      }),
+    ).toThrow(/checkpoint compatibility/u);
+  });
+
+  it("rejects stored boundaries that disagree with the checkpoint", () => {
+    const command = fixture.storeBoundaryCommand as Record<string, unknown>;
+
+    expect(() => parseStoreMonthRunBoundaryCommand({ ...command, saveId: "save-other" })).toThrow(
+      /checkpoint saveId/u,
+    );
+    expect(() => parseStoreMonthRunBoundaryCommand({ ...command, runId: "run-other" })).toThrow(
+      /checkpoint runId/u,
+    );
+    expect(() => parseStoreMonthRunBoundaryCommand({ ...command, runRevision: 3 })).toThrow(
+      /checkpoint runRevision/u,
+    );
+    expect(() => parseStoreMonthRunBoundaryCommand({ ...command, status: "completed" })).toThrow(
+      /checkpoint status/u,
+    );
+  });
 });
