@@ -28,15 +28,25 @@ on:
       - ".ox*.json"
       - ".github/workflows/foundation.yml"
 
+concurrency:
+  group: foundation-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
+defaults:
+  run:
+    shell: pwsh
+
 jobs:
   javascript:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, windows, x64]
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
+          clean: true
           persist-credentials: false
           show-progress: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -44,6 +54,7 @@ jobs:
           node-version: "24"
       - name: Activate pnpm
         run: |
+          $ErrorActionPreference = "Stop"
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
       - name: Install dependencies
@@ -58,27 +69,22 @@ jobs:
         run: pnpm storybook:build
 
   rust:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, windows, x64]
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
+          clean: true
           persist-credentials: false
           show-progress: false
-      - name: Install Tauri system dependencies
+      - name: Verify Rust bootstrap
         run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y \
-            build-essential \
-            curl \
-            file \
-            libayatana-appindicator3-dev \
-            librsvg2-dev \
-            libssl-dev \
-            libwebkit2gtk-4.1-dev \
-            libxdo-dev \
-            wget
+          $ErrorActionPreference = "Stop"
+          rustup --version
+          cargo --version
       - name: Install Rust 1.97.0
         run: |
+          $ErrorActionPreference = "Stop"
           rustup toolchain install 1.97.0 --profile minimal --component rustfmt,clippy
           rustup default 1.97.0
       - name: Check Rust formatting
@@ -102,32 +108,17 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: "24"
-      - name: Verify self-hosted toolchain
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Stop"
-          node --version
-          corepack --version
-          rustup --version
-          cargo --version
       - name: Activate pnpm
-        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
       - name: Install Rust 1.97.0
-        shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
           rustup toolchain install 1.97.0 --profile minimal --component rustfmt,clippy
           rustup default 1.97.0
       - name: Install dependencies
-        shell: pwsh
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Run pre-merge fast gate
-        shell: pwsh
-        run: pnpm check:fast
       - name: Run full verification
-        shell: pwsh
         run: pnpm verify
