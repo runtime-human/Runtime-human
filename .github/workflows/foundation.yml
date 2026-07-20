@@ -32,15 +32,16 @@ jobs:
   full-verification:
     if: github.ref == 'refs/heads/agent/month-run-persistence'
     permissions:
-      contents: write
+      contents: read
       statuses: write
     runs-on: self-hosted
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - id: checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           clean: true
-          persist-credentials: true
+          persist-credentials: false
           show-progress: false
       - name: Publish pending verification status
         env:
@@ -63,91 +64,47 @@ jobs:
             } `
             -ContentType "application/json" `
             -Body $body | Out-Null
-      - name: Normalize tracked files
+      - id: normalize
+        name: Normalize tracked files
         run: |
           $ErrorActionPreference = "Stop"
           git config --local core.autocrlf false
           git config --local core.eol lf
           git checkout-index --all --force
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+      - id: setup_node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: "24"
-      - name: Activate pnpm
+      - id: activate_pnpm
+        name: Activate pnpm
         run: |
           $ErrorActionPreference = "Stop"
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
           pnpm --version
-      - name: Install Rust 1.97.0
+      - id: setup_rust
+        name: Install Rust 1.97.0
         run: |
           $ErrorActionPreference = "Stop"
           rustup toolchain install 1.97.0 --profile minimal --component rustfmt,clippy
           rustup default 1.97.0
           rustc --version
           cargo --version
-      - name: Install dependencies
+      - id: install
+        name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Format persistence bootstrap files
-        run: pnpm fmt
-      - name: Generate derived documentation
-        run: node scripts/build-toc.mjs
-      - id: cargo_bootstrap
-        name: Resolve Rust dependency lock
-        run: |
-          $output = & cargo check --manifest-path apps/desktop/src-tauri/Cargo.toml 2>&1
-          $exitCode = $LASTEXITCODE
-          $output | Set-Content -Path cargo-bootstrap.log -Encoding utf8
-          if ($exitCode -ne 0) {
-            Write-Host "cargo check failed; final diagnostics:"
-            $output | Select-Object -Last 120 | ForEach-Object { Write-Host $_ }
-          }
-          "passed=$(($exitCode -eq 0).ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
-          exit 0
-      - id: bootstrap_commit
-        name: Commit resolved bootstrap when needed
-        run: |
-          $ErrorActionPreference = "Stop"
-          $paths = @(
-            "packages/game-persistence-contracts/src",
-            "tests/persistence-contracts.test.ts",
-            "apps/desktop/src-tauri/Cargo.toml",
-            "apps/desktop/src-tauri/Cargo.lock",
-            "apps/desktop/src-tauri/src/main.rs",
-            "apps/desktop/src-tauri/src/persistence",
-            "docs/MANIFEST.jsonc",
-            "docs/CATALOG.md",
-            ".github/workflows/foundation.yml"
-          )
-          git add -- $paths
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          git diff --cached --quiet
-          if ($LASTEXITCODE -eq 0) {
-            "changed=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
-            exit 0
-          }
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "chore: commit resolved persistence bootstrap"
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          git push origin HEAD:agent/month-run-persistence
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          "changed=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
       - id: verify
         name: Run full verification
-        if: steps.bootstrap_commit.outputs.changed == 'false'
-        run: |
-          pnpm verify
-          $passed = $LASTEXITCODE -eq 0
-          "passed=$($passed.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
-          exit 0
-      - name: Publish foundation status
-        if: steps.bootstrap_commit.outputs.changed == 'false'
+        continue-on-error: true
+        run: pnpm verify
+      - name: Publish final foundation status
+        if: always()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERIFY_PASSED: ${{ steps.verify.outputs.passed }}
+          VERIFY_OUTCOME: ${{ steps.verify.outcome }}
         run: |
           $ErrorActionPreference = "Stop"
-          $state = if ($env:VERIFY_PASSED -eq "true") { "success" } else { "failure" }
+          $state = if ($env:VERIFY_OUTCOME -eq "success") { "success" } else { "failure" }
           $description = if ($state -eq "success") {
             "Self-hosted Windows verification passed"
           } else {
@@ -170,5 +127,5 @@ jobs:
             -ContentType "application/json" `
             -Body $body | Out-Null
       - name: Enforce verification result
-        if: steps.bootstrap_commit.outputs.changed == 'false' && steps.verify.outputs.passed != 'true'
+        if: always() && steps.verify.outcome != 'success'
         run: exit 1
