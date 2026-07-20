@@ -20,8 +20,6 @@ concurrency:
   group: foundation-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions: {}
-
 defaults:
   run:
     shell: pwsh
