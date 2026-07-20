@@ -1,3 +1,4 @@
+import * as gameCore from "@runtime-human/game-core";
 import type { AuthoritativeJsonValue as CoreAuthoritativeJsonValue } from "@runtime-human/game-core";
 import {
   parseDecisionId,
@@ -24,5 +25,9 @@ describe("MonthRun protocol schema", () => {
     const coreValue: CoreAuthoritativeJsonValue = schemaValue;
 
     expect(coreValue).toEqual(schemaValue);
+  });
+
+  it("does not expose the unsafe low-level checkpoint rehash helper", () => {
+    expect(gameCore).not.toHaveProperty("rehashMonthRunCheckpoint");
   });
 });
