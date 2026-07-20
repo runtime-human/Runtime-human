@@ -20,6 +20,7 @@ jobs:
   docs-lint:
     permissions:
       contents: read
+      statuses: write
     runs-on: self-hosted
     timeout-minutes: 15
     steps:
@@ -39,3 +40,33 @@ jobs:
           node-version: "24"
       - name: Verify docs front-matter and manifest
         run: node scripts/build-toc.mjs --check
+      - name: Publish documentation status
+        if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JOB_STATUS: ${{ job.status }}
+          STATUS_SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+          REPOSITORY: ${{ github.repository }}
+          API_URL: ${{ github.api_url }}
+          SERVER_URL: ${{ github.server_url }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          $state = if ($env:JOB_STATUS -eq "success") { "success" } else { "failure" }
+          $description = if ($state -eq "success") { "Documentation verification passed" } else { "Documentation verification failed" }
+          $body = @{
+            state = $state
+            context = "self-hosted/docs"
+            description = $description
+            target_url = "$env:SERVER_URL/$env:REPOSITORY/actions/runs/$env:RUN_ID"
+          } | ConvertTo-Json
+          Invoke-RestMethod `
+            -Method Post `
+            -Uri "$env:API_URL/repos/$env:REPOSITORY/statuses/$env:STATUS_SHA" `
+            -Headers @{
+              Authorization = "Bearer $env:GH_TOKEN"
+              Accept = "application/vnd.github+json"
+              "X-GitHub-Api-Version" = "2022-11-28"
+            } `
+            -ContentType "application/json" `
+            -Body $body
