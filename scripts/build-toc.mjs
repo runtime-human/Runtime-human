@@ -110,6 +110,10 @@ function stripFrontMatter(raw) {
   };
 }
 
+function normalizeGeneratedText(raw) {
+  return raw.replace(/^\uFEFF/u, "").replace(/\r\n?/gu, "\n");
+}
+
 function parseScalar(value) {
   const trimmed = value.trim();
   if (trimmed === "true") return true;
@@ -271,10 +275,10 @@ const catalogText = buildCatalog(entries);
 
 if (CHECK) {
   if (!fs.existsSync(MANIFEST)) errors.push("docs/MANIFEST.jsonc: missing");
-  else if (fs.readFileSync(MANIFEST, "utf8") !== manifestText) errors.push("docs/MANIFEST.jsonc: stale; run node scripts/build-toc.mjs");
+  else if (normalizeGeneratedText(fs.readFileSync(MANIFEST, "utf8")) !== manifestText) errors.push("docs/MANIFEST.jsonc: stale; run node scripts/build-toc.mjs");
 
   if (!fs.existsSync(CATALOG)) errors.push("docs/CATALOG.md: missing");
-  else if (fs.readFileSync(CATALOG, "utf8") !== catalogText) errors.push("docs/CATALOG.md: stale; run node scripts/build-toc.mjs");
+  else if (normalizeGeneratedText(fs.readFileSync(CATALOG, "utf8")) !== catalogText) errors.push("docs/CATALOG.md: stale; run node scripts/build-toc.mjs");
 } else {
   fs.writeFileSync(MANIFEST, manifestText, "utf8");
   fs.writeFileSync(CATALOG, catalogText, "utf8");
