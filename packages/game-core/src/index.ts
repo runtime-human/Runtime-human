@@ -12,5 +12,7 @@ export type {
   CreateMonthRunCheckpointInput,
   RestoreMonthRunCheckpointResult,
 } from "./month-run/checkpoint";
+export { runUntilBoundary } from "./month-run/runner";
+export type { MonthRunRunResult, MonthRunStep } from "./month-run/runner";
 export { transitionMonthRun } from "./month-run/transition";
 export type { AuthoritativeJsonValue } from "@runtime-human/game-schema";
