@@ -43,6 +43,51 @@ const PHASES = new Set<MonthRunPhase>([
   "resolve",
   "finalize",
 ]);
+const CHECKPOINT_KEYS = [
+  "schemaVersion",
+  "runId",
+  "saveId",
+  "baseSaveRevision",
+  "runRevision",
+  "status",
+  "phase",
+  "stepIndex",
+  "plan",
+  "compatibility",
+  "rngState",
+  "provisionalState",
+  "materializedOutcomes",
+  "pendingDecision",
+  "acceptedDecisions",
+  "terminalResult",
+  "previousCheckpointHash",
+  "checkpointHash",
+] as const;
+const COMPATIBILITY_KEYS = [
+  "checkpointSchema",
+  "rulesFingerprint",
+  "contentFingerprint",
+  "saveSchemaFingerprint",
+  "determinismManifest",
+] as const;
+const DETERMINISM_MANIFEST_KEYS = [
+  "rulesVersion",
+  "rngAlgorithm",
+  "hashAlgorithm",
+  "numericModel",
+  "calendarModel",
+  "candidateSort",
+  "effectOrdering",
+  "serializationVersion",
+] as const;
+const MATERIALIZED_OUTCOME_KEYS = ["outcomeId", "scope", "payload", "payloadHash"] as const;
+const PENDING_DECISION_KEYS = [
+  "decisionId",
+  "kind",
+  "prompt",
+  "answerSchemaFingerprint",
+] as const;
+const ACCEPTED_DECISION_KEYS = ["requestId", "decisionId", "answer", "answerHash"] as const;
 
 export type CreateMonthRunCheckpointInput = Readonly<{
   runId: MonthRunId;
@@ -61,10 +106,50 @@ export type RestoreMonthRunCheckpointResult =
       message: string;
     }>;
 
+export type MonthRunCompatibilityField =
+  | "checkpointSchema"
+  | "rulesFingerprint"
+  | "contentFingerprint"
+  | "saveSchemaFingerprint"
+  | "determinismManifest";
+
+export type MonthRunCompatibilityCheckResult =
+  | Readonly<{ kind: "compatible" }>
+  | Readonly<{
+      kind: "incompatible";
+      mismatches: readonly MonthRunCompatibilityField[];
+    }>;
+
 type CheckpointWithoutHash = Omit<MonthRunCheckpointV1, "checkpointHash">;
 
 export function snapshotAuthoritativeValue(value: unknown): AuthoritativeJsonValue {
   return JSON.parse(canonicalizeAuthoritative(value)) as AuthoritativeJsonValue;
+}
+
+export function checkMonthRunCompatibility(
+  actual: MonthRunCompatibilityV1,
+  expected: MonthRunCompatibilityV1,
+): MonthRunCompatibilityCheckResult {
+  const left = snapshotCompatibility(actual);
+  const right = snapshotCompatibility(expected);
+  const mismatches: MonthRunCompatibilityField[] = [];
+
+  if (left.checkpointSchema !== right.checkpointSchema) mismatches.push("checkpointSchema");
+  if (left.rulesFingerprint !== right.rulesFingerprint) mismatches.push("rulesFingerprint");
+  if (left.contentFingerprint !== right.contentFingerprint) mismatches.push("contentFingerprint");
+  if (left.saveSchemaFingerprint !== right.saveSchemaFingerprint) {
+    mismatches.push("saveSchemaFingerprint");
+  }
+  if (
+    canonicalizeAuthoritative(left.determinismManifest) !==
+    canonicalizeAuthoritative(right.determinismManifest)
+  ) {
+    mismatches.push("determinismManifest");
+  }
+
+  return mismatches.length === 0
+    ? { kind: "compatible" }
+    : { kind: "incompatible", mismatches };
 }
 
 export function createMonthRunCheckpoint(
@@ -126,6 +211,7 @@ export function restoreMonthRunCheckpoint(value: unknown): RestoreMonthRunCheckp
 
 function parseCheckpoint(value: AuthoritativeJsonValue): MonthRunCheckpointV1 {
   const record = expectRecord(value, "checkpoint");
+  assertExactKeys(record, CHECKPOINT_KEYS, "checkpoint");
   if (record.schemaVersion !== "month-run-checkpoint-v1") {
     throw new TypeError("Unsupported MonthRun checkpoint schema");
   }
@@ -164,6 +250,7 @@ function parseCheckpoint(value: AuthoritativeJsonValue): MonthRunCheckpointV1 {
 
 function parseCompatibility(value: AuthoritativeJsonValue | undefined): MonthRunCompatibilityV1 {
   const record = expectRecord(value, "compatibility");
+  assertExactKeys(record, COMPATIBILITY_KEYS, "compatibility");
   if (record.checkpointSchema !== "month-run-checkpoint-v1") {
     throw new TypeError("Incompatible MonthRun checkpoint schema marker");
   }
@@ -178,6 +265,7 @@ function parseCompatibility(value: AuthoritativeJsonValue | undefined): MonthRun
 
 function parseDeterminismManifest(value: AuthoritativeJsonValue | undefined): DeterminismManifest {
   const record = expectRecord(value, "determinismManifest");
+  assertExactKeys(record, DETERMINISM_MANIFEST_KEYS, "determinismManifest");
   const rulesVersion = expectString(record.rulesVersion, "rulesVersion");
   if (
     record.rngAlgorithm !== "xoshiro256ss-v1" ||
@@ -211,7 +299,8 @@ function parseOutcomes(value: AuthoritativeJsonValue | undefined) {
   const ids = new Set<string>();
   return value.map((item) => {
     const record = expectRecord(item, "materializedOutcome");
-    const outcomeId = expectString(record.outcomeId, "outcomeId");
+    assertExactKeys(record, MATERIALIZED_OUTCOME_KEYS, "materializedOutcome");
+    const outcomeId = parseToken(record.outcomeId, "outcomeId");
     if (ids.has(outcomeId)) throw new TypeError("Duplicate materialized outcome ID");
     ids.add(outcomeId);
     const payload = expectAuthoritative(record.payload, "payload");
@@ -221,7 +310,7 @@ function parseOutcomes(value: AuthoritativeJsonValue | undefined) {
     }
     return {
       outcomeId,
-      scope: expectString(record.scope, "scope"),
+      scope: parseToken(record.scope, "scope"),
       payload,
       payloadHash,
     };
@@ -231,9 +320,10 @@ function parseOutcomes(value: AuthoritativeJsonValue | undefined) {
 function parsePendingDecision(value: AuthoritativeJsonValue | undefined) {
   if (value === null || value === undefined) return null;
   const record = expectRecord(value, "pendingDecision");
+  assertExactKeys(record, PENDING_DECISION_KEYS, "pendingDecision");
   return {
     decisionId: parseDecisionId(record.decisionId),
-    kind: expectString(record.kind, "decision kind"),
+    kind: parseToken(record.kind, "decision kind"),
     prompt: expectAuthoritative(record.prompt, "decision prompt"),
     answerSchemaFingerprint: parseFingerprint(
       record.answerSchemaFingerprint,
@@ -244,19 +334,24 @@ function parsePendingDecision(value: AuthoritativeJsonValue | undefined) {
 
 function parseAcceptedDecisions(value: AuthoritativeJsonValue | undefined) {
   if (!Array.isArray(value)) throw new TypeError("acceptedDecisions must be an array");
-  const ids = new Set<string>();
+  const decisionIds = new Set<string>();
+  const requestIds = new Set<string>();
   return value.map((item) => {
     const record = expectRecord(item, "acceptedDecision");
+    assertExactKeys(record, ACCEPTED_DECISION_KEYS, "acceptedDecision");
+    const requestId = parseRequestId(record.requestId);
     const decisionId = parseDecisionId(record.decisionId);
-    if (ids.has(decisionId)) throw new TypeError("Duplicate accepted decision ID");
-    ids.add(decisionId);
+    if (requestIds.has(requestId)) throw new TypeError("Duplicate accepted request ID");
+    if (decisionIds.has(decisionId)) throw new TypeError("Duplicate accepted decision ID");
+    requestIds.add(requestId);
+    decisionIds.add(decisionId);
     const answer = expectAuthoritative(record.answer, "answer");
     const answerHash = parseFingerprint(record.answerHash, "answerHash");
     if (answerHash !== fingerprint("month-run-decision-answer-v1", answer)) {
       throw new TypeError(`Accepted decision ${decisionId} answer hash is inconsistent`);
     }
     return {
-      requestId: parseRequestId(record.requestId),
+      requestId,
       decisionId,
       answer,
       answerHash,
@@ -307,6 +402,14 @@ function parseNullableFingerprint(value: AuthoritativeJsonValue | undefined): Fi
     : parseFingerprint(value, "previousCheckpointHash");
 }
 
+function parseToken(value: AuthoritativeJsonValue | undefined, name: string): string {
+  const token = expectString(value, name);
+  if (token.length > 256 || token.includes("\0")) {
+    throw new TypeError(`${name} must contain 1-256 characters without NUL`);
+  }
+  return token;
+}
+
 function expectRecord(
   value: AuthoritativeJsonValue | undefined,
   name: string,
@@ -315,6 +418,20 @@ function expectRecord(
     throw new TypeError(`${name} must be an object`);
   }
   return value as Readonly<Record<string, AuthoritativeJsonValue>>;
+}
+
+function assertExactKeys(
+  record: Readonly<Record<string, AuthoritativeJsonValue>>,
+  expectedKeys: readonly string[],
+  name: string,
+): void {
+  const actualKeys = Object.keys(record);
+  if (
+    actualKeys.length !== expectedKeys.length ||
+    actualKeys.some((key) => !expectedKeys.includes(key))
+  ) {
+    throw new TypeError(`${name} contains unknown or missing fields`);
+  }
 }
 
 function expectString(value: AuthoritativeJsonValue | undefined, name: string): string {
