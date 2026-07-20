@@ -13,6 +13,7 @@ import {
   parseSaveId,
   parseSaveRevision,
   parseSerializedXoshiro256State,
+  type AuthoritativeJsonValue,
   type MonthRunCheckpointV1,
   type MonthRunEventV1,
 } from "@runtime-human/game-schema";
@@ -142,5 +143,23 @@ describe("MonthRun transition reducer", () => {
     expect(illegal.kind).toBe("rejected");
     expect(illegal.checkpoint).toBe(completed);
     if (illegal.kind === "rejected") expect(illegal.error.code).toBe("IllegalTransition");
+  });
+
+  it("returns typed InvalidCommand for malformed runtime event data", () => {
+    const running = accept(initialCheckpoint(), { type: "start" });
+    const invalidPayload = Number.NaN as unknown as AuthoritativeJsonValue;
+    const result = transitionMonthRun(running, {
+      type: "materialize-outcome",
+      outcomeId: "",
+      scope: "project/p1/hidden",
+      payload: invalidPayload,
+      phase: "materialize",
+      provisionalState: {},
+      rngState: RNG_STATE,
+    });
+
+    expect(result.kind).toBe("rejected");
+    expect(result.checkpoint).toBe(running);
+    if (result.kind === "rejected") expect(result.error.code).toBe("InvalidCommand");
   });
 });
