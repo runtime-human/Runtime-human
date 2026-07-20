@@ -14,6 +14,7 @@ const MANIFEST = path.join(DOCS, "MANIFEST.jsonc");
 const CATALOG = path.join(DOCS, "CATALOG.md");
 const CHECK = process.argv.includes("--check");
 const TODAY = new Date().toISOString().slice(0, 10);
+const UNKNOWN_FRONT_MATTER_KEYS = Symbol("unknownFrontMatterKeys");
 
 const TYPE_BY_DIR = {
   adr: "adr",
@@ -120,9 +121,17 @@ function parseScalar(value) {
   if (trimmed === "false") return false;
   if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
     const inner = trimmed.slice(1, -1).trim();
-    return inner ? inner.split(",").map((item) => item.trim().replace(/^['\"]|['\"]$/g, "")).filter(Boolean) : [];
+    return inner
+      ? inner
+          .split(",")
+          .map((item) => item.trim().replace(/^['\"]|['\"]$/g, ""))
+          .filter(Boolean)
+      : [];
   }
-  if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
     return trimmed.slice(1, -1);
   }
   return trimmed;
@@ -131,10 +140,34 @@ function parseScalar(value) {
 function parseFrontMatter(raw) {
   const { frontMatter } = stripFrontMatter(raw);
   if (!frontMatter) return null;
-  const result = {};
+  const result = { [UNKNOWN_FRONT_MATTER_KEYS]: [] };
   for (const line of frontMatter) {
     const match = line.match(/^([a-z_]+):\s*(.*)$/i);
-    if (match) result[match[1]] = parseScalar(match[2]);
+    if (!match) continue;
+    const value = parseScalar(match[2]);
+    switch (match[1]) {
+      case "title":
+        result.title = value;
+        break;
+      case "type":
+        result.type = value;
+        break;
+      case "status":
+        result.status = value;
+        break;
+      case "canon":
+        result.canon = value;
+        break;
+      case "depends_on":
+        result.depends_on = value;
+        break;
+      case "updated":
+        result.updated = value;
+        break;
+      default:
+        result[UNKNOWN_FRONT_MATTER_KEYS].push(match[1]);
+        break;
+    }
   }
   return result;
 }
@@ -162,13 +195,22 @@ function renderFrontMatter(meta) {
 
 function validateMetadata(file, meta) {
   const errors = [];
+  for (const key of meta?.[UNKNOWN_FRONT_MATTER_KEYS] ?? []) {
+    errors.push(`${relative(file)}: unknown front-matter key ${key}`);
+  }
   for (const key of ["title", "type", "status", "canon", "updated"]) {
     if (meta?.[key] === undefined || meta[key] === "") errors.push(`${relative(file)}: missing ${key}`);
   }
-  if (meta && meta.type !== deriveType(file)) errors.push(`${relative(file)}: type must be ${deriveType(file)}`);
-  if (meta && typeof meta.canon !== "boolean") errors.push(`${relative(file)}: canon must be boolean`);
-  if (meta && !/^\d{4}-\d{2}-\d{2}$/.test(String(meta.updated))) errors.push(`${relative(file)}: updated must be YYYY-MM-DD`);
-  if (meta?.depends_on && (!Array.isArray(meta.depends_on) || meta.depends_on.some((id) => !/^ADR-\d{3}$/.test(id)))) {
+  if (meta && meta.type !== deriveType(file))
+    errors.push(`${relative(file)}: type must be ${deriveType(file)}`);
+  if (meta && typeof meta.canon !== "boolean")
+    errors.push(`${relative(file)}: canon must be boolean`);
+  if (meta && !/^\d{4}-\d{2}-\d{2}$/.test(String(meta.updated)))
+    errors.push(`${relative(file)}: updated must be YYYY-MM-DD`);
+  if (
+    meta?.depends_on &&
+    (!Array.isArray(meta.depends_on) || meta.depends_on.some((id) => !/^ADR-\d{3}$/.test(id)))
+  ) {
     errors.push(`${relative(file)}: depends_on must contain ADR-### IDs`);
   }
   return errors;
@@ -266,7 +308,8 @@ const knownAdrIds = new Set(
 );
 for (const entry of entries) {
   for (const dependency of entry.dependsOn) {
-    if (!knownAdrIds.has(dependency)) errors.push(`${entry.file}: unknown depends_on ${dependency}`);
+    if (!knownAdrIds.has(dependency))
+      errors.push(`${entry.file}: unknown depends_on ${dependency}`);
   }
 }
 
@@ -275,10 +318,12 @@ const catalogText = buildCatalog(entries);
 
 if (CHECK) {
   if (!fs.existsSync(MANIFEST)) errors.push("docs/MANIFEST.jsonc: missing");
-  else if (normalizeGeneratedText(fs.readFileSync(MANIFEST, "utf8")) !== manifestText) errors.push("docs/MANIFEST.jsonc: stale; run node scripts/build-toc.mjs");
+  else if (normalizeGeneratedText(fs.readFileSync(MANIFEST, "utf8")) !== manifestText)
+    errors.push("docs/MANIFEST.jsonc: stale; run node scripts/build-toc.mjs");
 
   if (!fs.existsSync(CATALOG)) errors.push("docs/CATALOG.md: missing");
-  else if (normalizeGeneratedText(fs.readFileSync(CATALOG, "utf8")) !== catalogText) errors.push("docs/CATALOG.md: stale; run node scripts/build-toc.mjs");
+  else if (normalizeGeneratedText(fs.readFileSync(CATALOG, "utf8")) !== catalogText)
+    errors.push("docs/CATALOG.md: stale; run node scripts/build-toc.mjs");
 } else {
   fs.writeFileSync(MANIFEST, manifestText, "utf8");
   fs.writeFileSync(CATALOG, catalogText, "utf8");
