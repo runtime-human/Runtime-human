@@ -83,6 +83,8 @@ jobs:
         run: cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all -- --check
       - name: Check Tauri shell
         run: cargo check --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
+      - name: Run Rust tests
+        run: cargo test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
 
   full-verification:
     if: github.event_name == 'pull_request'

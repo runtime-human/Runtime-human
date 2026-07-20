@@ -7,7 +7,10 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@noble/hashes": "2.2.0",
     "@runtime-human/game-schema": "workspace:*",
-    "@runtime-human/shared-kernel": "workspace:*"
+    "@runtime-human/shared-kernel": "workspace:*",
+    "canonicalize": "3.0.0",
+    "pure-rand": "8.4.2"
   }
 }
