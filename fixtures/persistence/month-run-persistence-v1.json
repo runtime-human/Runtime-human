@@ -18,13 +18,13 @@
     "runId": "run-fixture",
     "checkpoint": {
       "schemaVersion": "canonical-payload-v1",
-      "json": "{\"runRevision\":0,\"status\":\"ready\"}",
-      "sha256": "0d75eadc8a949648df56d796387dbd410049526f0eb438a881c6b0b4c8e19e44"
+      "json": "{\"acceptedDecisions\":[],\"baseSaveRevision\":0,\"checkpointHash\":\"e27225501a4bb699eafc9de328ac24cf59570ec983050670c5efb798b946ad38\",\"compatibility\":{\"checkpointSchema\":\"month-run-checkpoint-v1\",\"contentFingerprint\":\"e77fbf25a2d9d52a3ad1f4300f094eecb90e93fa800fcd39ab0a6f0d95640274\",\"determinismManifest\":{\"calendarModel\":\"gregorian-v1\",\"candidateSort\":\"stable-id-ascending-v1\",\"effectOrdering\":\"phase-then-priority-then-stable-id-v1\",\"hashAlgorithm\":\"sha256-v1\",\"numericModel\":\"fixed-point-v1\",\"rngAlgorithm\":\"xoshiro256ss-v1\",\"rulesVersion\":\"foundation-v1\",\"serializationVersion\":\"canonical-json-v1\"},\"rulesFingerprint\":\"230a229d03c126b2cc40e67fc6c185d379f969ed868c26517e40944807125adc\",\"saveSchemaFingerprint\":\"4c40c81cc7f60812fd311da0c6d6c189a399d3dfec7fa8d827e46a1c484e8d0d\"},\"materializedOutcomes\":[],\"pendingDecision\":null,\"phase\":\"initialize\",\"plan\":{\"month\":1},\"previousCheckpointHash\":null,\"provisionalState\":{},\"rngState\":\"0100000000000000020000000000000003000000000000000400000000000000\",\"runId\":\"run-fixture\",\"runRevision\":0,\"saveId\":\"save-fixture\",\"schemaVersion\":\"month-run-checkpoint-v1\",\"status\":\"ready\",\"stepIndex\":0,\"terminalResult\":null}",
+      "sha256": "adaacb84ffa28e695cc5104db4c36cdaf3f3475f93f9b8b93e899657077d77ac"
     },
     "compatibility": {
       "schemaVersion": "canonical-payload-v1",
-      "json": "{\"checkpointSchema\":\"month-run-checkpoint-v1\",\"rulesVersion\":\"foundation-v1\"}",
-      "sha256": "6f45612f8867baaf7f4ffde4abfefdaf8789b125cc28d30d25da1cb32f487f13"
+      "json": "{\"checkpointSchema\":\"month-run-checkpoint-v1\",\"contentFingerprint\":\"e77fbf25a2d9d52a3ad1f4300f094eecb90e93fa800fcd39ab0a6f0d95640274\",\"determinismManifest\":{\"calendarModel\":\"gregorian-v1\",\"candidateSort\":\"stable-id-ascending-v1\",\"effectOrdering\":\"phase-then-priority-then-stable-id-v1\",\"hashAlgorithm\":\"sha256-v1\",\"numericModel\":\"fixed-point-v1\",\"rngAlgorithm\":\"xoshiro256ss-v1\",\"rulesVersion\":\"foundation-v1\",\"serializationVersion\":\"canonical-json-v1\"},\"rulesFingerprint\":\"230a229d03c126b2cc40e67fc6c185d379f969ed868c26517e40944807125adc\",\"saveSchemaFingerprint\":\"4c40c81cc7f60812fd311da0c6d6c189a399d3dfec7fa8d827e46a1c484e8d0d\"}",
+      "sha256": "784e3b1a6078d691877170081bea6b3e0f6e4ed293d371733d2edf04b6875b7e"
     }
   },
   "storeBoundaryCommand": {
@@ -37,8 +37,8 @@
     "status": "suspended",
     "checkpoint": {
       "schemaVersion": "canonical-payload-v1",
-      "json": "{\"runRevision\":2,\"status\":\"suspended\"}",
-      "sha256": "ffc5f2d36ab361207c7ac3012dfda88f4a8d3c8fdbf4991a63dd95c95872eefb"
+      "json": "{\"acceptedDecisions\":[],\"baseSaveRevision\":0,\"checkpointHash\":\"8d154464260a504400fa1797543a89b872863016d1b21e352ccaa86ac4448a07\",\"compatibility\":{\"checkpointSchema\":\"month-run-checkpoint-v1\",\"contentFingerprint\":\"e77fbf25a2d9d52a3ad1f4300f094eecb90e93fa800fcd39ab0a6f0d95640274\",\"determinismManifest\":{\"calendarModel\":\"gregorian-v1\",\"candidateSort\":\"stable-id-ascending-v1\",\"effectOrdering\":\"phase-then-priority-then-stable-id-v1\",\"hashAlgorithm\":\"sha256-v1\",\"numericModel\":\"fixed-point-v1\",\"rngAlgorithm\":\"xoshiro256ss-v1\",\"rulesVersion\":\"foundation-v1\",\"serializationVersion\":\"canonical-json-v1\"},\"rulesFingerprint\":\"230a229d03c126b2cc40e67fc6c185d379f969ed868c26517e40944807125adc\",\"saveSchemaFingerprint\":\"4c40c81cc7f60812fd311da0c6d6c189a399d3dfec7fa8d827e46a1c484e8d0d\"},\"materializedOutcomes\":[],\"pendingDecision\":{\"answerSchemaFingerprint\":\"dd5bffe8b7fcf7b8538422279df53d1cb660a426455d079d1a39f3b00ce5663f\",\"decisionId\":\"decision-fixture\",\"kind\":\"scope-choice\",\"prompt\":{\"options\":[\"quality\",\"speed\"]}},\"phase\":\"await-decision\",\"plan\":{\"month\":1},\"previousCheckpointHash\":\"6e3971eb7f141c60fc6cdafaa8f5e67737c64f264e7c6fffecd6abf801a118fa\",\"provisionalState\":{},\"rngState\":\"0100000000000000020000000000000003000000000000000400000000000000\",\"runId\":\"run-fixture\",\"runRevision\":2,\"saveId\":\"save-fixture\",\"schemaVersion\":\"month-run-checkpoint-v1\",\"status\":\"suspended\",\"stepIndex\":2,\"terminalResult\":null}",
+      "sha256": "085d8ef181da0f5baa1e834332c2d3f41d248ac44ead16b7250b70b6ee2c2a42"
     }
   },
   "commitMonthRunCommand": {
