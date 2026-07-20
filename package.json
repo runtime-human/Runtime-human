@@ -16,8 +16,8 @@
     "storybook": "pnpm --filter @runtime-human/desktop storybook",
     "storybook:build": "pnpm --filter @runtime-human/desktop storybook:build",
     "rust:fmt:check": "cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all -- --check",
-    "rust:check": "cargo check --quiet --locked --manifest-path apps/desktop/src-tauri/Cargo.toml",
-    "rust:test": "cargo test --quiet --locked --manifest-path apps/desktop/src-tauri/Cargo.toml",
+    "rust:check": "cargo check --locked --manifest-path apps/desktop/src-tauri/Cargo.toml",
+    "rust:test": "cargo test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml",
     "check:fast": "pnpm docs:check && pnpm fmt:check && pnpm lint && pnpm typecheck && pnpm boundaries:check && pnpm test",
     "verify": "pnpm check:fast && pnpm lint:type-aware && pnpm build && pnpm storybook:build && pnpm rust:fmt:check && pnpm rust:check && pnpm rust:test"
   },
