@@ -4,7 +4,6 @@ import type {
   MaterializeOutcomeEventV1,
   MonthRunCheckpointV1,
   MonthRunEventV1,
-  MonthRunPhase,
   MonthRunProtocolErrorCode,
   MonthRunTransitionResult,
   PendingDecisionV1,
@@ -307,7 +306,7 @@ function accepted(
   checkpoint: MonthRunCheckpointV1,
   changes: CheckpointChanges,
 ): MonthRunTransitionResult {
-  const { checkpointHash: _checkpointHash, ...withoutHash } = checkpoint;
+  const { checkpointHash, ...withoutHash } = checkpoint;
   return {
     kind: "accepted",
     checkpoint: rehashMonthRunCheckpoint({
@@ -315,7 +314,7 @@ function accepted(
       ...changes,
       runRevision: parseMonthRunRevision(checkpoint.runRevision + 1),
       stepIndex: checkpoint.stepIndex + 1,
-      previousCheckpointHash: checkpoint.checkpointHash,
+      previousCheckpointHash: checkpointHash,
     }),
   };
 }
