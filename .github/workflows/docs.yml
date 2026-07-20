@@ -5,11 +5,7 @@ on:
     paths:
       - "docs/**"
       - "scripts/build-toc.mjs"
-      - ".github/workflows/docs.yml"
-  pull_request:
-    paths:
-      - "docs/**"
-      - "scripts/build-toc.mjs"
+      - ".gitattributes"
       - ".github/workflows/docs.yml"
 
 concurrency:
