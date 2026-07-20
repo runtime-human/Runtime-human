@@ -10,6 +10,7 @@ on:
       - "apps/**"
       - "packages/**"
       - "tests/**"
+      - "fixtures/**"
       - "scripts/check-boundaries.*"
       - "rust-toolchain.toml"
       - ".ox*.json"
@@ -64,6 +65,16 @@ jobs:
           cargo --version
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Generate derived documentation artifact
+        run: node scripts/build-toc.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: persistence-derived-docs-${{ github.sha }}
+          path: |
+            docs/MANIFEST.jsonc
+            docs/CATALOG.md
+          if-no-files-found: error
+          retention-days: 1
       - id: verify
         name: Run full verification
         continue-on-error: true
