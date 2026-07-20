@@ -1,6 +1,7 @@
 use std::fmt;
 
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use sha2::{Digest, Sha256};
 
 pub(crate) const MAX_CANONICAL_PAYLOAD_BYTES: usize = 4 * 1024 * 1024;
@@ -45,10 +46,21 @@ pub(crate) struct CanonicalPayloadV1 {
     pub(crate) sha256: String,
 }
 
+impl CanonicalPayloadV1 {
+    fn parse_json(&self) -> Result<Value, PersistenceContractError> {
+        serde_json::from_str::<Value>(&self.json).map_err(|error| {
+            PersistenceContractError::new(
+                "InvalidCommand",
+                format!("canonical payload is not valid JSON: {error}"),
+            )
+        })
+    }
+}
+
 impl ValidatePersistenceContract for CanonicalPayloadV1 {
     fn validate_contract(&self) -> Result<(), PersistenceContractError> {
         validate_schema(&self.schema_version, "canonical-payload-v1")?;
-        if self.json.as_bytes().len() > MAX_CANONICAL_PAYLOAD_BYTES {
+        if self.json.len() > MAX_CANONICAL_PAYLOAD_BYTES {
             return Err(PersistenceContractError::new(
                 "PayloadTooLarge",
                 format!(
@@ -57,12 +69,7 @@ impl ValidatePersistenceContract for CanonicalPayloadV1 {
                 ),
             ));
         }
-        serde_json::from_str::<serde_json::Value>(&self.json).map_err(|error| {
-            PersistenceContractError::new(
-                "InvalidCommand",
-                format!("canonical payload is not valid JSON: {error}"),
-            )
-        })?;
+        self.parse_json()?;
         validate_sha256(&self.sha256)?;
         let actual = sha256_hex(self.json.as_bytes());
         if actual != self.sha256 {
@@ -116,7 +123,40 @@ impl ValidatePersistenceContract for BeginPersistedMonthRunCommandV1 {
         validate_revision(self.expected_save_revision, "SaveRevision")?;
         validate_protocol_id(&self.run_id, "MonthRunId")?;
         self.checkpoint.validate_contract()?;
-        self.compatibility.validate_contract()
+        self.compatibility.validate_contract()?;
+
+        let identity = parse_checkpoint_identity(&self.checkpoint)?;
+        if identity.save_id != self.save_id {
+            return Err(envelope_mismatch(
+                "InvalidCommand",
+                "checkpoint saveId does not match the begin command",
+            ));
+        }
+        if identity.run_id != self.run_id {
+            return Err(envelope_mismatch(
+                "InvalidCommand",
+                "checkpoint runId does not match the begin command",
+            ));
+        }
+        if identity.base_save_revision != self.expected_save_revision {
+            return Err(envelope_mismatch(
+                "InvalidCommand",
+                "checkpoint baseSaveRevision does not match expectedSaveRevision",
+            ));
+        }
+        if identity.run_revision != 0 || identity.status != DurableMonthRunStatus::Ready {
+            return Err(envelope_mismatch(
+                "InvalidCommand",
+                "begin command requires a ready checkpoint at revision zero",
+            ));
+        }
+        if identity.compatibility != self.compatibility.parse_json()? {
+            return Err(envelope_mismatch(
+                "InvalidCommand",
+                "checkpoint compatibility does not match the begin command",
+            ));
+        }
+        Ok(())
     }
 }
 
@@ -176,7 +216,34 @@ impl ValidatePersistenceContract for StoreMonthRunBoundaryCommandV1 {
                 "stored MonthRun revision must be newer than the expected revision",
             ));
         }
-        self.checkpoint.validate_contract()
+        self.checkpoint.validate_contract()?;
+
+        let identity = parse_checkpoint_identity(&self.checkpoint)?;
+        if identity.save_id != self.save_id {
+            return Err(envelope_mismatch(
+                "InvalidRunBoundary",
+                "checkpoint saveId does not match the boundary command",
+            ));
+        }
+        if identity.run_id != self.run_id {
+            return Err(envelope_mismatch(
+                "InvalidRunBoundary",
+                "checkpoint runId does not match the boundary command",
+            ));
+        }
+        if identity.run_revision != self.run_revision {
+            return Err(envelope_mismatch(
+                "InvalidRunBoundary",
+                "checkpoint runRevision does not match the boundary command",
+            ));
+        }
+        if identity.status != self.status {
+            return Err(envelope_mismatch(
+                "InvalidRunBoundary",
+                "checkpoint status does not match the boundary command",
+            ));
+        }
+        Ok(())
     }
 }
 
@@ -207,6 +274,41 @@ impl ValidatePersistenceContract for CommitPersistedMonthRunCommandV1 {
         self.snapshot.validate_contract()?;
         self.result.validate_contract()
     }
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct MonthRunCheckpointIdentityV1 {
+    schema_version: String,
+    run_id: String,
+    save_id: String,
+    base_save_revision: u64,
+    run_revision: u64,
+    status: DurableMonthRunStatus,
+    compatibility: Value,
+}
+
+fn parse_checkpoint_identity(
+    checkpoint: &CanonicalPayloadV1,
+) -> Result<MonthRunCheckpointIdentityV1, PersistenceContractError> {
+    let identity = serde_json::from_str::<MonthRunCheckpointIdentityV1>(&checkpoint.json).map_err(
+        |error| {
+            PersistenceContractError::new(
+                "InvalidCommand",
+                format!("checkpoint identity is invalid: {error}"),
+            )
+        },
+    )?;
+    validate_schema(&identity.schema_version, "month-run-checkpoint-v1")?;
+    validate_protocol_id(&identity.save_id, "SaveId")?;
+    validate_protocol_id(&identity.run_id, "MonthRunId")?;
+    validate_revision(identity.base_save_revision, "SaveRevision")?;
+    validate_revision(identity.run_revision, "MonthRunRevision")?;
+    Ok(identity)
+}
+
+fn envelope_mismatch(code: &'static str, message: &'static str) -> PersistenceContractError {
+    PersistenceContractError::new(code, message)
 }
 
 #[cfg(test)]
@@ -296,19 +398,22 @@ fn sha256_hex(bytes: &[u8]) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{PersistenceFixtureV1, ValidatePersistenceContract};
+    use super::{
+        DurableMonthRunStatus, PersistenceFixtureV1, ValidatePersistenceContract, sha256_hex,
+    };
 
     const FIXTURE: &str = include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),
         "/../../../fixtures/persistence/month-run-persistence-v1.json"
     ));
 
+    fn fixture() -> PersistenceFixtureV1 {
+        serde_json::from_str(FIXTURE).expect("fixture must deserialize")
+    }
+
     #[test]
     fn shared_fixture_deserializes_and_validates() {
-        let fixture: PersistenceFixtureV1 =
-            serde_json::from_str(FIXTURE).expect("fixture must deserialize");
-
-        fixture
+        fixture()
             .validate_contract()
             .expect("fixture must satisfy persistence contract invariants");
     }
@@ -342,5 +447,45 @@ mod tests {
             .expect_err("hash mismatch must fail validation");
 
         assert_eq!(error.code(), "PayloadHashMismatch");
+    }
+
+    #[test]
+    fn begin_checkpoint_identity_mismatch_is_rejected() {
+        let mut fixture = fixture();
+        fixture.begin_month_run_command.save_id = "save-other".to_owned();
+
+        let error = fixture
+            .begin_month_run_command
+            .validate_contract()
+            .expect_err("foreign checkpoint identity must fail validation");
+
+        assert_eq!(error.code(), "InvalidCommand");
+    }
+
+    #[test]
+    fn begin_checkpoint_compatibility_mismatch_is_rejected() {
+        let mut fixture = fixture();
+        fixture.begin_month_run_command.compatibility.json = "{}".to_owned();
+        fixture.begin_month_run_command.compatibility.sha256 = sha256_hex(b"{}");
+
+        let error = fixture
+            .begin_month_run_command
+            .validate_contract()
+            .expect_err("foreign compatibility must fail validation");
+
+        assert_eq!(error.code(), "InvalidCommand");
+    }
+
+    #[test]
+    fn stored_checkpoint_identity_mismatch_is_rejected() {
+        let mut fixture = fixture();
+        fixture.store_boundary_command.status = DurableMonthRunStatus::Completed;
+
+        let error = fixture
+            .store_boundary_command
+            .validate_contract()
+            .expect_err("boundary envelope mismatch must fail validation");
+
+        assert_eq!(error.code(), "InvalidRunBoundary");
     }
 }
