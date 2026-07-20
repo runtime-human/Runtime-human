@@ -76,24 +76,30 @@ jobs:
         name: Commit resolved bootstrap when needed
         run: |
           $ErrorActionPreference = "Stop"
-          git add -- \
-            packages/game-persistence-contracts/src \
-            tests/persistence-contracts.test.ts \
-            apps/desktop/src-tauri/Cargo.toml \
-            apps/desktop/src-tauri/Cargo.lock \
-            apps/desktop/src-tauri/src/main.rs \
-            apps/desktop/src-tauri/src/persistence \
-            docs/MANIFEST.jsonc \
-            docs/CATALOG.md \
-            .github/workflows/foundation.yml
-          if (git diff --cached --quiet) {
+          $paths = @(
+            "packages/game-persistence-contracts/src",
+            "tests/persistence-contracts.test.ts",
+            "apps/desktop/src-tauri/Cargo.toml",
+            "apps/desktop/src-tauri/Cargo.lock",
+            "apps/desktop/src-tauri/src/main.rs",
+            "apps/desktop/src-tauri/src/persistence",
+            "docs/MANIFEST.jsonc",
+            "docs/CATALOG.md",
+            ".github/workflows/foundation.yml"
+          )
+          git add -- $paths
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git diff --cached --quiet
+          if ($LASTEXITCODE -eq 0) {
             "changed=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
             exit 0
           }
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "chore: commit resolved persistence bootstrap"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           git push origin HEAD:agent/month-run-persistence
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           "changed=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
       - id: verify
         name: Run full verification
