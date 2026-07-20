@@ -1,9 +1,5 @@
 import type { AuthoritativeJsonValue } from "./authoritative-json";
-import type {
-  DeterminismManifest,
-  Fingerprint,
-  SerializedXoshiro256State,
-} from "./determinism";
+import type { DeterminismManifest, Fingerprint, SerializedXoshiro256State } from "./determinism";
 
 const PROTOCOL_ID_PATTERN = /^[!-~]{1,128}$/u;
 
