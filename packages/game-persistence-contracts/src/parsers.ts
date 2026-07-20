@@ -74,9 +74,7 @@ export function parseCanonicalPayload(value: unknown): CanonicalPayloadV1 {
   }
   const json = expectString(record.json, "canonical payload JSON");
   if (utf8ByteLength(json) > MAX_CANONICAL_PAYLOAD_BYTES) {
-    throw new RangeError(
-      `Canonical payload byte limit is ${MAX_CANONICAL_PAYLOAD_BYTES}`,
-    );
+    throw new RangeError(`Canonical payload byte limit is ${MAX_CANONICAL_PAYLOAD_BYTES}`);
   }
   try {
     JSON.parse(json);
@@ -147,9 +145,7 @@ export function parseLoadActiveMonthRunQuery(value: unknown): LoadActiveMonthRun
   };
 }
 
-export function parseStoreMonthRunBoundaryCommand(
-  value: unknown,
-): StoreMonthRunBoundaryCommandV1 {
+export function parseStoreMonthRunBoundaryCommand(value: unknown): StoreMonthRunBoundaryCommandV1 {
   const record = expectRecord(value, "store MonthRun boundary command");
   assertExactKeys(record, STORE_BOUNDARY_KEYS, "store MonthRun boundary command");
   if (record.schemaVersion !== "store-month-run-boundary-command-v1") {
