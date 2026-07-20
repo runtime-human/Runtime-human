@@ -13,172 +13,114 @@ on:
       - "scripts/check-boundaries.*"
       - "rust-toolchain.toml"
       - ".ox*.json"
-      - ".gitattributes"
+      - ".github/workflows/foundation.yml"
+  pull_request:
+    paths:
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "tsconfig*.json"
+      - "apps/**"
+      - "packages/**"
+      - "tests/**"
+      - "scripts/check-boundaries.*"
+      - "rust-toolchain.toml"
+      - ".ox*.json"
       - ".github/workflows/foundation.yml"
 
-concurrency:
-  group: foundation-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-defaults:
-  run:
-    shell: pwsh
-    working-directory: ci-worktree
+permissions:
+  contents: read
 
 jobs:
-  full-verification:
-    permissions:
-      checks: read
-      contents: read
-      statuses: write
-    runs-on: self-hosted
-    timeout-minutes: 45
+  javascript:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
-          clean: true
-          path: ci-worktree
-          persist-credentials: false
           show-progress: false
-      - name: Normalize tracked files
-        run: |
-          $ErrorActionPreference = "Stop"
-          git config --local core.autocrlf false
-          git config --local core.eol lf
-          git checkout-index --all --force
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: "24"
       - name: Activate pnpm
         run: |
-          $ErrorActionPreference = "Stop"
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
-          pnpm --version
-      - name: Install Rust 1.97.0
-        run: |
-          $ErrorActionPreference = "Stop"
-          rustup toolchain install 1.97.0 --profile minimal --component rustfmt,clippy
-          rustup default 1.97.0
-          rustc --version
-          cargo --version
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Check documentation freshness
-        run: pnpm docs:check
-      - name: Check formatting
-        run: pnpm fmt:check
-      - name: Run lint
-        run: pnpm lint
-      - name: Run TypeScript project references
-        run: pnpm typecheck
-      - name: Check package boundaries
-        run: pnpm boundaries:check
-      - name: Run JavaScript tests
-        run: pnpm test
+      - name: Run fast verification
+        run: pnpm check:fast
       - name: Run type-aware lint
         run: pnpm lint:type-aware
       - name: Build renderer
         run: pnpm build
       - name: Build Storybook
         run: pnpm storybook:build
+
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          show-progress: false
+      - name: Install Tauri system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            build-essential \
+            curl \
+            file \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libssl-dev \
+            libwebkit2gtk-4.1-dev \
+            libxdo-dev \
+            wget
+      - name: Install Rust 1.97.0
+        run: |
+          rustup toolchain install 1.97.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.97.0
       - name: Check Rust formatting
-        run: pnpm rust:fmt:check
-      - name: Check Rust workspace
-        run: pnpm rust:check
+        run: cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all -- --check
+      - name: Check Tauri shell
+        run: cargo check --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
       - name: Run Rust tests
-        run: pnpm rust:test
-      - name: Publish verification status
-        if: ${{ always() }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-          JOB_STATUS: ${{ job.status }}
-          STATUS_SHA: ${{ github.sha }}
-          RUN_ID: ${{ github.run_id }}
-          REPOSITORY: ${{ github.repository }}
-          API_URL: ${{ github.api_url }}
-          SERVER_URL: ${{ github.server_url }}
+        run: cargo test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
+
+  full-verification:
+    if: github.event_name == 'pull_request'
+    needs: [javascript, rust]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
         run: |
-          $ErrorActionPreference = "Stop"
-          $state = if ($env:JOB_STATUS -eq "success") { "success" } else { "failure" }
-          $description = if ($state -eq "success") { "Full self-hosted verification passed" } else { "Full self-hosted verification failed" }
-          $body = @{
-            state = $state
-            context = "self-hosted/foundation"
-            description = $description
-            target_url = "$env:SERVER_URL/$env:REPOSITORY/actions/runs/$env:RUN_ID"
-          } | ConvertTo-Json
-          Invoke-RestMethod `
-            -Method Post `
-            -Uri "$env:API_URL/repos/$env:REPOSITORY/statuses/$env:STATUS_SHA" `
-            -Headers @{
-              Authorization = "Bearer $env:GH_TOKEN"
-              Accept = "application/vnd.github+json"
-              "X-GitHub-Api-Version" = "2022-11-28"
-            } `
-            -ContentType "application/json" `
-            -Body $body
-      - name: Publish Sonar diagnostic
-        if: ${{ always() }}
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ github.token }}
-          STATUS_SHA: ${{ github.sha }}
-          REPOSITORY: ${{ github.repository }}
-          API_URL: ${{ github.api_url }}
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Install Tauri system dependencies
         run: |
-          $ErrorActionPreference = "Stop"
-          $headers = @{
-            Authorization = "Bearer $env:GH_TOKEN"
-            Accept = "application/vnd.github+json"
-            "X-GitHub-Api-Version" = "2022-11-28"
-          }
-          $sonarRuns = @()
-          for ($attempt = 0; $attempt -lt 18; $attempt += 1) {
-            $checks = Invoke-RestMethod `
-              -Method Get `
-              -Uri "$env:API_URL/repos/$env:REPOSITORY/commits/$env:STATUS_SHA/check-runs" `
-              -Headers $headers
-            $sonarRuns = @($checks.check_runs | Where-Object { $_.name -match "Sonar" })
-            if ($sonarRuns.Count -gt 0 -and @($sonarRuns | Where-Object { $_.status -ne "completed" }).Count -eq 0) {
-              break
-            }
-            Start-Sleep -Seconds 10
-          }
-          $state = "success"
-          $description = "No Sonar vulnerability annotation was reported"
-          $targetUrl = $null
-          foreach ($check in $sonarRuns) {
-            $targetUrl = $check.html_url
-            $annotations = @()
-            if ($check.annotations_url) {
-              $annotations = @(Invoke-RestMethod -Method Get -Uri $check.annotations_url -Headers $headers)
-            }
-            if ($check.conclusion -ne "success") {
-              $state = "failure"
-              if ($annotations.Count -gt 0) {
-                $first = $annotations[0]
-                $description = "$($first.path):$($first.start_line) $($first.title) $($first.message)"
-              } elseif ($check.output.title) {
-                $description = [string]$check.output.title
-              } else {
-                $description = "Sonar check failed without a visible annotation"
-              }
-              break
-            }
-          }
-          if ($description.Length -gt 140) {
-            $description = $description.Substring(0, 140)
-          }
-          $body = @{
-            state = $state
-            context = "diagnostic/sonar"
-            description = $description
-            target_url = $targetUrl
-          } | ConvertTo-Json
-          Invoke-RestMethod `
-            -Method Post `
-            -Uri "$env:API_URL/repos/$env:REPOSITORY/statuses/$env:STATUS_SHA" `
-            -Headers $headers `
-            -ContentType "application/json" `
-            -Body $body
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            build-essential \
+            curl \
+            file \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libssl-dev \
+            libwebkit2gtk-4.1-dev \
+            libxdo-dev \
+            wget
+      - name: Install Rust 1.97.0
+        run: |
+          rustup toolchain install 1.97.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.97.0
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Run pre-merge fast gate
+        run: pnpm check:fast
+      - name: Run full verification
+        run: pnpm verify
