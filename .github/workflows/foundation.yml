@@ -17,9 +17,27 @@ on:
       - ".ox*.json"
       - ".gitattributes"
       - ".github/workflows/foundation.yml"
+  pull_request:
+    branches:
+      - agent/month-run-protocol
+    paths:
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "tsconfig*.json"
+      - "apps/**"
+      - "packages/**"
+      - "tests/**"
+      - "fixtures/**"
+      - "docs/**"
+      - "scripts/**"
+      - "rust-toolchain.toml"
+      - ".ox*.json"
+      - ".gitattributes"
+      - ".github/workflows/foundation.yml"
 
 concurrency:
-  group: foundation-${{ github.workflow }}-${{ github.ref }}
+  group: foundation-${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref }}
   cancel-in-progress: true
 
 permissions: {}
@@ -30,18 +48,26 @@ defaults:
 
 jobs:
   full-verification:
-    if: github.ref == 'refs/heads/agent/month-run-persistence'
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/agent/month-run-persistence') ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       github.head_ref == 'agent/month-run-persistence' &&
+       github.actor == 'MrFr3di')
     permissions:
       contents: read
       statuses: write
     runs-on: self-hosted
     timeout-minutes: 45
+    env:
+      STATUS_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - id: checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           clean: true
           persist-credentials: false
+          ref: ${{ env.STATUS_SHA }}
           show-progress: false
       - name: Publish pending verification status
         env:
@@ -56,7 +82,7 @@ jobs:
           } | ConvertTo-Json
           Invoke-RestMethod `
             -Method Post `
-            -Uri "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/statuses/$env:GITHUB_SHA" `
+            -Uri "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/statuses/$env:STATUS_SHA" `
             -Headers @{
               Authorization = "Bearer $env:GITHUB_TOKEN"
               Accept = "application/vnd.github+json"
@@ -118,7 +144,7 @@ jobs:
           } | ConvertTo-Json
           Invoke-RestMethod `
             -Method Post `
-            -Uri "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/statuses/$env:GITHUB_SHA" `
+            -Uri "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/statuses/$env:STATUS_SHA" `
             -Headers @{
               Authorization = "Bearer $env:GITHUB_TOKEN"
               Accept = "application/vnd.github+json"
