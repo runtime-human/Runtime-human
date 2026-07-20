@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "month-run-persistence-fixture-v1",
+  "createSaveCommand": {
+    "schemaVersion": "create-save-command-v1",
+    "requestId": "request-create-fixture",
+    "saveId": "save-fixture",
+    "snapshot": {
+      "schemaVersion": "canonical-payload-v1",
+      "json": "{\"schemaVersion\":\"foundation-save-v1\",\"state\":{\"monthIndex\":0}}",
+      "sha256": "613057a590ecb0a2edbe99152d746dcb23f6542b28f2a71122b8a2016ae2aa82"
+    }
+  },
+  "beginMonthRunCommand": {
+    "schemaVersion": "begin-persisted-month-run-command-v1",
+    "requestId": "request-begin-fixture",
+    "saveId": "save-fixture",
+    "expectedSaveRevision": 0,
+    "runId": "run-fixture",
+    "checkpoint": {
+      "schemaVersion": "canonical-payload-v1",
+      "json": "{\"runRevision\":0,\"status\":\"ready\"}",
+      "sha256": "0d75eadc8a949648df56d796387dbd410049526f0eb438a881c6b0b4c8e19e44"
+    },
+    "compatibility": {
+      "schemaVersion": "canonical-payload-v1",
+      "json": "{\"checkpointSchema\":\"month-run-checkpoint-v1\",\"rulesVersion\":\"foundation-v1\"}",
+      "sha256": "6f45612f8867baaf7f4ffde4abfefdaf8789b125cc28d30d25da1cb32f487f13"
+    }
+  },
+  "storeBoundaryCommand": {
+    "schemaVersion": "store-month-run-boundary-command-v1",
+    "requestId": "request-store-fixture",
+    "saveId": "save-fixture",
+    "runId": "run-fixture",
+    "expectedRunRevision": 0,
+    "runRevision": 2,
+    "status": "suspended",
+    "checkpoint": {
+      "schemaVersion": "canonical-payload-v1",
+      "json": "{\"runRevision\":2,\"status\":\"suspended\"}",
+      "sha256": "ffc5f2d36ab361207c7ac3012dfda88f4a8d3c8fdbf4991a63dd95c95872eefb"
+    }
+  },
+  "commitMonthRunCommand": {
+    "schemaVersion": "commit-persisted-month-run-command-v1",
+    "requestId": "request-commit-fixture",
+    "saveId": "save-fixture",
+    "runId": "run-fixture",
+    "expectedSaveRevision": 0,
+    "expectedRunRevision": 2,
+    "snapshot": {
+      "schemaVersion": "canonical-payload-v1",
+      "json": "{\"schemaVersion\":\"foundation-save-v1\",\"state\":{\"monthIndex\":1}}",
+      "sha256": "15a09e7a4f7479dc4efd396d395767069c9ce5442bd0d3abc17d583ee034bfef"
+    },
+    "result": {
+      "schemaVersion": "canonical-payload-v1",
+      "json": "{\"committedSaveRevision\":1,\"runId\":\"run-fixture\"}",
+      "sha256": "caf5e6b0a1071381e89c8cbb838ee61e51bf008b7736e71e81ad78dbefcc9c87"
+    }
+  }
+}
