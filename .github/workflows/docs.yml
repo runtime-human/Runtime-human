@@ -12,15 +12,28 @@ on:
       - "scripts/build-toc.mjs"
       - ".github/workflows/docs.yml"
 
+concurrency:
+  group: docs-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
+defaults:
+  run:
+    shell: pwsh
+
 jobs:
   docs-lint:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, windows, x64]
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          clean: true
+          persist-credentials: false
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: "24"
       - name: Verify docs front-matter and manifest
