@@ -66,6 +66,15 @@ const COMMIT_MONTH_RUN_KEYS = [
 ] as const;
 const CREATE_BACKUP_KEYS = ["schemaVersion", "requestId", "saveId"] as const;
 
+type CheckpointIdentity = Readonly<{
+  saveId: string;
+  runId: string;
+  baseSaveRevision: number;
+  runRevision: number;
+  status: DurableMonthRunStatus;
+  compatibility: unknown;
+}>;
+
 export function parseCanonicalPayload(value: unknown): CanonicalPayloadV1 {
   const record = expectRecord(value, "canonical payload");
   assertExactKeys(record, CANONICAL_PAYLOAD_KEYS, "canonical payload");
@@ -122,14 +131,38 @@ export function parseBeginPersistedMonthRunCommand(
   if (record.schemaVersion !== "begin-persisted-month-run-command-v1") {
     throw new TypeError("Unsupported begin persisted MonthRun command schema");
   }
+
+  const saveId = parseSaveId(record.saveId);
+  const expectedSaveRevision = parseSaveRevision(record.expectedSaveRevision);
+  const runId = parseMonthRunId(record.runId);
+  const checkpoint = parseCanonicalPayload(record.checkpoint);
+  const compatibility = parseCanonicalPayload(record.compatibility);
+  const checkpointIdentity = parseCheckpointIdentity(checkpoint.json);
+
+  if (checkpointIdentity.saveId !== saveId) {
+    throw new TypeError("MonthRun checkpoint saveId must match the begin command");
+  }
+  if (checkpointIdentity.runId !== runId) {
+    throw new TypeError("MonthRun checkpoint runId must match the begin command");
+  }
+  if (checkpointIdentity.baseSaveRevision !== expectedSaveRevision) {
+    throw new TypeError("MonthRun checkpoint baseSaveRevision must match expectedSaveRevision");
+  }
+  if (checkpointIdentity.runRevision !== 0 || checkpointIdentity.status !== "ready") {
+    throw new TypeError("Begin command requires a ready MonthRun checkpoint at revision zero");
+  }
+  if (!jsonValuesEqual(checkpointIdentity.compatibility, parseJson(compatibility.json))) {
+    throw new TypeError("MonthRun checkpoint compatibility must match the begin command");
+  }
+
   return {
     schemaVersion: "begin-persisted-month-run-command-v1",
     requestId: parseRequestId(record.requestId),
-    saveId: parseSaveId(record.saveId),
-    expectedSaveRevision: parseSaveRevision(record.expectedSaveRevision),
-    runId: parseMonthRunId(record.runId),
-    checkpoint: parseCanonicalPayload(record.checkpoint),
-    compatibility: parseCanonicalPayload(record.compatibility),
+    saveId,
+    expectedSaveRevision,
+    runId,
+    checkpoint,
+    compatibility,
   };
 }
 
@@ -151,21 +184,40 @@ export function parseStoreMonthRunBoundaryCommand(value: unknown): StoreMonthRun
   if (record.schemaVersion !== "store-month-run-boundary-command-v1") {
     throw new TypeError("Unsupported store MonthRun boundary command schema");
   }
+
+  const saveId = parseSaveId(record.saveId);
+  const runId = parseMonthRunId(record.runId);
   const status = parseDurableStatus(record.status);
   const expectedRunRevision = parseMonthRunRevision(record.expectedRunRevision);
   const runRevision = parseMonthRunRevision(record.runRevision);
   if (runRevision <= expectedRunRevision) {
     throw new RangeError("Stored MonthRun revision must be newer than the expected revision");
   }
+  const checkpoint = parseCanonicalPayload(record.checkpoint);
+  const checkpointIdentity = parseCheckpointIdentity(checkpoint.json);
+
+  if (checkpointIdentity.saveId !== saveId) {
+    throw new TypeError("MonthRun checkpoint saveId must match the boundary command");
+  }
+  if (checkpointIdentity.runId !== runId) {
+    throw new TypeError("MonthRun checkpoint runId must match the boundary command");
+  }
+  if (checkpointIdentity.runRevision !== runRevision) {
+    throw new TypeError("MonthRun checkpoint runRevision must match the boundary command");
+  }
+  if (checkpointIdentity.status !== status) {
+    throw new TypeError("MonthRun checkpoint status must match the boundary command");
+  }
+
   return {
     schemaVersion: "store-month-run-boundary-command-v1",
     requestId: parseRequestId(record.requestId),
-    saveId: parseSaveId(record.saveId),
-    runId: parseMonthRunId(record.runId),
+    saveId,
+    runId,
     expectedRunRevision,
     runRevision,
     status,
-    checkpoint: parseCanonicalPayload(record.checkpoint),
+    checkpoint,
   };
 }
 
@@ -200,6 +252,57 @@ export function parseCreateBackupCommand(value: unknown): CreateBackupCommandV1 
     requestId: parseRequestId(record.requestId),
     saveId: parseSaveId(record.saveId),
   };
+}
+
+function parseCheckpointIdentity(json: string): CheckpointIdentity {
+  const record = expectRecord(parseJson(json), "MonthRun checkpoint");
+  if (record.schemaVersion !== "month-run-checkpoint-v1") {
+    throw new TypeError("Canonical checkpoint payload must use month-run-checkpoint-v1");
+  }
+  if (!("compatibility" in record)) {
+    throw new TypeError("MonthRun checkpoint compatibility is required");
+  }
+  return {
+    saveId: parseSaveId(record.saveId),
+    runId: parseMonthRunId(record.runId),
+    baseSaveRevision: parseSaveRevision(record.baseSaveRevision),
+    runRevision: parseMonthRunRevision(record.runRevision),
+    status: parseDurableStatus(record.status),
+    compatibility: record.compatibility,
+  };
+}
+
+function parseJson(json: string): unknown {
+  try {
+    return JSON.parse(json);
+  } catch {
+    throw new TypeError("Canonical payload must contain valid JSON");
+  }
+}
+
+function jsonValuesEqual(left: unknown, right: unknown): boolean {
+  if (Object.is(left, right)) return true;
+  if (Array.isArray(left) || Array.isArray(right)) {
+    return (
+      Array.isArray(left) &&
+      Array.isArray(right) &&
+      left.length === right.length &&
+      left.every((value, index) => jsonValuesEqual(value, right[index]))
+    );
+  }
+  if (left === null || right === null || typeof left !== "object" || typeof right !== "object") {
+    return false;
+  }
+  const leftRecord = left as Readonly<Record<string, unknown>>;
+  const rightRecord = right as Readonly<Record<string, unknown>>;
+  const leftKeys = Object.keys(leftRecord).sort();
+  const rightKeys = Object.keys(rightRecord).sort();
+  return (
+    leftKeys.length === rightKeys.length &&
+    leftKeys.every(
+      (key, index) => key === rightKeys[index] && jsonValuesEqual(leftRecord[key], rightRecord[key]),
+    )
+  );
 }
 
 function parseDurableStatus(value: unknown): DurableMonthRunStatus {
