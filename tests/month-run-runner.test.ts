@@ -150,9 +150,7 @@ describe("MonthRun runner", () => {
     if (accepted.kind !== "accepted") throw new Error("expected accepted answer");
 
     const uninterrupted = runUntilBoundary(accepted.checkpoint, decisionSteps);
-    const restored = restoreMonthRunCheckpoint(
-      JSON.parse(JSON.stringify(accepted.checkpoint)),
-    );
+    const restored = restoreMonthRunCheckpoint(JSON.parse(JSON.stringify(accepted.checkpoint)));
     expect(restored.kind).toBe("ok");
     if (restored.kind !== "ok") throw new Error("expected accepted checkpoint restore");
     const resumed = runUntilBoundary(restored.checkpoint, decisionSteps);

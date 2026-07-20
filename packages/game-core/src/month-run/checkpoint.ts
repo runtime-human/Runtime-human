@@ -176,9 +176,7 @@ function parseCompatibility(value: AuthoritativeJsonValue | undefined): MonthRun
   };
 }
 
-function parseDeterminismManifest(
-  value: AuthoritativeJsonValue | undefined,
-): DeterminismManifest {
+function parseDeterminismManifest(value: AuthoritativeJsonValue | undefined): DeterminismManifest {
   const record = expectRecord(value, "determinismManifest");
   const rulesVersion = expectString(record.rulesVersion, "rulesVersion");
   if (
