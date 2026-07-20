@@ -1,3 +1,4 @@
+export type { AuthoritativeJsonValue } from "./authoritative-json";
 export { DETERMINISM_MANIFEST_V1, parseSerializedXoshiro256State } from "./determinism";
 export type {
   DeterminismManifest,
@@ -5,3 +6,43 @@ export type {
   SerializedXoshiro256State,
   StableId,
 } from "./determinism";
+export {
+  parseDecisionId,
+  parseMonthRunId,
+  parseMonthRunRevision,
+  parseRequestId,
+  parseSaveId,
+  parseSaveRevision,
+} from "./month-run";
+export type {
+  AbandonRunEventV1,
+  AcceptedDecisionV1,
+  AcceptDecisionEventV1,
+  AdvanceStepEventV1,
+  BeginMonthCommandV1,
+  CompleteRunEventV1,
+  DecisionId,
+  FailRunEventV1,
+  MarkCommittedEventV1,
+  MarkIncompatibleEventV1,
+  MaterializedOutcomeV1,
+  MaterializeOutcomeEventV1,
+  MonthRunCheckpointV1,
+  MonthRunCompatibilityV1,
+  MonthRunEventV1,
+  MonthRunId,
+  MonthRunPhase,
+  MonthRunProtocolError,
+  MonthRunProtocolErrorCode,
+  MonthRunRevision,
+  MonthRunStatus,
+  MonthRunTransitionResult,
+  PendingDecisionV1,
+  RequestId,
+  RequireRecoveryEventV1,
+  ResumeMonthCommandV1,
+  SaveId,
+  SaveRevision,
+  StartRunEventV1,
+  SuspendForDecisionEventV1,
+} from "./month-run";
