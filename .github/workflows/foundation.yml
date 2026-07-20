@@ -20,8 +20,7 @@ concurrency:
   group: foundation-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
+permissions: {}
 
 defaults:
   run:
@@ -29,6 +28,8 @@ defaults:
 
 jobs:
   full-verification:
+    permissions:
+      contents: read
     runs-on: self-hosted
     timeout-minutes: 45
     steps:
