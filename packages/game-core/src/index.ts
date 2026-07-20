@@ -3,13 +3,15 @@ export { fingerprint, sha256Hex, stableId } from "./determinism/hash";
 export type { RandomSource } from "./determinism/random-source";
 export { Xoshiro256StarStar } from "./determinism/xoshiro256ss";
 export {
+  checkMonthRunCompatibility,
   createMonthRunCheckpoint,
-  rehashMonthRunCheckpoint,
   restoreMonthRunCheckpoint,
   snapshotAuthoritativeValue,
 } from "./month-run/checkpoint";
 export type {
   CreateMonthRunCheckpointInput,
+  MonthRunCompatibilityCheckResult,
+  MonthRunCompatibilityField,
   RestoreMonthRunCheckpointResult,
 } from "./month-run/checkpoint";
 export { runUntilBoundary } from "./month-run/runner";
