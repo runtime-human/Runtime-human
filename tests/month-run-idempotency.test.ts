@@ -11,10 +11,14 @@ import {
   parseSaveRevision,
   parseSerializedXoshiro256State,
   type BeginMonthCommandV1,
+  type MonthRunCheckpointV1,
   type ResumeMonthCommandV1,
 } from "@runtime-human/game-schema";
 
-import { createMonthRunReferenceHarness } from "./support/month-run-reference-harness";
+import {
+  createMonthRunReferenceHarness,
+  type MonthRunReferenceCommandResult,
+} from "./support/month-run-reference-harness";
 
 const RNG_STATE = parseSerializedXoshiro256State(
   "0100000000000000020000000000000003000000000000000400000000000000",
@@ -70,6 +74,12 @@ function resumeCommand(answer: ResumeMonthCommandV1["answer"] = { option: "quali
   };
 }
 
+function requireCheckpoint(result: MonthRunReferenceCommandResult): MonthRunCheckpointV1 {
+  expect(result.checkpoint).not.toBeNull();
+  if (result.checkpoint === null) throw new Error("expected checkpoint");
+  return result.checkpoint;
+}
+
 describe("MonthRun reference idempotency", () => {
   it("returns the stored result for an identical begin and rejects payload reuse", () => {
     const harness = createMonthRunReferenceHarness({
@@ -93,14 +103,15 @@ describe("MonthRun reference idempotency", () => {
       saveRevision: parseSaveRevision(4),
     });
     const started = harness.begin(beginCommand());
-    expect(started.checkpoint.status).toBe("suspended");
+    expect(requireCheckpoint(started).status).toBe("suspended");
 
     const first = harness.resume(resumeCommand());
     const duplicate = harness.resume(resumeCommand());
+    const completed = requireCheckpoint(first);
 
-    expect(first.checkpoint.status).toBe("completed");
+    expect(completed.status).toBe("completed");
     expect(duplicate).toBe(first);
-    expect(harness.load(parseMonthRunId("run-idempotency"))).toBe(first.checkpoint);
+    expect(harness.load(parseMonthRunId("run-idempotency"))).toBe(completed);
   });
 
   it("rejects a stale resume before applying the answer", () => {
