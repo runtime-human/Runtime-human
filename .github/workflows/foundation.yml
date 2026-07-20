@@ -69,12 +69,21 @@ jobs:
         run: pnpm fmt
       - name: Generate derived documentation artifact
         run: node scripts/build-toc.mjs
+      - id: cargo_bootstrap
+        name: Resolve Rust dependency lock
+        continue-on-error: true
+        run: cargo check --manifest-path apps/desktop/src-tauri/Cargo.toml
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
         with:
           name: persistence-bootstrap-${{ github.sha }}
           path: |
             packages/game-persistence-contracts/src
             tests/persistence-contracts.test.ts
+            apps/desktop/src-tauri/Cargo.toml
+            apps/desktop/src-tauri/Cargo.lock
+            apps/desktop/src-tauri/src/main.rs
+            apps/desktop/src-tauri/src/persistence
             .github/workflows/foundation.yml
             docs/MANIFEST.jsonc
             docs/CATALOG.md
