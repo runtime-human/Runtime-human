@@ -48,6 +48,12 @@ function accept(checkpoint: MonthRunCheckpointV1, event: MonthRunEventV1): Month
   return result.checkpoint;
 }
 
+function withoutOuterHash(checkpoint: MonthRunCheckpointV1) {
+  const { checkpointHash, ...withoutHash } = checkpoint;
+  expect(checkpointHash).toMatch(/^[0-9a-f]{64}$/u);
+  return withoutHash;
+}
+
 function withOuterHash<T extends Omit<MonthRunCheckpointV1, "checkpointHash">>(payload: T) {
   return {
     ...payload,
@@ -108,9 +114,8 @@ describe("MonthRun checkpoints", () => {
       provisionalState: { quality: 7 },
       rngState: RNG_STATE,
     });
-    const { checkpointHash: _checkpointHash, ...withoutHash } = materialized;
     const tampered = withOuterHash({
-      ...withoutHash,
+      ...withoutOuterHash(materialized),
       materializedOutcomes: [
         {
           ...materialized.materializedOutcomes[0]!,
@@ -142,9 +147,8 @@ describe("MonthRun checkpoints", () => {
       decisionId: parseDecisionId("decision-1"),
       answer: { option: "quality" },
     });
-    const { checkpointHash: _checkpointHash, ...withoutHash } = resumed;
     const tampered = withOuterHash({
-      ...withoutHash,
+      ...withoutOuterHash(resumed),
       acceptedDecisions: [
         {
           ...resumed.acceptedDecisions[0]!,
@@ -161,9 +165,8 @@ describe("MonthRun checkpoints", () => {
 
   it("rejects an unsupported determinism manifest even with a valid outer hash", () => {
     const checkpoint = initialCheckpoint("run-manifest");
-    const { checkpointHash: _checkpointHash, ...withoutHash } = checkpoint;
     const tampered = withOuterHash({
-      ...withoutHash,
+      ...withoutOuterHash(checkpoint),
       compatibility: {
         ...checkpoint.compatibility,
         determinismManifest: {
