@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   createMonthRunCheckpoint,
   fingerprint,
+  restoreMonthRunCheckpoint,
   transitionMonthRun,
 } from "@runtime-human/game-core";
 import {
@@ -161,5 +162,32 @@ describe("MonthRun transition reducer", () => {
     expect(result.kind).toBe("rejected");
     expect(result.checkpoint).toBe(running);
     if (result.kind === "rejected") expect(result.error.code).toBe("InvalidCommand");
+  });
+
+  it("rejects running transitions into the blocking decision phase", () => {
+    const running = accept(initialCheckpoint(), { type: "start" });
+    const result = transitionMonthRun(running, {
+      type: "advance-step",
+      phase: "await-decision",
+      provisionalState: {},
+    });
+
+    expect(result.kind).toBe("rejected");
+    expect(result.checkpoint).toBe(running);
+    if (result.kind === "rejected") expect(result.error.code).toBe("InvalidCommand");
+  });
+
+  it("creates a restorable recovery checkpoint from completed", () => {
+    const running = accept(initialCheckpoint(), { type: "start" });
+    const completed = accept(running, { type: "complete", result: { quality: 7 } });
+    const recovery = accept(completed, {
+      type: "require-recovery",
+      reason: { code: "commit-failed" },
+    });
+    const restored = restoreMonthRunCheckpoint(JSON.parse(JSON.stringify(recovery)));
+
+    expect(recovery.status).toBe("recovery-required");
+    expect(recovery.terminalResult).toBeNull();
+    expect(restored).toEqual({ kind: "ok", checkpoint: recovery });
   });
 });
