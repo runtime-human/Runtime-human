@@ -361,8 +361,14 @@ function validateStatusShape(
   if (status === "ready" && phase !== "initialize") {
     throw new TypeError("Ready MonthRun must be in initialize phase");
   }
+  if (status === "running" && (phase === "initialize" || phase === "await-decision")) {
+    throw new TypeError("Running MonthRun has an invalid phase");
+  }
   if (status === "suspended" && (phase !== "await-decision" || pendingDecision === null)) {
     throw new TypeError("Suspended MonthRun requires one pending decision");
+  }
+  if ((status === "completed" || status === "committed") && phase !== "finalize") {
+    throw new TypeError("Completed MonthRun must be in finalize phase");
   }
   if (status !== "suspended" && pendingDecision !== null) {
     throw new TypeError("Only a suspended MonthRun may contain a pending decision");
