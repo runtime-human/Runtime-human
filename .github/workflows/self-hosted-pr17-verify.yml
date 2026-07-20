@@ -72,7 +72,40 @@ jobs:
       - name: Check Rust formatting
         run: pnpm rust:fmt:check
       - name: Check Rust workspace
-        run: pnpm rust:check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STATUS_SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+          REPOSITORY: ${{ github.repository }}
+          API_URL: ${{ github.api_url }}
+          SERVER_URL: ${{ github.server_url }}
+        run: |
+          $ErrorActionPreference = "Continue"
+          $output = @(& pnpm rust:check 2>&1)
+          $exitCode = $LASTEXITCODE
+          $output | ForEach-Object { Write-Host $_ }
+          if ($exitCode -ne 0) {
+            $firstError = $output | Where-Object { "$_" -match "(^|\s)(error|fatal error|linker).*" } | Select-Object -First 1
+            $description = if ($null -eq $firstError) { "cargo check failed; inspect the linked run" } else { "$firstError".Trim() }
+            if ($description.Length -gt 140) { $description = $description.Substring(0, 140) }
+            $body = @{
+              state = "failure"
+              context = "verification/pr17-rust"
+              description = $description
+              target_url = "$env:SERVER_URL/$env:REPOSITORY/actions/runs/$env:RUN_ID"
+            } | ConvertTo-Json
+            Invoke-RestMethod `
+              -Method Post `
+              -Uri "$env:API_URL/repos/$env:REPOSITORY/statuses/$env:STATUS_SHA" `
+              -Headers @{
+                Authorization = "Bearer $env:GH_TOKEN"
+                Accept = "application/vnd.github+json"
+                "X-GitHub-Api-Version" = "2022-11-28"
+              } `
+              -ContentType "application/json" `
+              -Body $body
+            exit $exitCode
+          }
       - name: Run Rust tests
         run: pnpm rust:test
       - name: Publish verification status
