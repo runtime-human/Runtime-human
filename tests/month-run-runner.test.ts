@@ -12,6 +12,7 @@ import {
   DETERMINISM_MANIFEST_V1,
   parseDecisionId,
   parseMonthRunId,
+  parseRequestId,
   parseSaveId,
   parseSaveRevision,
   parseSerializedXoshiro256State,
@@ -51,6 +52,23 @@ const completingSteps: readonly MonthRunStep[] = [
     rngState: RNG_STATE,
   }),
   () => ({ type: "complete", result: { quality: 7 } }),
+];
+
+const decisionSteps: readonly MonthRunStep[] = [
+  () => ({ type: "start" }),
+  () => ({
+    type: "suspend-for-decision",
+    decision: {
+      decisionId: parseDecisionId("decision-1"),
+      kind: "scope-choice",
+      prompt: { options: ["quality", "speed"] },
+      answerSchemaFingerprint: fingerprint("answer-schema", 1),
+    },
+  }),
+  () => {
+    throw new Error("accepted answer checkpoint must skip the decision step");
+  },
+  () => ({ type: "complete", result: { option: "quality" } }),
 ];
 
 describe("MonthRun runner", () => {
@@ -117,5 +135,29 @@ describe("MonthRun runner", () => {
 
     expect(restored).toEqual(uninterrupted.checkpoint);
     expect(restored.checkpointHash).toBe(uninterrupted.checkpoint.checkpointHash);
+  });
+
+  it("continues identically after a crash immediately after accepted answer", () => {
+    const suspendedResult = runUntilBoundary(initialCheckpoint(), decisionSteps);
+    expect(suspendedResult.kind).toBe("boundary");
+    const accepted = transitionMonthRun(suspendedResult.checkpoint, {
+      type: "accept-decision",
+      requestId: parseRequestId("resume-after-crash"),
+      decisionId: parseDecisionId("decision-1"),
+      answer: { option: "quality" },
+    });
+    expect(accepted.kind).toBe("accepted");
+    if (accepted.kind !== "accepted") throw new Error("expected accepted answer");
+
+    const uninterrupted = runUntilBoundary(accepted.checkpoint, decisionSteps);
+    const restored = restoreMonthRunCheckpoint(
+      JSON.parse(JSON.stringify(accepted.checkpoint)),
+    );
+    expect(restored.kind).toBe("ok");
+    if (restored.kind !== "ok") throw new Error("expected accepted checkpoint restore");
+    const resumed = runUntilBoundary(restored.checkpoint, decisionSteps);
+
+    expect(resumed).toEqual(uninterrupted);
+    expect(resumed.checkpoint.status).toBe("completed");
   });
 });
