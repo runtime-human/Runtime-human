@@ -42,6 +42,27 @@ jobs:
           clean: true
           persist-credentials: true
           show-progress: false
+      - name: Publish pending verification status
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          $body = @{
+            state = "pending"
+            context = "foundation/self-hosted"
+            description = "Self-hosted Windows verification is running"
+            target_url = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID"
+          } | ConvertTo-Json
+          Invoke-RestMethod `
+            -Method Post `
+            -Uri "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/statuses/$env:GITHUB_SHA" `
+            -Headers @{
+              Authorization = "Bearer $env:GITHUB_TOKEN"
+              Accept = "application/vnd.github+json"
+              "X-GitHub-Api-Version" = "2022-11-28"
+            } `
+            -ContentType "application/json" `
+            -Body $body | Out-Null
       - name: Normalize tracked files
         run: |
           $ErrorActionPreference = "Stop"
