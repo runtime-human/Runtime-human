@@ -64,8 +64,30 @@ jobs:
           cargo --version
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Run full verification
-        run: pnpm verify
+      - name: Check documentation freshness
+        run: pnpm docs:check
+      - name: Check formatting
+        run: pnpm fmt:check
+      - name: Run lint
+        run: pnpm lint
+      - name: Run TypeScript project references
+        run: pnpm typecheck
+      - name: Check package boundaries
+        run: pnpm boundaries:check
+      - name: Run JavaScript tests
+        run: pnpm test
+      - name: Run type-aware lint
+        run: pnpm lint:type-aware
+      - name: Build renderer
+        run: pnpm build
+      - name: Build Storybook
+        run: pnpm storybook:build
+      - name: Check Rust formatting
+        run: pnpm rust:fmt:check
+      - name: Check Rust workspace
+        run: pnpm rust:check
+      - name: Run Rust tests
+        run: pnpm rust:test
       - name: Publish verification status
         if: ${{ always() }}
         env:
@@ -96,7 +118,7 @@ jobs:
             } `
             -ContentType "application/json" `
             -Body $body
-      - name: Report Sonar annotations
+      - name: Publish Sonar diagnostic
         if: ${{ always() }}
         continue-on-error: true
         env:
@@ -123,19 +145,40 @@ jobs:
             }
             Start-Sleep -Seconds 10
           }
-          if ($sonarRuns.Count -eq 0) {
-            Write-Host "No Sonar check run was visible for this commit."
-            exit 0
-          }
+          $state = "success"
+          $description = "No Sonar vulnerability annotation was reported"
+          $targetUrl = $null
           foreach ($check in $sonarRuns) {
-            Write-Host "Sonar check: $($check.name); conclusion=$($check.conclusion)"
-            if ($check.output.title) { Write-Host "Title: $($check.output.title)" }
-            if ($check.output.summary) { Write-Host "Summary: $($check.output.summary)" }
-            if ($check.output.text) { Write-Host "Details: $($check.output.text)" }
+            $targetUrl = $check.html_url
+            $annotations = @()
             if ($check.annotations_url) {
-              $annotations = Invoke-RestMethod -Method Get -Uri $check.annotations_url -Headers $headers
-              foreach ($annotation in @($annotations)) {
-                Write-Host "Annotation: $($annotation.annotation_level) $($annotation.path):$($annotation.start_line) $($annotation.title) $($annotation.message)"
+              $annotations = @(Invoke-RestMethod -Method Get -Uri $check.annotations_url -Headers $headers)
+            }
+            if ($check.conclusion -ne "success") {
+              $state = "failure"
+              if ($annotations.Count -gt 0) {
+                $first = $annotations[0]
+                $description = "$($first.path):$($first.start_line) $($first.title) $($first.message)"
+              } elseif ($check.output.title) {
+                $description = [string]$check.output.title
+              } else {
+                $description = "Sonar check failed without a visible annotation"
               }
+              break
             }
           }
+          if ($description.Length -gt 140) {
+            $description = $description.Substring(0, 140)
+          }
+          $body = @{
+            state = $state
+            context = "diagnostic/sonar"
+            description = $description
+            target_url = $targetUrl
+          } | ConvertTo-Json
+          Invoke-RestMethod `
+            -Method Post `
+            -Uri "$env:API_URL/repos/$env:REPOSITORY/statuses/$env:STATUS_SHA" `
+            -Headers $headers `
+            -ContentType "application/json" `
+            -Body $body
