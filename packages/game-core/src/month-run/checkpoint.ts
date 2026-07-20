@@ -271,7 +271,7 @@ function expectRecord(
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
     throw new TypeError(`${name} must be an object`);
   }
-  return value;
+  return value as Readonly<Record<string, AuthoritativeJsonValue>>;
 }
 
 function expectString(value: AuthoritativeJsonValue | undefined, name: string): string {

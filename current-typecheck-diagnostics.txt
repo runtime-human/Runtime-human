@@ -1,5 +1,0 @@
-$ tsc -b --pretty false
-packages/game-core/src/month-run/checkpoint.ts(274,3): error TS2322: Type 'readonly AuthoritativeJsonValue[] | { readonly [key: string]: AuthoritativeJsonValue; }' is not assignable to type 'Readonly<Record<string, AuthoritativeJsonValue>>'.
-  Type 'readonly AuthoritativeJsonValue[]' is not assignable to type 'Readonly<Record<string, AuthoritativeJsonValue>>'.
-    Index signature for type 'string' is missing in type 'readonly AuthoritativeJsonValue[]'.
-[ELIFECYCLE] Command failed with exit code 2.
