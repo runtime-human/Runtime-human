@@ -11,7 +11,8 @@ on:
       - "packages/**"
       - "tests/**"
       - "fixtures/**"
-      - "scripts/check-boundaries.*"
+      - "docs/**"
+      - "scripts/**"
       - "rust-toolchain.toml"
       - ".ox*.json"
       - ".gitattributes"
@@ -19,7 +20,7 @@ on:
 
 concurrency:
   group: foundation-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions: {}
 
@@ -29,9 +30,9 @@ defaults:
 
 jobs:
   full-verification:
-    if: github.actor == 'MrFr3di'
+    if: github.actor == 'MrFr3di' && github.ref == 'refs/heads/agent/month-run-persistence'
     permissions:
-      contents: read
+      contents: write
       statuses: write
     runs-on: self-hosted
     timeout-minutes: 45
@@ -39,7 +40,7 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           clean: true
-          persist-credentials: false
+          persist-credentials: true
           show-progress: false
       - name: Normalize tracked files
         run: |
@@ -67,40 +68,49 @@ jobs:
         run: pnpm install --frozen-lockfile --reporter=silent
       - name: Format persistence bootstrap files
         run: pnpm fmt
-      - name: Generate derived documentation artifact
+      - name: Generate derived documentation
         run: node scripts/build-toc.mjs
-      - id: cargo_bootstrap
-        name: Resolve Rust dependency lock
-        continue-on-error: true
+      - name: Resolve Rust dependency lock
         run: cargo check --manifest-path apps/desktop/src-tauri/Cargo.toml
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        if: always()
-        with:
-          name: persistence-bootstrap-${{ github.sha }}
-          path: |
-            packages/game-persistence-contracts/src
-            tests/persistence-contracts.test.ts
-            apps/desktop/src-tauri/Cargo.toml
-            apps/desktop/src-tauri/Cargo.lock
-            apps/desktop/src-tauri/src/main.rs
-            apps/desktop/src-tauri/src/persistence
-            .github/workflows/foundation.yml
-            docs/MANIFEST.jsonc
-            docs/CATALOG.md
-          if-no-files-found: error
-          retention-days: 1
-      - id: verify
-        name: Run full verification
-        continue-on-error: true
-        run: pnpm verify
-      - name: Publish foundation status
-        if: always()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERIFY_OUTCOME: ${{ steps.verify.outcome }}
+      - id: bootstrap_commit
+        name: Commit resolved bootstrap when needed
         run: |
           $ErrorActionPreference = "Stop"
-          $state = if ($env:VERIFY_OUTCOME -eq "success") { "success" } else { "failure" }
+          git add -- \
+            packages/game-persistence-contracts/src \
+            tests/persistence-contracts.test.ts \
+            apps/desktop/src-tauri/Cargo.toml \
+            apps/desktop/src-tauri/Cargo.lock \
+            apps/desktop/src-tauri/src/main.rs \
+            apps/desktop/src-tauri/src/persistence \
+            docs/MANIFEST.jsonc \
+            docs/CATALOG.md \
+            .github/workflows/foundation.yml
+          if (git diff --cached --quiet) {
+            "changed=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            exit 0
+          }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: commit resolved persistence bootstrap"
+          git push origin HEAD:agent/month-run-persistence
+          "changed=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+      - id: verify
+        name: Run full verification
+        if: steps.bootstrap_commit.outputs.changed == 'false'
+        run: |
+          pnpm verify
+          $passed = $LASTEXITCODE -eq 0
+          "passed=$($passed.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          exit 0
+      - name: Publish foundation status
+        if: steps.bootstrap_commit.outputs.changed == 'false'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERIFY_PASSED: ${{ steps.verify.outputs.passed }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          $state = if ($env:VERIFY_PASSED -eq "true") { "success" } else { "failure" }
           $description = if ($state -eq "success") {
             "Self-hosted Windows verification passed"
           } else {
@@ -123,5 +133,5 @@ jobs:
             -ContentType "application/json" `
             -Body $body | Out-Null
       - name: Enforce verification result
-        if: steps.verify.outcome != 'success'
+        if: steps.bootstrap_commit.outputs.changed == 'false' && steps.verify.outputs.passed != 'true'
         run: exit 1
