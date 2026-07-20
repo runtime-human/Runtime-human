@@ -180,6 +180,7 @@ function advance(
   checkpoint: MonthRunCheckpointV1,
   event: AdvanceStepEventV1,
 ): MonthRunTransitionResult {
+  validateRunningPhase(event.phase);
   return accepted(checkpoint, {
     phase: event.phase,
     provisionalState: snapshotAuthoritativeValue(event.provisionalState),
@@ -191,6 +192,7 @@ function materialize(
   checkpoint: MonthRunCheckpointV1,
   event: MaterializeOutcomeEventV1,
 ): MonthRunTransitionResult {
+  validateRunningPhase(event.phase);
   const payload = snapshotAuthoritativeValue(event.payload);
   return accepted(checkpoint, {
     phase: event.phase,
@@ -302,6 +304,7 @@ function exceptional(
   return accepted(checkpoint, {
     status,
     pendingDecision: null,
+    terminalResult: null,
     provisionalState: { terminalReason: snapshotAuthoritativeValue(reason) },
   });
 }
@@ -362,6 +365,12 @@ function reject(
   message: string,
 ): MonthRunTransitionResult {
   return { kind: "rejected", checkpoint, error: { code, message } };
+}
+
+function validateRunningPhase(phase: AdvanceStepEventV1["phase"]): void {
+  if (phase === "initialize" || phase === "await-decision") {
+    throw new TypeError(`Running MonthRun cannot enter ${phase} phase`);
+  }
 }
 
 function validateToken(value: string, name: string): string {
