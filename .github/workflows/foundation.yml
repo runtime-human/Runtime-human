@@ -28,8 +28,10 @@ defaults:
 
 jobs:
   full-verification:
+    if: github.actor == 'MrFr3di'
     permissions:
       contents: read
+      statuses: write
     runs-on: self-hosted
     timeout-minutes: 45
     steps:
@@ -62,5 +64,39 @@ jobs:
           cargo --version
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Run full verification
+      - id: verify
+        name: Run full verification
+        continue-on-error: true
         run: pnpm verify
+      - name: Publish foundation status
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERIFY_OUTCOME: ${{ steps.verify.outcome }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          $state = if ($env:VERIFY_OUTCOME -eq "success") { "success" } else { "failure" }
+          $description = if ($state -eq "success") {
+            "Self-hosted Windows verification passed"
+          } else {
+            "Self-hosted Windows verification failed"
+          }
+          $body = @{
+            state = $state
+            context = "foundation/self-hosted"
+            description = $description
+            target_url = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID"
+          } | ConvertTo-Json
+          Invoke-RestMethod `
+            -Method Post `
+            -Uri "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/statuses/$env:GITHUB_SHA" `
+            -Headers @{
+              Authorization = "Bearer $env:GITHUB_TOKEN"
+              Accept = "application/vnd.github+json"
+              "X-GitHub-Api-Version" = "2022-11-28"
+            } `
+            -ContentType "application/json" `
+            -Body $body | Out-Null
+      - name: Enforce verification result
+        if: steps.verify.outcome != 'success'
+        run: exit 1
