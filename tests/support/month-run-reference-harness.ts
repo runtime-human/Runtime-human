@@ -127,11 +127,7 @@ export function createMonthRunReferenceHarness(input: CreateMonthRunReferenceHar
         return remember(
           command.requestId,
           payloadHash,
-          rejected(
-            checkpoint,
-            "RunRevisionConflict",
-            "ResumeMonth expected run revision is stale",
-          ),
+          rejected(checkpoint, "RunRevisionConflict", "ResumeMonth expected run revision is stale"),
         );
       }
 

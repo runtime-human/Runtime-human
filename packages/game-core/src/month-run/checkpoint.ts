@@ -90,9 +90,7 @@ export function createMonthRunCheckpoint(
   });
 }
 
-export function rehashMonthRunCheckpoint(
-  checkpoint: CheckpointWithoutHash,
-): MonthRunCheckpointV1 {
+export function rehashMonthRunCheckpoint(checkpoint: CheckpointWithoutHash): MonthRunCheckpointV1 {
   const detached = snapshotAuthoritativeValue(checkpoint) as unknown as CheckpointWithoutHash;
   return {
     ...detached,

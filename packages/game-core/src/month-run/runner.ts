@@ -49,10 +49,7 @@ export function runUntilBoundary(
     if (isBoundary(current)) return { kind: "boundary", checkpoint: current };
   }
 
-  return budgetError(
-    original,
-    `MonthRun exceeded the transition budget of ${maxTransitions}`,
-  );
+  return budgetError(original, `MonthRun exceeded the transition budget of ${maxTransitions}`);
 }
 
 function isBoundary(checkpoint: MonthRunCheckpointV1): boolean {

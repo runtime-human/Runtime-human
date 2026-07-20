@@ -86,15 +86,7 @@ describe("MonthRun transition reducer", () => {
       resumed.status,
       completed.status,
       committed.status,
-    ]).toEqual([
-      "ready",
-      "running",
-      "running",
-      "suspended",
-      "running",
-      "completed",
-      "committed",
-    ]);
+    ]).toEqual(["ready", "running", "running", "suspended", "running", "completed", "committed"]);
   });
 
   it("returns duplicates without changing checkpoint identity or revision", () => {

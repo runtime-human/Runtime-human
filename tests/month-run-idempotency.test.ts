@@ -62,7 +62,9 @@ function beginCommand(plan: BeginMonthCommandV1["plan"] = { month: 1 }): BeginMo
   };
 }
 
-function resumeCommand(answer: ResumeMonthCommandV1["answer"] = { option: "quality" }): ResumeMonthCommandV1 {
+function resumeCommand(
+  answer: ResumeMonthCommandV1["answer"] = { option: "quality" },
+): ResumeMonthCommandV1 {
   return {
     schemaVersion: "resume-month-command-v1",
     requestId: parseRequestId("resume-1"),
