@@ -65,12 +65,17 @@ jobs:
           cargo --version
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Format persistence bootstrap files
+        run: pnpm fmt
       - name: Generate derived documentation artifact
         run: node scripts/build-toc.mjs
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: persistence-derived-docs-${{ github.sha }}
+          name: persistence-bootstrap-${{ github.sha }}
           path: |
+            packages/game-persistence-contracts/src
+            tests/persistence-contracts.test.ts
+            .github/workflows/foundation.yml
             docs/MANIFEST.jsonc
             docs/CATALOG.md
           if-no-files-found: error
