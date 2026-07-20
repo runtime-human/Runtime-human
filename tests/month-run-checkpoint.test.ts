@@ -54,7 +54,7 @@ function withoutOuterHash(checkpoint: MonthRunCheckpointV1) {
   return withoutHash;
 }
 
-function withOuterHash<T extends Omit<MonthRunCheckpointV1, "checkpointHash">>(payload: T) {
+function withOuterHash<T extends object>(payload: T) {
   return {
     ...payload,
     checkpointHash: fingerprint("month-run-checkpoint-v1", payload),
