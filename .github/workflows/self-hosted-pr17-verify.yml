@@ -86,11 +86,14 @@ jobs:
           $output | ForEach-Object { Write-Host $_ }
           if ($exitCode -ne 0) {
             $firstError = $output | Where-Object { "$_" -match "(^|\s)(error|fatal error|linker).*" } | Select-Object -First 1
-            $description = if ($null -eq $firstError) { "cargo check failed; inspect the linked run" } else { "$firstError".Trim() }
+            $description = if ($null -eq $firstError) { "cargo check failed" } else { "$firstError".Trim() }
             if ($description.Length -gt 140) { $description = $description.Substring(0, 140) }
+            $slug = ($description.ToLowerInvariant() -replace "[^a-z0-9]+", "-").Trim("-")
+            if ($slug.Length -gt 55) { $slug = $slug.Substring(0, 55).Trim("-") }
+            if ($slug.Length -eq 0) { $slug = "unknown" }
             $body = @{
               state = "failure"
-              context = "verification/pr17-rust"
+              context = "verification/pr17-rust/$slug"
               description = $description
               target_url = "$env:SERVER_URL/$env:REPOSITORY/actions/runs/$env:RUN_ID"
             } | ConvertTo-Json
