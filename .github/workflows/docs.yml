@@ -33,6 +33,12 @@ jobs:
           clean: true
           persist-credentials: false
           show-progress: false
+      - name: Normalize tracked files
+        run: |
+          $ErrorActionPreference = "Stop"
+          git config --local core.autocrlf false
+          git config --local core.eol lf
+          git checkout-index --all --force
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: "24"
