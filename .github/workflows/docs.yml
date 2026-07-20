@@ -26,10 +26,9 @@ defaults:
 jobs:
   docs-lint:
     if: >-
-      (github.event_name == 'push' && github.actor == 'MrFr3di') ||
+      github.event_name == 'push' ||
       (github.event_name == 'pull_request' &&
-       github.event.pull_request.head.repo.full_name == github.repository &&
-       github.actor == 'MrFr3di')
+       github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: self-hosted
     timeout-minutes: 15
     env:
