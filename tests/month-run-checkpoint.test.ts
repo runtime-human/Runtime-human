@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  checkMonthRunCompatibility,
   createMonthRunCheckpoint,
   fingerprint,
   restoreMonthRunCheckpoint,
@@ -77,12 +78,46 @@ describe("MonthRun checkpoints", () => {
     });
   });
 
+  it("compares every compatibility component exactly", () => {
+    expect(checkMonthRunCompatibility(compatibility, compatibility)).toEqual({
+      kind: "compatible",
+    });
+
+    expect(
+      checkMonthRunCompatibility(compatibility, {
+        ...compatibility,
+        contentFingerprint: fingerprint("other-content", { version: 2 }),
+      }),
+    ).toEqual({
+      kind: "incompatible",
+      mismatches: ["contentFingerprint"],
+    });
+  });
+
   it("rejects a checkpoint changed without rehashing", () => {
     const checkpoint = initialCheckpoint("run-2");
 
     expect(restoreMonthRunCheckpoint({ ...checkpoint, stepIndex: 99 })).toMatchObject({
       kind: "error",
       code: "CorruptedCheckpoint",
+    });
+  });
+
+  it("rejects unknown fields instead of silently stripping them", () => {
+    const checkpoint = initialCheckpoint("run-unknown-fields");
+
+    expect(restoreMonthRunCheckpoint({ ...checkpoint, unexpected: true })).toMatchObject({
+      kind: "error",
+      code: "InvalidCheckpoint",
+    });
+    expect(
+      restoreMonthRunCheckpoint({
+        ...checkpoint,
+        compatibility: { ...checkpoint.compatibility, unexpected: true },
+      }),
+    ).toMatchObject({
+      kind: "error",
+      code: "InvalidCheckpoint",
     });
   });
 
@@ -130,6 +165,33 @@ describe("MonthRun checkpoints", () => {
     });
   });
 
+  it("rejects invalid persisted outcome tokens even with a valid outer hash", () => {
+    const running = accept(initialCheckpoint("run-invalid-token"), { type: "start" });
+    const materialized = accept(running, {
+      type: "materialize-outcome",
+      outcomeId: "outcome-1",
+      scope: "project/p1/hidden",
+      payload: { quality: 7 },
+      phase: "materialize",
+      provisionalState: { quality: 7 },
+      rngState: RNG_STATE,
+    });
+    const tampered = withOuterHash({
+      ...withoutOuterHash(materialized),
+      materializedOutcomes: [
+        {
+          ...materialized.materializedOutcomes[0]!,
+          scope: "project\0hidden",
+        },
+      ],
+    });
+
+    expect(restoreMonthRunCheckpoint(tampered)).toMatchObject({
+      kind: "error",
+      code: "InvalidCheckpoint",
+    });
+  });
+
   it("rejects an internally inconsistent accepted answer even with a valid outer hash", () => {
     const running = accept(initialCheckpoint("run-answer"), { type: "start" });
     const suspended = accept(running, {
@@ -153,6 +215,43 @@ describe("MonthRun checkpoints", () => {
         {
           ...resumed.acceptedDecisions[0]!,
           answerHash: fingerprint("tampered-answer", { option: "quality" }),
+        },
+      ],
+    });
+
+    expect(restoreMonthRunCheckpoint(tampered)).toMatchObject({
+      kind: "error",
+      code: "InvalidCheckpoint",
+    });
+  });
+
+  it("rejects duplicate accepted request IDs even when decision IDs differ", () => {
+    const running = accept(initialCheckpoint("run-duplicate-request"), { type: "start" });
+    const suspended = accept(running, {
+      type: "suspend-for-decision",
+      decision: {
+        decisionId: parseDecisionId("decision-1"),
+        kind: "scope-choice",
+        prompt: { options: ["quality", "speed"] },
+        answerSchemaFingerprint: fingerprint("answer-schema", 1),
+      },
+    });
+    const resumed = accept(suspended, {
+      type: "accept-decision",
+      requestId: parseRequestId("resume-shared"),
+      decisionId: parseDecisionId("decision-1"),
+      answer: { option: "quality" },
+    });
+    const secondAnswer = { option: "speed" };
+    const tampered = withOuterHash({
+      ...withoutOuterHash(resumed),
+      acceptedDecisions: [
+        ...resumed.acceptedDecisions,
+        {
+          requestId: parseRequestId("resume-shared"),
+          decisionId: parseDecisionId("decision-2"),
+          answer: secondAnswer,
+          answerHash: fingerprint("month-run-decision-answer-v1", secondAnswer),
         },
       ],
     });
