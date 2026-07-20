@@ -28,6 +28,7 @@ defaults:
 jobs:
   full-verification:
     permissions:
+      checks: read
       contents: read
       statuses: write
     runs-on: self-hosted
@@ -95,3 +96,46 @@ jobs:
             } `
             -ContentType "application/json" `
             -Body $body
+      - name: Report Sonar annotations
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STATUS_SHA: ${{ github.sha }}
+          REPOSITORY: ${{ github.repository }}
+          API_URL: ${{ github.api_url }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          $headers = @{
+            Authorization = "Bearer $env:GH_TOKEN"
+            Accept = "application/vnd.github+json"
+            "X-GitHub-Api-Version" = "2022-11-28"
+          }
+          $sonarRuns = @()
+          for ($attempt = 0; $attempt -lt 18; $attempt += 1) {
+            $checks = Invoke-RestMethod `
+              -Method Get `
+              -Uri "$env:API_URL/repos/$env:REPOSITORY/commits/$env:STATUS_SHA/check-runs" `
+              -Headers $headers
+            $sonarRuns = @($checks.check_runs | Where-Object { $_.name -match "Sonar" })
+            if ($sonarRuns.Count -gt 0 -and @($sonarRuns | Where-Object { $_.status -ne "completed" }).Count -eq 0) {
+              break
+            }
+            Start-Sleep -Seconds 10
+          }
+          if ($sonarRuns.Count -eq 0) {
+            Write-Host "No Sonar check run was visible for this commit."
+            exit 0
+          }
+          foreach ($check in $sonarRuns) {
+            Write-Host "Sonar check: $($check.name); conclusion=$($check.conclusion)"
+            if ($check.output.title) { Write-Host "Title: $($check.output.title)" }
+            if ($check.output.summary) { Write-Host "Summary: $($check.output.summary)" }
+            if ($check.output.text) { Write-Host "Details: $($check.output.text)" }
+            if ($check.annotations_url) {
+              $annotations = Invoke-RestMethod -Method Get -Uri $check.annotations_url -Headers $headers
+              foreach ($annotation in @($annotations)) {
+                Write-Host "Annotation: $($annotation.annotation_level) $($annotation.path):$($annotation.start_line) $($annotation.title) $($annotation.message)"
+              }
+            }
+          }
