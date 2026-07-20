@@ -1,5 +1,6 @@
 import type {
   AuthoritativeJsonValue,
+  DeterminismManifest,
   Fingerprint,
   MonthRunCheckpointV1,
   MonthRunCompatibilityV1,
@@ -166,7 +167,41 @@ function parseCompatibility(value: AuthoritativeJsonValue | undefined): MonthRun
   if (record.checkpointSchema !== "month-run-checkpoint-v1") {
     throw new TypeError("Incompatible MonthRun checkpoint schema marker");
   }
-  return record as unknown as MonthRunCompatibilityV1;
+  return {
+    checkpointSchema: "month-run-checkpoint-v1",
+    rulesFingerprint: parseFingerprint(record.rulesFingerprint, "rulesFingerprint"),
+    contentFingerprint: parseFingerprint(record.contentFingerprint, "contentFingerprint"),
+    saveSchemaFingerprint: parseFingerprint(record.saveSchemaFingerprint, "saveSchemaFingerprint"),
+    determinismManifest: parseDeterminismManifest(record.determinismManifest),
+  };
+}
+
+function parseDeterminismManifest(
+  value: AuthoritativeJsonValue | undefined,
+): DeterminismManifest {
+  const record = expectRecord(value, "determinismManifest");
+  const rulesVersion = expectString(record.rulesVersion, "rulesVersion");
+  if (
+    record.rngAlgorithm !== "xoshiro256ss-v1" ||
+    record.hashAlgorithm !== "sha256-v1" ||
+    record.numericModel !== "fixed-point-v1" ||
+    record.calendarModel !== "gregorian-v1" ||
+    record.candidateSort !== "stable-id-ascending-v1" ||
+    record.effectOrdering !== "phase-then-priority-then-stable-id-v1" ||
+    record.serializationVersion !== "canonical-json-v1"
+  ) {
+    throw new TypeError("Unsupported determinism manifest algorithms");
+  }
+  return {
+    rulesVersion,
+    rngAlgorithm: "xoshiro256ss-v1",
+    hashAlgorithm: "sha256-v1",
+    numericModel: "fixed-point-v1",
+    calendarModel: "gregorian-v1",
+    candidateSort: "stable-id-ascending-v1",
+    effectOrdering: "phase-then-priority-then-stable-id-v1",
+    serializationVersion: "canonical-json-v1",
+  };
 }
 
 function snapshotCompatibility(value: MonthRunCompatibilityV1): MonthRunCompatibilityV1 {
@@ -181,11 +216,16 @@ function parseOutcomes(value: AuthoritativeJsonValue | undefined) {
     const outcomeId = expectString(record.outcomeId, "outcomeId");
     if (ids.has(outcomeId)) throw new TypeError("Duplicate materialized outcome ID");
     ids.add(outcomeId);
+    const payload = expectAuthoritative(record.payload, "payload");
+    const payloadHash = parseFingerprint(record.payloadHash, "payloadHash");
+    if (payloadHash !== fingerprint("month-run-materialized-outcome-v1", payload)) {
+      throw new TypeError(`Materialized outcome ${outcomeId} payload hash is inconsistent`);
+    }
     return {
       outcomeId,
       scope: expectString(record.scope, "scope"),
-      payload: expectAuthoritative(record.payload, "payload"),
-      payloadHash: parseFingerprint(record.payloadHash, "payloadHash"),
+      payload,
+      payloadHash,
     };
   });
 }
@@ -212,11 +252,16 @@ function parseAcceptedDecisions(value: AuthoritativeJsonValue | undefined) {
     const decisionId = parseDecisionId(record.decisionId);
     if (ids.has(decisionId)) throw new TypeError("Duplicate accepted decision ID");
     ids.add(decisionId);
+    const answer = expectAuthoritative(record.answer, "answer");
+    const answerHash = parseFingerprint(record.answerHash, "answerHash");
+    if (answerHash !== fingerprint("month-run-decision-answer-v1", answer)) {
+      throw new TypeError(`Accepted decision ${decisionId} answer hash is inconsistent`);
+    }
     return {
       requestId: parseRequestId(record.requestId),
       decisionId,
-      answer: expectAuthoritative(record.answer, "answer"),
-      answerHash: parseFingerprint(record.answerHash, "answerHash"),
+      answer,
+      answerHash,
     };
   });
 }
