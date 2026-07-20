@@ -17,6 +17,24 @@ export function transitionMonthRun(
   checkpoint: MonthRunCheckpointV1,
   event: MonthRunEventV1,
 ): MonthRunTransitionResult {
+  try {
+    return transitionMonthRunUnchecked(checkpoint, event);
+  } catch (error) {
+    if (error instanceof TypeError || error instanceof RangeError) {
+      return reject(
+        checkpoint,
+        "InvalidCommand",
+        error.message.length === 0 ? "Invalid MonthRun event" : error.message,
+      );
+    }
+    throw error;
+  }
+}
+
+function transitionMonthRunUnchecked(
+  checkpoint: MonthRunCheckpointV1,
+  event: MonthRunEventV1,
+): MonthRunTransitionResult {
   if (event.type === "materialize-outcome") {
     const repeat = classifyMaterialization(checkpoint, event);
     if (repeat !== null) return repeat;
@@ -306,7 +324,7 @@ function accepted(
   checkpoint: MonthRunCheckpointV1,
   changes: CheckpointChanges,
 ): MonthRunTransitionResult {
-  const { checkpointHash, ...withoutHash } = checkpoint;
+  const withoutHash = removeCheckpointHash(checkpoint);
   return {
     kind: "accepted",
     checkpoint: rehashMonthRunCheckpoint({
@@ -314,9 +332,17 @@ function accepted(
       ...changes,
       runRevision: parseMonthRunRevision(checkpoint.runRevision + 1),
       stepIndex: checkpoint.stepIndex + 1,
-      previousCheckpointHash: checkpointHash,
+      previousCheckpointHash: checkpoint.checkpointHash,
     }),
   };
+}
+
+function removeCheckpointHash(
+  checkpoint: MonthRunCheckpointV1,
+): Omit<MonthRunCheckpointV1, "checkpointHash"> {
+  const { checkpointHash, ...withoutHash } = checkpoint;
+  if (checkpointHash.length === 0) throw new TypeError("Checkpoint hash cannot be empty");
+  return withoutHash;
 }
 
 function illegal(
