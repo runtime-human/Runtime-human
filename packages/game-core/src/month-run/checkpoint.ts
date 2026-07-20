@@ -81,12 +81,7 @@ const DETERMINISM_MANIFEST_KEYS = [
   "serializationVersion",
 ] as const;
 const MATERIALIZED_OUTCOME_KEYS = ["outcomeId", "scope", "payload", "payloadHash"] as const;
-const PENDING_DECISION_KEYS = [
-  "decisionId",
-  "kind",
-  "prompt",
-  "answerSchemaFingerprint",
-] as const;
+const PENDING_DECISION_KEYS = ["decisionId", "kind", "prompt", "answerSchemaFingerprint"] as const;
 const ACCEPTED_DECISION_KEYS = ["requestId", "decisionId", "answer", "answerHash"] as const;
 
 export type CreateMonthRunCheckpointInput = Readonly<{
@@ -147,9 +142,7 @@ export function checkMonthRunCompatibility(
     mismatches.push("determinismManifest");
   }
 
-  return mismatches.length === 0
-    ? { kind: "compatible" }
-    : { kind: "incompatible", mismatches };
+  return mismatches.length === 0 ? { kind: "compatible" } : { kind: "incompatible", mismatches };
 }
 
 export function createMonthRunCheckpoint(
