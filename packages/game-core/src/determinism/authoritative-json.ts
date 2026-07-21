@@ -1,12 +1,5 @@
 import canonicalize from "canonicalize";
-
-export type AuthoritativeJsonValue =
-  | null
-  | boolean
-  | number
-  | string
-  | readonly AuthoritativeJsonValue[]
-  | { readonly [key: string]: AuthoritativeJsonValue };
+import type { AuthoritativeJsonValue } from "@runtime-human/game-schema";
 
 const MAX_DEPTH = 64;
 const MAX_NODES = 100_000;
