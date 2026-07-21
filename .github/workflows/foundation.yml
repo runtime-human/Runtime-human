@@ -9,7 +9,6 @@ on:
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
       - "tsconfig*.json"
-      - "tsconfig.json"
       - "vitest.config.ts"
       - "apps/**"
       - "packages/**"
@@ -30,7 +29,6 @@ on:
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
       - "tsconfig*.json"
-      - "tsconfig.json"
       - "vitest.config.ts"
       - "apps/**"
       - "packages/**"
@@ -48,7 +46,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write
 
 defaults:
   run:
@@ -69,7 +67,7 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           clean: true
-          persist-credentials: false
+          persist-credentials: true
           show-progress: false
       - name: Normalize tracked files
         run: |
@@ -95,22 +93,22 @@ jobs:
           cargo --version
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Format diagnostic working tree
-        run: pnpm fmt
-      - name: Capture formatting patch
+      - name: Generate documentation indexes
+        if: github.event_name == 'push'
+        run: node scripts/build-toc.mjs
+      - name: Commit generated documentation indexes
+        if: github.event_name == 'push'
         run: |
-          $patchPath = Join-Path $env:RUNNER_TEMP "foundation-format.patch"
-          git diff --binary | Out-File -FilePath $patchPath -Encoding utf8NoBOM
-          if ((Get-Item $patchPath).Length -eq 0) {
-            "No formatting changes were required." | Out-File -FilePath $patchPath -Encoding utf8NoBOM
+          $ErrorActionPreference = "Stop"
+          if (git diff --quiet -- docs/CATALOG.md docs/MANIFEST.jsonc) {
+            Write-Host "Documentation indexes are current."
+            exit 0
           }
-      - name: Upload formatting patch
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: foundation-format-patch
-          path: ${{ runner.temp }}/foundation-format.patch
-          if-no-files-found: error
-          retention-days: 1
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/CATALOG.md docs/MANIFEST.jsonc
+          git commit -m "docs: refresh generated documentation indexes"
+          git push origin "HEAD:${{ github.ref_name }}"
       - name: Check documentation
         run: pnpm docs:check
       - name: Check formatting
@@ -122,20 +120,7 @@ jobs:
       - name: Check package boundaries
         run: pnpm boundaries:check
       - name: Run focused test suite
-        id: focused-tests
-        continue-on-error: true
-        run: |
-          $logPath = Join-Path $env:RUNNER_TEMP "focused-tests.log"
-          pnpm test *>&1 | Tee-Object -FilePath $logPath
-          exit $LASTEXITCODE
-      - name: Upload focused test log
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: foundation-focused-tests-log
-          path: ${{ runner.temp }}/focused-tests.log
-          if-no-files-found: error
-          retention-days: 1
+        run: pnpm test
       - name: Run type-aware lint
         run: pnpm lint:type-aware
       - name: Build renderer
@@ -145,23 +130,6 @@ jobs:
       - name: Check Rust formatting
         run: pnpm rust:fmt:check
       - name: Check Rust workspace
-        id: rust-check
-        continue-on-error: true
-        run: |
-          $logPath = Join-Path $env:RUNNER_TEMP "rust-check.log"
-          pnpm rust:check *>&1 | Tee-Object -FilePath $logPath
-          exit $LASTEXITCODE
-      - name: Upload Rust check log
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: foundation-rust-check-log
-          path: ${{ runner.temp }}/rust-check.log
-          if-no-files-found: error
-          retention-days: 1
+        run: pnpm rust:check
       - name: Run Rust tests
-        if: steps.rust-check.outcome == 'success'
         run: pnpm rust:test
-      - name: Enforce diagnostic results
-        if: steps.focused-tests.outcome == 'failure' || steps.rust-check.outcome == 'failure'
-        run: throw "A diagnostic gate failed; inspect the uploaded test and Rust artifacts."
