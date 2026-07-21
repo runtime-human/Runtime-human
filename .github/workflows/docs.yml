@@ -12,15 +12,38 @@ on:
       - "scripts/build-toc.mjs"
       - ".github/workflows/docs.yml"
 
+concurrency:
+  group: docs-${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
+defaults:
+  run:
+    shell: pwsh
+
 jobs:
   docs-lint:
-    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'push' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       github.actor == 'MrFr3di')
+    runs-on: self-hosted
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          clean: true
+          persist-credentials: false
+          show-progress: false
+      - name: Normalize tracked files
+        run: |
+          $ErrorActionPreference = "Stop"
+          git config --local core.autocrlf false
+          git config --local core.eol lf
+          git checkout-index --all --force
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: "24"
       - name: Verify docs front-matter and manifest
