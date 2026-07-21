@@ -13,6 +13,8 @@ import { parseMonthRunRevision } from "@runtime-human/game-schema";
 import { fingerprint } from "../determinism/hash";
 import { rehashMonthRunCheckpoint, snapshotAuthoritativeValue } from "./checkpoint";
 
+const TOKEN_PATTERN = /^[!-~]{1,256}$/u;
+
 export function transitionMonthRun(
   checkpoint: MonthRunCheckpointV1,
   event: MonthRunEventV1,
@@ -70,7 +72,7 @@ function transitionReady(
 ): MonthRunTransitionResult {
   switch (event.type) {
     case "start":
-      return accepted(checkpoint, { status: "running", phase: "materialize" });
+      return accepted(checkpoint, { status: "running", phase: "materialize" }, true);
     case "fail":
       return exceptional(checkpoint, "failed", event.reason);
     case "mark-incompatible":
@@ -103,11 +105,16 @@ function transitionRunning(
     case "suspend-for-decision":
       return suspend(checkpoint, event.decision);
     case "complete":
-      return accepted(checkpoint, {
-        status: "completed",
-        phase: "finalize",
-        terminalResult: snapshotAuthoritativeValue(event.result),
-      });
+      return accepted(
+        checkpoint,
+        {
+          status: "completed",
+          phase: "finalize",
+          terminalResult: snapshotAuthoritativeValue(event.result),
+          terminalReason: null,
+        },
+        true,
+      );
     case "fail":
       return exceptional(checkpoint, "failed", event.reason);
     case "mark-incompatible":
@@ -181,11 +188,15 @@ function advance(
   event: AdvanceStepEventV1,
 ): MonthRunTransitionResult {
   validateRunningPhase(event.phase);
-  return accepted(checkpoint, {
-    phase: event.phase,
-    provisionalState: snapshotAuthoritativeValue(event.provisionalState),
-    rngState: event.rngState ?? checkpoint.rngState,
-  });
+  return accepted(
+    checkpoint,
+    {
+      phase: event.phase,
+      provisionalState: snapshotAuthoritativeValue(event.provisionalState),
+      rngState: event.rngState ?? checkpoint.rngState,
+    },
+    true,
+  );
 }
 
 function materialize(
@@ -194,35 +205,43 @@ function materialize(
 ): MonthRunTransitionResult {
   validateRunningPhase(event.phase);
   const payload = snapshotAuthoritativeValue(event.payload);
-  return accepted(checkpoint, {
-    phase: event.phase,
-    provisionalState: snapshotAuthoritativeValue(event.provisionalState),
-    rngState: event.rngState,
-    materializedOutcomes: [
-      ...checkpoint.materializedOutcomes,
-      {
-        outcomeId: validateToken(event.outcomeId, "outcomeId"),
-        scope: validateToken(event.scope, "scope"),
-        payload,
-        payloadHash: fingerprint("month-run-materialized-outcome-v1", payload),
-      },
-    ],
-  });
+  return accepted(
+    checkpoint,
+    {
+      phase: event.phase,
+      provisionalState: snapshotAuthoritativeValue(event.provisionalState),
+      rngState: event.rngState,
+      materializedOutcomes: [
+        ...checkpoint.materializedOutcomes,
+        {
+          outcomeId: validateToken(event.outcomeId, "outcomeId"),
+          scope: validateToken(event.scope, "scope"),
+          payload,
+          payloadHash: fingerprint("month-run-materialized-outcome-v1", payload),
+        },
+      ],
+    },
+    true,
+  );
 }
 
 function suspend(
   checkpoint: MonthRunCheckpointV1,
   decision: PendingDecisionV1,
 ): MonthRunTransitionResult {
-  return accepted(checkpoint, {
-    status: "suspended",
-    phase: "await-decision",
-    pendingDecision: {
-      ...decision,
-      kind: validateToken(decision.kind, "decision kind"),
-      prompt: snapshotAuthoritativeValue(decision.prompt),
+  return accepted(
+    checkpoint,
+    {
+      status: "suspended",
+      phase: "await-decision",
+      pendingDecision: {
+        ...decision,
+        kind: validateToken(decision.kind, "decision kind"),
+        prompt: snapshotAuthoritativeValue(decision.prompt),
+      },
     },
-  });
+    true,
+  );
 }
 
 function acceptDecision(
@@ -305,7 +324,7 @@ function exceptional(
     status,
     pendingDecision: null,
     terminalResult: null,
-    provisionalState: { terminalReason: snapshotAuthoritativeValue(reason) },
+    terminalReason: snapshotAuthoritativeValue(reason),
   });
 }
 
@@ -320,12 +339,14 @@ type CheckpointChanges = Partial<
     | "pendingDecision"
     | "acceptedDecisions"
     | "terminalResult"
+    | "terminalReason"
   >
 >;
 
 function accepted(
   checkpoint: MonthRunCheckpointV1,
   changes: CheckpointChanges,
+  advanceProgramCounter = false,
 ): MonthRunTransitionResult {
   const withoutHash = removeCheckpointHash(checkpoint);
   return {
@@ -335,6 +356,7 @@ function accepted(
       ...changes,
       runRevision: parseMonthRunRevision(checkpoint.runRevision + 1),
       stepIndex: checkpoint.stepIndex + 1,
+      programCounter: checkpoint.programCounter + (advanceProgramCounter ? 1 : 0),
       previousCheckpointHash: checkpoint.checkpointHash,
     }),
   };
@@ -374,8 +396,8 @@ function validateRunningPhase(phase: AdvanceStepEventV1["phase"]): void {
 }
 
 function validateToken(value: string, name: string): string {
-  if (value.length === 0 || value.length > 256 || value.includes("\0")) {
-    throw new TypeError(`${name} must contain 1-256 characters without NUL`);
+  if (!TOKEN_PATTERN.test(value)) {
+    throw new TypeError(`${name} must contain 1-256 printable ASCII characters without whitespace`);
   }
   return value;
 }
