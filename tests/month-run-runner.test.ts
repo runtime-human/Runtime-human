@@ -65,9 +65,6 @@ const decisionSteps: readonly MonthRunStep[] = [
       answerSchemaFingerprint: fingerprint("answer-schema", 1),
     },
   }),
-  () => {
-    throw new Error("accepted answer checkpoint must skip the decision step");
-  },
   () => ({ type: "complete", result: { option: "quality" } }),
 ];
 
@@ -94,6 +91,7 @@ describe("MonthRun runner", () => {
 
     expect(result.kind).toBe("boundary");
     expect(result.checkpoint.status).toBe("suspended");
+    expect(result.checkpoint.programCounter).toBe(2);
     expect(sentinel).not.toHaveBeenCalled();
   });
 
@@ -121,7 +119,7 @@ describe("MonthRun runner", () => {
 
     let restored = initialCheckpoint();
     while (restored.status !== "completed") {
-      const event = completingSteps[restored.stepIndex]!(restored);
+      const event = completingSteps[restored.programCounter]!(restored);
       const transition = transitionMonthRun(restored, event);
       expect(transition.kind).toBe("accepted");
       if (transition.kind !== "accepted") throw new Error("expected accepted transition");
@@ -135,6 +133,28 @@ describe("MonthRun runner", () => {
 
     expect(restored).toEqual(uninterrupted.checkpoint);
     expect(restored.checkpointHash).toBe(uninterrupted.checkpoint.checkpointHash);
+  });
+
+  it("does not consume a scripted step when a decision answer is accepted", () => {
+    const suspendedResult = runUntilBoundary(initialCheckpoint(), decisionSteps);
+    expect(suspendedResult.kind).toBe("boundary");
+    expect(suspendedResult.checkpoint.programCounter).toBe(2);
+
+    const accepted = transitionMonthRun(suspendedResult.checkpoint, {
+      type: "accept-decision",
+      requestId: parseRequestId("resume-program-counter"),
+      decisionId: parseDecisionId("decision-1"),
+      answer: { option: "quality" },
+    });
+
+    expect(accepted.kind).toBe("accepted");
+    if (accepted.kind !== "accepted") throw new Error("expected accepted answer");
+    expect(accepted.checkpoint.programCounter).toBe(2);
+
+    const resumed = runUntilBoundary(accepted.checkpoint, decisionSteps);
+    expect(resumed.kind).toBe("boundary");
+    expect(resumed.checkpoint.status).toBe("completed");
+    expect(resumed.checkpoint.programCounter).toBe(3);
   });
 
   it("continues identically after a crash immediately after accepted answer", () => {
