@@ -21,6 +21,7 @@ on:
       - ".github/workflows/foundation.yml"
   pull_request:
     branches:
+      - main
       - agent/month-run-protocol
     paths:
       - "package.json"
@@ -54,8 +55,10 @@ jobs:
     if: >-
       github.event_name == 'push' ||
       (github.event.pull_request.head.repo.full_name == github.repository &&
-       github.head_ref == 'agent/month-run-persistence' &&
-       github.actor == 'MrFr3di')
+       github.actor == 'MrFr3di' &&
+       ((github.base_ref == 'main' && github.head_ref == 'agent/month-run-protocol') ||
+        (github.base_ref == 'agent/month-run-protocol' &&
+         github.head_ref == 'agent/month-run-persistence')))
     runs-on: self-hosted
     timeout-minutes: 45
     steps:
