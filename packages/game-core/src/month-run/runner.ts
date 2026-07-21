@@ -31,11 +31,11 @@ export function runUntilBoundary(
   const original = checkpoint;
   let current = checkpoint;
   for (let count = 0; count < maxTransitions; count += 1) {
-    const step = steps[current.stepIndex];
+    const step = steps[current.programCounter];
     if (step === undefined) {
       return budgetError(
         original,
-        `No deterministic MonthRun step exists at index ${current.stepIndex}`,
+        `No deterministic MonthRun step exists at program counter ${current.programCounter}`,
       );
     }
 
