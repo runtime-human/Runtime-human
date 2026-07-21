@@ -45,6 +45,7 @@ function accept(checkpoint: MonthRunCheckpointV1, event: MonthRunEventV1) {
   expect(result.kind).toBe("accepted");
   if (result.kind !== "accepted") throw new Error("expected accepted transition");
   expect(result.checkpoint.runRevision).toBe(checkpoint.runRevision + 1);
+  expect(result.checkpoint.stepIndex).toBe(checkpoint.stepIndex + 1);
   expect(result.checkpoint.previousCheckpointHash).toBe(checkpoint.checkpointHash);
   return result.checkpoint;
 }
@@ -89,6 +90,15 @@ describe("MonthRun transition reducer", () => {
       completed.status,
       committed.status,
     ]).toEqual(["ready", "running", "running", "suspended", "running", "completed", "committed"]);
+    expect([
+      ready.programCounter,
+      running.programCounter,
+      materialized.programCounter,
+      suspended.programCounter,
+      resumed.programCounter,
+      completed.programCounter,
+      committed.programCounter,
+    ]).toEqual([0, 1, 2, 3, 3, 4, 4]);
   });
 
   it("returns duplicates without changing checkpoint identity or revision", () => {
@@ -177,17 +187,29 @@ describe("MonthRun transition reducer", () => {
     if (result.kind === "rejected") expect(result.error.code).toBe("InvalidCommand");
   });
 
-  it("creates a restorable recovery checkpoint from completed", () => {
+  it("creates a restorable recovery checkpoint without discarding provisional state", () => {
     const running = accept(initialCheckpoint(), { type: "start" });
-    const completed = accept(running, { type: "complete", result: { quality: 7 } });
+    const materialized = accept(running, {
+      type: "materialize-outcome",
+      outcomeId: "outcome-1",
+      scope: "project/p1/hidden",
+      payload: { quality: 7 },
+      phase: "materialize",
+      provisionalState: { quality: 7, workUnits: 3 },
+      rngState: RNG_STATE,
+    });
+    const completed = accept(materialized, { type: "complete", result: { quality: 7 } });
+    const recoveryReason = { code: "commit-failed" };
     const recovery = accept(completed, {
       type: "require-recovery",
-      reason: { code: "commit-failed" },
+      reason: recoveryReason,
     });
     const restored = restoreMonthRunCheckpoint(JSON.parse(JSON.stringify(recovery)));
 
     expect(recovery.status).toBe("recovery-required");
     expect(recovery.terminalResult).toBeNull();
+    expect(recovery.terminalReason).toEqual(recoveryReason);
+    expect(recovery.provisionalState).toEqual(completed.provisionalState);
     expect(restored).toEqual({ kind: "ok", checkpoint: recovery });
   });
 });
