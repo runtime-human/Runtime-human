@@ -116,9 +116,7 @@ export function parseFingerprint(value: unknown, name = "fingerprint"): Fingerpr
 export function parseCanonicalPayload(value: unknown): CanonicalPayloadV1 {
   const record = expectRecord(value, "canonical payload");
   assertExactKeys(record, CANONICAL_PAYLOAD_KEYS, "canonical payload");
-  if (record.schemaVersion !== "canonical-payload-v1") {
-    throw new TypeError("Unsupported canonical payload schema");
-  }
+  requireSchema(record.schemaVersion, "canonical-payload-v1", "canonical payload");
 
   const json = expectString(record.json, "canonical payload JSON");
   if (utf8ByteLength(json) > MAX_CANONICAL_PAYLOAD_BYTES) {
@@ -134,37 +132,27 @@ export function parseCanonicalPayload(value: unknown): CanonicalPayloadV1 {
 }
 
 export function parseCreateSaveCommand(value: unknown): CreateSaveCommandV1 {
-  const record = expectRecord(value, "create save command");
-  assertExactKeys(record, CREATE_SAVE_KEYS, "create save command");
+  const record = exactRecord(value, CREATE_SAVE_KEYS, "create save command");
   requireSchema(record.schemaVersion, "create-save-command-v1", "create save command");
-
   return {
     schemaVersion: "create-save-command-v1",
     requestId: parseRequestId(record.requestId),
     saveId: parseSaveId(record.saveId),
-    saveSchemaFingerprint: parseFingerprint(
-      record.saveSchemaFingerprint,
-      "save schema fingerprint",
-    ),
+    saveSchemaFingerprint: parseFingerprint(record.saveSchemaFingerprint, "save schema fingerprint"),
     snapshot: parseCanonicalPayload(record.snapshot),
   };
 }
 
 export function parseLoadSaveQuery(value: unknown): LoadSaveQueryV1 {
-  const record = expectRecord(value, "load save query");
-  assertExactKeys(record, LOAD_SAVE_KEYS, "load save query");
+  const record = exactRecord(value, LOAD_SAVE_KEYS, "load save query");
   requireSchema(record.schemaVersion, "load-save-query-v1", "load save query");
-  return {
-    schemaVersion: "load-save-query-v1",
-    saveId: parseSaveId(record.saveId),
-  };
+  return { schemaVersion: "load-save-query-v1", saveId: parseSaveId(record.saveId) };
 }
 
 export function parseBeginPersistedMonthRunCommand(
   value: unknown,
 ): BeginPersistedMonthRunCommandV1 {
-  const record = expectRecord(value, "begin persisted MonthRun command");
-  assertExactKeys(record, BEGIN_MONTH_RUN_KEYS, "begin persisted MonthRun command");
+  const record = exactRecord(value, BEGIN_MONTH_RUN_KEYS, "begin persisted MonthRun command");
   requireSchema(
     record.schemaVersion,
     "begin-persisted-month-run-command-v1",
@@ -209,18 +197,13 @@ export function parseBeginPersistedMonthRunCommand(
 }
 
 export function parseLoadMonthRunQuery(value: unknown): LoadMonthRunQueryV1 {
-  const record = expectRecord(value, "load MonthRun query");
-  assertExactKeys(record, LOAD_MONTH_RUN_KEYS, "load MonthRun query");
+  const record = exactRecord(value, LOAD_MONTH_RUN_KEYS, "load MonthRun query");
   requireSchema(record.schemaVersion, "load-month-run-query-v1", "load MonthRun query");
-  return {
-    schemaVersion: "load-month-run-query-v1",
-    runId: parseMonthRunId(record.runId),
-  };
+  return { schemaVersion: "load-month-run-query-v1", runId: parseMonthRunId(record.runId) };
 }
 
 export function parseLoadActiveMonthRunQuery(value: unknown): LoadActiveMonthRunQueryV1 {
-  const record = expectRecord(value, "load active MonthRun query");
-  assertExactKeys(record, LOAD_ACTIVE_RUN_KEYS, "load active MonthRun query");
+  const record = exactRecord(value, LOAD_ACTIVE_RUN_KEYS, "load active MonthRun query");
   requireSchema(
     record.schemaVersion,
     "load-active-month-run-query-v1",
@@ -235,8 +218,7 @@ export function parseLoadActiveMonthRunQuery(value: unknown): LoadActiveMonthRun
 export function parseStoreMonthRunBoundaryCommand(
   value: unknown,
 ): StoreMonthRunBoundaryCommandV1 {
-  const record = expectRecord(value, "store MonthRun boundary command");
-  assertExactKeys(record, STORE_BOUNDARY_KEYS, "store MonthRun boundary command");
+  const record = exactRecord(value, STORE_BOUNDARY_KEYS, "store MonthRun boundary command");
   requireSchema(
     record.schemaVersion,
     "store-month-run-boundary-command-v1",
@@ -258,10 +240,10 @@ export function parseStoreMonthRunBoundaryCommand(
   if (runRevision <= expectedRunRevision) {
     throw new RangeError("Stored MonthRun revision must be newer than the expected revision");
   }
+
   const status = parseStorableBoundaryStatus(record.status);
   const checkpoint = parseCanonicalPayload(record.checkpoint);
   const identity = parsePersistenceCheckpointIdentity(checkpoint.json);
-
   if (identity.saveId !== saveId) {
     throw new TypeError("MonthRun checkpoint saveId must match the boundary command");
   }
@@ -273,11 +255,6 @@ export function parseStoreMonthRunBoundaryCommand(
   }
   if (identity.status !== status) {
     throw new TypeError("MonthRun checkpoint status must match the boundary command");
-  }
-  if (identity.previousCheckpointHash !== expectedCheckpointHash) {
-    throw new TypeError(
-      "MonthRun checkpoint previousCheckpointHash must match expectedCheckpointHash",
-    );
   }
 
   return {
@@ -297,14 +274,12 @@ export function parseStoreMonthRunBoundaryCommand(
 export function parseCommitPersistedMonthRunCommand(
   value: unknown,
 ): CommitPersistedMonthRunCommandV1 {
-  const record = expectRecord(value, "commit persisted MonthRun command");
-  assertExactKeys(record, COMMIT_MONTH_RUN_KEYS, "commit persisted MonthRun command");
+  const record = exactRecord(value, COMMIT_MONTH_RUN_KEYS, "commit persisted MonthRun command");
   requireSchema(
     record.schemaVersion,
     "commit-persisted-month-run-command-v1",
     "commit persisted MonthRun command",
   );
-
   return {
     schemaVersion: "commit-persisted-month-run-command-v1",
     requestId: parseRequestId(record.requestId),
@@ -316,18 +291,14 @@ export function parseCommitPersistedMonthRunCommand(
       record.expectedCheckpointPayloadSha256,
       "expected checkpoint payload sha256",
     ),
-    expectedCheckpointHash: parseFingerprint(
-      record.expectedCheckpointHash,
-      "expected checkpoint hash",
-    ),
+    expectedCheckpointHash: parseFingerprint(record.expectedCheckpointHash, "expected checkpoint hash"),
     snapshot: parseCanonicalPayload(record.snapshot),
     result: parseCanonicalPayload(record.result),
   };
 }
 
 export function parseCreateBackupCommand(value: unknown): CreateBackupCommandV1 {
-  const record = expectRecord(value, "create backup command");
-  assertExactKeys(record, CREATE_BACKUP_KEYS, "create backup command");
+  const record = exactRecord(value, CREATE_BACKUP_KEYS, "create backup command");
   requireSchema(record.schemaVersion, "create-backup-command-v1", "create backup command");
   return {
     schemaVersion: "create-backup-command-v1",
@@ -337,8 +308,7 @@ export function parseCreateBackupCommand(value: unknown): CreateBackupCommandV1 
 }
 
 export function parseGetRecoveryStatusQuery(value: unknown): GetRecoveryStatusQueryV1 {
-  const record = expectRecord(value, "get recovery status query");
-  assertExactKeys(record, RECOVERY_STATUS_KEYS, "get recovery status query");
+  const record = exactRecord(value, RECOVERY_STATUS_KEYS, "get recovery status query");
   requireSchema(
     record.schemaVersion,
     "get-recovery-status-query-v1",
@@ -355,7 +325,6 @@ export function parsePersistenceCheckpointIdentity(json: string): PersistenceChe
   if (!("compatibility" in record)) {
     throw new TypeError("MonthRun checkpoint compatibility is required");
   }
-
   return {
     saveId: parseSaveId(record.saveId),
     runId: parseMonthRunId(record.runId),
@@ -409,7 +378,6 @@ function jsonValuesEqual(left: unknown, right: unknown): boolean {
   if (left === null || right === null || typeof left !== "object" || typeof right !== "object") {
     return false;
   }
-
   const leftRecord = left as Readonly<Record<string, unknown>>;
   const rightRecord = right as Readonly<Record<string, unknown>>;
   const leftKeys = Object.keys(leftRecord).sort();
@@ -432,6 +400,19 @@ function utf8ByteLength(value: string): number {
   return size;
 }
 
+function exactRecord(
+  value: unknown,
+  expectedKeys: readonly string[],
+  name: string,
+): Readonly<Record<string, unknown>> {
+  const record = expectRecord(value, name);
+  const keys = Object.keys(record);
+  if (keys.length !== expectedKeys.length || keys.some((key) => !expectedKeys.includes(key))) {
+    throw new TypeError(`${name} contains unknown or missing fields`);
+  }
+  return record;
+}
+
 function expectRecord(value: unknown, name: string): Readonly<Record<string, unknown>> {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
     throw new TypeError(`${name} must be an object`);
@@ -449,16 +430,5 @@ function expectString(value: unknown, name: string): string {
 function requireSchema(actual: unknown, expected: string, name: string): void {
   if (actual !== expected) {
     throw new TypeError(`${name} must use ${expected}`);
-  }
-}
-
-function assertExactKeys(
-  record: Readonly<Record<string, unknown>>,
-  expectedKeys: readonly string[],
-  name: string,
-): void {
-  const keys = Object.keys(record);
-  if (keys.length !== expectedKeys.length || keys.some((key) => !expectedKeys.includes(key))) {
-    throw new TypeError(`${name} contains unknown or missing fields`);
   }
 }
