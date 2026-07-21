@@ -176,10 +176,10 @@ describe("MonthRun transition reducer", () => {
 
   it("rejects forged null terminal results", () => {
     const running = accept(initialCheckpoint(), { type: "start" });
-    const result = transitionMonthRun(
-      running,
-      { type: "complete", result: null } as unknown as MonthRunEventV1,
-    );
+    const result = transitionMonthRun(running, {
+      type: "complete",
+      result: null,
+    } as unknown as MonthRunEventV1);
 
     expect(result.kind).toBe("rejected");
     expect(result.checkpoint).toBe(running);
@@ -197,15 +197,12 @@ describe("MonthRun transition reducer", () => {
         answerSchemaFingerprint: fingerprint("answer-schema", 1),
       },
     });
-    const result = transitionMonthRun(
-      suspended,
-      {
-        type: "accept-decision",
-        requestId: "contains whitespace",
-        decisionId: "decision-runtime",
-        answer: { option: "quality" },
-      } as unknown as MonthRunEventV1,
-    );
+    const result = transitionMonthRun(suspended, {
+      type: "accept-decision",
+      requestId: "contains whitespace",
+      decisionId: "decision-runtime",
+      answer: { option: "quality" },
+    } as unknown as MonthRunEventV1);
 
     expect(result.kind).toBe("rejected");
     expect(result.checkpoint).toBe(suspended);
