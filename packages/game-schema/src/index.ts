@@ -37,6 +37,7 @@ export type {
   MonthRunRevision,
   MonthRunStatus,
   MonthRunTransitionResult,
+  NonNullAuthoritativeJsonValue,
   PendingDecisionV1,
   RequestId,
   RequireRecoveryEventV1,
