@@ -113,6 +113,25 @@ describe("MonthRun runner", () => {
     }
   });
 
+  it("returns the original checkpoint when a later scripted step is rejected", () => {
+    const checkpoint = initialCheckpoint();
+    const steps: readonly MonthRunStep[] = [
+      () => ({ type: "start" }),
+      () =>
+        ({
+          type: "advance-step",
+          phase: "not-a-phase",
+          provisionalState: { partial: true },
+        }) as never,
+    ];
+
+    const result = runUntilBoundary(checkpoint, steps);
+
+    expect(result.kind).toBe("rejected");
+    expect(result.checkpoint).toBe(checkpoint);
+    if (result.kind === "rejected") expect(result.error.code).toBe("InvalidCommand");
+  });
+
   it("matches uninterrupted execution after restore at every transition", () => {
     const uninterrupted = runUntilBoundary(initialCheckpoint(), completingSteps);
     expect(uninterrupted.kind).toBe("boundary");
