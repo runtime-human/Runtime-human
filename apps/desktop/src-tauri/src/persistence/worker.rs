@@ -1,8 +1,8 @@
 use std::{
     path::PathBuf,
     sync::{
-        mpsc::{self, Receiver, SyncSender, TrySendError},
         Mutex,
+        mpsc::{self, Receiver, SyncSender, TrySendError},
     },
     thread::{self, JoinHandle},
 };
@@ -16,8 +16,8 @@ use super::{
     database::Database,
     error::PersistenceError,
     records::{
-        BeginPersistedMonthRunAcceptedV1, CommitPersistedMonthRunAcceptedV1,
-        CreateSaveAcceptedV1, MonthRunRecordV1, MutationOutcome, RecoveryStatusV1, SaveRecordV1,
+        BeginPersistedMonthRunAcceptedV1, CommitPersistedMonthRunAcceptedV1, CreateSaveAcceptedV1,
+        MonthRunRecordV1, MutationOutcome, RecoveryStatusV1, SaveRecordV1,
         StoreMonthRunBoundaryAcceptedV1,
     },
 };
@@ -171,7 +171,10 @@ impl PersistenceHandle {
     }
 
     pub(crate) fn shutdown(&self) -> Result<(), PersistenceError> {
-        let mut worker = self.worker.lock().map_err(|_| PersistenceError::Unavailable)?;
+        let mut worker = self
+            .worker
+            .lock()
+            .map_err(|_| PersistenceError::Unavailable)?;
         let Some(join_handle) = worker.take() else {
             return Ok(());
         };
@@ -203,7 +206,11 @@ impl Drop for PersistenceHandle {
             return;
         };
         let (response, receiver) = response_channel();
-        if self.sender.send(DatabaseCommand::Shutdown { response }).is_ok() {
+        if self
+            .sender
+            .send(DatabaseCommand::Shutdown { response })
+            .is_ok()
+        {
             let _ = receiver.recv();
         }
         let _ = join_handle.join();
@@ -246,7 +253,10 @@ fn worker_loop(mut database: Database, receiver: Receiver<DatabaseCommand>) {
     }
 }
 
-fn response_channel<T>() -> (ResponseSender<T>, mpsc::Receiver<Result<T, PersistenceError>>) {
+fn response_channel<T>() -> (
+    ResponseSender<T>,
+    mpsc::Receiver<Result<T, PersistenceError>>,
+) {
     mpsc::sync_channel(1)
 }
 

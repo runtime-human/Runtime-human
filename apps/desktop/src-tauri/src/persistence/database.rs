@@ -1,15 +1,14 @@
 use std::{fs, path::Path, time::Duration};
 
 use rusqlite::{
-    config::DbConfig,
-    limits::Limit,
-    Connection, OpenFlags, OptionalExtension, TransactionBehavior, version_number,
+    Connection, OpenFlags, OptionalExtension, TransactionBehavior, config::DbConfig, limits::Limit,
+    version_number,
 };
 
 use super::{
     error::PersistenceError,
     migrations::{
-        apply_migrations, migration_manifest_sha256, migration_set, CURRENT_SCHEMA_VERSION,
+        CURRENT_SCHEMA_VERSION, apply_migrations, migration_manifest_sha256, migration_set,
     },
 };
 
@@ -71,9 +70,9 @@ impl Database {
             OpenFlags::SQLITE_OPEN_READ_ONLY | OpenFlags::SQLITE_OPEN_NO_MUTEX,
         )
         .map_err(|source| PersistenceError::storage("opening the database read-only", source))?;
-        connection
-            .busy_timeout(BUSY_TIMEOUT)
-            .map_err(|source| PersistenceError::storage("configuring read-only busy timeout", source))?;
+        connection.busy_timeout(BUSY_TIMEOUT).map_err(|source| {
+            PersistenceError::storage("configuring read-only busy timeout", source)
+        })?;
         connection
             .pragma_update(None, "query_only", true)
             .map_err(|source| PersistenceError::storage("enabling query-only mode", source))?;
@@ -101,7 +100,9 @@ impl Database {
     }
 
     pub(crate) fn connection(&self) -> Result<&Connection, PersistenceError> {
-        self.connection.as_ref().ok_or(PersistenceError::Unavailable)
+        self.connection
+            .as_ref()
+            .ok_or(PersistenceError::Unavailable)
     }
 
     pub(crate) fn connection_mut(&mut self) -> Result<&mut Connection, PersistenceError> {
@@ -111,7 +112,9 @@ impl Database {
                 supported: CURRENT_SCHEMA_VERSION,
             });
         }
-        self.connection.as_mut().ok_or(PersistenceError::Unavailable)
+        self.connection
+            .as_mut()
+            .ok_or(PersistenceError::Unavailable)
     }
 
     pub(crate) const fn recovery_status(&self) -> RecoveryStatus {
@@ -135,7 +138,10 @@ impl Database {
                 })?;
         }
 
-        let connection = self.connection.take().ok_or(PersistenceError::Unavailable)?;
+        let connection = self
+            .connection
+            .take()
+            .ok_or(PersistenceError::Unavailable)?;
         connection.close().map_err(|(_, source)| {
             PersistenceError::storage("closing the database connection", source)
         })
@@ -185,10 +191,14 @@ fn configure_writable_connection(connection: &Connection) -> Result<(), Persiste
         .map_err(|source| PersistenceError::storage("disabling trusted schema", source))?;
     connection
         .set_db_config(DbConfig::SQLITE_DBCONFIG_DQS_DDL, false)
-        .map_err(|source| PersistenceError::storage("disabling DDL double-quoted strings", source))?;
+        .map_err(|source| {
+            PersistenceError::storage("disabling DDL double-quoted strings", source)
+        })?;
     connection
         .set_db_config(DbConfig::SQLITE_DBCONFIG_DQS_DML, false)
-        .map_err(|source| PersistenceError::storage("disabling DML double-quoted strings", source))?;
+        .map_err(|source| {
+            PersistenceError::storage("disabling DML double-quoted strings", source)
+        })?;
 
     connection
         .set_limit(Limit::SQLITE_LIMIT_ATTACHED, 0)
@@ -236,7 +246,9 @@ fn migrate_if_required(connection: &mut Connection) -> Result<(), PersistenceErr
 
     let pending = migration_set()
         .pending_migrations(connection)
-        .map_err(|error| PersistenceError::Invariant(format!("migration inspection failed: {error}")))?;
+        .map_err(|error| {
+            PersistenceError::Invariant(format!("migration inspection failed: {error}"))
+        })?;
     if pending < 0 {
         return Err(PersistenceError::IncompatibleSchema {
             found: version,
@@ -282,10 +294,7 @@ fn metadata_value(connection: &Connection, key: &str) -> Result<Option<String>, 
         .map_err(|source| PersistenceError::storage("reading application metadata", source))
 }
 
-fn set_clean_shutdown(
-    connection: &mut Connection,
-    clean: bool,
-) -> Result<(), PersistenceError> {
+fn set_clean_shutdown(connection: &mut Connection, clean: bool) -> Result<(), PersistenceError> {
     let transaction = connection
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .map_err(|source| PersistenceError::storage("starting metadata transaction", source))?;

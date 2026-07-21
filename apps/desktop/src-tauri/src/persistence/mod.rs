@@ -19,9 +19,8 @@ pub(crate) use contracts::{
 pub(crate) use database::{Database, RecoveryStatus};
 pub(crate) use error::{PersistenceError, PersistenceErrorV1};
 pub(crate) use records::{
-    BeginPersistedMonthRunAcceptedV1, CommitPersistedMonthRunAcceptedV1,
-    CreateSaveAcceptedV1, MonthRunRecordV1, MutationOutcome, PersistenceMutationResultV1,
-    PersistenceQueryResultV1, RecoveryStatusV1, SaveRecordV1,
-    StoreMonthRunBoundaryAcceptedV1,
+    BeginPersistedMonthRunAcceptedV1, CommitPersistedMonthRunAcceptedV1, CreateSaveAcceptedV1,
+    MonthRunRecordV1, MutationOutcome, PersistenceMutationResultV1, PersistenceQueryResultV1,
+    RecoveryStatusV1, SaveRecordV1, StoreMonthRunBoundaryAcceptedV1,
 };
 pub(crate) use worker::PersistenceHandle;

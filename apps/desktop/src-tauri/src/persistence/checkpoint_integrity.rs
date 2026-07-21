@@ -27,14 +27,19 @@ pub(crate) fn verify_checkpoint_fingerprint(
     validate_sha256_hex(&claimed, "checkpointHash")?;
 
     let mut envelope = Map::new();
-    envelope.insert("domain".to_owned(), Value::String(FINGERPRINT_DOMAIN.to_owned()));
+    envelope.insert(
+        "domain".to_owned(),
+        Value::String(FINGERPRINT_DOMAIN.to_owned()),
+    );
     envelope.insert(
         "namespace".to_owned(),
         Value::String(CHECKPOINT_NAMESPACE.to_owned()),
     );
     envelope.insert("value".to_owned(), checkpoint);
     let canonical = serde_json::to_vec(&Value::Object(envelope)).map_err(|error| {
-        PersistenceError::Invariant(format!("failed to serialize checkpoint fingerprint: {error}"))
+        PersistenceError::Invariant(format!(
+            "failed to serialize checkpoint fingerprint: {error}"
+        ))
     })?;
     let expected = sha256_hex(canonical);
     if claimed != expected {

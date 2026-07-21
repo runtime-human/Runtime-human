@@ -87,9 +87,7 @@ impl PersistenceError {
             Self::PayloadHashMismatch => PersistenceErrorCode::PayloadHashMismatch,
             Self::Overloaded => PersistenceErrorCode::PersistenceOverloaded,
             Self::Unavailable => PersistenceErrorCode::PersistenceUnavailable,
-            Self::UnsupportedSqliteVersion { .. } => {
-                PersistenceErrorCode::UnsupportedSqliteVersion
-            }
+            Self::UnsupportedSqliteVersion { .. } => PersistenceErrorCode::UnsupportedSqliteVersion,
             Self::IncompatibleSchema { .. } => PersistenceErrorCode::IncompatibleSchema,
             Self::MigrationHistoryMismatch => PersistenceErrorCode::MigrationHistoryMismatch,
             Self::IntegrityCheckFailed(_) => PersistenceErrorCode::IntegrityCheckFailed,

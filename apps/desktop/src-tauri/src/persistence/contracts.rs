@@ -55,9 +55,7 @@ impl CanonicalPayloadV1 {
             });
         }
         let value = serde_json::from_str(&self.json).map_err(|_| {
-            PersistenceError::InvalidCommand(
-                "canonical payload must contain valid JSON".to_owned(),
-            )
+            PersistenceError::InvalidCommand("canonical payload must contain valid JSON".to_owned())
         })?;
         verify_sha256(self.json.as_bytes(), &self.sha256)?;
         Ok(value)
@@ -280,10 +278,7 @@ pub(crate) struct BeginPersistedMonthRunCommandV1 {
 
 impl BeginPersistedMonthRunCommandV1 {
     pub(crate) fn validate(&self) -> Result<CheckpointIdentityV1, PersistenceError> {
-        require_schema(
-            &self.schema_version,
-            "begin-persisted-month-run-command-v1",
-        )?;
+        require_schema(&self.schema_version, "begin-persisted-month-run-command-v1")?;
         validate_id(&self.request_id, "requestId")?;
         validate_id(&self.save_id, "saveId")?;
         validate_revision(self.expected_save_revision, "expectedSaveRevision")?;
@@ -352,10 +347,7 @@ pub(crate) struct StoreMonthRunBoundaryCommandV1 {
 
 impl StoreMonthRunBoundaryCommandV1 {
     pub(crate) fn validate(&self) -> Result<CheckpointIdentityV1, PersistenceError> {
-        require_schema(
-            &self.schema_version,
-            "store-month-run-boundary-command-v1",
-        )?;
+        require_schema(&self.schema_version, "store-month-run-boundary-command-v1")?;
         validate_id(&self.request_id, "requestId")?;
         validate_id(&self.save_id, "saveId")?;
         validate_id(&self.run_id, "runId")?;
@@ -484,7 +476,10 @@ fn require_schema(actual: &str, expected: &str) -> Result<(), PersistenceError> 
 fn validate_id(value: &str, name: &str) -> Result<(), PersistenceError> {
     if value.is_empty()
         || value.len() > 128
-        || !value.as_bytes().iter().all(|byte| (b'!'..=b'~').contains(byte))
+        || !value
+            .as_bytes()
+            .iter()
+            .all(|byte| (b'!'..=b'~').contains(byte))
     {
         return Err(PersistenceError::InvalidCommand(format!(
             "{name} must contain 1-128 printable ASCII characters without whitespace"

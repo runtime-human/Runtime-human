@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::{
-    contracts::{parse_checkpoint_identity, CanonicalPayloadV1, DurableMonthRunStatus},
+    contracts::{CanonicalPayloadV1, DurableMonthRunStatus, parse_checkpoint_identity},
     error::PersistenceError,
     hash::validate_sha256_hex,
 };
@@ -64,7 +64,10 @@ impl CommitPersistedMonthRunCommandV1 {
 fn validate_id(value: &str, name: &str) -> Result<(), PersistenceError> {
     if value.is_empty()
         || value.len() > 128
-        || !value.as_bytes().iter().all(|byte| (b'!'..=b'~').contains(byte))
+        || !value
+            .as_bytes()
+            .iter()
+            .all(|byte| (b'!'..=b'~').contains(byte))
     {
         return Err(PersistenceError::InvalidCommand(format!(
             "{name} must contain 1-128 printable ASCII characters without whitespace"

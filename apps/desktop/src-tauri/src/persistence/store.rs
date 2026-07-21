@@ -1,24 +1,21 @@
-use rusqlite::{
-    params, Connection, OptionalExtension, Row, Transaction, TransactionBehavior,
-};
-use serde::{de::DeserializeOwned, Serialize};
+use rusqlite::{Connection, OptionalExtension, Row, Transaction, TransactionBehavior, params};
+use serde::{Serialize, de::DeserializeOwned};
 
 use super::{
     checkpoint_integrity::verify_checkpoint_fingerprint,
     commit_contract::CommitPersistedMonthRunCommandV1,
     contracts::{
-        normalized_command_sha256, parse_checkpoint_identity,
         BeginPersistedMonthRunCommandV1, CanonicalPayloadV1, CreateSaveCommandV1,
         DurableMonthRunStatus, LoadActiveMonthRunQueryV1, LoadMonthRunQueryV1, LoadSaveQueryV1,
-        StoreMonthRunBoundaryCommandV1,
+        StoreMonthRunBoundaryCommandV1, normalized_command_sha256, parse_checkpoint_identity,
     },
     database::{Database, RecoveryStatus},
     error::PersistenceError,
     hash::{sha256_hex, verify_sha256},
     records::{
-        BeginPersistedMonthRunAcceptedV1, CommitPersistedMonthRunAcceptedV1,
-        CreateSaveAcceptedV1, MonthRunRecordV1, MutationOutcome, RecoveryStatusV1,
-        RecoveryStatusV1Value, SaveRecordV1, StoreMonthRunBoundaryAcceptedV1,
+        BeginPersistedMonthRunAcceptedV1, CommitPersistedMonthRunAcceptedV1, CreateSaveAcceptedV1,
+        MonthRunRecordV1, MutationOutcome, RecoveryStatusV1, RecoveryStatusV1Value, SaveRecordV1,
+        StoreMonthRunBoundaryAcceptedV1,
     },
 };
 
@@ -177,8 +174,9 @@ impl Database {
             &identity.checkpoint_hash,
             sequence,
         )?;
-        let run = load_month_run_record(&transaction, &command.run_id)?
-            .ok_or_else(|| PersistenceError::Invariant("inserted MonthRun disappeared".to_owned()))?;
+        let run = load_month_run_record(&transaction, &command.run_id)?.ok_or_else(|| {
+            PersistenceError::Invariant("inserted MonthRun disappeared".to_owned())
+        })?;
         let accepted = BeginPersistedMonthRunAcceptedV1 {
             schema_version: "begin-persisted-month-run-accepted-v1".to_owned(),
             run,
@@ -193,9 +191,9 @@ impl Database {
             Some(&command.run_id),
             sequence,
         )?;
-        transaction.commit().map_err(|source| {
-            PersistenceError::storage("committing MonthRun creation", source)
-        })?;
+        transaction
+            .commit()
+            .map_err(|source| PersistenceError::storage("committing MonthRun creation", source))?;
         Ok(MutationOutcome::Accepted(accepted))
     }
 
@@ -289,7 +287,9 @@ impl Database {
                     command.expected_checkpoint_hash,
                 ],
             )
-            .map_err(|source| PersistenceError::storage("updating the MonthRun checkpoint", source))?;
+            .map_err(|source| {
+                PersistenceError::storage("updating the MonthRun checkpoint", source)
+            })?;
         if changed != 1 {
             return Err(PersistenceError::RunRevisionConflict);
         }
@@ -304,8 +304,9 @@ impl Database {
             &identity.checkpoint_hash,
             sequence,
         )?;
-        let run = load_month_run_record(&transaction, &command.run_id)?
-            .ok_or_else(|| PersistenceError::Invariant("updated MonthRun disappeared".to_owned()))?;
+        let run = load_month_run_record(&transaction, &command.run_id)?.ok_or_else(|| {
+            PersistenceError::Invariant("updated MonthRun disappeared".to_owned())
+        })?;
         let accepted = StoreMonthRunBoundaryAcceptedV1 {
             schema_version: "store-month-run-boundary-accepted-v1".to_owned(),
             run,
@@ -451,7 +452,9 @@ impl Database {
                     command.expected_checkpoint_hash,
                 ],
             )
-            .map_err(|source| PersistenceError::storage("marking the MonthRun committed", source))?;
+            .map_err(|source| {
+                PersistenceError::storage("marking the MonthRun committed", source)
+            })?;
         if run_changed != 1 {
             return Err(PersistenceError::RunRevisionConflict);
         }
@@ -468,8 +471,9 @@ impl Database {
         )?;
         let save = load_save_record(&transaction, &command.save_id)?
             .ok_or_else(|| PersistenceError::Invariant("committed save disappeared".to_owned()))?;
-        let run = load_month_run_record(&transaction, &command.run_id)?
-            .ok_or_else(|| PersistenceError::Invariant("committed MonthRun disappeared".to_owned()))?;
+        let run = load_month_run_record(&transaction, &command.run_id)?.ok_or_else(|| {
+            PersistenceError::Invariant("committed MonthRun disappeared".to_owned())
+        })?;
         let accepted = CommitPersistedMonthRunAcceptedV1 {
             schema_version: "commit-persisted-month-run-accepted-v1".to_owned(),
             save,
@@ -550,8 +554,8 @@ fn classify_receipt<T: DeserializeOwned>(
     }
     verify_sha256(result_json.as_bytes(), &result_hash)
         .map_err(|_| PersistenceError::CorruptedStoredPayload)?;
-    let result = serde_json::from_str(&result_json)
-        .map_err(|_| PersistenceError::CorruptedStoredPayload)?;
+    let result =
+        serde_json::from_str(&result_json).map_err(|_| PersistenceError::CorruptedStoredPayload)?;
     Ok(Some(result))
 }
 
@@ -615,7 +619,9 @@ fn allocate_sequence(transaction: &Transaction<'_>) -> Result<u64, PersistenceEr
         .checked_add(1)
         .filter(|value| *value <= MAX_SAFE_INTEGER)
         .ok_or_else(|| {
-            PersistenceError::Invariant("operation sequence exhausted safe integer range".to_owned())
+            PersistenceError::Invariant(
+                "operation sequence exhausted safe integer range".to_owned(),
+            )
         })?;
     let changed = transaction
         .execute(
@@ -814,7 +820,10 @@ fn verify_month_run_record(
         .optional()
         .map_err(|source| PersistenceError::storage("loading the MonthRun journal tail", source))?;
     if journal_tail.as_ref()
-        != Some(&(record.checkpoint.sha256.clone(), record.checkpoint_hash.clone()))
+        != Some(&(
+            record.checkpoint.sha256.clone(),
+            record.checkpoint_hash.clone(),
+        ))
     {
         return Err(PersistenceError::CorruptedStoredPayload);
     }
