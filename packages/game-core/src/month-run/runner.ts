@@ -40,7 +40,9 @@ export function runUntilBoundary(
     }
 
     const transition = transitionMonthRun(current, step(current));
-    if (transition.kind === "rejected") return transition;
+    if (transition.kind === "rejected") {
+      return { kind: "rejected", checkpoint: original, error: transition.error };
+    }
     if (transition.kind === "duplicate") {
       return budgetError(original, "Deterministic MonthRun step did not advance the checkpoint");
     }
