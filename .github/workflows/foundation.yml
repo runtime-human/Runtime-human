@@ -9,6 +9,8 @@ on:
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
       - "tsconfig*.json"
+      - "tsconfig.json"
+      - "vitest.config.ts"
       - "apps/**"
       - "packages/**"
       - "tests/**"
@@ -28,6 +30,8 @@ on:
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
       - "tsconfig*.json"
+      - "tsconfig.json"
+      - "vitest.config.ts"
       - "apps/**"
       - "packages/**"
       - "tests/**"
@@ -118,7 +122,20 @@ jobs:
       - name: Check package boundaries
         run: pnpm boundaries:check
       - name: Run focused test suite
-        run: pnpm test
+        id: focused-tests
+        continue-on-error: true
+        run: |
+          $logPath = Join-Path $env:RUNNER_TEMP "focused-tests.log"
+          pnpm test *>&1 | Tee-Object -FilePath $logPath
+          exit $LASTEXITCODE
+      - name: Upload focused test log
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: foundation-focused-tests-log
+          path: ${{ runner.temp }}/focused-tests.log
+          if-no-files-found: error
+          retention-days: 1
       - name: Run type-aware lint
         run: pnpm lint:type-aware
       - name: Build renderer
@@ -145,6 +162,6 @@ jobs:
       - name: Run Rust tests
         if: steps.rust-check.outcome == 'success'
         run: pnpm rust:test
-      - name: Enforce Rust check result
-        if: steps.rust-check.outcome == 'failure'
-        run: throw "Rust workspace check failed; see foundation-rust-check-log artifact."
+      - name: Enforce diagnostic results
+        if: steps.focused-tests.outcome == 'failure' || steps.rust-check.outcome == 'failure'
+        run: throw "A diagnostic gate failed; inspect the uploaded test and Rust artifacts."
