@@ -68,9 +68,12 @@ describe("MonthRun checkpoints", () => {
 
     expect(checkpoint.status).toBe("ready");
     expect(checkpoint.runRevision).toBe(0);
+    expect(checkpoint.stepIndex).toBe(0);
+    expect(checkpoint.programCounter).toBe(0);
+    expect(checkpoint.terminalReason).toBeNull();
     expect(checkpoint.previousCheckpointHash).toBeNull();
     expect(checkpoint.checkpointHash).toBe(
-      "7050b27e582ced4a20d8fd8f925590a4ce2fff348f2d4de744ea4a52bae6dcfe",
+      "836c04505addd677afed22911abe00cd7e72516d16269c5362f851f87331922a",
     );
     expect(restoreMonthRunCheckpoint(JSON.parse(JSON.stringify(checkpoint)))).toEqual({
       kind: "ok",
@@ -97,7 +100,7 @@ describe("MonthRun checkpoints", () => {
   it("rejects a checkpoint changed without rehashing", () => {
     const checkpoint = initialCheckpoint("run-2");
 
-    expect(restoreMonthRunCheckpoint({ ...checkpoint, stepIndex: 99 })).toMatchObject({
+    expect(restoreMonthRunCheckpoint({ ...checkpoint, programCounter: 99 })).toMatchObject({
       kind: "error",
       code: "CorruptedCheckpoint",
     });
@@ -165,7 +168,7 @@ describe("MonthRun checkpoints", () => {
     });
   });
 
-  it("rejects invalid persisted outcome tokens even with a valid outer hash", () => {
+  it("rejects persisted outcome tokens containing whitespace even with a valid outer hash", () => {
     const running = accept(initialCheckpoint("run-invalid-token"), { type: "start" });
     const materialized = accept(running, {
       type: "materialize-outcome",
@@ -181,7 +184,7 @@ describe("MonthRun checkpoints", () => {
       materializedOutcomes: [
         {
           ...materialized.materializedOutcomes[0]!,
-          scope: "project\0hidden",
+          scope: "project hidden",
         },
       ],
     });
