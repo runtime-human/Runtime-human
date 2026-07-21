@@ -106,6 +106,27 @@ describe("MonthRun checkpoints", () => {
     });
   });
 
+  it("rejects internally inconsistent counters even with a valid outer hash", () => {
+    const running = accept(initialCheckpoint("run-counter"), { type: "start" });
+    const mismatchedRevision = withOuterHash({
+      ...withoutOuterHash(running),
+      stepIndex: running.stepIndex + 1,
+    });
+    const impossibleProgramCounter = withOuterHash({
+      ...withoutOuterHash(running),
+      programCounter: running.stepIndex + 1,
+    });
+
+    expect(restoreMonthRunCheckpoint(mismatchedRevision)).toMatchObject({
+      kind: "error",
+      code: "InvalidCheckpoint",
+    });
+    expect(restoreMonthRunCheckpoint(impossibleProgramCounter)).toMatchObject({
+      kind: "error",
+      code: "InvalidCheckpoint",
+    });
+  });
+
   it("rejects unknown fields instead of silently stripping them", () => {
     const checkpoint = initialCheckpoint("run-unknown-fields");
 
