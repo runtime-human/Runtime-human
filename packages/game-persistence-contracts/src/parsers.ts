@@ -205,9 +205,7 @@ export function parseLoadActiveMonthRunQuery(value: unknown): LoadActiveMonthRun
   };
 }
 
-export function parseStoreMonthRunBoundaryCommand(
-  value: unknown,
-): StoreMonthRunBoundaryCommandV1 {
+export function parseStoreMonthRunBoundaryCommand(value: unknown): StoreMonthRunBoundaryCommandV1 {
   const record = exactRecord(value, STORE_BOUNDARY_KEYS, "store MonthRun boundary command");
   requireSchema(
     record.schemaVersion,
@@ -340,7 +338,8 @@ function jsonValuesEqual(left: unknown, right: unknown): boolean {
   return (
     leftKeys.length === rightKeys.length &&
     leftKeys.every(
-      (key, index) => key === rightKeys[index] && jsonValuesEqual(leftRecord[key], rightRecord[key]),
+      (key, index) =>
+        key === rightKeys[index] && jsonValuesEqual(leftRecord[key], rightRecord[key]),
     )
   );
 }
