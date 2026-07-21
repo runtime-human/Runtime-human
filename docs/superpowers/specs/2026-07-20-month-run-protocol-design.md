@@ -11,7 +11,7 @@ updated: 2026-07-20
 
 ## Goal
 
-PR #17 introduces the pure deterministic MonthRun protocol used later by SQLite persistence and the first gameplay vertical slice. It contains no SQLite, Tauri commands, gameplay formulas, content providers, background workers or UI.
+PR #17 introduces the pure deterministic MonthRun protocol used by SQLite persistence in PR #18 and by the first gameplay vertical slice in PR #19. It contains no SQLite, Tauri commands, gameplay formulas, content providers, background workers or UI.
 
 The same scripted month must end with the same checkpoint hash and terminal result when run uninterrupted or restored after every durable boundary.
 
@@ -24,66 +24,51 @@ The design was checked against current code and official documentation available
 | Temporal and Azure Durable Task | deterministic orchestrator, immutable recorded results, explicit signals, versioning discipline | authoritative event-history replay creates code-evolution and infrastructure costs unnecessary for a bounded local month |
 | DBOS TypeScript | workflow ID as idempotency key, persisted operation outputs, conflict detection, chaos/recovery tests | Postgres and generic async-step replay couple correctness to source step ordering |
 | Restate TypeScript | journal-backed operations, explicit suspension, prompt stop after the main outcome | requires an external journal runtime and solves distributed concerns outside this game |
-| XState persistence | explicit state/transition modelling | internal actor snapshots are not a stable save compatibility format |
-| Reflow, durare and smol-workflow-engine | SQLite step checkpoints and resume from completed work | projects are young and still use generic step replay; no dependency is justified for the pure kernel |
-| SQLite `walcrash*.test` | randomized crash points, abnormal exit, reopen, invariant checks and `integrity_check` | methodology is adopted in PR #18; PR #17 uses serialize/restore fault points |
+| XState persistence | explicit state and transition modelling | internal actor snapshots are not a stable save compatibility format |
+| Reflow, durare and smol-workflow-engine | SQLite step checkpoints and resume from completed work | generic step replay is unnecessary for the bounded MonthRun kernel |
+| SQLite `walcrash*.test` | randomized crash points, abnormal exit, reopen and invariant checks | methodology is adopted in PR #18; PR #17 uses serialize/restore fault points |
 
-Primary references:
+Runtime Human adopts explicit suspension, immutable materialized outputs, idempotency receipts, strict compatibility and crash-point verification. It rejects event-history replay, persisted actor internals, generic workflow decorators, hidden retries, timers, leases, full event sourcing and silent migration.
 
-- https://github.com/temporalio/temporal
-- https://github.com/temporalio/samples-typescript
-- https://github.com/Azure/durabletask
-- https://github.com/dbos-inc/dbos-transact-ts
-- https://github.com/restatedev/sdk-typescript
-- https://github.com/statelyai/xstate
-- https://github.com/sqlite/sqlite/blob/master/test/walcrash.test
-- https://danfry1.github.io/reflow-ts/
-- https://docs.rs/durare/latest/durare/
+## Package boundaries
 
-## Critical adaptation
+- `game-schema/month-run.ts`: IDs, revisions, commands, statuses, events and checkpoint DTOs.
+- `game-schema/authoritative-json.ts`: recursive authoritative JSON data contract.
+- `game-core/month-run/checkpoint.ts`: detached snapshots, checkpoint hashing, strict validation and restore.
+- `game-core/month-run/transition.ts`: exhaustive legal transition table and duplicate semantics.
+- `game-core/month-run/runner.ts`: bounded pure execution to the next durable boundary.
+- `tests/support/month-run-reference-harness.ts`: test-only receipt and active-run reference store.
 
-Runtime Human adopts these proven ideas:
-
-1. Pure orchestration cannot read clock, locale, filesystem, database, UI or mutable globals.
-2. Materialized randomness and accepted answers are immutable recorded facts.
-3. Request IDs provide idempotency; same ID with a different payload is a conflict.
-4. Suspension, accepted answers, materialization and completion are explicit durable boundaries.
-5. Schema/rules/content/determinism compatibility is exact before resume.
-6. No work occurs after a boundary result is known.
-7. Every durable boundary is covered by restore-equivalence tests.
-
-It rejects event-history replay, persisted actor internals, generic workflow decorators, hidden retries, timers, leases, full event sourcing and silent migration.
-
-A bounded MonthRun is better represented by one explicit versioned checkpoint than by replaying arbitrary source code against a long operation history.
-
-## Package boundary correction
-
-`AuthoritativeJsonValue` is a data contract, not an algorithm. PR #17 moves the type declaration from `game-core` to `game-schema`. `game-core` continues to re-export it so existing imports remain source-compatible. Runtime validation and canonicalization remain in `game-core`.
+`AuthoritativeJsonValue` is declared in `game-schema`. `game-core` re-exports it for source compatibility, while canonicalization remains in `game-core`.
 
 ## Architecture
 
 ```text
-command or deterministic event
+Begin or Resume command
         |
         v
-validate identity / revision / compatibility
+validate identity / expected revision / compatibility
+        |
+        v
+restore or create immutable checkpoint
+        |
+        v
+run scripted program using programCounter
         |
         v
 exhaustive transition reducer
         |
-        +--> next immutable running checkpoint
+        +--> running checkpoint
         |
-        +--> suspended / completed / typed failure boundary
+        +--> suspended / completed / exceptional boundary
 ```
 
-Units:
+The protocol has two independent counters:
 
-- `game-schema/month-run.ts`: IDs, revisions, commands, statuses, events and checkpoint DTOs.
-- `game-schema/authoritative-json.ts`: shared recursive authoritative JSON type only.
-- `game-core/month-run/checkpoint.ts`: create, validate, hash and restore checkpoints.
-- `game-core/month-run/transition.ts`: exhaustive legal transition table and duplicate semantics.
-- `game-core/month-run/runner.ts`: bounded pure loop to the next durable boundary.
-- `tests/month-run-*`: transition matrix, golden checkpoint, crash equivalence and idempotency.
+- `stepIndex`: number of accepted durable transitions; increments for every accepted event and is equal to `runRevision` in V1.
+- `programCounter`: index of the next deterministic scripted step; advances only when a scripted step is consumed.
+
+This separation is mandatory. Accepting a user answer is a durable transition but is not an element in the scripted step array and therefore must not skip the next scripted step.
 
 ## Identifiers and revisions
 
@@ -100,8 +85,9 @@ type MonthRunRevision = number & MonthRunRevisionBrand;
 
 Parsers require:
 
-- IDs: 1–128 printable ASCII characters, no whitespace or NUL;
-- revisions: non-negative safe integers.
+- identifiers: 1–128 printable ASCII characters without whitespace or NUL;
+- outcome IDs, scopes and decision kinds: 1–256 printable ASCII characters without whitespace or NUL;
+- revisions and counters: non-negative safe integers.
 
 ## Commands
 
@@ -128,7 +114,7 @@ type ResumeMonthCommandV1 = Readonly<{
 }>;
 ```
 
-Typed gameplay plans and answers replace the payloads in later slices without changing these envelopes.
+Typed gameplay plans and answers replace the generic authoritative payloads in later slices without changing these envelopes.
 
 ## Compatibility
 
@@ -142,33 +128,9 @@ type MonthRunCompatibilityV1 = Readonly<{
 }>;
 ```
 
-PR #17 accepts only exact equality. Mismatch produces `incompatible`; it never migrates or rerolls.
+Resume requires exact equality. A mismatch produces an incompatible result; PR #17 never migrates or rerolls a checkpoint.
 
 ## State model
-
-Statuses:
-
-```text
-ready
-running
-suspended
-completed
-committed
-failed
-incompatible
-recovery-required
-abandoned
-```
-
-Phases:
-
-```text
-initialize
-materialize
-await-decision
-resolve
-finalize
-```
 
 Legal path:
 
@@ -190,7 +152,17 @@ Exceptional transitions from `ready`, `running` or `suspended`:
 -> abandoned
 ```
 
-`completed` may transition only to `committed` or `recovery-required`. Other terminal states cannot advance. An identical retry may return `duplicate` without changing state.
+`completed` may transition only to `committed` or `recovery-required`. Other terminal states cannot advance. Identical retries may return `duplicate` without mutation.
+
+Phases:
+
+```text
+initialize
+materialize
+await-decision
+resolve
+finalize
+```
 
 ## Checkpoint V1
 
@@ -204,6 +176,7 @@ type MonthRunCheckpointV1 = Readonly<{
   status: MonthRunStatus;
   phase: MonthRunPhase;
   stepIndex: number;
+  programCounter: number;
   plan: AuthoritativeJsonValue;
   compatibility: MonthRunCompatibilityV1;
   rngState: SerializedXoshiro256State;
@@ -212,6 +185,7 @@ type MonthRunCheckpointV1 = Readonly<{
   pendingDecision: PendingDecisionV1 | null;
   acceptedDecisions: readonly AcceptedDecisionV1[];
   terminalResult: AuthoritativeJsonValue | null;
+  terminalReason: AuthoritativeJsonValue | null;
   previousCheckpointHash: Fingerprint | null;
   checkpointHash: Fingerprint;
 }>;
@@ -223,7 +197,49 @@ Hash:
 fingerprint("month-run-checkpoint-v1", checkpointWithoutHash)
 ```
 
-Restore verifies exact version, IDs, revisions, authoritative values, status/phase consistency, unique outcome/decision IDs, pending-decision rules, terminal-result rules and hash equality. Corruption is returned as typed data and later mapped to `recovery-required`.
+Restore verifies:
+
+- exact field sets and schema version;
+- IDs, revisions, counters and authoritative values;
+- exact compatibility and supported determinism algorithms;
+- status, phase, pending-decision, terminal-result and terminal-reason consistency;
+- unique outcome, decision and request IDs;
+- nested outcome and answer hashes;
+- outer checkpoint hash.
+
+`provisionalState` is never overwritten by an exceptional transition. Failure or recovery information is stored separately in `terminalReason`, preserving the state needed for diagnostics and recovery.
+
+## Counter semantics
+
+Every accepted transition:
+
+1. increments `runRevision` once;
+2. increments `stepIndex` once;
+3. links `previousCheckpointHash` to the prior checkpoint;
+4. creates a new checkpoint hash.
+
+The following events consume one scripted program step and increment `programCounter`:
+
+```text
+start
+advance-step
+materialize-outcome
+suspend-for-decision
+complete
+```
+
+The following accepted events do not consume a scripted step:
+
+```text
+accept-decision
+mark-committed
+fail
+mark-incompatible
+require-recovery
+abandon
+```
+
+Rejected and duplicate transitions return the original checkpoint object unchanged and increment neither counter.
 
 ## Outcomes and decisions
 
@@ -253,32 +269,15 @@ type AcceptedDecisionV1 = Readonly<{
 Rules:
 
 - one pending decision maximum;
-- identical outcome ID + identical payload is a duplicate;
-- identical outcome ID + different payload is `MaterializationConflict`;
-- identical request/decision/answer is a duplicate;
+- identical outcome ID, scope and payload is a duplicate;
+- identical outcome ID with different scope or payload is `MaterializationConflict`;
+- identical request, decision and answer is a duplicate;
 - same request ID with another payload is `RequestPayloadConflict`;
 - same decision ID with another answer is `DecisionAlreadyAnswered`;
 - stale revision is `RunRevisionConflict`;
-- duplicate dispositions do not increment revision or mutate RNG state.
+- duplicate dispositions consume no RNG and mutate no checkpoint field.
 
 ## Transition API
-
-Closed event union:
-
-```ts
-type MonthRunEventV1 =
-  | StartRunEventV1
-  | AdvanceStepEventV1
-  | MaterializeOutcomeEventV1
-  | SuspendForDecisionEventV1
-  | AcceptDecisionEventV1
-  | CompleteRunEventV1
-  | MarkCommittedEventV1
-  | FailRunEventV1
-  | MarkIncompatibleEventV1
-  | RequireRecoveryEventV1
-  | AbandonRunEventV1;
-```
 
 ```ts
 function transitionMonthRun(
@@ -287,7 +286,23 @@ function transitionMonthRun(
 ): MonthRunTransitionResult;
 ```
 
-Every accepted transition increments `runRevision` exactly once, links `previousCheckpointHash` and creates a new hash. Rejected or duplicate transitions return the original checkpoint object unchanged.
+The event union is closed and exhaustive:
+
+```text
+start
+advance-step
+materialize-outcome
+suspend-for-decision
+accept-decision
+complete
+mark-committed
+fail
+mark-incompatible
+require-recovery
+abandon
+```
+
+Expected malformed data is returned as typed `InvalidCommand`; only an unreachable exhaustive-switch defect may throw.
 
 ## Pure runner
 
@@ -305,30 +320,27 @@ function runUntilBoundary(
 
 Rules:
 
-- default transition budget: 256;
+- the next step is `steps[current.programCounter]`;
+- default transition budget is 256;
 - stop immediately on suspended, completed or exceptional terminal status;
 - do not call another step after a boundary;
-- budget exhaustion returns `TransitionBudgetExceeded` without mutating the input;
-- `committed` requires persistence acknowledgement and is not produced by the scripted runner.
+- a missing step before a boundary is a typed transition-budget failure;
+- budget exhaustion returns the original input checkpoint;
+- `committed` requires persistence acknowledgement and is never produced by the scripted runner.
 
-The scripted step seam exists for protocol tests and the next gameplay adapter; function identities are never persisted.
+Function identities are never persisted. Only the versioned checkpoint and compatibility fingerprints cross the durable boundary.
 
 ## Reference harness
 
-A test-only harness is created with an explicit scripted program and current save revision:
+The test-only harness stores:
 
-```ts
-createMonthRunReferenceHarness({
-  steps,
-  saveRevision,
-})
-```
+- checkpoints by run ID;
+- one active run per save;
+- command receipts by request ID and canonical payload hash.
 
-It stores checkpoints by run ID, one active run per save, and command receipts by request ID + payload hash. It exposes `begin`, `resume` and `load` for tests. It is not exported from any production package and PR #18 replaces it with Rust/SQLite persistence.
+It exposes `begin`, `resume` and `load` only to protocol tests. PR #18 replaces it with Rust and SQLite persistence.
 
 ## Error model
-
-Expected failures are typed values:
 
 ```text
 InvalidCommand
@@ -346,33 +358,33 @@ CorruptedCheckpoint
 TransitionBudgetExceeded
 ```
 
-Only unreachable exhaustive-switch defects may throw.
-
 ## Verification
 
-1. **Transition matrix:** every status/event pair; legal transitions assert exact status/revision, illegal transitions assert unchanged input.
-2. **Golden checkpoint:** fixed canonical JSON and hash; intentional format changes require a new version or reviewed fixture update.
-3. **Crash equivalence:** uninterrupted scripted run compared with serialize/restore after every accepted transition.
-4. **Idempotency:** duplicate begin/resume, payload conflicts, stale revisions and repeated IDs.
-5. **Mutation safety:** mutable caller objects are changed after command creation; stored checkpoints remain unchanged.
-6. **Repository gates:** docs, format, lint, typecheck, boundaries, Vitest, builds and Rust checks stay green.
+1. Transition matrix covers legal, illegal and exceptional paths.
+2. Golden checkpoint fixes the canonical V1 shape and hash.
+3. Serialize/restore equivalence is checked after every accepted transition.
+4. Decision acceptance is crash-equivalent and does not consume a scripted step.
+5. Duplicate commands and outcomes preserve object identity, counters and RNG state.
+6. Recovery preserves provisional state and stores its reason separately.
+7. Repository format, lint, typecheck, build, Storybook and Rust gates remain green.
 
 ## Deferred to PR #18 and PR #19
 
-- `rusqlite`, migrations, WAL configuration and Tauri IPC;
-- SQL receipts, hash-chained journal and atomic final save commit;
-- process-kill crash injection, reopen and `integrity_check`;
-- leases or multi-process reclaim;
-- typed MonthPlan gameplay fields and providers;
-- automatic migrations, UI and reports.
+- `rusqlite`, migrations, WAL configuration and typed Tauri IPC;
+- SQL receipts, atomic checkpoint CAS and final save commit;
+- persisted hash-chain validation and active-run uniqueness;
+- Online Backup API, read-only recovery and process-kill crash injection;
+- typed MonthPlan gameplay providers, UI and reports.
 
 ## Acceptance criteria
 
 - Closed discriminated unions and exhaustive handling.
 - Immutable checkpoint per accepted transition.
-- Revision increments once per accepted transition.
-- Duplicate commands/outcomes leave checkpoint and RNG unchanged.
+- `runRevision` and `stepIndex` increment exactly once per accepted transition.
+- `programCounter` advances only for consumed scripted steps.
+- Duplicate commands and outcomes leave checkpoint and RNG unchanged.
+- Exceptional transitions preserve provisional state.
 - Checkpoint self-verifies through canonical fingerprint.
 - Restore at every durable boundary reproduces the uninterrupted terminal hash.
 - No new runtime dependency.
-- Final review checks compatibility, mutation safety, transition exhaustiveness and absence of premature persistence/gameplay abstractions.
+- Final review confirms compatibility, mutation safety, transition exhaustiveness and absence of premature persistence or gameplay abstractions.
