@@ -8,7 +8,6 @@ export type {
   BeginPersistedMonthRunCommandV1,
   CanonicalPayloadV1,
   CommitPersistedMonthRunAcceptedV1,
-  CommitPersistedMonthRunCommandV1,
   CreateBackupCommandV1,
   CreateSaveAcceptedV1,
   CreateSaveCommandV1,
@@ -31,9 +30,12 @@ export type {
   StoreMonthRunBoundaryCommandV1,
 } from "./contracts";
 export {
+  parseCommitPersistedMonthRunCommand,
+} from "./commit";
+export type { CommitPersistedMonthRunCommandV1 } from "./commit";
+export {
   parseBeginPersistedMonthRunCommand,
   parseCanonicalPayload,
-  parseCommitPersistedMonthRunCommand,
   parseCreateBackupCommand,
   parseCreateSaveCommand,
   parseFingerprint,
