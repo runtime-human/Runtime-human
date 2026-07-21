@@ -1,26 +1,36 @@
 import type {
   AcceptDecisionEventV1,
   AdvanceStepEventV1,
+  AuthoritativeJsonValue,
+  Fingerprint,
   MaterializeOutcomeEventV1,
   MonthRunCheckpointV1,
   MonthRunEventV1,
+  MonthRunPhase,
   MonthRunProtocolErrorCode,
   MonthRunTransitionResult,
   PendingDecisionV1,
+  SerializedXoshiro256State,
 } from "@runtime-human/game-schema";
-import { parseMonthRunRevision } from "@runtime-human/game-schema";
+import {
+  parseDecisionId,
+  parseMonthRunRevision,
+  parseRequestId,
+  parseSerializedXoshiro256State,
+} from "@runtime-human/game-schema";
 
 import { fingerprint } from "../determinism/hash";
 import { rehashMonthRunCheckpoint, snapshotAuthoritativeValue } from "./checkpoint";
 
 const TOKEN_PATTERN = /^[!-~]{1,256}$/u;
+const FINGERPRINT_PATTERN = /^[0-9a-f]{64}$/u;
 
 export function transitionMonthRun(
   checkpoint: MonthRunCheckpointV1,
   event: MonthRunEventV1,
 ): MonthRunTransitionResult {
   try {
-    return transitionMonthRunUnchecked(checkpoint, event);
+    return transitionMonthRunUnchecked(checkpoint, normalizeMonthRunEvent(event));
   } catch (error) {
     if (error instanceof TypeError || error instanceof RangeError) {
       return reject(
@@ -110,7 +120,7 @@ function transitionRunning(
         {
           status: "completed",
           phase: "finalize",
-          terminalResult: snapshotAuthoritativeValue(event.result),
+          terminalResult: event.result,
           terminalReason: null,
         },
         true,
@@ -187,12 +197,11 @@ function advance(
   checkpoint: MonthRunCheckpointV1,
   event: AdvanceStepEventV1,
 ): MonthRunTransitionResult {
-  validateRunningPhase(event.phase);
   return accepted(
     checkpoint,
     {
       phase: event.phase,
-      provisionalState: snapshotAuthoritativeValue(event.provisionalState),
+      provisionalState: event.provisionalState,
       rngState: event.rngState ?? checkpoint.rngState,
     },
     true,
@@ -203,21 +212,19 @@ function materialize(
   checkpoint: MonthRunCheckpointV1,
   event: MaterializeOutcomeEventV1,
 ): MonthRunTransitionResult {
-  validateRunningPhase(event.phase);
-  const payload = snapshotAuthoritativeValue(event.payload);
   return accepted(
     checkpoint,
     {
       phase: event.phase,
-      provisionalState: snapshotAuthoritativeValue(event.provisionalState),
+      provisionalState: event.provisionalState,
       rngState: event.rngState,
       materializedOutcomes: [
         ...checkpoint.materializedOutcomes,
         {
-          outcomeId: validateToken(event.outcomeId, "outcomeId"),
-          scope: validateToken(event.scope, "scope"),
-          payload,
-          payloadHash: fingerprint("month-run-materialized-outcome-v1", payload),
+          outcomeId: event.outcomeId,
+          scope: event.scope,
+          payload: event.payload,
+          payloadHash: fingerprint("month-run-materialized-outcome-v1", event.payload),
         },
       ],
     },
@@ -234,11 +241,7 @@ function suspend(
     {
       status: "suspended",
       phase: "await-decision",
-      pendingDecision: {
-        ...decision,
-        kind: validateToken(decision.kind, "decision kind"),
-        prompt: snapshotAuthoritativeValue(decision.prompt),
-      },
+      pendingDecision: decision,
     },
     true,
   );
@@ -251,7 +254,6 @@ function acceptDecision(
   if (checkpoint.pendingDecision?.decisionId !== event.decisionId) {
     return reject(checkpoint, "UnexpectedDecision", "Decision does not match the pending decision");
   }
-  const answer = snapshotAuthoritativeValue(event.answer);
   return accepted(checkpoint, {
     status: "running",
     phase: "resolve",
@@ -261,8 +263,8 @@ function acceptDecision(
       {
         requestId: event.requestId,
         decisionId: event.decisionId,
-        answer,
-        answerHash: fingerprint("month-run-decision-answer-v1", answer),
+        answer: event.answer,
+        answerHash: fingerprint("month-run-decision-answer-v1", event.answer),
       },
     ],
   });
@@ -318,13 +320,13 @@ function classifyDecisionAnswer(
 function exceptional(
   checkpoint: MonthRunCheckpointV1,
   status: "failed" | "incompatible" | "recovery-required" | "abandoned",
-  reason: unknown,
+  reason: AuthoritativeJsonValue,
 ): MonthRunTransitionResult {
   return accepted(checkpoint, {
     status,
     pendingDecision: null,
     terminalResult: null,
-    terminalReason: snapshotAuthoritativeValue(reason),
+    terminalReason: reason,
   });
 }
 
@@ -389,14 +391,111 @@ function reject(
   return { kind: "rejected", checkpoint, error: { code, message } };
 }
 
-function validateRunningPhase(phase: AdvanceStepEventV1["phase"]): void {
-  if (phase === "initialize" || phase === "await-decision") {
-    throw new TypeError(`Running MonthRun cannot enter ${phase} phase`);
+function normalizeMonthRunEvent(value: MonthRunEventV1): MonthRunEventV1 {
+  const event = expectRuntimeRecord(value, "MonthRun event");
+  switch (event.type) {
+    case "start":
+      return { type: "start" };
+    case "advance-step": {
+      const rngState = parseOptionalRngState(event.rngState);
+      return {
+        type: "advance-step",
+        phase: parseRunningPhase(event.phase),
+        provisionalState: snapshotAuthoritativeValue(event.provisionalState),
+        ...(rngState === undefined ? {} : { rngState }),
+      };
+    }
+    case "materialize-outcome":
+      return {
+        type: "materialize-outcome",
+        outcomeId: validateToken(event.outcomeId, "outcomeId"),
+        scope: validateToken(event.scope, "scope"),
+        payload: snapshotAuthoritativeValue(event.payload),
+        phase: parseRunningPhase(event.phase),
+        provisionalState: snapshotAuthoritativeValue(event.provisionalState),
+        rngState: parseSerializedXoshiro256State(event.rngState),
+      };
+    case "suspend-for-decision":
+      return {
+        type: "suspend-for-decision",
+        decision: parsePendingDecision(event.decision),
+      };
+    case "accept-decision":
+      return {
+        type: "accept-decision",
+        requestId: parseRequestId(event.requestId),
+        decisionId: parseDecisionId(event.decisionId),
+        answer: snapshotAuthoritativeValue(event.answer),
+      };
+    case "complete":
+      return {
+        type: "complete",
+        result: snapshotNonNullAuthoritativeValue(event.result, "terminal result"),
+      };
+    case "mark-committed":
+      return { type: "mark-committed" };
+    case "fail":
+    case "mark-incompatible":
+    case "require-recovery":
+    case "abandon":
+      return {
+        type: event.type,
+        reason: snapshotNonNullAuthoritativeValue(event.reason, "terminal reason"),
+      };
+    default:
+      throw new TypeError("Unknown MonthRun event type");
   }
 }
 
-function validateToken(value: string, name: string): string {
-  if (!TOKEN_PATTERN.test(value)) {
+function parsePendingDecision(value: unknown): PendingDecisionV1 {
+  const decision = expectRuntimeRecord(value, "pending decision");
+  return {
+    decisionId: parseDecisionId(decision.decisionId),
+    kind: validateToken(decision.kind, "decision kind"),
+    prompt: snapshotAuthoritativeValue(decision.prompt),
+    answerSchemaFingerprint: parseRuntimeFingerprint(
+      decision.answerSchemaFingerprint,
+      "answerSchemaFingerprint",
+    ),
+  };
+}
+
+function parseRunningPhase(value: unknown): Extract<MonthRunPhase, "materialize" | "resolve" | "finalize"> {
+  if (value !== "materialize" && value !== "resolve" && value !== "finalize") {
+    throw new TypeError("Running MonthRun has an invalid phase");
+  }
+  return value;
+}
+
+function parseOptionalRngState(value: unknown): SerializedXoshiro256State | undefined {
+  return value === undefined ? undefined : parseSerializedXoshiro256State(value);
+}
+
+function parseRuntimeFingerprint(value: unknown, name: string): Fingerprint {
+  if (typeof value !== "string" || !FINGERPRINT_PATTERN.test(value)) {
+    throw new TypeError(`${name} must be a lowercase SHA-256 fingerprint`);
+  }
+  return value as Fingerprint;
+}
+
+function snapshotNonNullAuthoritativeValue(
+  value: unknown,
+  name: string,
+): Exclude<AuthoritativeJsonValue, null> {
+  const snapshot = snapshotAuthoritativeValue(value);
+  if (snapshot === null) throw new TypeError(`${name} cannot be null`);
+  return snapshot;
+}
+
+function expectRuntimeRecord(value: unknown, name: string): Readonly<Record<string, unknown>> {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    throw new TypeError(`${name} must be an object`);
+  }
+  return value as Readonly<Record<string, unknown>>;
+}
+
+function validateToken(value: unknown, name: string): string {
+  if (typeof value !== "string" || !TOKEN_PATTERN.test(value)) {
     throw new TypeError(`${name} must contain 1-256 printable ASCII characters without whitespace`);
   }
   return value;
