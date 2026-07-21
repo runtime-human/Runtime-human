@@ -4,7 +4,7 @@ type: plan
 status: active
 canon: true
 depends_on: [ADR-005, ADR-007, ADR-010, ADR-015]
-updated: 2026-07-20
+updated: 2026-07-21
 ---
 
 # Crash-safe MonthRun protocol design
@@ -35,7 +35,7 @@ Runtime Human adopts explicit suspension, immutable materialized outputs, idempo
 - `game-schema/month-run.ts`: IDs, revisions, commands, statuses, events and checkpoint DTOs.
 - `game-schema/authoritative-json.ts`: recursive authoritative JSON data contract.
 - `game-core/month-run/checkpoint.ts`: detached snapshots, checkpoint hashing, strict validation and restore.
-- `game-core/month-run/transition.ts`: exhaustive legal transition table and duplicate semantics.
+- `game-core/month-run/transition.ts`: runtime event normalization, exhaustive legal transition table and duplicate semantics.
 - `game-core/month-run/runner.ts`: bounded pure execution to the next durable boundary.
 - `tests/support/month-run-reference-harness.ts`: test-only receipt and active-run reference store.
 
@@ -54,6 +54,9 @@ restore or create immutable checkpoint
         |
         v
 run scripted program using programCounter
+        |
+        v
+normalize runtime event DTO
         |
         v
 exhaustive transition reducer
@@ -88,6 +91,8 @@ Parsers require:
 - identifiers: 1–128 printable ASCII characters without whitespace or NUL;
 - outcome IDs, scopes and decision kinds: 1–256 printable ASCII characters without whitespace or NUL;
 - revisions and counters: non-negative safe integers.
+
+TypeScript brands are compile-time guidance, not a trust boundary. Every event entering the reducer is normalized and re-parsed at runtime before transition logic runs.
 
 ## Commands
 
@@ -191,6 +196,8 @@ type MonthRunCheckpointV1 = Readonly<{
 }>;
 ```
 
+`null` means absence for `terminalResult` and `terminalReason`. Therefore `complete.result` and every exceptional `reason` are `NonNullAuthoritativeJsonValue`; a forged runtime `null` is rejected as `InvalidCommand`.
+
 Hash:
 
 ```text
@@ -203,9 +210,15 @@ Restore verifies:
 - IDs, revisions, counters and authoritative values;
 - exact compatibility and supported determinism algorithms;
 - status, phase, pending-decision, terminal-result and terminal-reason consistency;
+- `runRevision === stepIndex`;
+- `programCounter <= stepIndex`;
+- only revision zero may be `ready`;
+- revision zero if and only if `previousCheckpointHash` is null;
 - unique outcome, decision and request IDs;
 - nested outcome and answer hashes;
 - outer checkpoint hash.
+
+Semantic shape is validated before the outer hash. A payload that is both semantically impossible and incorrectly hashed is classified as `InvalidCheckpoint`; a structurally valid payload with a mismatching outer fingerprint is `CorruptedCheckpoint`.
 
 `provisionalState` is never overwritten by an exceptional transition. Failure or recovery information is stored separately in `terminalReason`, preserving the state needed for diagnostics and recovery.
 
@@ -302,7 +315,7 @@ require-recovery
 abandon
 ```
 
-Expected malformed data is returned as typed `InvalidCommand`; only an unreachable exhaustive-switch defect may throw.
+Before state-machine dispatch, the reducer revalidates event type, branded IDs, running phase, RNG state, outcome tokens, decision fingerprint and authoritative payloads. Expected malformed data is returned as typed `InvalidCommand`; only an unreachable exhaustive-switch defect may throw.
 
 ## Pure runner
 
@@ -326,7 +339,10 @@ Rules:
 - do not call another step after a boundary;
 - a missing step before a boundary is a typed transition-budget failure;
 - budget exhaustion returns the original input checkpoint;
+- rejection by any scripted step returns the original input checkpoint and the rejection error;
 - `committed` requires persistence acknowledgement and is never produced by the scripted runner.
+
+Returning the runner input on rejection makes one `runUntilBoundary` call atomic to its caller. On resume, the accepted-answer checkpoint is the runner input, so a later rejected scripted step retains that durable answer without leaking a partially executed script.
 
 Function identities are never persisted. Only the versioned checkpoint and compatibility fingerprints cross the durable boundary.
 
@@ -338,7 +354,7 @@ The test-only harness stores:
 - one active run per save;
 - command receipts by request ID and canonical payload hash.
 
-It exposes `begin`, `resume` and `load` only to protocol tests. PR #18 replaces it with Rust and SQLite persistence.
+A rejected `begin` stores its receipt but does not persist a checkpoint or reserve the active-run slot. It exposes `begin`, `resume` and `load` only to protocol tests. PR #18 replaces it with Rust and SQLite persistence.
 
 ## Error model
 
@@ -366,7 +382,9 @@ TransitionBudgetExceeded
 4. Decision acceptance is crash-equivalent and does not consume a scripted step.
 5. Duplicate commands and outcomes preserve object identity, counters and RNG state.
 6. Recovery preserves provisional state and stores its reason separately.
-7. Repository format, lint, typecheck, build, Storybook and Rust gates remain green.
+7. Runtime event normalization rejects forged identifiers, phases, RNG states and null terminal payloads.
+8. Runner rejection is atomic and a rejected begin cannot create an active run.
+9. Repository format, lint, typecheck, build, Storybook and Rust gates remain green.
 
 ## Deferred to PR #18 and PR #19
 
@@ -380,10 +398,13 @@ TransitionBudgetExceeded
 
 - Closed discriminated unions and exhaustive handling.
 - Immutable checkpoint per accepted transition.
+- Runtime events are revalidated before state-machine dispatch.
 - `runRevision` and `stepIndex` increment exactly once per accepted transition.
 - `programCounter` advances only for consumed scripted steps.
 - Duplicate commands and outcomes leave checkpoint and RNG unchanged.
-- Exceptional transitions preserve provisional state.
+- Exceptional transitions preserve provisional state and require a non-null reason.
+- Checkpoint progress metadata is internally consistent.
+- A runner call is atomic on rejection.
 - Checkpoint self-verifies through canonical fingerprint.
 - Restore at every durable boundary reproduces the uninterrupted terminal hash.
 - No new runtime dependency.
