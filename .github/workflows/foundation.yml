@@ -3,7 +3,7 @@ name: foundation
 on:
   push:
     branches:
-      - agent/month-run-protocol
+      - agent/month-run-persistence
     paths:
       - "package.json"
       - "pnpm-lock.yaml"
@@ -23,7 +23,6 @@ on:
   pull_request:
     branches:
       - main
-      - agent/month-run-protocol
     paths:
       - "package.json"
       - "pnpm-lock.yaml"
@@ -56,11 +55,7 @@ jobs:
   full-verification:
     if: >-
       github.event_name == 'push' ||
-      (github.event.pull_request.head.repo.full_name == github.repository &&
-       github.actor == 'MrFr3di' &&
-       ((github.base_ref == 'main' && github.head_ref == 'agent/month-run-protocol') ||
-        (github.base_ref == 'agent/month-run-protocol' &&
-         github.head_ref == 'agent/month-run-persistence')))
+      (github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: self-hosted
     timeout-minutes: 45
     steps:
