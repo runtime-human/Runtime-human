@@ -42,11 +42,11 @@ on:
       - ".github/workflows/foundation.yml"
 
 concurrency:
-  group: foundation-${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.head.ref || github.ref_name }}
+  group: foundation-${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
 
 defaults:
   run:
@@ -67,7 +67,7 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           clean: true
-          persist-credentials: true
+          persist-credentials: false
           show-progress: false
       - name: Normalize tracked files
         run: |
@@ -93,22 +93,6 @@ jobs:
           cargo --version
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Generate documentation indexes
-        if: github.event_name == 'push'
-        run: node scripts/build-toc.mjs
-      - name: Commit generated documentation indexes
-        if: github.event_name == 'push'
-        run: |
-          $ErrorActionPreference = "Stop"
-          if (git diff --quiet -- docs/CATALOG.md docs/MANIFEST.jsonc) {
-            Write-Host "Documentation indexes are current."
-            exit 0
-          }
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/CATALOG.md docs/MANIFEST.jsonc
-          git commit -m "docs: refresh generated documentation indexes"
-          git push origin "HEAD:${{ github.ref_name }}"
       - name: Check documentation
         run: pnpm docs:check
       - name: Check formatting
