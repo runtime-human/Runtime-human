@@ -97,12 +97,12 @@ describe("MonthRun checkpoints", () => {
     });
   });
 
-  it("rejects a checkpoint changed without rehashing", () => {
+  it("rejects a semantically invalid checkpoint before outer hash verification", () => {
     const checkpoint = initialCheckpoint("run-2");
 
     expect(restoreMonthRunCheckpoint({ ...checkpoint, programCounter: 99 })).toMatchObject({
       kind: "error",
-      code: "CorruptedCheckpoint",
+      code: "InvalidCheckpoint",
     });
   });
 
