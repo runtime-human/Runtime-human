@@ -40,7 +40,7 @@ on:
       - ".github/workflows/foundation.yml"
 
 concurrency:
-  group: foundation-${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref }}
+  group: foundation-${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
 permissions:
@@ -107,6 +107,8 @@ jobs:
           path: ${{ runner.temp }}/foundation-format.patch
           if-no-files-found: error
           retention-days: 1
+      - name: Check documentation
+        run: pnpm docs:check
       - name: Check formatting
         run: pnpm fmt:check
       - name: Run fast lint
@@ -126,6 +128,23 @@ jobs:
       - name: Check Rust formatting
         run: pnpm rust:fmt:check
       - name: Check Rust workspace
-        run: pnpm rust:check
+        id: rust-check
+        continue-on-error: true
+        run: |
+          $logPath = Join-Path $env:RUNNER_TEMP "rust-check.log"
+          pnpm rust:check *>&1 | Tee-Object -FilePath $logPath
+          exit $LASTEXITCODE
+      - name: Upload Rust check log
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: foundation-rust-check-log
+          path: ${{ runner.temp }}/rust-check.log
+          if-no-files-found: error
+          retention-days: 1
       - name: Run Rust tests
+        if: steps.rust-check.outcome == 'success'
         run: pnpm rust:test
+      - name: Enforce Rust check result
+        if: steps.rust-check.outcome == 'failure'
+        run: throw "Rust workspace check failed; see foundation-rust-check-log artifact."
