@@ -90,8 +90,10 @@ export function createMonthRunReferenceHarness(input: CreateMonthRunReferenceHar
         rngState: command.initialRngState,
       });
       const runResult = runUntilBoundary(checkpoint, input.steps);
-      checkpoints.set(command.runId, runResult.checkpoint);
-      activeRunsBySave.set(command.saveId, command.runId);
+      if (runResult.kind === "boundary") {
+        checkpoints.set(command.runId, runResult.checkpoint);
+        activeRunsBySave.set(command.saveId, command.runId);
+      }
       return remember(command.requestId, payloadHash, runResult);
     },
 
