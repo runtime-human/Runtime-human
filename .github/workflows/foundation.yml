@@ -109,6 +109,22 @@ jobs:
       - name: Check Rust formatting
         run: pnpm rust:fmt:check
       - name: Check Rust workspace
-        run: pnpm rust:check
+        id: rust-check
+        continue-on-error: true
+        run: |
+          $logPath = Join-Path $env:RUNNER_TEMP "cargo-check.log"
+          pnpm rust:check *>&1 | Tee-Object -FilePath $logPath
+          exit $LASTEXITCODE
+      - name: Upload Rust compiler diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: persistence-cargo-check-log
+          path: ${{ runner.temp }}/cargo-check.log
+          if-no-files-found: error
+          retention-days: 1
+      - name: Enforce Rust compiler result
+        if: steps.rust-check.outcome == 'failure'
+        run: throw "Rust compilation failed; inspect persistence-cargo-check-log."
       - name: Run Rust tests
         run: pnpm rust:test
