@@ -10,6 +10,7 @@ declare const decisionIdBrand: unique symbol;
 declare const saveRevisionBrand: unique symbol;
 declare const monthRunRevisionBrand: unique symbol;
 
+export type NonNullAuthoritativeJsonValue = Exclude<AuthoritativeJsonValue, null>;
 export type RequestId = string & { readonly [requestIdBrand]: "RequestId" };
 export type SaveId = string & { readonly [saveIdBrand]: "SaveId" };
 export type MonthRunId = string & { readonly [monthRunIdBrand]: "MonthRunId" };
@@ -143,29 +144,29 @@ export type AcceptDecisionEventV1 = Readonly<{
 
 export type CompleteRunEventV1 = Readonly<{
   type: "complete";
-  result: AuthoritativeJsonValue;
+  result: NonNullAuthoritativeJsonValue;
 }>;
 
 export type MarkCommittedEventV1 = Readonly<{ type: "mark-committed" }>;
 
 export type FailRunEventV1 = Readonly<{
   type: "fail";
-  reason: AuthoritativeJsonValue;
+  reason: NonNullAuthoritativeJsonValue;
 }>;
 
 export type MarkIncompatibleEventV1 = Readonly<{
   type: "mark-incompatible";
-  reason: AuthoritativeJsonValue;
+  reason: NonNullAuthoritativeJsonValue;
 }>;
 
 export type RequireRecoveryEventV1 = Readonly<{
   type: "require-recovery";
-  reason: AuthoritativeJsonValue;
+  reason: NonNullAuthoritativeJsonValue;
 }>;
 
 export type AbandonRunEventV1 = Readonly<{
   type: "abandon";
-  reason: AuthoritativeJsonValue;
+  reason: NonNullAuthoritativeJsonValue;
 }>;
 
 export type MonthRunEventV1 =
