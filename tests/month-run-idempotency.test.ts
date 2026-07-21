@@ -43,9 +43,6 @@ const steps: readonly MonthRunStep[] = [
       answerSchemaFingerprint: fingerprint("answer-schema", 1),
     },
   }),
-  () => {
-    throw new Error("accepted decision is persisted outside scripted steps");
-  },
   () => ({ type: "complete", result: { quality: 8 } }),
 ];
 
@@ -105,13 +102,16 @@ describe("MonthRun reference idempotency", () => {
       saveRevision: parseSaveRevision(4),
     });
     const started = harness.begin(beginCommand());
-    expect(requireCheckpoint(started).status).toBe("suspended");
+    const suspended = requireCheckpoint(started);
+    expect(suspended.status).toBe("suspended");
+    expect(suspended.programCounter).toBe(2);
 
     const first = harness.resume(resumeCommand());
     const duplicate = harness.resume(resumeCommand());
     const completed = requireCheckpoint(first);
 
     expect(completed.status).toBe("completed");
+    expect(completed.programCounter).toBe(3);
     expect(duplicate).toBe(first);
     expect(harness.load(parseMonthRunId("run-idempotency"))).toBe(completed);
   });
