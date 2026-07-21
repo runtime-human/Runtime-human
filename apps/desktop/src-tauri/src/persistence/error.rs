@@ -179,7 +179,7 @@ pub(crate) enum PersistenceErrorCode {
     RecoveryRequired,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct PersistenceErrorV1 {
     schema_version: &'static str,
