@@ -96,6 +96,17 @@ describe("MonthRun reference idempotency", () => {
     }
   });
 
+  it("does not create an active run when begin execution is rejected", () => {
+    const harness = createMonthRunReferenceHarness({
+      steps: [() => ({ type: "complete", result: { impossible: true } })],
+      saveRevision: parseSaveRevision(4),
+    });
+    const result = harness.begin(beginCommand());
+
+    expect(result.kind).toBe("rejected");
+    expect(harness.load(parseMonthRunId("run-idempotency"))).toBeNull();
+  });
+
   it("persists an accepted answer once and returns the same resume receipt", () => {
     const harness = createMonthRunReferenceHarness({
       steps,
