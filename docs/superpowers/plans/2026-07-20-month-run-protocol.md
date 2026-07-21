@@ -4,7 +4,7 @@ type: plan
 status: active
 canon: false
 depends_on: [ADR-005, ADR-007, ADR-010, ADR-015]
-updated: 2026-07-20
+updated: 2026-07-21
 ---
 
 # MonthRun Protocol Implementation Plan
@@ -32,7 +32,7 @@ Tests are focused executable gates for these contracts, not a replacement for im
 game-schema contracts
         |
         v
-game-core checkpoint / reducer / runner
+game-core checkpoint / runtime event normalization / reducer / runner
         |
         v
 typed durable boundaries
@@ -79,7 +79,7 @@ require-recovery
 abandon
 ```
 
-Exceptional transitions preserve `provisionalState` and write their reason to `terminalReason`.
+Exceptional transitions preserve `provisionalState` and write a non-null reason to `terminalReason`. `null` is reserved for absence in terminal fields.
 
 ## File map
 
@@ -93,6 +93,7 @@ Exceptional transitions preserve `provisionalState` and write their reason to `t
 - `packages/game-core/src/month-run/runner.ts`
 - `packages/game-core/src/determinism/authoritative-json.ts`
 - `packages/game-core/src/index.ts`
+- `apps/desktop/src-tauri/build.rs`
 
 ### Focused verification
 
@@ -122,6 +123,7 @@ Exceptional transitions preserve `provisionalState` and write their reason to `t
 - [x] Add begin/resume command envelopes.
 - [x] Add closed event, status, phase, result and error unions.
 - [x] Restrict protocol identifiers to bounded printable ASCII.
+- [x] Reserve `null` for absent terminal values through `NonNullAuthoritativeJsonValue` event payloads.
 
 ### 2. Checkpoint boundary
 
@@ -135,6 +137,8 @@ Exceptional transitions preserve `provisionalState` and write their reason to `t
 - [x] Add golden V1 checkpoint hash.
 - [x] Add `programCounter` independently from `stepIndex`.
 - [x] Add separate `terminalReason` without overwriting provisional state.
+- [x] Validate revision, durable-step, program-counter and hash-link progress invariants.
+- [x] Require terminal result/reason for the statuses that semantically own them.
 
 ### 3. Transition reducer
 
@@ -147,12 +151,14 @@ Exceptional transitions preserve `provisionalState` and write their reason to `t
 - [x] Return malformed runtime data as typed `InvalidCommand`.
 - [x] Permit `completed -> recovery-required` while preserving recovery state.
 - [x] Advance the scripted program cursor only for consumed program steps.
+- [x] Normalize and revalidate IDs, phases, RNG state, fingerprints and authoritative payloads before dispatch.
 
 ### 4. Bounded runner
 
 - [x] Select the next function through `steps[programCounter]`.
 - [x] Stop immediately at suspended, completed or exceptional boundaries.
 - [x] Return the original checkpoint when transition budget is exceeded.
+- [x] Return the original runner input when a later scripted transition is rejected.
 - [x] Reject a missing scripted step before a boundary.
 - [x] Treat duplicate scripted output as a non-progress failure.
 - [x] Resume from the same scripted instruction after accepting a decision.
@@ -165,6 +171,7 @@ Exceptional transitions preserve `provisionalState` and write their reason to `t
 - [x] Return stored results for identical retries.
 - [x] Reject request ID reuse with another payload.
 - [x] Check save and run revisions before execution.
+- [x] Avoid persisting or reserving an active run after rejected begin execution.
 - [x] Keep the harness test-only and outside production exports.
 
 ### 6. CI correction
@@ -175,6 +182,8 @@ Exceptional transitions preserve `provisionalState` and write their reason to `t
 - [x] Normalize tracked files before verification.
 - [x] Move the trusted docs gate away from exhausted hosted minutes.
 - [x] Prevent self-hosted execution for untrusted fork pull requests.
+- [x] Normalize push/PR concurrency keys to avoid duplicate jobs.
+- [x] Make the Tauri Windows resource icon deterministic from source so `cargo check` works on the Windows runner.
 
 ## Remaining PR #17 work
 
@@ -182,9 +191,10 @@ Exceptional transitions preserve `provisionalState` and write their reason to `t
 
 - [x] Update the canonical design for `stepIndex` and `programCounter`.
 - [x] Document `terminalReason` and provisional-state preservation.
-- [ ] Confirm no remaining production or fixture code indexes scripted steps by `stepIndex`.
-- [ ] Confirm checkpoint restore rejects the pre-correction field shape.
-- [ ] Confirm public package exports do not expose the low-level rehash helper.
+- [x] Confirm no remaining production or fixture code indexes scripted steps by `stepIndex`.
+- [x] Confirm checkpoint restore rejects the pre-correction field shape.
+- [x] Confirm public package exports do not expose the low-level rehash helper.
+- [x] Document runtime DTO normalization, progress invariants and atomic runner rejection.
 
 ### 8. Final verification
 
@@ -203,9 +213,10 @@ The gate includes formatting, lint, typecheck, package-boundary checks, focused 
 
 ### 9. Review and merge
 
-- [ ] Perform final adversarial review of schema, reducer, runner and recovery semantics.
-- [ ] Review all open automated comments and resolve actionable findings.
-- [ ] Update the PR description with final cursor and recovery semantics.
+- [x] Perform internal adversarial review of schema, reducer, runner and recovery semantics.
+- [x] Review existing inline automated comments; no unresolved review thread remains.
+- [ ] Trigger and inspect the final external automated review on the ready PR.
+- [ ] Update the PR description with final cursor, validation and recovery semantics.
 - [ ] Mark PR ready only after final verification is green.
 - [ ] Squash merge PR #17 into `main`.
 
@@ -226,17 +237,19 @@ PR #18 owns durable persistence. It must not redesign the pure protocol without 
 
 - CAS checks both `runRevision` and `checkpointHash`.
 - The persisted checkpoint JSON contains both `stepIndex` and `programCounter`.
-- One active MonthRun exists per save.
+- A restored checkpoint must pass all PR #17 progress and status invariants before use.
+- One active MonthRun exists per save; rejected begin execution does not reserve it.
 - Request receipt and command result are committed in the same transaction as the checkpoint mutation.
 - Final save update, committed MonthRun state, journal entry and receipt are one transaction.
 - Identical retries return the stored result without re-running the program or RNG.
 - Same request ID with a different payload returns `RequestPayloadConflict`.
+- Typed Tauri DTOs still pass through the PR #17 runtime event normalization boundary.
 
 ### Recovery invariants
 
 - Restore always runs the PR #17 checkpoint validator before exposing a run.
 - A newer checkpoint or save schema opens in read-only incompatible mode.
-- Exceptional checkpoints retain provisional state and expose `terminalReason`.
+- Exceptional checkpoints retain provisional state and expose non-null `terminalReason`.
 - Hash-chain validation across persisted revisions belongs to the durable journal.
 - Backup before migration uses SQLite Online Backup API rather than raw file copy.
 
@@ -260,7 +273,9 @@ This order intentionally prioritizes the working persistence path. Verification 
 PR #17 is complete when:
 
 - the checkpoint contract is unambiguous;
+- runtime event DTOs are revalidated before transition logic;
 - scripted execution cannot skip a step after an accepted answer;
+- a failed scripted run cannot leak partial state;
 - recovery cannot erase provisional state;
 - the final head passes full self-hosted verification;
 - documentation matches the implementation;
