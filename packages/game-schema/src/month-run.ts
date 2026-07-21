@@ -96,6 +96,7 @@ export type MonthRunCheckpointV1 = Readonly<{
   status: MonthRunStatus;
   phase: MonthRunPhase;
   stepIndex: number;
+  programCounter: number;
   plan: AuthoritativeJsonValue;
   compatibility: MonthRunCompatibilityV1;
   rngState: SerializedXoshiro256State;
@@ -104,6 +105,7 @@ export type MonthRunCheckpointV1 = Readonly<{
   pendingDecision: PendingDecisionV1 | null;
   acceptedDecisions: readonly AcceptedDecisionV1[];
   terminalResult: AuthoritativeJsonValue | null;
+  terminalReason: AuthoritativeJsonValue | null;
   previousCheckpointHash: Fingerprint | null;
   checkpointHash: Fingerprint;
 }>;
