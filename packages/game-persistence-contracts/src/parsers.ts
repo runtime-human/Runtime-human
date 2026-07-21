@@ -11,7 +11,6 @@ import {
   MAX_CANONICAL_PAYLOAD_BYTES,
   type BeginPersistedMonthRunCommandV1,
   type CanonicalPayloadV1,
-  type CommitPersistedMonthRunCommandV1,
   type CreateBackupCommandV1,
   type CreateSaveCommandV1,
   type DurableMonthRunStatus,
@@ -76,18 +75,6 @@ const STORE_BOUNDARY_KEYS = [
   "status",
   "checkpoint",
 ] as const;
-const COMMIT_MONTH_RUN_KEYS = [
-  "schemaVersion",
-  "requestId",
-  "saveId",
-  "runId",
-  "expectedSaveRevision",
-  "expectedRunRevision",
-  "expectedCheckpointPayloadSha256",
-  "expectedCheckpointHash",
-  "snapshot",
-  "result",
-] as const;
 const CREATE_BACKUP_KEYS = ["schemaVersion", "requestId", "saveId"] as const;
 const RECOVERY_STATUS_KEYS = ["schemaVersion"] as const;
 
@@ -110,20 +97,17 @@ export function parseSha256Hex(value: unknown, name = "SHA-256"): Sha256Hex {
 }
 
 export function parseFingerprint(value: unknown, name = "fingerprint"): Fingerprint {
-  return parseSha256Hex(value, name) as Fingerprint;
+  return parseSha256Hex(value, name) as unknown as Fingerprint;
 }
 
 export function parseCanonicalPayload(value: unknown): CanonicalPayloadV1 {
-  const record = expectRecord(value, "canonical payload");
-  assertExactKeys(record, CANONICAL_PAYLOAD_KEYS, "canonical payload");
+  const record = exactRecord(value, CANONICAL_PAYLOAD_KEYS, "canonical payload");
   requireSchema(record.schemaVersion, "canonical-payload-v1", "canonical payload");
-
   const json = expectString(record.json, "canonical payload JSON");
   if (utf8ByteLength(json) > MAX_CANONICAL_PAYLOAD_BYTES) {
     throw new RangeError(`Canonical payload byte limit is ${MAX_CANONICAL_PAYLOAD_BYTES}`);
   }
   parseJson(json, "canonical payload JSON");
-
   return {
     schemaVersion: "canonical-payload-v1",
     json,
@@ -149,7 +133,10 @@ export function parseCreateSaveCommand(value: unknown): CreateSaveCommandV1 {
 export function parseLoadSaveQuery(value: unknown): LoadSaveQueryV1 {
   const record = exactRecord(value, LOAD_SAVE_KEYS, "load save query");
   requireSchema(record.schemaVersion, "load-save-query-v1", "load save query");
-  return { schemaVersion: "load-save-query-v1", saveId: parseSaveId(record.saveId) };
+  return {
+    schemaVersion: "load-save-query-v1",
+    saveId: parseSaveId(record.saveId),
+  };
 }
 
 export function parseBeginPersistedMonthRunCommand(
@@ -169,11 +156,8 @@ export function parseBeginPersistedMonthRunCommand(
   const compatibility = parseCanonicalPayload(record.compatibility);
   const identity = parsePersistenceCheckpointIdentity(checkpoint.json);
 
-  if (identity.saveId !== saveId) {
-    throw new TypeError("MonthRun checkpoint saveId must match the begin command");
-  }
-  if (identity.runId !== runId) {
-    throw new TypeError("MonthRun checkpoint runId must match the begin command");
+  if (identity.saveId !== saveId || identity.runId !== runId) {
+    throw new TypeError("MonthRun checkpoint identity must match the begin command");
   }
   if (identity.baseSaveRevision !== expectedSaveRevision) {
     throw new TypeError("MonthRun checkpoint baseSaveRevision must match expectedSaveRevision");
@@ -202,7 +186,10 @@ export function parseBeginPersistedMonthRunCommand(
 export function parseLoadMonthRunQuery(value: unknown): LoadMonthRunQueryV1 {
   const record = exactRecord(value, LOAD_MONTH_RUN_KEYS, "load MonthRun query");
   requireSchema(record.schemaVersion, "load-month-run-query-v1", "load MonthRun query");
-  return { schemaVersion: "load-month-run-query-v1", runId: parseMonthRunId(record.runId) };
+  return {
+    schemaVersion: "load-month-run-query-v1",
+    runId: parseMonthRunId(record.runId),
+  };
 }
 
 export function parseLoadActiveMonthRunQuery(value: unknown): LoadActiveMonthRunQueryV1 {
@@ -218,7 +205,9 @@ export function parseLoadActiveMonthRunQuery(value: unknown): LoadActiveMonthRun
   };
 }
 
-export function parseStoreMonthRunBoundaryCommand(value: unknown): StoreMonthRunBoundaryCommandV1 {
+export function parseStoreMonthRunBoundaryCommand(
+  value: unknown,
+): StoreMonthRunBoundaryCommandV1 {
   const record = exactRecord(value, STORE_BOUNDARY_KEYS, "store MonthRun boundary command");
   requireSchema(
     record.schemaVersion,
@@ -245,17 +234,11 @@ export function parseStoreMonthRunBoundaryCommand(value: unknown): StoreMonthRun
   const status = parseStorableBoundaryStatus(record.status);
   const checkpoint = parseCanonicalPayload(record.checkpoint);
   const identity = parsePersistenceCheckpointIdentity(checkpoint.json);
-  if (identity.saveId !== saveId) {
-    throw new TypeError("MonthRun checkpoint saveId must match the boundary command");
+  if (identity.saveId !== saveId || identity.runId !== runId) {
+    throw new TypeError("MonthRun checkpoint identity must match the boundary command");
   }
-  if (identity.runId !== runId) {
-    throw new TypeError("MonthRun checkpoint runId must match the boundary command");
-  }
-  if (identity.runRevision !== runRevision) {
-    throw new TypeError("MonthRun checkpoint runRevision must match the boundary command");
-  }
-  if (identity.status !== status) {
-    throw new TypeError("MonthRun checkpoint status must match the boundary command");
+  if (identity.runRevision !== runRevision || identity.status !== status) {
+    throw new TypeError("MonthRun checkpoint progress must match the boundary command");
   }
 
   return {
@@ -269,35 +252,6 @@ export function parseStoreMonthRunBoundaryCommand(value: unknown): StoreMonthRun
     runRevision,
     status,
     checkpoint,
-  };
-}
-
-export function parseCommitPersistedMonthRunCommand(
-  value: unknown,
-): CommitPersistedMonthRunCommandV1 {
-  const record = exactRecord(value, COMMIT_MONTH_RUN_KEYS, "commit persisted MonthRun command");
-  requireSchema(
-    record.schemaVersion,
-    "commit-persisted-month-run-command-v1",
-    "commit persisted MonthRun command",
-  );
-  return {
-    schemaVersion: "commit-persisted-month-run-command-v1",
-    requestId: parseRequestId(record.requestId),
-    saveId: parseSaveId(record.saveId),
-    runId: parseMonthRunId(record.runId),
-    expectedSaveRevision: parseSaveRevision(record.expectedSaveRevision),
-    expectedRunRevision: parseMonthRunRevision(record.expectedRunRevision),
-    expectedCheckpointPayloadSha256: parseSha256Hex(
-      record.expectedCheckpointPayloadSha256,
-      "expected checkpoint payload sha256",
-    ),
-    expectedCheckpointHash: parseFingerprint(
-      record.expectedCheckpointHash,
-      "expected checkpoint hash",
-    ),
-    snapshot: parseCanonicalPayload(record.snapshot),
-    result: parseCanonicalPayload(record.result),
   };
 }
 
@@ -378,6 +332,7 @@ function jsonValuesEqual(left: unknown, right: unknown): boolean {
   if (left === null || right === null || typeof left !== "object" || typeof right !== "object") {
     return false;
   }
+
   const leftRecord = left as Readonly<Record<string, unknown>>;
   const rightRecord = right as Readonly<Record<string, unknown>>;
   const leftKeys = Object.keys(leftRecord).sort();
@@ -385,8 +340,7 @@ function jsonValuesEqual(left: unknown, right: unknown): boolean {
   return (
     leftKeys.length === rightKeys.length &&
     leftKeys.every(
-      (key, index) =>
-        key === rightKeys[index] && jsonValuesEqual(leftRecord[key], rightRecord[key]),
+      (key, index) => key === rightKeys[index] && jsonValuesEqual(leftRecord[key], rightRecord[key]),
     )
   );
 }
