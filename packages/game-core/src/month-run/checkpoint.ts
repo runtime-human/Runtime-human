@@ -220,21 +220,32 @@ function parseCheckpoint(value: AuthoritativeJsonValue): MonthRunCheckpointV1 {
     throw new TypeError("Unknown MonthRun status or phase");
   }
 
+  const runRevision = parseMonthRunRevision(record.runRevision);
+  const stepIndex = parseCounter(record.stepIndex, "stepIndex");
+  const programCounter = parseCounter(record.programCounter, "programCounter");
+  const previousCheckpointHash = parseNullableFingerprint(record.previousCheckpointHash);
   const pendingDecision = parsePendingDecision(record.pendingDecision);
   const terminalResult = expectNullableAuthoritative(record.terminalResult, "terminalResult");
   const terminalReason = expectNullableAuthoritative(record.terminalReason, "terminalReason");
   validateStatusShape(status, phase, pendingDecision, terminalResult, terminalReason);
+  validateCheckpointProgress(
+    status,
+    runRevision,
+    stepIndex,
+    programCounter,
+    previousCheckpointHash,
+  );
 
   return {
     schemaVersion: "month-run-checkpoint-v1",
     runId: parseMonthRunId(record.runId),
     saveId: parseSaveId(record.saveId),
     baseSaveRevision: parseSaveRevision(record.baseSaveRevision),
-    runRevision: parseMonthRunRevision(record.runRevision),
+    runRevision,
     status,
     phase,
-    stepIndex: parseCounter(record.stepIndex, "stepIndex"),
-    programCounter: parseCounter(record.programCounter, "programCounter"),
+    stepIndex,
+    programCounter,
     plan: expectAuthoritative(record.plan, "plan"),
     compatibility: parseCompatibility(record.compatibility),
     rngState: parseSerializedXoshiro256State(record.rngState),
@@ -244,7 +255,7 @@ function parseCheckpoint(value: AuthoritativeJsonValue): MonthRunCheckpointV1 {
     acceptedDecisions: parseAcceptedDecisions(record.acceptedDecisions),
     terminalResult,
     terminalReason,
-    previousCheckpointHash: parseNullableFingerprint(record.previousCheckpointHash),
+    previousCheckpointHash,
     checkpointHash: parseFingerprint(record.checkpointHash, "checkpointHash"),
   };
 }
@@ -388,11 +399,38 @@ function validateStatusShape(
   if (status !== "completed" && status !== "committed" && terminalResult !== null) {
     throw new TypeError("Non-completed MonthRun cannot contain a terminal result");
   }
-  if (
-    (status === "ready" || status === "running" || status === "suspended" || status === "completed" || status === "committed") &&
-    terminalReason !== null
-  ) {
+
+  const exceptional =
+    status === "failed" ||
+    status === "incompatible" ||
+    status === "recovery-required" ||
+    status === "abandoned";
+  if (exceptional && terminalReason === null) {
+    throw new TypeError("Exceptional MonthRun requires a terminal reason");
+  }
+  if (!exceptional && terminalReason !== null) {
     throw new TypeError("Non-exceptional MonthRun cannot contain a terminal reason");
+  }
+}
+
+function validateCheckpointProgress(
+  status: MonthRunStatus,
+  runRevision: number,
+  stepIndex: number,
+  programCounter: number,
+  previousCheckpointHash: Fingerprint | null,
+): void {
+  if (runRevision !== stepIndex) {
+    throw new TypeError("MonthRun revision must equal its durable step index");
+  }
+  if (programCounter > stepIndex) {
+    throw new TypeError("MonthRun program counter cannot exceed its durable step index");
+  }
+  if ((status === "ready") !== (runRevision === 0)) {
+    throw new TypeError("Only the initial MonthRun checkpoint may be ready");
+  }
+  if ((runRevision === 0) !== (previousCheckpointHash === null)) {
+    throw new TypeError("MonthRun hash linkage is inconsistent with its revision");
   }
 }
 
