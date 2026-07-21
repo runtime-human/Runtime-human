@@ -25,6 +25,7 @@ import { canonicalizeAuthoritative } from "../determinism/authoritative-json";
 import { fingerprint } from "../determinism/hash";
 
 const FINGERPRINT_PATTERN = /^[0-9a-f]{64}$/u;
+const TOKEN_PATTERN = /^[!-~]{1,256}$/u;
 const STATUSES = new Set<MonthRunStatus>([
   "ready",
   "running",
@@ -52,6 +53,7 @@ const CHECKPOINT_KEYS = [
   "status",
   "phase",
   "stepIndex",
+  "programCounter",
   "plan",
   "compatibility",
   "rngState",
@@ -60,6 +62,7 @@ const CHECKPOINT_KEYS = [
   "pendingDecision",
   "acceptedDecisions",
   "terminalResult",
+  "terminalReason",
   "previousCheckpointHash",
   "checkpointHash",
 ] as const;
@@ -157,6 +160,7 @@ export function createMonthRunCheckpoint(
     status: "ready",
     phase: "initialize",
     stepIndex: 0,
+    programCounter: 0,
     plan: snapshotAuthoritativeValue(input.plan),
     compatibility: snapshotCompatibility(input.compatibility),
     rngState: parseSerializedXoshiro256State(input.rngState),
@@ -165,6 +169,7 @@ export function createMonthRunCheckpoint(
     pendingDecision: null,
     acceptedDecisions: [],
     terminalResult: null,
+    terminalReason: null,
     previousCheckpointHash: null,
   });
 }
@@ -216,8 +221,9 @@ function parseCheckpoint(value: AuthoritativeJsonValue): MonthRunCheckpointV1 {
   }
 
   const pendingDecision = parsePendingDecision(record.pendingDecision);
-  const terminalResult = record.terminalResult ?? null;
-  validateStatusShape(status, phase, pendingDecision, terminalResult);
+  const terminalResult = expectNullableAuthoritative(record.terminalResult, "terminalResult");
+  const terminalReason = expectNullableAuthoritative(record.terminalReason, "terminalReason");
+  validateStatusShape(status, phase, pendingDecision, terminalResult, terminalReason);
 
   return {
     schemaVersion: "month-run-checkpoint-v1",
@@ -227,7 +233,8 @@ function parseCheckpoint(value: AuthoritativeJsonValue): MonthRunCheckpointV1 {
     runRevision: parseMonthRunRevision(record.runRevision),
     status,
     phase,
-    stepIndex: parseStepIndex(record.stepIndex),
+    stepIndex: parseCounter(record.stepIndex, "stepIndex"),
+    programCounter: parseCounter(record.programCounter, "programCounter"),
     plan: expectAuthoritative(record.plan, "plan"),
     compatibility: parseCompatibility(record.compatibility),
     rngState: parseSerializedXoshiro256State(record.rngState),
@@ -235,7 +242,8 @@ function parseCheckpoint(value: AuthoritativeJsonValue): MonthRunCheckpointV1 {
     materializedOutcomes: parseOutcomes(record.materializedOutcomes),
     pendingDecision,
     acceptedDecisions: parseAcceptedDecisions(record.acceptedDecisions),
-    terminalResult: expectNullableAuthoritative(terminalResult, "terminalResult"),
+    terminalResult,
+    terminalReason,
     previousCheckpointHash: parseNullableFingerprint(record.previousCheckpointHash),
     checkpointHash: parseFingerprint(record.checkpointHash, "checkpointHash"),
   };
@@ -356,7 +364,8 @@ function validateStatusShape(
   status: MonthRunStatus,
   phase: MonthRunPhase,
   pendingDecision: ReturnType<typeof parsePendingDecision>,
-  terminalResult: AuthoritativeJsonValue,
+  terminalResult: AuthoritativeJsonValue | null,
+  terminalReason: AuthoritativeJsonValue | null,
 ): void {
   if (status === "ready" && phase !== "initialize") {
     throw new TypeError("Ready MonthRun must be in initialize phase");
@@ -379,11 +388,17 @@ function validateStatusShape(
   if (status !== "completed" && status !== "committed" && terminalResult !== null) {
     throw new TypeError("Non-completed MonthRun cannot contain a terminal result");
   }
+  if (
+    (status === "ready" || status === "running" || status === "suspended" || status === "completed" || status === "committed") &&
+    terminalReason !== null
+  ) {
+    throw new TypeError("Non-exceptional MonthRun cannot contain a terminal reason");
+  }
 }
 
-function parseStepIndex(value: AuthoritativeJsonValue | undefined): number {
+function parseCounter(value: AuthoritativeJsonValue | undefined, name: string): number {
   if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 0) {
-    throw new TypeError("stepIndex must be a non-negative safe integer");
+    throw new TypeError(`${name} must be a non-negative safe integer`);
   }
   return value;
 }
@@ -403,8 +418,8 @@ function parseNullableFingerprint(value: AuthoritativeJsonValue | undefined): Fi
 
 function parseToken(value: AuthoritativeJsonValue | undefined, name: string): string {
   const token = expectString(value, name);
-  if (token.length > 256 || token.includes("\0")) {
-    throw new TypeError(`${name} must contain 1-256 characters without NUL`);
+  if (!TOKEN_PATTERN.test(token)) {
+    throw new TypeError(`${name} must contain 1-256 printable ASCII characters without whitespace`);
   }
   return token;
 }
