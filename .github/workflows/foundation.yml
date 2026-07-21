@@ -91,5 +91,25 @@ jobs:
           cargo --version
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Run full verification
-        run: pnpm verify
+      - name: Check formatting
+        run: pnpm fmt:check
+      - name: Run fast lint
+        run: pnpm lint
+      - name: Run typecheck
+        run: pnpm typecheck
+      - name: Check package boundaries
+        run: pnpm check:boundaries
+      - name: Run focused test suite
+        run: pnpm test
+      - name: Run type-aware lint
+        run: pnpm lint:type-aware
+      - name: Build renderer
+        run: pnpm build
+      - name: Build Storybook
+        run: pnpm storybook:build
+      - name: Check Rust formatting
+        run: cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all -- --check
+      - name: Check Rust workspace
+        run: cargo check --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
+      - name: Run Rust tests
+        run: cargo test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
