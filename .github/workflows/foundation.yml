@@ -95,7 +95,23 @@ jobs:
       - name: Run fast lint
         run: pnpm lint
       - name: Run typecheck
-        run: pnpm typecheck
+        id: typecheck
+        continue-on-error: true
+        run: |
+          $logPath = Join-Path $env:RUNNER_TEMP "typecheck.log"
+          pnpm typecheck *>&1 | Tee-Object -FilePath $logPath
+          exit $LASTEXITCODE
+      - name: Upload typecheck diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: persistence-typecheck-log
+          path: ${{ runner.temp }}/typecheck.log
+          if-no-files-found: error
+          retention-days: 1
+      - name: Enforce typecheck result
+        if: steps.typecheck.outcome == 'failure'
+        run: throw "TypeScript typecheck failed; inspect persistence-typecheck-log."
       - name: Check package boundaries
         run: pnpm boundaries:check
       - name: Run focused test suite
