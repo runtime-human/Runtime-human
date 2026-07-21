@@ -30,10 +30,7 @@ export type DurableMonthRunStatus =
   | "recovery-required"
   | "abandoned";
 
-export type StorableMonthRunBoundaryStatus = Exclude<
-  DurableMonthRunStatus,
-  "ready" | "committed"
->;
+export type StorableMonthRunBoundaryStatus = Exclude<DurableMonthRunStatus, "ready" | "committed">;
 
 export type CreateSaveCommandV1 = Readonly<{
   schemaVersion: "create-save-command-v1";

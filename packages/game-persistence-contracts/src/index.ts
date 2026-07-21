@@ -1,7 +1,4 @@
-export {
-  MAX_CANONICAL_PAYLOAD_BYTES,
-  MAX_PERSISTENCE_RESULT_BYTES,
-} from "./contracts";
+export { MAX_CANONICAL_PAYLOAD_BYTES, MAX_PERSISTENCE_RESULT_BYTES } from "./contracts";
 export type {
   BackupMetadataV1,
   BeginPersistedMonthRunAcceptedV1,
@@ -29,9 +26,7 @@ export type {
   StoreMonthRunBoundaryAcceptedV1,
   StoreMonthRunBoundaryCommandV1,
 } from "./contracts";
-export {
-  parseCommitPersistedMonthRunCommand,
-} from "./commit";
+export { parseCommitPersistedMonthRunCommand } from "./commit";
 export type { CommitPersistedMonthRunCommandV1 } from "./commit";
 export {
   parseBeginPersistedMonthRunCommand,

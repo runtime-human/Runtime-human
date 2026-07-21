@@ -138,7 +138,10 @@ export function parseCreateSaveCommand(value: unknown): CreateSaveCommandV1 {
     schemaVersion: "create-save-command-v1",
     requestId: parseRequestId(record.requestId),
     saveId: parseSaveId(record.saveId),
-    saveSchemaFingerprint: parseFingerprint(record.saveSchemaFingerprint, "save schema fingerprint"),
+    saveSchemaFingerprint: parseFingerprint(
+      record.saveSchemaFingerprint,
+      "save schema fingerprint",
+    ),
     snapshot: parseCanonicalPayload(record.snapshot),
   };
 }
@@ -215,9 +218,7 @@ export function parseLoadActiveMonthRunQuery(value: unknown): LoadActiveMonthRun
   };
 }
 
-export function parseStoreMonthRunBoundaryCommand(
-  value: unknown,
-): StoreMonthRunBoundaryCommandV1 {
+export function parseStoreMonthRunBoundaryCommand(value: unknown): StoreMonthRunBoundaryCommandV1 {
   const record = exactRecord(value, STORE_BOUNDARY_KEYS, "store MonthRun boundary command");
   requireSchema(
     record.schemaVersion,
@@ -291,7 +292,10 @@ export function parseCommitPersistedMonthRunCommand(
       record.expectedCheckpointPayloadSha256,
       "expected checkpoint payload sha256",
     ),
-    expectedCheckpointHash: parseFingerprint(record.expectedCheckpointHash, "expected checkpoint hash"),
+    expectedCheckpointHash: parseFingerprint(
+      record.expectedCheckpointHash,
+      "expected checkpoint hash",
+    ),
     snapshot: parseCanonicalPayload(record.snapshot),
     result: parseCanonicalPayload(record.result),
   };
@@ -309,11 +313,7 @@ export function parseCreateBackupCommand(value: unknown): CreateBackupCommandV1 
 
 export function parseGetRecoveryStatusQuery(value: unknown): GetRecoveryStatusQueryV1 {
   const record = exactRecord(value, RECOVERY_STATUS_KEYS, "get recovery status query");
-  requireSchema(
-    record.schemaVersion,
-    "get-recovery-status-query-v1",
-    "get recovery status query",
-  );
+  requireSchema(record.schemaVersion, "get-recovery-status-query-v1", "get recovery status query");
   return { schemaVersion: "get-recovery-status-query-v1" };
 }
 
@@ -385,7 +385,8 @@ function jsonValuesEqual(left: unknown, right: unknown): boolean {
   return (
     leftKeys.length === rightKeys.length &&
     leftKeys.every(
-      (key, index) => key === rightKeys[index] && jsonValuesEqual(leftRecord[key], rightRecord[key]),
+      (key, index) =>
+        key === rightKeys[index] && jsonValuesEqual(leftRecord[key], rightRecord[key]),
     )
   );
 }
