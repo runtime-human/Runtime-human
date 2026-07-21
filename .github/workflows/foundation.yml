@@ -42,7 +42,7 @@ on:
       - ".github/workflows/foundation.yml"
 
 concurrency:
-  group: foundation-${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref_name }}
+  group: foundation-${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
 permissions:
