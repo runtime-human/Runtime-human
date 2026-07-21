@@ -2,6 +2,8 @@ name: foundation
 
 on:
   push:
+    branches:
+      - agent/month-run-protocol
     paths:
       - "package.json"
       - "pnpm-lock.yaml"
@@ -40,7 +42,8 @@ concurrency:
   group: foundation-${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref }}
   cancel-in-progress: true
 
-permissions: {}
+permissions:
+  contents: read
 
 defaults:
   run:
@@ -49,47 +52,18 @@ defaults:
 jobs:
   full-verification:
     if: >-
-      (github.event_name == 'push' && github.ref == 'refs/heads/agent/month-run-protocol') ||
-      (github.event_name == 'pull_request' &&
-       github.event.pull_request.head.repo.full_name == github.repository &&
-       github.base_ref == 'agent/month-run-protocol' &&
+      github.event_name == 'push' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
        github.head_ref == 'agent/month-run-persistence' &&
        github.actor == 'MrFr3di')
-    permissions:
-      contents: read
-      statuses: write
     runs-on: self-hosted
     timeout-minutes: 45
-    env:
-      STATUS_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           clean: true
           persist-credentials: false
-          ref: ${{ env.STATUS_SHA }}
           show-progress: false
-      - name: Publish pending verification status
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          $ErrorActionPreference = "Stop"
-          $body = @{
-            state = "pending"
-            context = "foundation/self-hosted"
-            description = "Self-hosted Windows verification is running"
-            target_url = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID"
-          } | ConvertTo-Json
-          Invoke-RestMethod `
-            -Method Post `
-            -Uri "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/statuses/$env:STATUS_SHA" `
-            -Headers @{
-              Authorization = "Bearer $env:GITHUB_TOKEN"
-              Accept = "application/vnd.github+json"
-              "X-GitHub-Api-Version" = "2022-11-28"
-            } `
-            -ContentType "application/json" `
-            -Body $body | Out-Null
       - name: Normalize tracked files
         run: |
           $ErrorActionPreference = "Stop"
@@ -114,39 +88,5 @@ jobs:
           cargo --version
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - id: verify
-        name: Run full verification
-        continue-on-error: true
+      - name: Run full verification
         run: pnpm verify
-      - name: Publish final foundation status
-        if: always()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERIFY_OUTCOME: ${{ steps.verify.outcome }}
-        run: |
-          $ErrorActionPreference = "Stop"
-          $state = if ($env:VERIFY_OUTCOME -eq "success") { "success" } else { "failure" }
-          $description = if ($state -eq "success") {
-            "Self-hosted Windows verification passed"
-          } else {
-            "Self-hosted Windows verification failed"
-          }
-          $body = @{
-            state = $state
-            context = "foundation/self-hosted"
-            description = $description
-            target_url = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID"
-          } | ConvertTo-Json
-          Invoke-RestMethod `
-            -Method Post `
-            -Uri "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/statuses/$env:STATUS_SHA" `
-            -Headers @{
-              Authorization = "Bearer $env:GITHUB_TOKEN"
-              Accept = "application/vnd.github+json"
-              "X-GitHub-Api-Version" = "2022-11-28"
-            } `
-            -ContentType "application/json" `
-            -Body $body | Out-Null
-      - name: Enforce verification result
-        if: always() && steps.verify.outcome != 'success'
-        run: exit 1
