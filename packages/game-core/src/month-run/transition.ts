@@ -460,7 +460,9 @@ function parsePendingDecision(value: unknown): PendingDecisionV1 {
   };
 }
 
-function parseRunningPhase(value: unknown): Extract<MonthRunPhase, "materialize" | "resolve" | "finalize"> {
+function parseRunningPhase(
+  value: unknown,
+): Extract<MonthRunPhase, "materialize" | "resolve" | "finalize"> {
   if (value !== "materialize" && value !== "resolve" && value !== "finalize") {
     throw new TypeError("Running MonthRun has an invalid phase");
   }
