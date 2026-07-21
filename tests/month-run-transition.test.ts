@@ -174,6 +174,44 @@ describe("MonthRun transition reducer", () => {
     if (result.kind === "rejected") expect(result.error.code).toBe("InvalidCommand");
   });
 
+  it("rejects forged null terminal results", () => {
+    const running = accept(initialCheckpoint(), { type: "start" });
+    const result = transitionMonthRun(
+      running,
+      { type: "complete", result: null } as unknown as MonthRunEventV1,
+    );
+
+    expect(result.kind).toBe("rejected");
+    expect(result.checkpoint).toBe(running);
+    if (result.kind === "rejected") expect(result.error.code).toBe("InvalidCommand");
+  });
+
+  it("revalidates branded identifiers at the runtime boundary", () => {
+    const running = accept(initialCheckpoint(), { type: "start" });
+    const suspended = accept(running, {
+      type: "suspend-for-decision",
+      decision: {
+        decisionId: parseDecisionId("decision-runtime"),
+        kind: "scope-choice",
+        prompt: { options: ["quality", "speed"] },
+        answerSchemaFingerprint: fingerprint("answer-schema", 1),
+      },
+    });
+    const result = transitionMonthRun(
+      suspended,
+      {
+        type: "accept-decision",
+        requestId: "contains whitespace",
+        decisionId: "decision-runtime",
+        answer: { option: "quality" },
+      } as unknown as MonthRunEventV1,
+    );
+
+    expect(result.kind).toBe("rejected");
+    expect(result.checkpoint).toBe(suspended);
+    if (result.kind === "rejected") expect(result.error.code).toBe("InvalidCommand");
+  });
+
   it("rejects running transitions into the blocking decision phase", () => {
     const running = accept(initialCheckpoint(), { type: "start" });
     const result = transitionMonthRun(running, {
