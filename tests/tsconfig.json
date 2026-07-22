@@ -12,6 +12,8 @@
   "references": [
     { "path": "../packages/game-schema" },
     { "path": "../packages/game-core" },
+    { "path": "../packages/game-application" },
+    { "path": "../packages/game-persistence-contracts" },
     { "path": "../packages/game-ui" },
     { "path": "../packages/game-ui-fixtures" }
   ]
