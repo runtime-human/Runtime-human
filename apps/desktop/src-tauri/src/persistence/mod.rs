@@ -9,6 +9,7 @@ mod error;
 mod hash;
 mod migrations;
 mod records;
+mod recovery;
 mod store;
 mod worker;
 
