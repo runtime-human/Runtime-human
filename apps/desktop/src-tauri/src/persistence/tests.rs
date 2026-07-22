@@ -11,9 +11,8 @@ use super::{
 
 const SAVE_SCHEMA_FINGERPRINT: &str =
     "3600af54eacdd6486e464e3744b82f2f8662bf45411554726174d77133d1b423";
-const FIXTURE_JSON: &str = include_str!(
-    "../../../../../fixtures/persistence/month-run-persistence-v1.json"
-);
+const FIXTURE_JSON: &str =
+    include_str!("../../../../../fixtures/persistence/month-run-persistence-v1.json");
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -121,7 +120,9 @@ fn tamper_save_payload(path: &Path) {
             ["{\"tampered\":true}", "save-fixture"],
         )
         .expect("tamper save payload");
-    connection.close().expect("close corruption fixture connection");
+    connection
+        .close()
+        .expect("close corruption fixture connection");
 
     let wal = path.with_extension("sqlite3-wal");
     if wal.exists() {
