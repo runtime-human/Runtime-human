@@ -1,10 +1,12 @@
 use std::{
     path::PathBuf,
     sync::{
-        Mutex,
-        mpsc::{self, Receiver, SyncSender, TrySendError},
+        Arc, Mutex,
+        atomic::{AtomicBool, Ordering},
+        mpsc::{self, Receiver, RecvTimeoutError, SyncSender, TrySendError},
     },
     thread::{self, JoinHandle},
+    time::Duration,
 };
 
 use super::{
@@ -23,8 +25,10 @@ use super::{
 };
 
 const COMMAND_QUEUE_CAPACITY: usize = 64;
+const SHUTDOWN_POLL_INTERVAL: Duration = Duration::from_millis(100);
 
 type ResponseSender<T> = SyncSender<Result<T, PersistenceError>>;
+type WorkerResult = Result<(), PersistenceError>;
 
 enum DatabaseCommand {
     CreateSave {
@@ -58,44 +62,55 @@ enum DatabaseCommand {
     RecoveryStatus {
         response: ResponseSender<RecoveryStatusV1>,
     },
-    Shutdown {
-        response: ResponseSender<()>,
-    },
 }
 
-pub(crate) struct PersistenceHandle {
+struct PersistenceInner {
     sender: SyncSender<DatabaseCommand>,
-    worker: Mutex<Option<JoinHandle<()>>>,
+    shutdown_requested: Arc<AtomicBool>,
+    worker: Mutex<Option<JoinHandle<WorkerResult>>>,
+}
+
+#[derive(Clone)]
+pub(crate) struct PersistenceHandle {
+    inner: Arc<PersistenceInner>,
 }
 
 impl PersistenceHandle {
     pub(crate) fn start(path: PathBuf) -> Result<Self, PersistenceError> {
         let (sender, receiver) = mpsc::sync_channel(COMMAND_QUEUE_CAPACITY);
         let (startup_sender, startup_receiver) = mpsc::sync_channel(1);
+        let shutdown_requested = Arc::new(AtomicBool::new(false));
+        let worker_shutdown = Arc::clone(&shutdown_requested);
         let worker = thread::Builder::new()
             .name("runtime-human-sqlite".to_owned())
             .spawn(move || match Database::open_or_create(&path) {
                 Ok(database) => {
-                    let _ = startup_sender.send(Ok(()));
-                    worker_loop(database, receiver);
+                    if startup_sender.send(Ok(())).is_err() {
+                        return database.close();
+                    }
+                    worker_loop(database, receiver, &worker_shutdown)
                 }
                 Err(error) => {
-                    let _ = startup_sender.send(Err(error));
+                    let _startup_receiver_closed = startup_sender.send(Err(error)).is_err();
+                    Ok(())
                 }
             })
             .map_err(|source| PersistenceError::io("starting the SQLite worker", source))?;
 
         match startup_receiver.recv() {
             Ok(Ok(())) => Ok(Self {
-                sender,
-                worker: Mutex::new(Some(worker)),
+                inner: Arc::new(PersistenceInner {
+                    sender,
+                    shutdown_requested,
+                    worker: Mutex::new(Some(worker)),
+                }),
             }),
             Ok(Err(error)) => {
-                let _ = worker.join();
+                let _worker_result = worker.join();
                 Err(error)
             }
             Err(_) => {
-                let _ = worker.join();
+                let _worker_result = worker.join();
                 Err(PersistenceError::Unavailable)
             }
         }
@@ -171,25 +186,15 @@ impl PersistenceHandle {
     }
 
     pub(crate) fn shutdown(&self) -> Result<(), PersistenceError> {
-        let mut worker = self
-            .worker
-            .lock()
-            .map_err(|_| PersistenceError::Unavailable)?;
-        let Some(join_handle) = worker.take() else {
-            return Ok(());
-        };
-        let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::Shutdown { response })?;
-        let close_result = receive(receiver);
-        let join_result = join_handle.join();
-        if join_result.is_err() {
-            return Err(PersistenceError::Unavailable);
-        }
-        close_result
+        self.inner.shutdown_requested.store(true, Ordering::Release);
+        join_worker(&self.inner.worker)
     }
 
     fn send(&self, command: DatabaseCommand) -> Result<(), PersistenceError> {
-        match self.sender.try_send(command) {
+        if self.inner.shutdown_requested.load(Ordering::Acquire) {
+            return Err(PersistenceError::Unavailable);
+        }
+        match self.inner.sender.try_send(command) {
             Ok(()) => Ok(()),
             Err(TrySendError::Full(_)) => Err(PersistenceError::Overloaded),
             Err(TrySendError::Disconnected(_)) => Err(PersistenceError::Unavailable),
@@ -197,59 +202,84 @@ impl PersistenceHandle {
     }
 }
 
-impl Drop for PersistenceHandle {
+impl Drop for PersistenceInner {
     fn drop(&mut self) {
-        let Ok(worker) = self.worker.get_mut() else {
-            return;
+        self.shutdown_requested.store(true, Ordering::Release);
+        let worker = match self.worker.get_mut() {
+            Ok(worker) => worker.take(),
+            Err(poisoned) => poisoned.into_inner().take(),
         };
-        let Some(join_handle) = worker.take() else {
-            return;
-        };
-        let (response, receiver) = response_channel();
-        if self
-            .sender
-            .send(DatabaseCommand::Shutdown { response })
-            .is_ok()
-        {
-            let _ = receiver.recv();
+        if let Some(worker) = worker {
+            let _worker_result = worker.join();
         }
-        let _ = join_handle.join();
     }
 }
 
-fn worker_loop(mut database: Database, receiver: Receiver<DatabaseCommand>) {
-    while let Ok(command) = receiver.recv() {
-        match command {
-            DatabaseCommand::CreateSave { command, response } => {
-                let _ = response.send(database.create_save(command));
-            }
-            DatabaseCommand::LoadSave { query, response } => {
-                let _ = response.send(database.load_save(query));
-            }
-            DatabaseCommand::BeginMonthRun { command, response } => {
-                let _ = response.send(database.begin_month_run(command));
-            }
-            DatabaseCommand::LoadMonthRun { query, response } => {
-                let _ = response.send(database.load_month_run(query));
-            }
-            DatabaseCommand::LoadActiveMonthRun { query, response } => {
-                let _ = response.send(database.load_active_month_run(query));
-            }
-            DatabaseCommand::StoreBoundary { command, response } => {
-                let _ = response.send(database.store_month_run_boundary(command));
-            }
-            DatabaseCommand::CommitMonthRun { command, response } => {
-                let _ = response.send(database.commit_month_run(command));
-            }
-            DatabaseCommand::RecoveryStatus { response } => {
-                let _ = response.send(Ok(database.recovery_status_record()));
-            }
-            DatabaseCommand::Shutdown { response } => {
-                let result = database.close();
-                let _ = response.send(result);
-                break;
-            }
+fn join_worker(
+    worker: &Mutex<Option<JoinHandle<WorkerResult>>>,
+) -> Result<(), PersistenceError> {
+    let join_handle = worker
+        .lock()
+        .map_err(|_| PersistenceError::Unavailable)?
+        .take();
+    let Some(join_handle) = join_handle else {
+        return Ok(());
+    };
+    join_handle
+        .join()
+        .map_err(|_| PersistenceError::Unavailable)?
+}
+
+fn worker_loop(
+    mut database: Database,
+    receiver: Receiver<DatabaseCommand>,
+    shutdown_requested: &AtomicBool,
+) -> WorkerResult {
+    loop {
+        if shutdown_requested.load(Ordering::Acquire) {
+            break;
         }
+        match receiver.recv_timeout(SHUTDOWN_POLL_INTERVAL) {
+            Ok(command) => dispatch(&mut database, command),
+            Err(RecvTimeoutError::Timeout) => {}
+            Err(RecvTimeoutError::Disconnected) => break,
+        }
+    }
+    database.close()
+}
+
+fn dispatch(database: &mut Database, command: DatabaseCommand) {
+    match command {
+        DatabaseCommand::CreateSave { command, response } => {
+            send_response(response, database.create_save(command));
+        }
+        DatabaseCommand::LoadSave { query, response } => {
+            send_response(response, database.load_save(query));
+        }
+        DatabaseCommand::BeginMonthRun { command, response } => {
+            send_response(response, database.begin_month_run(command));
+        }
+        DatabaseCommand::LoadMonthRun { query, response } => {
+            send_response(response, database.load_month_run(query));
+        }
+        DatabaseCommand::LoadActiveMonthRun { query, response } => {
+            send_response(response, database.load_active_month_run(query));
+        }
+        DatabaseCommand::StoreBoundary { command, response } => {
+            send_response(response, database.store_month_run_boundary(command));
+        }
+        DatabaseCommand::CommitMonthRun { command, response } => {
+            send_response(response, database.commit_month_run(command));
+        }
+        DatabaseCommand::RecoveryStatus { response } => {
+            send_response(response, Ok(database.recovery_status_record()));
+        }
+    }
+}
+
+fn send_response<T>(sender: ResponseSender<T>, result: Result<T, PersistenceError>) {
+    if sender.send(result).is_err() {
+        tracing::debug!("persistence caller dropped its response channel");
     }
 }
 
