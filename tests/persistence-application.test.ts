@@ -55,7 +55,7 @@ describe("persistence application adapter", () => {
     > = [];
     const invoke: PersistenceInvokePort = async <T>(name, arguments_) => {
       calls.push({ command: name, arguments_ });
-      return acceptedResponse(command) as T;
+      return acceptedResponse(command) as unknown as T;
     };
 
     const result = await createPersistenceService(invoke).createSave(command);
@@ -75,7 +75,7 @@ describe("persistence application adapter", () => {
     const invoke: PersistenceInvokePort = async <T>(_name, arguments_) => {
       const submitted = arguments_.command as Readonly<Record<string, unknown>>;
       requestIds.push(submitted.requestId);
-      return acceptedResponse(command) as T;
+      return acceptedResponse(command) as unknown as T;
     };
     const service = createPersistenceService(invoke);
 
@@ -86,7 +86,7 @@ describe("persistence application adapter", () => {
   });
 
   it("rejects an unknown response union before it reaches the application", async () => {
-    const invoke: PersistenceInvokePort = async <T>() => ({ kind: "maybe" }) as T;
+    const invoke: PersistenceInvokePort = async <T>() => ({ kind: "maybe" }) as unknown as T;
     const service = createPersistenceService(invoke);
 
     await expect(service.createSave(createCommand())).rejects.toThrow(
