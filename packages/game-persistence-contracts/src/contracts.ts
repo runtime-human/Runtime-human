@@ -78,19 +78,6 @@ export type StoreMonthRunBoundaryCommandV1 = Readonly<{
   checkpoint: CanonicalPayloadV1;
 }>;
 
-export type CommitPersistedMonthRunCommandV1 = Readonly<{
-  schemaVersion: "commit-persisted-month-run-command-v1";
-  requestId: RequestId;
-  saveId: SaveId;
-  runId: MonthRunId;
-  expectedSaveRevision: SaveRevision;
-  expectedRunRevision: MonthRunRevision;
-  expectedCheckpointPayloadSha256: Sha256Hex;
-  expectedCheckpointHash: Fingerprint;
-  snapshot: CanonicalPayloadV1;
-  result: CanonicalPayloadV1;
-}>;
-
 export type CreateBackupCommandV1 = Readonly<{
   schemaVersion: "create-backup-command-v1";
   requestId: RequestId;
