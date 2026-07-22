@@ -14,6 +14,8 @@ import { parseRequestId, parseSaveId } from "@runtime-human/game-schema";
 
 const ZERO_HASH = parseSha256Hex("0".repeat(64));
 
+type InvokeArguments = Readonly<Record<string, unknown>>;
+
 function createCommand(): CreateSaveCommandV1 {
   return {
     schemaVersion: "create-save-command-v1",
@@ -50,10 +52,11 @@ function acceptedResponse(command: CreateSaveCommandV1): unknown {
 describe("persistence application adapter", () => {
   it("uses the exact create-save command and parses the response", async () => {
     const command = createCommand();
-    const calls: Array<
-      Readonly<{ command: string; arguments_: Readonly<Record<string, unknown>> }>
-    > = [];
-    const invoke: PersistenceInvokePort = async <T>(name, arguments_) => {
+    const calls: Array<Readonly<{ command: string; arguments_: InvokeArguments }>> = [];
+    const invoke: PersistenceInvokePort = async <T>(
+      name: string,
+      arguments_: InvokeArguments,
+    ): Promise<T> => {
       calls.push({ command: name, arguments_ });
       return acceptedResponse(command) as unknown as T;
     };
@@ -72,7 +75,10 @@ describe("persistence application adapter", () => {
   it("preserves the request ID across transport retries", async () => {
     const command = createCommand();
     const requestIds: unknown[] = [];
-    const invoke: PersistenceInvokePort = async <T>(_name, arguments_) => {
+    const invoke: PersistenceInvokePort = async <T>(
+      _name: string,
+      arguments_: InvokeArguments,
+    ): Promise<T> => {
       const submitted = arguments_.command as Readonly<Record<string, unknown>>;
       requestIds.push(submitted.requestId);
       return acceptedResponse(command) as unknown as T;
@@ -86,7 +92,8 @@ describe("persistence application adapter", () => {
   });
 
   it("rejects an unknown response union before it reaches the application", async () => {
-    const invoke: PersistenceInvokePort = async <T>() => ({ kind: "maybe" }) as unknown as T;
+    const invoke: PersistenceInvokePort = async <T>(): Promise<T> =>
+      ({ kind: "maybe" }) as unknown as T;
     const service = createPersistenceService(invoke);
 
     await expect(service.createSave(createCommand())).rejects.toThrow(
