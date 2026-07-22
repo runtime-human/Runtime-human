@@ -378,43 +378,6 @@ impl StoreMonthRunBoundaryCommandV1 {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub(crate) struct CommitPersistedMonthRunCommandV1 {
-    pub(crate) schema_version: String,
-    pub(crate) request_id: String,
-    pub(crate) save_id: String,
-    pub(crate) run_id: String,
-    pub(crate) expected_save_revision: u64,
-    pub(crate) expected_run_revision: u64,
-    pub(crate) expected_checkpoint_payload_sha256: String,
-    pub(crate) expected_checkpoint_hash: String,
-    pub(crate) snapshot: CanonicalPayloadV1,
-    pub(crate) result: CanonicalPayloadV1,
-}
-
-impl CommitPersistedMonthRunCommandV1 {
-    pub(crate) fn validate(&self) -> Result<(), PersistenceError> {
-        require_schema(
-            &self.schema_version,
-            "commit-persisted-month-run-command-v1",
-        )?;
-        validate_id(&self.request_id, "requestId")?;
-        validate_id(&self.save_id, "saveId")?;
-        validate_id(&self.run_id, "runId")?;
-        validate_revision(self.expected_save_revision, "expectedSaveRevision")?;
-        validate_revision(self.expected_run_revision, "expectedRunRevision")?;
-        validate_sha256_hex(
-            &self.expected_checkpoint_payload_sha256,
-            "expectedCheckpointPayloadSha256",
-        )?;
-        validate_sha256_hex(&self.expected_checkpoint_hash, "expectedCheckpointHash")?;
-        self.snapshot.validate()?;
-        self.result.validate()?;
-        Ok(())
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub(crate) struct CreateBackupCommandV1 {
     pub(crate) schema_version: String,
     pub(crate) request_id: String,

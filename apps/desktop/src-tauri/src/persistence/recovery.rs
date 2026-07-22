@@ -12,17 +12,14 @@ impl Database {
     pub(crate) fn verify_application_integrity(&self) -> Result<(), PersistenceError> {
         self.verify_save_integrity()?;
         let connection = self.connection()?;
-        verify_active_runs(self, connection)?;
+        verify_runs(self, connection)?;
         verify_receipts(connection)?;
         verify_committed_save_links(connection)?;
         verify_active_run_cardinality(connection)
     }
 }
 
-fn verify_active_runs(
-    database: &Database,
-    connection: &Connection,
-) -> Result<(), PersistenceError> {
+fn verify_runs(database: &Database, connection: &Connection) -> Result<(), PersistenceError> {
     let run_ids = {
         let mut statement = connection
             .prepare(

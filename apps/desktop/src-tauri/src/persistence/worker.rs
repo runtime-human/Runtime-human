@@ -333,40 +333,34 @@ fn dispatch(
     mode: WorkerMode,
 ) {
     match command {
-        DatabaseCommand::CreateSave { command, response } => send_mutation(
-            response,
-            mode,
-            || database.create_save(command),
-        ),
+        DatabaseCommand::CreateSave { command, response } => {
+            send_mutation(response, mode, || database.create_save(command))
+        }
         DatabaseCommand::LoadSave { query, response } => {
             send_response(response, database.load_save(query));
         }
-        DatabaseCommand::BeginMonthRun { command, response } => send_mutation(
-            response,
-            mode,
-            || database.begin_month_run(command),
-        ),
+        DatabaseCommand::BeginMonthRun { command, response } => {
+            send_mutation(response, mode, || database.begin_month_run(command))
+        }
         DatabaseCommand::LoadMonthRun { query, response } => {
             send_response(response, database.load_month_run(query));
         }
         DatabaseCommand::LoadActiveMonthRun { query, response } => {
             send_response(response, database.load_active_month_run(query));
         }
-        DatabaseCommand::StoreBoundary { command, response } => send_mutation(
-            response,
-            mode,
-            || database.store_month_run_boundary(command),
-        ),
-        DatabaseCommand::CommitMonthRun { command, response } => send_mutation(
-            response,
-            mode,
-            || database.commit_month_run(command),
-        ),
-        DatabaseCommand::CreateBackup { command, response } => send_mutation(
-            response,
-            mode,
-            || database.create_backup(command, backup_directory),
-        ),
+        DatabaseCommand::StoreBoundary { command, response } => {
+            send_mutation(response, mode, || {
+                database.store_month_run_boundary(command)
+            })
+        }
+        DatabaseCommand::CommitMonthRun { command, response } => {
+            send_mutation(response, mode, || database.commit_month_run(command))
+        }
+        DatabaseCommand::CreateBackup { command, response } => {
+            send_mutation(response, mode, || {
+                database.create_backup(command, backup_directory)
+            })
+        }
         DatabaseCommand::RecoveryStatus { response } => {
             let mut status = match mode {
                 WorkerMode::Normal => database.recovery_status_record(),
