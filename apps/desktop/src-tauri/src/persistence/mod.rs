@@ -6,11 +6,14 @@ mod commit_contract;
 mod contracts;
 mod database;
 mod error;
+mod failpoint;
 mod hash;
 mod migrations;
 mod records;
 mod recovery;
 mod recovery_save;
+#[cfg(test)]
+mod shutdown_tests;
 mod store;
 #[cfg(test)]
 mod tests;
