@@ -1,10 +1,13 @@
 import { createPersistenceService, PERSISTENCE_COMMANDS } from "@runtime-human/game-application";
 import type { PersistenceInvokePort } from "@runtime-human/game-application";
-import type { CreateSaveCommandV1 } from "@runtime-human/game-persistence-contracts";
+import {
+  parseCreateSaveCommand,
+  type CreateSaveCommandV1,
+} from "@runtime-human/game-persistence-contracts";
 
 const HASH = "a".repeat(64);
 
-const createSaveCommand = {
+const createSaveCommand: CreateSaveCommandV1 = parseCreateSaveCommand({
   schemaVersion: "create-save-command-v1",
   requestId: "create-save-request-1",
   saveId: "save-1",
@@ -14,7 +17,7 @@ const createSaveCommand = {
     json: "{}",
     sha256: HASH,
   },
-} as CreateSaveCommandV1;
+});
 
 const acceptedCreateSave = {
   kind: "accepted",
@@ -37,39 +40,63 @@ const acceptedCreateSave = {
   },
 } as const;
 
+type InvokeCall = Readonly<{
+  command: string;
+  arguments_: Readonly<Record<string, unknown>>;
+}>;
+
+function createInvokeFake(responses: readonly unknown[]): Readonly<{
+  invoke: PersistenceInvokePort;
+  calls: InvokeCall[];
+}> {
+  const remaining = [...responses];
+  const calls: InvokeCall[] = [];
+  const invoke: PersistenceInvokePort = async <T>(
+    command: string,
+    arguments_: Readonly<Record<string, unknown>>,
+  ): Promise<T> => {
+    calls.push({ command, arguments_ });
+    if (remaining.length === 0) {
+      throw new Error("Persistence invoke fake has no configured response");
+    }
+    return remaining.shift() as T;
+  };
+  return { invoke, calls };
+}
+
 describe("persistence application service", () => {
   it("uses the exact command name and argument envelope", async () => {
-    const invoke = vi.fn(async () => acceptedCreateSave) as PersistenceInvokePort;
-    const service = createPersistenceService(invoke);
+    const fake = createInvokeFake([acceptedCreateSave]);
+    const service = createPersistenceService(fake.invoke);
 
     const result = await service.createSave(createSaveCommand);
 
     expect(result).toEqual(acceptedCreateSave);
-    expect(invoke).toHaveBeenCalledOnce();
-    expect(invoke).toHaveBeenCalledWith(PERSISTENCE_COMMANDS.createSave, {
-      command: createSaveCommand,
-    });
+    expect(fake.calls).toEqual([
+      {
+        command: PERSISTENCE_COMMANDS.createSave,
+        arguments_: { command: createSaveCommand },
+      },
+    ]);
   });
 
   it("preserves the request ID across an explicit retry", async () => {
     const duplicate = { ...acceptedCreateSave, kind: "duplicate" } as const;
-    const invoke = vi
-      .fn()
-      .mockResolvedValueOnce(acceptedCreateSave)
-      .mockResolvedValueOnce(duplicate) as PersistenceInvokePort;
-    const service = createPersistenceService(invoke);
+    const fake = createInvokeFake([acceptedCreateSave, duplicate]);
+    const service = createPersistenceService(fake.invoke);
 
     await service.createSave(createSaveCommand);
     const retried = await service.createSave(createSaveCommand);
 
     expect(retried.kind).toBe("duplicate");
-    expect(invoke.mock.calls[0]?.[1]).toEqual({ command: createSaveCommand });
-    expect(invoke.mock.calls[1]?.[1]).toEqual({ command: createSaveCommand });
+    expect(fake.calls).toHaveLength(2);
+    expect(fake.calls[0]?.arguments_).toEqual({ command: createSaveCommand });
+    expect(fake.calls[1]?.arguments_).toEqual({ command: createSaveCommand });
   });
 
   it("rejects an unknown response union instead of trusting the invoke generic", async () => {
-    const invoke = vi.fn(async () => ({ kind: "unexpected" })) as PersistenceInvokePort;
-    const service = createPersistenceService(invoke);
+    const fake = createInvokeFake([{ kind: "unexpected" }]);
+    const service = createPersistenceService(fake.invoke);
 
     await expect(service.createSave(createSaveCommand)).rejects.toThrow(
       "Unknown persistence mutation result kind",
@@ -77,16 +104,18 @@ describe("persistence application service", () => {
   });
 
   it("parses recovery responses and rejects unknown fields", async () => {
-    const validInvoke = vi.fn(async () => ({
-      kind: "found",
-      value: {
-        schemaVersion: "recovery-status-v1",
-        status: "healthy",
-        writable: true,
-        backupAvailable: false,
+    const validFake = createInvokeFake([
+      {
+        kind: "found",
+        value: {
+          schemaVersion: "recovery-status-v1",
+          status: "healthy",
+          writable: true,
+          backupAvailable: false,
+        },
       },
-    })) as PersistenceInvokePort;
-    const service = createPersistenceService(validInvoke);
+    ]);
+    const service = createPersistenceService(validFake.invoke);
 
     await expect(
       service.getRecoveryStatus({ schemaVersion: "get-recovery-status-query-v1" }),
@@ -100,8 +129,8 @@ describe("persistence application service", () => {
       },
     });
 
-    const invalidService = createPersistenceService(
-      vi.fn(async () => ({
+    const invalidFake = createInvokeFake([
+      {
         kind: "found",
         value: {
           schemaVersion: "recovery-status-v1",
@@ -110,8 +139,9 @@ describe("persistence application service", () => {
           backupAvailable: false,
           leakedPath: "C:/private/runtime-human.sqlite3",
         },
-      })) as PersistenceInvokePort,
-    );
+      },
+    ]);
+    const invalidService = createPersistenceService(invalidFake.invoke);
 
     await expect(
       invalidService.getRecoveryStatus({ schemaVersion: "get-recovery-status-query-v1" }),
