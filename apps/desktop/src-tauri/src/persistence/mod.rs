@@ -11,6 +11,8 @@ mod migrations;
 mod records;
 mod recovery;
 mod store;
+#[cfg(test)]
+mod tests;
 mod worker;
 
 pub(crate) use commands::{
