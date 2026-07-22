@@ -54,7 +54,7 @@ impl Database {
             })?
             .is_some();
 
-        let backup_id = format!("backup-v1-{request_key}-{payload_hash}");
+        let backup_id = format!("backup-v1-{request_key}{payload_hash}");
         let final_path = backup_path(backup_directory, &backup_id);
         if !final_path.exists() {
             create_verified_backup(
@@ -176,7 +176,7 @@ fn reject_conflicting_backup(
     request_key: &str,
     payload_hash: &str,
 ) -> Result<(), PersistenceError> {
-    let prefix = format!("backup-v1-{request_key}-");
+    let prefix = format!("backup-v1-{request_key}");
     let expected_name = format!("{prefix}{payload_hash}.sqlite3");
     for entry in fs::read_dir(backup_directory)
         .map_err(|source| PersistenceError::io("scanning the backup directory", source))?
