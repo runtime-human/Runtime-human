@@ -1,16 +1,29 @@
 import {
+  parseBackupMetadata,
+  parseBeginPersistedMonthRunAccepted,
   parseBeginPersistedMonthRunCommand,
+  parseCommitPersistedMonthRunAccepted,
   parseCommitPersistedMonthRunCommand,
+  parseCreateBackupCommand,
+  parseCreateSaveAccepted,
   parseCreateSaveCommand,
   parseGetRecoveryStatusQuery,
   parseLoadActiveMonthRunQuery,
   parseLoadMonthRunQuery,
   parseLoadSaveQuery,
+  parseMonthRunRecord,
+  parsePersistenceMutationResult,
+  parsePersistenceQueryResult,
+  parseRecoveryStatus,
+  parseSaveRecord,
+  parseStoreMonthRunBoundaryAccepted,
   parseStoreMonthRunBoundaryCommand,
+  type BackupMetadataV1,
   type BeginPersistedMonthRunAcceptedV1,
   type BeginPersistedMonthRunCommandV1,
   type CommitPersistedMonthRunAcceptedV1,
   type CommitPersistedMonthRunCommandV1,
+  type CreateBackupCommandV1,
   type CreateSaveAcceptedV1,
   type CreateSaveCommandV1,
   type GetRecoveryStatusQueryV1,
@@ -46,6 +59,9 @@ export type PersistenceService = Readonly<{
   commitMonthRun(
     command: CommitPersistedMonthRunCommandV1,
   ): Promise<PersistenceMutationResultV1<CommitPersistedMonthRunAcceptedV1>>;
+  createBackup(
+    command: CreateBackupCommandV1,
+  ): Promise<PersistenceMutationResultV1<BackupMetadataV1>>;
   getRecoveryStatus(
     query: GetRecoveryStatusQueryV1,
   ): Promise<PersistenceQueryResultV1<RecoveryStatusV1>>;
@@ -55,35 +71,60 @@ export function createPersistenceService(invoke: PersistenceInvokePort): Persist
   return {
     async createSave(command) {
       const parsed = parseCreateSaveCommand(command);
-      return invoke(PERSISTENCE_COMMANDS.createSave, { command: parsed });
+      const response = await invoke<unknown>(PERSISTENCE_COMMANDS.createSave, { command: parsed });
+      return parsePersistenceMutationResult(response, parseCreateSaveAccepted);
     },
     async loadSave(query) {
       const parsed = parseLoadSaveQuery(query);
-      return invoke(PERSISTENCE_COMMANDS.loadSave, { query: parsed });
+      const response = await invoke<unknown>(PERSISTENCE_COMMANDS.loadSave, { query: parsed });
+      return parsePersistenceQueryResult(response, parseSaveRecord);
     },
     async beginMonthRun(command) {
       const parsed = parseBeginPersistedMonthRunCommand(command);
-      return invoke(PERSISTENCE_COMMANDS.beginMonthRun, { command: parsed });
+      const response = await invoke<unknown>(PERSISTENCE_COMMANDS.beginMonthRun, {
+        command: parsed,
+      });
+      return parsePersistenceMutationResult(response, parseBeginPersistedMonthRunAccepted);
     },
     async loadMonthRun(query) {
       const parsed = parseLoadMonthRunQuery(query);
-      return invoke(PERSISTENCE_COMMANDS.loadMonthRun, { query: parsed });
+      const response = await invoke<unknown>(PERSISTENCE_COMMANDS.loadMonthRun, { query: parsed });
+      return parsePersistenceQueryResult(response, parseMonthRunRecord);
     },
     async loadActiveMonthRun(query) {
       const parsed = parseLoadActiveMonthRunQuery(query);
-      return invoke(PERSISTENCE_COMMANDS.loadActiveMonthRun, { query: parsed });
+      const response = await invoke<unknown>(PERSISTENCE_COMMANDS.loadActiveMonthRun, {
+        query: parsed,
+      });
+      return parsePersistenceQueryResult(response, parseMonthRunRecord);
     },
     async storeMonthRunBoundary(command) {
       const parsed = parseStoreMonthRunBoundaryCommand(command);
-      return invoke(PERSISTENCE_COMMANDS.storeMonthRunBoundary, { command: parsed });
+      const response = await invoke<unknown>(PERSISTENCE_COMMANDS.storeMonthRunBoundary, {
+        command: parsed,
+      });
+      return parsePersistenceMutationResult(response, parseStoreMonthRunBoundaryAccepted);
     },
     async commitMonthRun(command) {
       const parsed = parseCommitPersistedMonthRunCommand(command);
-      return invoke(PERSISTENCE_COMMANDS.commitMonthRun, { command: parsed });
+      const response = await invoke<unknown>(PERSISTENCE_COMMANDS.commitMonthRun, {
+        command: parsed,
+      });
+      return parsePersistenceMutationResult(response, parseCommitPersistedMonthRunAccepted);
+    },
+    async createBackup(command) {
+      const parsed = parseCreateBackupCommand(command);
+      const response = await invoke<unknown>(PERSISTENCE_COMMANDS.createBackup, {
+        command: parsed,
+      });
+      return parsePersistenceMutationResult(response, parseBackupMetadata);
     },
     async getRecoveryStatus(query) {
       const parsed = parseGetRecoveryStatusQuery(query);
-      return invoke(PERSISTENCE_COMMANDS.getRecoveryStatus, { query: parsed });
+      const response = await invoke<unknown>(PERSISTENCE_COMMANDS.getRecoveryStatus, {
+        query: parsed,
+      });
+      return parsePersistenceQueryResult(response, parseRecoveryStatus);
     },
   };
 }
