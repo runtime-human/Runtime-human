@@ -39,6 +39,18 @@ pub(crate) struct MonthRunRecordV1 {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub(crate) struct BackupMetadataV1 {
+    pub(crate) schema_version: String,
+    pub(crate) backup_id: String,
+    pub(crate) save_id: String,
+    pub(crate) save_revision: u64,
+    pub(crate) has_active_month_run: bool,
+    pub(crate) quick_check: String,
+    pub(crate) foreign_key_violations: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub(crate) struct CreateSaveAcceptedV1 {
     pub(crate) schema_version: String,
     pub(crate) save: SaveRecordV1,
