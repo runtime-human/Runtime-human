@@ -43,3 +43,16 @@ export {
   parseStoreMonthRunBoundaryCommand,
 } from "./parsers";
 export type { PersistenceCheckpointIdentity } from "./parsers";
+export {
+  parseBackupMetadata,
+  parseBeginPersistedMonthRunAccepted,
+  parseCommitPersistedMonthRunAccepted,
+  parseCreateSaveAccepted,
+  parseMonthRunRecord,
+  parsePersistenceError,
+  parsePersistenceMutationResult,
+  parsePersistenceQueryResult,
+  parseRecoveryStatus,
+  parseSaveRecord,
+  parseStoreMonthRunBoundaryAccepted,
+} from "./responses";
