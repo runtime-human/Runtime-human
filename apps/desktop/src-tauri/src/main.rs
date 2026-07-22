@@ -22,15 +22,15 @@ fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            persistence::persistence_create_save_v1,
-            persistence::persistence_load_save_v1,
-            persistence::persistence_begin_month_run_v1,
-            persistence::persistence_load_month_run_v1,
-            persistence::persistence_load_active_month_run_v1,
-            persistence::persistence_store_month_run_boundary_v1,
-            persistence::persistence_commit_month_run_v1,
-            persistence::persistence_create_backup_v1,
-            persistence::persistence_get_recovery_status_v1,
+            persistence::commands::persistence_create_save_v1,
+            persistence::commands::persistence_load_save_v1,
+            persistence::commands::persistence_begin_month_run_v1,
+            persistence::commands::persistence_load_month_run_v1,
+            persistence::commands::persistence_load_active_month_run_v1,
+            persistence::commands::persistence_store_month_run_boundary_v1,
+            persistence::commands::persistence_commit_month_run_v1,
+            persistence::commands::persistence_create_backup_v1,
+            persistence::commands::persistence_get_recovery_status_v1,
         ])
         .build(tauri::generate_context!())
         .expect("failed to build Runtime Human desktop shell");
