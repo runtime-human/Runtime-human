@@ -34,7 +34,9 @@ When an older plan describes a task as remaining but this ledger marks it implem
 - [x] pure-core-produced committed checkpoint in the final commit command;
 - [x] stable public persistence error codes;
 - [x] redacted public errors without SQL, paths or payload contents;
-- [x] cross-language persistence fixture.
+- [x] cross-language persistence fixture;
+- [x] safe-integer guard before final MonthRun revision increment;
+- [x] locale-independent deterministic JSON object-key comparison.
 
 ### SQLite foundation
 
@@ -49,6 +51,7 @@ When an older plan describes a task as remaining but this ledger marks it implem
 - [x] partial unique one-active-run index;
 - [x] writable open/create path;
 - [x] existing-file read-only path;
+- [x] newer-schema preflight before persistent writable PRAGMAs;
 - [x] newer-schema read-only fallback;
 - [x] WAL read-back;
 - [x] `synchronous=FULL` read-back;
@@ -72,6 +75,8 @@ When an older plan describes a task as remaining but this ledger marks it implem
 - [x] one typed command registration surface;
 - [x] async Tauri commands through `spawn_blocking`;
 - [x] controlled exit shutdown;
+- [x] distinct corrupted and newer-schema read-only worker modes;
+- [x] read-only modes reject mutations before invoking operation closures or filesystem side effects;
 - [x] no renderer-provided SQL or paths.
 
 ### Authoritative operations
@@ -110,12 +115,13 @@ When an older plan describes a task as remaining but this ledger marks it implem
 ### Recovery
 
 - [x] clean-shutdown marker;
+- [x] shutdown ordering `WAL checkpoint -> failpoint boundary -> clean marker -> close`;
 - [x] unclean-start application scan;
 - [x] all save payload hashes and JSON;
 - [x] save schema fingerprint shape;
-- [x] active checkpoint payload and internal fingerprints;
+- [x] every MonthRun checkpoint payload and internal fingerprint, including terminal states;
 - [x] compatibility payload integrity;
-- [x] complete active journal chain and current tail;
+- [x] complete journal chain and current tail for every MonthRun;
 - [x] all receipt result hashes and JSON;
 - [x] committed run/save revision links;
 - [x] latest committed run link from save;
@@ -125,7 +131,7 @@ When an older plan describes a task as remaining but this ledger marks it implem
 - [x] application corruption reopens read-only;
 - [x] recovery status reports `corrupted`;
 - [x] mutation commands reject with `RecoveryRequired`;
-- [x] newer schema remains distinct from corruption;
+- [x] newer schema remains distinct from corruption and returns `IncompatibleSchema` for mutations;
 - [x] backup availability included in recovery status.
 
 ### TypeScript application adapter
@@ -143,6 +149,9 @@ When an older plan describes a task as remaining but this ledger marks it implem
 - [x] TypeScript exact command/argument mapping;
 - [x] TypeScript request-ID retry preservation;
 - [x] TypeScript unknown response rejection;
+- [x] exact UTF-8 byte-limit tests with astral Unicode;
+- [x] safe-integer exhaustion rejection before commit revision arithmetic;
+- [x] deterministic compatibility equality across differing object-key insertion order;
 - [x] file-backed backup creation;
 - [x] backup read-only reopen;
 - [x] backup receipt replay;
@@ -150,24 +159,30 @@ When an older plan describes a task as remaining but this ledger marks it implem
 - [x] tampered authoritative save detection;
 - [x] corrupted read-only worker mode;
 - [x] mutation rejection in recovery mode;
+- [x] newer-schema fallback preserves the original persistent journal mode;
+- [x] newer-schema backup mutation is rejected before creating filesystem state;
+- [x] tampered terminal/committed MonthRun detection;
 - [x] SQL-trigger failure after save CAS proves full transaction rollback;
 - [x] child-process immediate exit after commit/before acknowledgement;
+- [x] immediate-exit shutdown boundary between checkpoint and clean marker;
 - [x] reopen after process exit observes exactly one committed revision;
 - [x] same request ID after acknowledgement loss returns duplicate receipt.
 
 ## 1.3. Deliberate change to the earlier crash plan
 
-The earlier roadmap listed eleven internal failpoints. PR #18 now uses two higher-value mechanisms:
+The earlier roadmap listed eleven internal failpoints. PR #18 now uses focused fault boundaries with direct invariant coverage:
 
 1. an SQLite trigger aborts the run update after the save CAS inside the same transaction;
-2. a child process exits immediately after a successful commit and before acknowledgement.
+2. a child process exits immediately after a successful commit and before acknowledgement;
+3. a child process exits after the shutdown WAL checkpoint and before the clean marker.
 
-These prove the two material risks:
+These prove the material risks:
 
 - partial transaction visibility;
-- committed transaction with lost response.
+- committed transaction with lost response;
+- an interrupted shutdown cannot be misclassified as clean.
 
-Adding a project-wide failpoint framework for every SQL statement is deferred until a real defect or migration requires finer localization. The current tests exercise actual SQLite rollback/process semantics without adding production hooks.
+Adding a project-wide failpoint framework for every SQL statement is deferred until a real defect or migration requires finer localization. The current tests exercise actual SQLite rollback/process semantics without adding broad production hooks.
 
 ## 1.4. Backup-before-migration decision
 
@@ -185,15 +200,15 @@ This is a hard prerequisite for migration v2, not a reason to add unreachable up
 
 Only completion gates remain:
 
-1. [ ] run current permanent read-only Windows workflow;
-2. [ ] fix only observed format/type/compile/test failures;
-3. [ ] update design and implementation plans to final identifiers;
-4. [ ] regenerate docs catalog/manifest after the final documentation change;
-5. [ ] inspect final diff for duplicate/stale contracts and temporary CI code;
-6. [ ] perform explicit adversarial checklist review;
-7. [ ] request automated review;
-8. [ ] resolve Critical/Important findings;
-9. [ ] rerun the complete read-only Windows workflow on unchanged head;
+1. [x] run the permanent read-only Windows workflow on the reviewed production code;
+2. [x] fix observed format/type/compile/test failures;
+3. [x] align the execution ledger and PR description with final identifiers and behavior;
+4. [ ] regenerate and verify docs catalog/manifest after this final documentation change;
+5. [ ] inspect the final diff for duplicate/stale contracts and temporary CI code;
+6. [x] perform explicit adversarial mutation/backup/recovery/shutdown review;
+7. [x] request automated review; CodeRabbit Free declined line-by-line draft review, so Sonar plus explicit manual adversarial review remain the available review surfaces;
+8. [x] resolve all discovered Critical/Important correctness findings;
+9. [ ] rerun the complete read-only Windows workflow on the unchanged documentation-aligned head;
 10. [ ] mark ready for review;
 11. [ ] squash merge with expected head SHA;
 12. [ ] verify `main` workflow result.
