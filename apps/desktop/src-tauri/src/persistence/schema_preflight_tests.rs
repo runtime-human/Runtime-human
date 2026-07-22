@@ -18,8 +18,7 @@ fn newer_schema_fallback_does_not_change_persistent_journal_mode() {
         .expect("set newer schema version");
     connection.close().expect("close fixture database");
 
-    let handle =
-        PersistenceHandle::start(database_path.clone()).expect("start read-only fallback");
+    let handle = PersistenceHandle::start(database_path.clone()).expect("start read-only fallback");
     let recovery = handle.recovery_status().expect("read recovery status");
     assert_eq!(recovery.status, RecoveryStatusV1Value::NewerSchemaReadOnly);
     assert!(!recovery.writable);
