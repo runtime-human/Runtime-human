@@ -1,5 +1,5 @@
 use std::{
-    path::PathBuf,
+    path::{Path, PathBuf},
     sync::{
         Arc, Mutex,
         atomic::{AtomicBool, Ordering},
@@ -12,14 +12,15 @@ use std::{
 use super::{
     commit_contract::CommitPersistedMonthRunCommandV1,
     contracts::{
-        BeginPersistedMonthRunCommandV1, CreateSaveCommandV1, LoadActiveMonthRunQueryV1,
-        LoadMonthRunQueryV1, LoadSaveQueryV1, StoreMonthRunBoundaryCommandV1,
+        BeginPersistedMonthRunCommandV1, CreateBackupCommandV1, CreateSaveCommandV1,
+        LoadActiveMonthRunQueryV1, LoadMonthRunQueryV1, LoadSaveQueryV1,
+        StoreMonthRunBoundaryCommandV1,
     },
     database::Database,
     error::PersistenceError,
     records::{
-        BeginPersistedMonthRunAcceptedV1, CommitPersistedMonthRunAcceptedV1, CreateSaveAcceptedV1,
-        MonthRunRecordV1, MutationOutcome, RecoveryStatusV1, SaveRecordV1,
+        BackupMetadataV1, BeginPersistedMonthRunAcceptedV1, CommitPersistedMonthRunAcceptedV1,
+        CreateSaveAcceptedV1, MonthRunRecordV1, MutationOutcome, RecoveryStatusV1, SaveRecordV1,
         StoreMonthRunBoundaryAcceptedV1,
     },
 };
@@ -59,6 +60,10 @@ enum DatabaseCommand {
         command: CommitPersistedMonthRunCommandV1,
         response: ResponseSender<MutationOutcome<CommitPersistedMonthRunAcceptedV1>>,
     },
+    CreateBackup {
+        command: CreateBackupCommandV1,
+        response: ResponseSender<MutationOutcome<BackupMetadataV1>>,
+    },
     RecoveryStatus {
         response: ResponseSender<RecoveryStatusV1>,
     },
@@ -77,6 +82,14 @@ pub(crate) struct PersistenceHandle {
 
 impl PersistenceHandle {
     pub(crate) fn start(path: PathBuf) -> Result<Self, PersistenceError> {
+        let backup_directory = path
+            .parent()
+            .ok_or_else(|| {
+                PersistenceError::InvalidCommand(
+                    "database path must have an application-owned parent directory".to_owned(),
+                )
+            })?
+            .join("backups");
         let (sender, receiver) = mpsc::sync_channel(COMMAND_QUEUE_CAPACITY);
         let (startup_sender, startup_receiver) = mpsc::sync_channel(1);
         let shutdown_requested = Arc::new(AtomicBool::new(false));
@@ -88,7 +101,7 @@ impl PersistenceHandle {
                     if startup_sender.send(Ok(())).is_err() {
                         return database.close();
                     }
-                    worker_loop(database, receiver, &worker_shutdown)
+                    worker_loop(database, receiver, &worker_shutdown, &backup_directory)
                 }
                 Err(error) => {
                     let _startup_receiver_closed = startup_sender.send(Err(error)).is_err();
@@ -179,6 +192,15 @@ impl PersistenceHandle {
         receive(receiver)
     }
 
+    pub(crate) fn create_backup(
+        &self,
+        command: CreateBackupCommandV1,
+    ) -> Result<MutationOutcome<BackupMetadataV1>, PersistenceError> {
+        let (response, receiver) = response_channel();
+        self.send(DatabaseCommand::CreateBackup { command, response })?;
+        receive(receiver)
+    }
+
     pub(crate) fn recovery_status(&self) -> Result<RecoveryStatusV1, PersistenceError> {
         let (response, receiver) = response_channel();
         self.send(DatabaseCommand::RecoveryStatus { response })?;
@@ -234,13 +256,14 @@ fn worker_loop(
     mut database: Database,
     receiver: Receiver<DatabaseCommand>,
     shutdown_requested: &AtomicBool,
+    backup_directory: &Path,
 ) -> WorkerResult {
     loop {
         if shutdown_requested.load(Ordering::Acquire) {
             break;
         }
         match receiver.recv_timeout(SHUTDOWN_POLL_INTERVAL) {
-            Ok(command) => dispatch(&mut database, command),
+            Ok(command) => dispatch(&mut database, command, backup_directory),
             Err(RecvTimeoutError::Timeout) => {}
             Err(RecvTimeoutError::Disconnected) => break,
         }
@@ -248,7 +271,7 @@ fn worker_loop(
     database.close()
 }
 
-fn dispatch(database: &mut Database, command: DatabaseCommand) {
+fn dispatch(database: &mut Database, command: DatabaseCommand, backup_directory: &Path) {
     match command {
         DatabaseCommand::CreateSave { command, response } => {
             send_response(response, database.create_save(command));
@@ -270,6 +293,9 @@ fn dispatch(database: &mut Database, command: DatabaseCommand) {
         }
         DatabaseCommand::CommitMonthRun { command, response } => {
             send_response(response, database.commit_month_run(command));
+        }
+        DatabaseCommand::CreateBackup { command, response } => {
+            send_response(response, database.create_backup(command, backup_directory));
         }
         DatabaseCommand::RecoveryStatus { response } => {
             send_response(response, Ok(database.recovery_status_record()));
