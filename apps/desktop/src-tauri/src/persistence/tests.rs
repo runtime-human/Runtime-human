@@ -12,7 +12,7 @@ use super::{
     BeginPersistedMonthRunCommandV1, CanonicalPayloadV1, CommitPersistedMonthRunCommandV1,
     CreateBackupCommandV1, CreateSaveCommandV1, Database, DurableMonthRunStatus,
     LoadMonthRunQueryV1, LoadSaveQueryV1, MutationOutcome, PersistenceError, PersistenceHandle,
-    RecoveryStatus, StoreMonthRunBoundaryCommandV1,
+    RecoveryStatus, RecoveryStatusV1Value, StoreMonthRunBoundaryCommandV1,
 };
 
 const SAVE_SCHEMA_FINGERPRINT: &str =
@@ -104,7 +104,7 @@ fn unclean_but_valid_database_passes_application_integrity_scan() {
 }
 
 #[test]
-fn worker_rejects_tampered_authoritative_payload_after_unclean_shutdown() {
+fn worker_enters_read_only_mode_for_tampered_authoritative_payload() {
     let temp = TempDir::new().expect("temporary directory");
     let database_path = temp.path().join("runtime-human.sqlite3");
     {
@@ -113,8 +113,20 @@ fn worker_rejects_tampered_authoritative_payload_after_unclean_shutdown() {
     }
 
     tamper_save_payload(&database_path);
-    let result = PersistenceHandle::start(database_path);
-    assert!(matches!(result, Err(PersistenceError::RecoveryRequired)));
+    let handle = PersistenceHandle::start(database_path).expect("start recovery worker");
+    let status = handle.recovery_status().expect("load recovery status");
+    assert_eq!(status.status, RecoveryStatusV1Value::Corrupted);
+    assert!(!status.writable);
+
+    let rejected = handle.create_save(CreateSaveCommandV1 {
+        schema_version: "create-save-command-v1".to_owned(),
+        request_id: "recovery-write-request-1".to_owned(),
+        save_id: "recovery-write-save".to_owned(),
+        save_schema_fingerprint: SAVE_SCHEMA_FINGERPRINT.to_owned(),
+        snapshot: fixture().payloads.initial_save,
+    });
+    assert!(matches!(rejected, Err(PersistenceError::RecoveryRequired)));
+    handle.shutdown().expect("shutdown recovery worker");
 }
 
 #[test]
