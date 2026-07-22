@@ -259,9 +259,7 @@ impl Drop for PersistenceInner {
     }
 }
 
-fn join_worker(
-    worker: &Mutex<Option<JoinHandle<WorkerResult>>>,
-) -> Result<(), PersistenceError> {
+fn join_worker(worker: &Mutex<Option<JoinHandle<WorkerResult>>>) -> Result<(), PersistenceError> {
     let join_handle = worker
         .lock()
         .map_err(|_| PersistenceError::Unavailable)?
