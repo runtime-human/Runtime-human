@@ -11,6 +11,7 @@ use rusqlite::{
 
 use super::{
     error::PersistenceError,
+    failpoint,
     migrations::{
         CURRENT_SCHEMA_VERSION, apply_migrations, migration_manifest_sha256, migration_set,
     },
@@ -43,6 +44,7 @@ impl Database {
 
         let mut connection = Connection::open(path)
             .map_err(|source| PersistenceError::storage("opening the database", source))?;
+        ensure_writable_schema_compatibility(&connection)?;
         configure_writable_connection(&connection)?;
         migrate_if_required(&mut connection)?;
         verify_migration_manifest(&connection)?;
@@ -139,7 +141,6 @@ impl Database {
     pub(crate) fn close(mut self) -> Result<(), PersistenceError> {
         if self.writable {
             let connection = self.connection_mut()?;
-            set_clean_shutdown(connection, true)?;
             let _: (i64, i64, i64) = connection
                 .query_row("PRAGMA wal_checkpoint(PASSIVE)", [], |row| {
                     Ok((row.get(0)?, row.get(1)?, row.get(2)?))
@@ -147,6 +148,8 @@ impl Database {
                 .map_err(|source| {
                     PersistenceError::storage("requesting the shutdown WAL checkpoint", source)
                 })?;
+            failpoint::hit("after_shutdown_checkpoint_before_clean_marker");
+            set_clean_shutdown(connection, true)?;
         }
 
         let connection = self
@@ -184,6 +187,19 @@ fn ensure_supported_sqlite_version() -> Result<(), PersistenceError> {
         return Err(PersistenceError::UnsupportedSqliteVersion {
             actual,
             minimum: MINIMUM_SQLITE_VERSION,
+        });
+    }
+    Ok(())
+}
+
+fn ensure_writable_schema_compatibility(
+    connection: &Connection,
+) -> Result<(), PersistenceError> {
+    let version = schema_version(connection)?;
+    if version > CURRENT_SCHEMA_VERSION {
+        return Err(PersistenceError::IncompatibleSchema {
+            found: version,
+            supported: CURRENT_SCHEMA_VERSION,
         });
     }
     Ok(())
