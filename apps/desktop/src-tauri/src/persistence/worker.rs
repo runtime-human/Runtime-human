@@ -73,6 +73,7 @@ enum DatabaseCommand {
 enum WorkerMode {
     Normal,
     RecoveryReadOnly,
+    NewerSchemaReadOnly { found: i64, supported: i64 },
 }
 
 struct PersistenceInner {
@@ -139,7 +140,7 @@ impl PersistenceHandle {
                         WorkerMode::Normal,
                     )
                 }
-                Err(PersistenceError::IncompatibleSchema { .. }) => {
+                Err(PersistenceError::IncompatibleSchema { found, supported }) => {
                     match Database::open_existing_read_only(&path) {
                         Ok(database) => {
                             if startup_sender.send(Ok(())).is_err() {
@@ -150,7 +151,7 @@ impl PersistenceHandle {
                                 receiver,
                                 &worker_shutdown,
                                 &backup_directory,
-                                WorkerMode::Normal,
+                                WorkerMode::NewerSchemaReadOnly { found, supported },
                             )
                         }
                         Err(error) => {
@@ -363,7 +364,9 @@ fn dispatch(
         }
         DatabaseCommand::RecoveryStatus { response } => {
             let mut status = match mode {
-                WorkerMode::Normal => database.recovery_status_record(),
+                WorkerMode::Normal | WorkerMode::NewerSchemaReadOnly { .. } => {
+                    database.recovery_status_record()
+                }
                 WorkerMode::RecoveryReadOnly => RecoveryStatusV1 {
                     schema_version: "recovery-status-v1".to_owned(),
                     status: RecoveryStatusV1Value::Corrupted,
@@ -382,11 +385,14 @@ fn send_mutation<T>(
     mode: WorkerMode,
     operation: impl FnOnce() -> Result<T, PersistenceError>,
 ) {
-    if mode == WorkerMode::RecoveryReadOnly {
-        send_response(sender, Err(PersistenceError::RecoveryRequired));
-    } else {
-        send_response(sender, operation());
-    }
+    let result = match mode {
+        WorkerMode::Normal => operation(),
+        WorkerMode::RecoveryReadOnly => Err(PersistenceError::RecoveryRequired),
+        WorkerMode::NewerSchemaReadOnly { found, supported } => {
+            Err(PersistenceError::IncompatibleSchema { found, supported })
+        }
+    };
+    send_response(sender, result);
 }
 
 fn backup_available(backup_directory: &Path) -> bool {
