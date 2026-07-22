@@ -20,8 +20,8 @@ use super::{
     error::PersistenceError,
     records::{
         BackupMetadataV1, BeginPersistedMonthRunAcceptedV1, CommitPersistedMonthRunAcceptedV1,
-        CreateSaveAcceptedV1, MonthRunRecordV1, MutationOutcome, RecoveryStatusV1, SaveRecordV1,
-        StoreMonthRunBoundaryAcceptedV1,
+        CreateSaveAcceptedV1, MonthRunRecordV1, MutationOutcome, RecoveryStatusV1,
+        RecoveryStatusV1Value, SaveRecordV1, StoreMonthRunBoundaryAcceptedV1,
     },
 };
 
@@ -69,6 +69,12 @@ enum DatabaseCommand {
     },
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum WorkerMode {
+    Normal,
+    RecoveryReadOnly,
+}
+
 struct PersistenceInner {
     sender: SyncSender<DatabaseCommand>,
     shutdown_requested: Arc<AtomicBool>,
@@ -101,15 +107,37 @@ impl PersistenceHandle {
                     if database.recovery_status() == RecoveryStatus::UncleanButValid
                         && database.verify_application_integrity().is_err()
                     {
-                        let _startup_receiver_closed = startup_sender
-                            .send(Err(PersistenceError::RecoveryRequired))
-                            .is_err();
-                        return Ok(());
+                        drop(database);
+                        match Database::open_existing_read_only(&path) {
+                            Ok(read_only) => {
+                                if startup_sender.send(Ok(())).is_err() {
+                                    return read_only.close();
+                                }
+                                return worker_loop(
+                                    read_only,
+                                    receiver,
+                                    &worker_shutdown,
+                                    &backup_directory,
+                                    WorkerMode::RecoveryReadOnly,
+                                );
+                            }
+                            Err(error) => {
+                                let _startup_receiver_closed =
+                                    startup_sender.send(Err(error)).is_err();
+                                return Ok(());
+                            }
+                        }
                     }
                     if startup_sender.send(Ok(())).is_err() {
                         return database.close();
                     }
-                    worker_loop(database, receiver, &worker_shutdown, &backup_directory)
+                    worker_loop(
+                        database,
+                        receiver,
+                        &worker_shutdown,
+                        &backup_directory,
+                        WorkerMode::Normal,
+                    )
                 }
                 Err(PersistenceError::IncompatibleSchema { .. }) => {
                     match Database::open_existing_read_only(&path) {
@@ -117,7 +145,13 @@ impl PersistenceHandle {
                             if startup_sender.send(Ok(())).is_err() {
                                 return database.close();
                             }
-                            worker_loop(database, receiver, &worker_shutdown, &backup_directory)
+                            worker_loop(
+                                database,
+                                receiver,
+                                &worker_shutdown,
+                                &backup_directory,
+                                WorkerMode::Normal,
+                            )
                         }
                         Err(error) => {
                             let _startup_receiver_closed = startup_sender.send(Err(error)).is_err();
@@ -277,13 +311,14 @@ fn worker_loop(
     receiver: Receiver<DatabaseCommand>,
     shutdown_requested: &AtomicBool,
     backup_directory: &Path,
+    mode: WorkerMode,
 ) -> WorkerResult {
     loop {
         if shutdown_requested.load(Ordering::Acquire) {
             break;
         }
         match receiver.recv_timeout(SHUTDOWN_POLL_INTERVAL) {
-            Ok(command) => dispatch(&mut database, command, backup_directory),
+            Ok(command) => dispatch(&mut database, command, backup_directory, mode),
             Err(RecvTimeoutError::Timeout) => {}
             Err(RecvTimeoutError::Disconnected) => break,
         }
@@ -291,48 +326,87 @@ fn worker_loop(
     database.close()
 }
 
-fn dispatch(database: &mut Database, command: DatabaseCommand, backup_directory: &Path) {
+fn dispatch(
+    database: &mut Database,
+    command: DatabaseCommand,
+    backup_directory: &Path,
+    mode: WorkerMode,
+) {
     match command {
-        DatabaseCommand::CreateSave { command, response } => {
-            send_response(response, database.create_save(command));
-        }
+        DatabaseCommand::CreateSave { command, response } => send_mutation(
+            response,
+            mode,
+            || database.create_save(command),
+        ),
         DatabaseCommand::LoadSave { query, response } => {
             send_response(response, database.load_save(query));
         }
-        DatabaseCommand::BeginMonthRun { command, response } => {
-            send_response(response, database.begin_month_run(command));
-        }
+        DatabaseCommand::BeginMonthRun { command, response } => send_mutation(
+            response,
+            mode,
+            || database.begin_month_run(command),
+        ),
         DatabaseCommand::LoadMonthRun { query, response } => {
             send_response(response, database.load_month_run(query));
         }
         DatabaseCommand::LoadActiveMonthRun { query, response } => {
             send_response(response, database.load_active_month_run(query));
         }
-        DatabaseCommand::StoreBoundary { command, response } => {
-            send_response(response, database.store_month_run_boundary(command));
-        }
-        DatabaseCommand::CommitMonthRun { command, response } => {
-            send_response(response, database.commit_month_run(command));
-        }
-        DatabaseCommand::CreateBackup { command, response } => {
-            send_response(response, database.create_backup(command, backup_directory));
-        }
+        DatabaseCommand::StoreBoundary { command, response } => send_mutation(
+            response,
+            mode,
+            || database.store_month_run_boundary(command),
+        ),
+        DatabaseCommand::CommitMonthRun { command, response } => send_mutation(
+            response,
+            mode,
+            || database.commit_month_run(command),
+        ),
+        DatabaseCommand::CreateBackup { command, response } => send_mutation(
+            response,
+            mode,
+            || database.create_backup(command, backup_directory),
+        ),
         DatabaseCommand::RecoveryStatus { response } => {
-            let mut status = database.recovery_status_record();
-            status.backup_available = backup_directory
-                .read_dir()
-                .map(|entries| {
-                    entries.flatten().any(|entry| {
-                        entry
-                            .path()
-                            .extension()
-                            .is_some_and(|extension| extension == "sqlite3")
-                    })
-                })
-                .unwrap_or(false);
+            let mut status = match mode {
+                WorkerMode::Normal => database.recovery_status_record(),
+                WorkerMode::RecoveryReadOnly => RecoveryStatusV1 {
+                    schema_version: "recovery-status-v1".to_owned(),
+                    status: RecoveryStatusV1Value::Corrupted,
+                    writable: false,
+                    backup_available: false,
+                },
+            };
+            status.backup_available = backup_available(backup_directory);
             send_response(response, Ok(status));
         }
     }
+}
+
+fn send_mutation<T>(
+    sender: ResponseSender<T>,
+    mode: WorkerMode,
+    operation: impl FnOnce() -> Result<T, PersistenceError>,
+) {
+    if mode == WorkerMode::RecoveryReadOnly {
+        send_response(sender, Err(PersistenceError::RecoveryRequired));
+    } else {
+        send_response(sender, operation());
+    }
+}
+
+fn backup_available(backup_directory: &Path) -> bool {
+    backup_directory
+        .read_dir()
+        .map(|entries| {
+            entries.flatten().any(|entry| {
+                entry
+                    .path()
+                    .extension()
+                    .is_some_and(|extension| extension == "sqlite3")
+            })
+        })
+        .unwrap_or(false)
 }
 
 fn send_response<T>(sender: ResponseSender<T>, result: Result<T, PersistenceError>) {
