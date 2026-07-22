@@ -1,7 +1,9 @@
 use rusqlite::{Connection, OpenFlags};
 use tempfile::TempDir;
 
-use super::{PersistenceHandle, RecoveryStatusV1Value, migrations::CURRENT_SCHEMA_VERSION};
+use super::{
+    PersistenceHandle, RecoveryStatusV1Value, migrations::CURRENT_SCHEMA_VERSION,
+};
 
 #[test]
 fn newer_schema_fallback_does_not_change_persistent_journal_mode() {
@@ -20,7 +22,10 @@ fn newer_schema_fallback_does_not_change_persistent_journal_mode() {
 
     let handle = PersistenceHandle::start(database_path.clone()).expect("start read-only fallback");
     let recovery = handle.recovery_status().expect("read recovery status");
-    assert_eq!(recovery.status, RecoveryStatusV1Value::NewerSchemaReadOnly);
+    assert_eq!(
+        recovery.status,
+        RecoveryStatusV1Value::NewerSchemaReadOnly
+    );
     assert!(!recovery.writable);
     handle.shutdown().expect("shutdown read-only fallback");
 
