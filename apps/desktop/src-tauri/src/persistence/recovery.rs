@@ -29,12 +29,18 @@ fn verify_active_runs(
                  WHERE status IN ('ready', 'suspended', 'completed')
                  ORDER BY run_id",
             )
-            .map_err(|source| PersistenceError::storage("preparing active run recovery scan", source))?;
+            .map_err(|source| {
+                PersistenceError::storage("preparing active run recovery scan", source)
+            })?;
         let rows = statement
             .query_map([], |row| row.get::<_, String>(0))
-            .map_err(|source| PersistenceError::storage("querying active runs for recovery", source))?;
+            .map_err(|source| {
+                PersistenceError::storage("querying active runs for recovery", source)
+            })?;
         rows.collect::<rusqlite::Result<Vec<_>>>()
-            .map_err(|source| PersistenceError::storage("reading active runs for recovery", source))?
+            .map_err(|source| {
+                PersistenceError::storage("reading active runs for recovery", source)
+            })?
     };
 
     for run_id in run_ids {
@@ -116,7 +122,9 @@ fn verify_committed_save_links(connection: &Connection) -> Result<(), Persistenc
             [],
             |row| row.get(0),
         )
-        .map_err(|source| PersistenceError::storage("checking latest committed save links", source))?;
+        .map_err(|source| {
+            PersistenceError::storage("checking latest committed save links", source)
+        })?;
     if invalid_latest_links != 0 {
         return Err(PersistenceError::CorruptedStoredPayload);
     }
@@ -136,7 +144,9 @@ fn verify_active_run_cardinality(connection: &Connection) -> Result<(), Persiste
             |row| row.get(0),
         )
         .optional()
-        .map_err(|source| PersistenceError::storage("checking active MonthRun cardinality", source))?;
+        .map_err(|source| {
+            PersistenceError::storage("checking active MonthRun cardinality", source)
+        })?;
     if duplicate_save.is_some() {
         return Err(PersistenceError::CorruptedStoredPayload);
     }
@@ -176,18 +186,18 @@ fn verify_journal_chain(
         let event_kind: String = row
             .get(1)
             .map_err(|source| PersistenceError::storage("reading journal event kind", source))?;
-        let source_payload_hash: Option<String> = row
-            .get(2)
-            .map_err(|source| PersistenceError::storage("reading journal source payload", source))?;
-        let source_checkpoint_hash: Option<String> = row
-            .get(3)
-            .map_err(|source| PersistenceError::storage("reading journal source checkpoint", source))?;
+        let source_payload_hash: Option<String> = row.get(2).map_err(|source| {
+            PersistenceError::storage("reading journal source payload", source)
+        })?;
+        let source_checkpoint_hash: Option<String> = row.get(3).map_err(|source| {
+            PersistenceError::storage("reading journal source checkpoint", source)
+        })?;
         let checkpoint_payload_hash: String = row
             .get(4)
             .map_err(|source| PersistenceError::storage("reading journal payload hash", source))?;
-        let checkpoint_hash: String = row
-            .get(5)
-            .map_err(|source| PersistenceError::storage("reading journal checkpoint hash", source))?;
+        let checkpoint_hash: String = row.get(5).map_err(|source| {
+            PersistenceError::storage("reading journal checkpoint hash", source)
+        })?;
         let stored_previous_entry_hash: Option<String> = row
             .get(6)
             .map_err(|source| PersistenceError::storage("reading previous journal hash", source))?;

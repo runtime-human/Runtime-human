@@ -149,7 +149,9 @@ fn verify_backup_contents(
             schema_version: "load-save-query-v1".to_owned(),
             save_id: save_id.to_owned(),
         })?
-        .ok_or_else(|| PersistenceError::BackupFailed("backup does not contain the save".to_owned()))?;
+        .ok_or_else(|| {
+            PersistenceError::BackupFailed("backup does not contain the save".to_owned())
+        })?;
     if save.revision != expected_revision {
         return Err(PersistenceError::BackupFailed(
             "backup save revision does not match the source".to_owned(),
@@ -202,6 +204,9 @@ fn remove_partial_if_present(path: &Path) -> Result<(), PersistenceError> {
     match fs::remove_file(path) {
         Ok(()) => Ok(()),
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
-        Err(source) => Err(PersistenceError::io("removing an incomplete backup", source)),
+        Err(source) => Err(PersistenceError::io(
+            "removing an incomplete backup",
+            source,
+        )),
     }
 }

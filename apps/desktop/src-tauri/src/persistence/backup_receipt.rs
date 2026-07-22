@@ -38,8 +38,8 @@ pub(crate) fn load_backup_receipt(
     }
     verify_sha256(result_json.as_bytes(), &result_hash)
         .map_err(|_| PersistenceError::CorruptedStoredPayload)?;
-    let metadata = serde_json::from_str(&result_json)
-        .map_err(|_| PersistenceError::CorruptedStoredPayload)?;
+    let metadata =
+        serde_json::from_str(&result_json).map_err(|_| PersistenceError::CorruptedStoredPayload)?;
     Ok(Some(metadata))
 }
 
@@ -51,7 +51,9 @@ pub(crate) fn insert_backup_receipt(
 ) -> Result<(), PersistenceError> {
     let transaction = connection
         .transaction_with_behavior(TransactionBehavior::Immediate)
-        .map_err(|source| PersistenceError::storage("starting the backup receipt transaction", source))?;
+        .map_err(|source| {
+            PersistenceError::storage("starting the backup receipt transaction", source)
+        })?;
     if let Some(existing) = load_backup_receipt(&transaction, request_id, payload_hash)? {
         if existing == *metadata {
             return transaction.commit().map_err(|source| {
@@ -100,11 +102,17 @@ fn allocate_sequence(transaction: &rusqlite::Transaction<'_>) -> Result<u64, Per
         .parse::<u64>()
         .ok()
         .filter(|value| *value <= MAX_SAFE_INTEGER)
-        .ok_or_else(|| PersistenceError::Invariant("operation sequence metadata is invalid".to_owned()))?;
+        .ok_or_else(|| {
+            PersistenceError::Invariant("operation sequence metadata is invalid".to_owned())
+        })?;
     let next = current
         .checked_add(1)
         .filter(|value| *value <= MAX_SAFE_INTEGER)
-        .ok_or_else(|| PersistenceError::Invariant("operation sequence exhausted safe integer range".to_owned()))?;
+        .ok_or_else(|| {
+            PersistenceError::Invariant(
+                "operation sequence exhausted safe integer range".to_owned(),
+            )
+        })?;
     let changed = transaction
         .execute(
             "UPDATE app_metadata SET value = ?1

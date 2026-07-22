@@ -128,9 +128,7 @@ export function parseMonthRunRecord(value: unknown): MonthRunRecordV1 {
   requireSchema(record.schemaVersion, "month-run-record-v1", "MonthRun record");
   const status = parseDurableStatus(record.status);
   const committedSaveRevision =
-    record.committedSaveRevision === null
-      ? null
-      : parseSaveRevision(record.committedSaveRevision);
+    record.committedSaveRevision === null ? null : parseSaveRevision(record.committedSaveRevision);
   const result = record.result === null ? null : parseCanonicalPayload(record.result);
   if (status === "committed") {
     if (committedSaveRevision === null || result === null) {
@@ -207,7 +205,10 @@ export function parseRecoveryStatus(value: unknown): RecoveryStatusV1 {
     "recovery status",
   );
   requireSchema(record.schemaVersion, "recovery-status-v1", "recovery status");
-  if (typeof record.status !== "string" || !RECOVERY_STATUSES.has(record.status as RecoveryStatus)) {
+  if (
+    typeof record.status !== "string" ||
+    !RECOVERY_STATUSES.has(record.status as RecoveryStatus)
+  ) {
     throw new TypeError("Unknown recovery status");
   }
   if (typeof record.writable !== "boolean" || typeof record.backupAvailable !== "boolean") {
@@ -260,11 +261,7 @@ export function parseStoreMonthRunBoundaryAccepted(
 export function parseCommitPersistedMonthRunAccepted(
   value: unknown,
 ): CommitPersistedMonthRunAcceptedV1 {
-  const record = exactRecord(
-    value,
-    ["schemaVersion", "save", "run"],
-    "commit MonthRun result",
-  );
+  const record = exactRecord(value, ["schemaVersion", "save", "run"], "commit MonthRun result");
   requireSchema(
     record.schemaVersion,
     "commit-persisted-month-run-accepted-v1",
@@ -319,7 +316,11 @@ export function parsePersistenceError(value: unknown): PersistenceErrorV1 {
   if (typeof record.code !== "string" || !ERROR_CODES.has(record.code as PersistenceErrorCode)) {
     throw new TypeError("Unknown persistence error code");
   }
-  if (typeof record.message !== "string" || record.message.length === 0 || record.message.length > 512) {
+  if (
+    typeof record.message !== "string" ||
+    record.message.length === 0 ||
+    record.message.length > 512
+  ) {
     throw new TypeError("Persistence error message must contain 1-512 characters");
   }
   return {

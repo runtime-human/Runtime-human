@@ -202,10 +202,14 @@ fn configure_writable_connection(connection: &Connection) -> Result<(), Persiste
         .map_err(|source| PersistenceError::storage("disabling trusted schema", source))?;
     connection
         .set_db_config(DbConfig::SQLITE_DBCONFIG_DQS_DDL, false)
-        .map_err(|source| PersistenceError::storage("disabling DDL double-quoted strings", source))?;
+        .map_err(|source| {
+            PersistenceError::storage("disabling DDL double-quoted strings", source)
+        })?;
     connection
         .set_db_config(DbConfig::SQLITE_DBCONFIG_DQS_DML, false)
-        .map_err(|source| PersistenceError::storage("disabling DML double-quoted strings", source))?;
+        .map_err(|source| {
+            PersistenceError::storage("disabling DML double-quoted strings", source)
+        })?;
 
     connection
         .set_limit(Limit::SQLITE_LIMIT_ATTACHED, 0)
@@ -238,11 +242,7 @@ fn configure_writable_connection(connection: &Connection) -> Result<(), Persiste
 
     verify_pragma_i64(connection, "synchronous", 2)?;
     verify_pragma_i64(connection, "foreign_keys", 1)?;
-    verify_pragma_i64(
-        connection,
-        "busy_timeout",
-        BUSY_TIMEOUT.as_millis() as i64,
-    )?;
+    verify_pragma_i64(connection, "busy_timeout", BUSY_TIMEOUT.as_millis() as i64)?;
     Ok(())
 }
 
@@ -305,10 +305,7 @@ fn metadata_value(connection: &Connection, key: &str) -> Result<Option<String>, 
         .map_err(|source| PersistenceError::storage("reading application metadata", source))
 }
 
-fn set_clean_shutdown(
-    connection: &mut Connection,
-    clean: bool,
-) -> Result<(), PersistenceError> {
+fn set_clean_shutdown(connection: &mut Connection, clean: bool) -> Result<(), PersistenceError> {
     let transaction = connection
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .map_err(|source| PersistenceError::storage("starting metadata transaction", source))?;
@@ -317,9 +314,7 @@ fn set_clean_shutdown(
             "UPDATE app_metadata SET value = ?1 WHERE key = 'clean_shutdown'",
             [if clean { "true" } else { "false" }],
         )
-        .map_err(|source| {
-            PersistenceError::storage("updating clean-shutdown metadata", source)
-        })?;
+        .map_err(|source| PersistenceError::storage("updating clean-shutdown metadata", source))?;
     if changed != 1 {
         return Err(PersistenceError::Invariant(
             "clean-shutdown metadata row is missing".to_owned(),
@@ -343,9 +338,7 @@ fn verify_pragma_i64(
 ) -> Result<(), PersistenceError> {
     let actual: i64 = connection
         .pragma_query_value(None, name, |row| row.get(0))
-        .map_err(|source| {
-            PersistenceError::storage("reading back SQLite configuration", source)
-        })?;
+        .map_err(|source| PersistenceError::storage("reading back SQLite configuration", source))?;
     if actual != expected {
         return Err(PersistenceError::Invariant(format!(
             "PRAGMA {name} expected {expected}, received {actual}"
