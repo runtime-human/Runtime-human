@@ -1,5 +1,6 @@
 import {
   MAX_CANONICAL_PAYLOAD_BYTES,
+  parseBeginPersistedMonthRunCommand,
   parseCanonicalPayload,
   parseCommitPersistedMonthRunCommand,
 } from "@runtime-human/game-persistence-contracts";
@@ -25,6 +26,35 @@ describe("persistence contract boundaries", () => {
     expect(() => parseCanonicalPayload(canonicalPayload(overLimit))).toThrow(
       `Canonical payload byte limit is ${MAX_CANONICAL_PAYLOAD_BYTES}`,
     );
+  });
+
+  it("compares checkpoint compatibility independently of object key insertion order", () => {
+    const compatibility = { alpha: 1, "é": 2, "é": 3, omega: 4 };
+    const checkpointCompatibility = { omega: 4, "é": 3, "é": 2, alpha: 1 };
+
+    const parsed = parseBeginPersistedMonthRunCommand({
+      schemaVersion: "begin-persisted-month-run-command-v1",
+      requestId: "begin-key-order",
+      saveId: "save-key-order",
+      expectedSaveRevision: 0,
+      runId: "run-key-order",
+      checkpoint: canonicalPayload(
+        JSON.stringify({
+          schemaVersion: "month-run-checkpoint-v1",
+          saveId: "save-key-order",
+          runId: "run-key-order",
+          baseSaveRevision: 0,
+          runRevision: 0,
+          status: "ready",
+          compatibility: checkpointCompatibility,
+          previousCheckpointHash: null,
+          checkpointHash: HASH,
+        }),
+      ),
+      compatibility: canonicalPayload(JSON.stringify(compatibility)),
+    });
+
+    expect(parsed.runId).toBe("run-key-order");
   });
 
   it("rejects a commit when the durable revision cannot advance safely", () => {
