@@ -80,10 +80,7 @@ fn unclean_start_rejects_corrupted_committed_month_run_result() {
                     save_id: "save-fixture".to_owned(),
                     run_id: "run-fixture".to_owned(),
                     expected_run_revision: 0,
-                    expected_checkpoint_payload_sha256: fixture
-                        .payloads
-                        .ready_checkpoint
-                        .sha256,
+                    expected_checkpoint_payload_sha256: fixture.payloads.ready_checkpoint.sha256,
                     expected_checkpoint_hash: READY_CHECKPOINT_HASH.to_owned(),
                     run_revision: 4,
                     status: DurableMonthRunStatus::Completed,
