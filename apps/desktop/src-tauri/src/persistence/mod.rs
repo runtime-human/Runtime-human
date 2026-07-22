@@ -14,7 +14,7 @@ mod worker;
 
 pub(crate) use commands::{
     ManagedPersistence, persistence_begin_month_run_v1, persistence_commit_month_run_v1,
-    persistence_create_save_v1, persistence_get_recovery_status_v1,
+    persistence_create_backup_v1, persistence_create_save_v1, persistence_get_recovery_status_v1,
     persistence_load_active_month_run_v1, persistence_load_month_run_v1,
     persistence_load_save_v1, persistence_store_month_run_boundary_v1,
 };
