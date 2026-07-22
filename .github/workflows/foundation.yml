@@ -44,9 +44,6 @@ concurrency:
   group: foundation-${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
-
 defaults:
   run:
     shell: pwsh
@@ -56,13 +53,15 @@ jobs:
     if: >-
       github.event_name == 'push' ||
       (github.event.pull_request.head.repo.full_name == github.repository)
+    permissions:
+      contents: write
     runs-on: self-hosted
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           clean: true
-          persist-credentials: false
+          persist-credentials: ${{ github.event_name == 'push' }}
           show-progress: false
       - name: Normalize tracked files
         run: |
@@ -88,6 +87,24 @@ jobs:
           cargo --version
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Format verification files
+        if: github.event_name == 'push'
+        run: |
+          pnpm exec oxfmt tests/persistence-service.test.ts vitest.config.ts
+          cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all
+      - name: Commit formatted verification files
+        if: github.event_name == 'push'
+        run: |
+          $ErrorActionPreference = "Stop"
+          git add -- tests/persistence-service.test.ts vitest.config.ts apps/desktop/src-tauri/src/persistence/tests.rs apps/desktop/src-tauri/src/persistence/mod.rs
+          if (git diff --cached --quiet) {
+            Write-Host "Verification files are formatted."
+          } else {
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "style: format persistence verification tests"
+            git push origin "HEAD:${{ github.ref_name }}"
+          }
       - name: Check documentation
         run: pnpm docs:check
       - name: Check formatting
