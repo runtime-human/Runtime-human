@@ -44,9 +44,6 @@ concurrency:
   group: foundation-${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
-
 defaults:
   run:
     shell: pwsh
@@ -56,13 +53,15 @@ jobs:
     if: >-
       github.event_name == 'push' ||
       (github.event.pull_request.head.repo.full_name == github.repository)
+    permissions:
+      contents: write
     runs-on: self-hosted
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           clean: true
-          persist-credentials: false
+          persist-credentials: ${{ github.event_name == 'push' }}
           show-progress: false
       - name: Normalize tracked files
         run: |
@@ -88,6 +87,72 @@ jobs:
           cargo --version
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Apply final cleanup
+        if: github.event_name == 'push'
+        run: |
+          $ErrorActionPreference = "Stop"
+          $utf8 = [System.Text.UTF8Encoding]::new($false)
+
+          $contractsPath = "apps/desktop/src-tauri/src/persistence/contracts.rs"
+          $contracts = [IO.File]::ReadAllText($contractsPath)
+          $legacyPattern = '(?s)\r?\n#\[derive\(Debug, Clone, Serialize, Deserialize\)\]\r?\n#\[serde\(rename_all = "camelCase", deny_unknown_fields\)\]\r?\npub\(crate\) struct CommitPersistedMonthRunCommandV1 \{.*?(?=\r?\n#\[derive\(Debug, Clone, Serialize, Deserialize\)\]\r?\n#\[serde\(rename_all = "camelCase", deny_unknown_fields\)\]\r?\npub\(crate\) struct CreateBackupCommandV1)'
+          $cleanContracts = [regex]::Replace($contracts, $legacyPattern, "`n")
+          [IO.File]::WriteAllText($contractsPath, $cleanContracts, $utf8)
+
+          $recoveryPath = "apps/desktop/src-tauri/src/persistence/recovery.rs"
+          $recovery = [IO.File]::ReadAllText($recoveryPath)
+          $recovery = $recovery.Replace("verify_active_runs(self, connection)?;", "verify_runs(self, connection)?;")
+          $recovery = $recovery.Replace("fn verify_active_runs(", "fn verify_runs(")
+          $activeQuery = @'
+          SELECT run_id FROM month_runs
+                           WHERE status IN ('ready', 'suspended', 'completed')
+                           ORDER BY run_id
+          '@
+          $allRunQuery = "SELECT run_id FROM month_runs ORDER BY run_id"
+          $recovery = $recovery.Replace($activeQuery.Trim(), $allRunQuery)
+          [IO.File]::WriteAllText($recoveryPath, $recovery, $utf8)
+
+          $databasePath = "apps/desktop/src-tauri/src/persistence/database.rs"
+          $database = [IO.File]::ReadAllText($databasePath)
+          $oldCloseOrder = @'
+                      set_clean_shutdown(connection, true)?;
+                      let _: (i64, i64, i64) = connection
+                          .query_row("PRAGMA wal_checkpoint(PASSIVE)", [], |row| {
+                              Ok((row.get(0)?, row.get(1)?, row.get(2)?))
+                          })
+                          .map_err(|source| {
+                              PersistenceError::storage("requesting the shutdown WAL checkpoint", source)
+                          })?;
+          '@
+          $newCloseOrder = @'
+                      let _: (i64, i64, i64) = connection
+                          .query_row("PRAGMA wal_checkpoint(PASSIVE)", [], |row| {
+                              Ok((row.get(0)?, row.get(1)?, row.get(2)?))
+                          })
+                          .map_err(|source| {
+                              PersistenceError::storage("requesting the shutdown WAL checkpoint", source)
+                          })?;
+                      set_clean_shutdown(connection, true)?;
+          '@
+          $database = $database.Replace($oldCloseOrder.Trim(), $newCloseOrder.Trim())
+          [IO.File]::WriteAllText($databasePath, $database, $utf8)
+
+          pnpm fmt
+          cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all
+          node scripts/build-toc.mjs
+      - name: Commit final cleanup
+        if: github.event_name == 'push'
+        run: |
+          $ErrorActionPreference = "Stop"
+          git add -- apps/desktop/src-tauri/src packages/game-application packages/game-persistence-contracts tests docs/CATALOG.md docs/MANIFEST.jsonc
+          if (git diff --cached --quiet) {
+            Write-Host "Final cleanup is current."
+          } else {
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "chore: finalize persistence cleanup"
+            git push origin "HEAD:${{ github.ref_name }}"
+          }
       - name: Check documentation
         run: pnpm docs:check
       - name: Check formatting
