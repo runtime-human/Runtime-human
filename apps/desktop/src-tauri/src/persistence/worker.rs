@@ -16,7 +16,7 @@ use super::{
         LoadActiveMonthRunQueryV1, LoadMonthRunQueryV1, LoadSaveQueryV1,
         StoreMonthRunBoundaryCommandV1,
     },
-    database::Database,
+    database::{Database, RecoveryStatus},
     error::PersistenceError,
     records::{
         BackupMetadataV1, BeginPersistedMonthRunAcceptedV1, CommitPersistedMonthRunAcceptedV1,
@@ -98,10 +98,32 @@ impl PersistenceHandle {
             .name("runtime-human-sqlite".to_owned())
             .spawn(move || match Database::open_or_create(&path) {
                 Ok(database) => {
+                    if database.recovery_status() == RecoveryStatus::UncleanButValid
+                        && database.verify_application_integrity().is_err()
+                    {
+                        let _startup_receiver_closed = startup_sender
+                            .send(Err(PersistenceError::RecoveryRequired))
+                            .is_err();
+                        return Ok(());
+                    }
                     if startup_sender.send(Ok(())).is_err() {
                         return database.close();
                     }
                     worker_loop(database, receiver, &worker_shutdown, &backup_directory)
+                }
+                Err(PersistenceError::IncompatibleSchema { .. }) => {
+                    match Database::open_existing_read_only(&path) {
+                        Ok(database) => {
+                            if startup_sender.send(Ok(())).is_err() {
+                                return database.close();
+                            }
+                            worker_loop(database, receiver, &worker_shutdown, &backup_directory)
+                        }
+                        Err(error) => {
+                            let _startup_receiver_closed = startup_sender.send(Err(error)).is_err();
+                            Ok(())
+                        }
+                    }
                 }
                 Err(error) => {
                     let _startup_receiver_closed = startup_sender.send(Err(error)).is_err();
@@ -237,7 +259,9 @@ impl Drop for PersistenceInner {
     }
 }
 
-fn join_worker(worker: &Mutex<Option<JoinHandle<WorkerResult>>>) -> Result<(), PersistenceError> {
+fn join_worker(
+    worker: &Mutex<Option<JoinHandle<WorkerResult>>>,
+) -> Result<(), PersistenceError> {
     let join_handle = worker
         .lock()
         .map_err(|_| PersistenceError::Unavailable)?
@@ -296,7 +320,19 @@ fn dispatch(database: &mut Database, command: DatabaseCommand, backup_directory:
             send_response(response, database.create_backup(command, backup_directory));
         }
         DatabaseCommand::RecoveryStatus { response } => {
-            send_response(response, Ok(database.recovery_status_record()));
+            let mut status = database.recovery_status_record();
+            status.backup_available = backup_directory
+                .read_dir()
+                .map(|entries| {
+                    entries.flatten().any(|entry| {
+                        entry
+                            .path()
+                            .extension()
+                            .is_some_and(|extension| extension == "sqlite3")
+                    })
+                })
+                .unwrap_or(false);
+            send_response(response, Ok(status));
         }
     }
 }
