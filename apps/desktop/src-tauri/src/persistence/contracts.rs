@@ -10,7 +10,7 @@ use super::{
 
 pub(crate) const MAX_CANONICAL_PAYLOAD_BYTES: usize = 4 * 1024 * 1024;
 const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
-const CHECKPOINT_KEYS: [&str; 21] = [
+const CHECKPOINT_KEYS: [&str; 20] = [
     "acceptedDecisions",
     "baseSaveRevision",
     "checkpointHash",
@@ -31,7 +31,6 @@ const CHECKPOINT_KEYS: [&str; 21] = [
     "stepIndex",
     "terminalReason",
     "terminalResult",
-    "compatibility",
 ];
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

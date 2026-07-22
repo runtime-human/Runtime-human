@@ -192,9 +192,7 @@ fn ensure_supported_sqlite_version() -> Result<(), PersistenceError> {
     Ok(())
 }
 
-fn ensure_writable_schema_compatibility(
-    connection: &Connection,
-) -> Result<(), PersistenceError> {
+fn ensure_writable_schema_compatibility(connection: &Connection) -> Result<(), PersistenceError> {
     let version = schema_version(connection)?;
     if version > CURRENT_SCHEMA_VERSION {
         return Err(PersistenceError::IncompatibleSchema {

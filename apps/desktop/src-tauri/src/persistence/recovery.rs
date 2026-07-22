@@ -24,21 +24,18 @@ fn verify_runs(database: &Database, connection: &Connection) -> Result<(), Persi
         let mut statement = connection
             .prepare(
                 "SELECT run_id FROM month_runs
-                 WHERE status IN ('ready', 'suspended', 'completed')
                  ORDER BY run_id",
             )
             .map_err(|source| {
-                PersistenceError::storage("preparing active run recovery scan", source)
+                PersistenceError::storage("preparing MonthRun recovery scan", source)
             })?;
         let rows = statement
             .query_map([], |row| row.get::<_, String>(0))
             .map_err(|source| {
-                PersistenceError::storage("querying active runs for recovery", source)
+                PersistenceError::storage("querying MonthRuns for recovery", source)
             })?;
         rows.collect::<rusqlite::Result<Vec<_>>>()
-            .map_err(|source| {
-                PersistenceError::storage("reading active runs for recovery", source)
-            })?
+            .map_err(|source| PersistenceError::storage("reading MonthRuns for recovery", source))?
     };
 
     for run_id in run_ids {
