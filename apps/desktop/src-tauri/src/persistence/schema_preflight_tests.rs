@@ -1,7 +1,7 @@
 use rusqlite::{Connection, OpenFlags};
 use tempfile::TempDir;
 
-use super::{migrations::CURRENT_SCHEMA_VERSION, PersistenceHandle, RecoveryStatusV1Value};
+use super::{PersistenceHandle, RecoveryStatusV1Value, migrations::CURRENT_SCHEMA_VERSION};
 
 #[test]
 fn newer_schema_fallback_does_not_change_persistent_journal_mode() {
