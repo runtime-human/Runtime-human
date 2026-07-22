@@ -41,8 +41,11 @@ on:
       - ".github/workflows/foundation.yml"
 
 concurrency:
-  group: foundation-${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.head.ref || github.ref_name }}
+  group: foundation-${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 defaults:
   run:
@@ -53,15 +56,13 @@ jobs:
     if: >-
       github.event_name == 'push' ||
       (github.event.pull_request.head.repo.full_name == github.repository)
-    permissions:
-      contents: write
     runs-on: self-hosted
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           clean: true
-          persist-credentials: ${{ github.event_name == 'push' }}
+          persist-credentials: false
           show-progress: false
       - name: Normalize tracked files
         run: |
@@ -87,26 +88,6 @@ jobs:
           cargo --version
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Refresh generated files
-        if: github.event_name == 'push'
-        run: |
-          $ErrorActionPreference = "Stop"
-          pnpm fmt
-          cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all
-          node scripts/build-toc.mjs
-      - name: Commit generated files
-        if: github.event_name == 'push'
-        run: |
-          $ErrorActionPreference = "Stop"
-          git add -- .github/workflows/foundation.yml apps packages tests vitest.config.ts docs/CATALOG.md docs/MANIFEST.jsonc
-          if (git diff --cached --quiet) {
-            Write-Host "Generated files are current."
-          } else {
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git commit -m "chore: refresh persistence verification artifacts"
-            git push origin "HEAD:${{ github.ref_name }}"
-          }
       - name: Check documentation
         run: pnpm docs:check
       - name: Check formatting
