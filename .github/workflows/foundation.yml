@@ -3,7 +3,7 @@ name: foundation
 on:
   push:
     branches:
-      - agent/month-run-persistence
+      - main
     paths:
       - "package.json"
       - "pnpm-lock.yaml"
