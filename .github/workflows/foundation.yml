@@ -3,9 +3,22 @@ name: foundation
 on:
   push:
     branches:
-      - agent/month-run-persistence
+      - main
     paths:
-      - "apps/desktop/src-tauri/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "tsconfig*.json"
+      - "vitest.config.ts"
+      - "apps/**"
+      - "packages/**"
+      - "tests/**"
+      - "fixtures/**"
+      - "docs/**"
+      - "scripts/**"
+      - "rust-toolchain.toml"
+      - ".ox*.json"
+      - ".gitattributes"
       - ".github/workflows/foundation.yml"
   pull_request:
     branches:
@@ -31,6 +44,9 @@ concurrency:
   group: foundation-${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 defaults:
   run:
     shell: pwsh
@@ -40,15 +56,13 @@ jobs:
     if: >-
       github.event_name == 'push' ||
       (github.event.pull_request.head.repo.full_name == github.repository)
-    permissions:
-      contents: write
     runs-on: self-hosted
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           clean: true
-          persist-credentials: ${{ github.event_name == 'push' }}
+          persist-credentials: false
           show-progress: false
       - name: Normalize tracked files
         run: |
@@ -56,29 +70,6 @@ jobs:
           git config --local core.autocrlf false
           git config --local core.eol lf
           git checkout-index --all --force
-      - name: Install Rust 1.97.0
-        run: |
-          $ErrorActionPreference = "Stop"
-          rustup toolchain install 1.97.0 --profile minimal --component rustfmt,clippy
-          rustup default 1.97.0
-          rustc --version
-          cargo --version
-      - name: Format Rust sources
-        if: github.event_name == 'push'
-        run: cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all
-      - name: Commit Rust formatting
-        if: github.event_name == 'push'
-        run: |
-          $ErrorActionPreference = "Stop"
-          git add -- apps/desktop/src-tauri/src
-          if (git diff --cached --quiet) {
-            Write-Host "Rust sources are formatted."
-          } else {
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git commit -m "style: format persistence reliability tests"
-            git push origin "HEAD:${{ github.ref_name }}"
-          }
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: "24"
@@ -88,6 +79,13 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
           pnpm --version
+      - name: Install Rust 1.97.0
+        run: |
+          $ErrorActionPreference = "Stop"
+          rustup toolchain install 1.97.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.97.0
+          rustc --version
+          cargo --version
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
       - name: Check documentation
