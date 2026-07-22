@@ -84,6 +84,7 @@ pub(crate) enum RecoveryStatusV1Value {
     Healthy,
     UncleanButValid,
     NewerSchemaReadOnly,
+    Corrupted,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
