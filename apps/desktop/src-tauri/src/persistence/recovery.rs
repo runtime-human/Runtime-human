@@ -64,9 +64,7 @@ fn verify_active_runs(
 fn verify_receipts(connection: &Connection) -> Result<(), PersistenceError> {
     let mut statement = connection
         .prepare("SELECT result_json, result_sha256 FROM request_receipts ORDER BY request_id")
-        .map_err(|source| {
-            PersistenceError::storage("preparing receipt recovery scan", source)
-        })?;
+        .map_err(|source| PersistenceError::storage("preparing receipt recovery scan", source))?;
     let mut rows = statement
         .query([])
         .map_err(|source| PersistenceError::storage("querying receipts for recovery", source))?;
@@ -105,9 +103,7 @@ fn verify_committed_save_links(connection: &Connection) -> Result<(), Persistenc
             [],
             |row| row.get(0),
         )
-        .map_err(|source| {
-            PersistenceError::storage("checking committed MonthRun links", source)
-        })?;
+        .map_err(|source| PersistenceError::storage("checking committed MonthRun links", source))?;
     if invalid_committed_runs != 0 {
         return Err(PersistenceError::CorruptedStoredPayload);
     }
@@ -174,9 +170,7 @@ fn verify_journal_chain(
              WHERE run_id = ?1
              ORDER BY sequence",
         )
-        .map_err(|source| {
-            PersistenceError::storage("preparing journal recovery scan", source)
-        })?;
+        .map_err(|source| PersistenceError::storage("preparing journal recovery scan", source))?;
     let mut rows = statement
         .query([run_id])
         .map_err(|source| PersistenceError::storage("querying journal for recovery", source))?;
@@ -193,36 +187,24 @@ fn verify_journal_chain(
         let event_kind: String = row
             .get(1)
             .map_err(|source| PersistenceError::storage("reading journal event kind", source))?;
-        let source_payload_hash: Option<String> = row
-            .get(2)
-            .map_err(|source| {
-                PersistenceError::storage("reading journal source payload", source)
-            })?;
-        let source_checkpoint_hash: Option<String> = row
-            .get(3)
-            .map_err(|source| {
-                PersistenceError::storage("reading journal source checkpoint", source)
-            })?;
+        let source_payload_hash: Option<String> = row.get(2).map_err(|source| {
+            PersistenceError::storage("reading journal source payload", source)
+        })?;
+        let source_checkpoint_hash: Option<String> = row.get(3).map_err(|source| {
+            PersistenceError::storage("reading journal source checkpoint", source)
+        })?;
         let checkpoint_payload_hash: String = row
             .get(4)
-            .map_err(|source| {
-                PersistenceError::storage("reading journal payload hash", source)
-            })?;
-        let checkpoint_hash: String = row
-            .get(5)
-            .map_err(|source| {
-                PersistenceError::storage("reading journal checkpoint hash", source)
-            })?;
+            .map_err(|source| PersistenceError::storage("reading journal payload hash", source))?;
+        let checkpoint_hash: String = row.get(5).map_err(|source| {
+            PersistenceError::storage("reading journal checkpoint hash", source)
+        })?;
         let stored_previous_entry_hash: Option<String> = row
             .get(6)
-            .map_err(|source| {
-                PersistenceError::storage("reading previous journal hash", source)
-            })?;
+            .map_err(|source| PersistenceError::storage("reading previous journal hash", source))?;
         let entry_hash: String = row
             .get(7)
-            .map_err(|source| {
-                PersistenceError::storage("reading journal entry hash", source)
-            })?;
+            .map_err(|source| PersistenceError::storage("reading journal entry hash", source))?;
 
         if sequence != expected_sequence
             || source_payload_hash != previous_payload_hash
@@ -248,9 +230,7 @@ fn verify_journal_chain(
 
         expected_sequence = expected_sequence
             .checked_add(1)
-            .ok_or_else(|| {
-                PersistenceError::Invariant("journal sequence overflow".to_owned())
-            })?;
+            .ok_or_else(|| PersistenceError::Invariant("journal sequence overflow".to_owned()))?;
         previous_payload_hash = Some(checkpoint_payload_hash);
         previous_checkpoint_hash = Some(checkpoint_hash);
         previous_entry_hash = Some(entry_hash);

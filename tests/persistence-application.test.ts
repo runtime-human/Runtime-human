@@ -6,7 +6,10 @@ import {
   type PersistenceInvokePort,
 } from "@runtime-human/game-application";
 import { fingerprint } from "@runtime-human/game-core";
-import { parseSha256Hex, type CreateSaveCommandV1 } from "@runtime-human/game-persistence-contracts";
+import {
+  parseSha256Hex,
+  type CreateSaveCommandV1,
+} from "@runtime-human/game-persistence-contracts";
 import { parseRequestId, parseSaveId } from "@runtime-human/game-schema";
 
 const ZERO_HASH = parseSha256Hex("0".repeat(64));
@@ -47,7 +50,9 @@ function acceptedResponse(command: CreateSaveCommandV1): unknown {
 describe("persistence application adapter", () => {
   it("uses the exact create-save command and parses the response", async () => {
     const command = createCommand();
-    const calls: Array<Readonly<{ command: string; arguments_: Readonly<Record<string, unknown>> }>> = [];
+    const calls: Array<
+      Readonly<{ command: string; arguments_: Readonly<Record<string, unknown>> }>
+    > = [];
     const invoke: PersistenceInvokePort = async <T>(name, arguments_) => {
       calls.push({ command: name, arguments_ });
       return acceptedResponse(command) as T;

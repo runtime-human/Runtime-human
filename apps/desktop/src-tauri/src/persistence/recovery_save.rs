@@ -32,9 +32,9 @@ fn verify_save_payloads(connection: &Connection) -> Result<(), PersistenceError>
         let snapshot_sha256: String = row
             .get(1)
             .map_err(|source| PersistenceError::storage("reading save snapshot hash", source))?;
-        let schema_fingerprint: String = row
-            .get(2)
-            .map_err(|source| PersistenceError::storage("reading save schema fingerprint", source))?;
+        let schema_fingerprint: String = row.get(2).map_err(|source| {
+            PersistenceError::storage("reading save schema fingerprint", source)
+        })?;
         verify_sha256(snapshot_json.as_bytes(), &snapshot_sha256)
             .map_err(|_| PersistenceError::CorruptedStoredPayload)?;
         validate_sha256_hex(&schema_fingerprint, "saveSchemaFingerprint")

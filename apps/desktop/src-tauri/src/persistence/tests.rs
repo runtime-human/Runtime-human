@@ -23,9 +23,8 @@ const COMPLETED_CHECKPOINT_HASH: &str =
     "5abfbe1fca8e2e3aac24456c42ab236ba6b856e8a9260e6364d82a25e565290a";
 const CRASH_TEST_DATABASE_ENV: &str = "RUNTIME_HUMAN_CRASH_TEST_DATABASE";
 const CRASH_EXIT_CODE: i32 = 86;
-const FIXTURE_JSON: &str = include_str!(
-    "../../../../../fixtures/persistence/month-run-persistence-v1.json"
-);
+const FIXTURE_JSON: &str =
+    include_str!("../../../../../fixtures/persistence/month-run-persistence-v1.json");
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -314,7 +313,9 @@ fn tamper_save_payload(path: &Path) {
             ["{\"tampered\":true}", "save-fixture"],
         )
         .expect("tamper save payload");
-    connection.close().expect("close corruption fixture connection");
+    connection
+        .close()
+        .expect("close corruption fixture connection");
 
     let wal = path.with_extension("sqlite3-wal");
     if wal.exists() {
