@@ -40,7 +40,9 @@ fn child_exits_after_shutdown_checkpoint_before_clean_marker() {
     };
 
     let database = Database::open_or_create(Path::new(&database_path)).expect("child open");
-    database.close().expect("failpoint must terminate before close returns");
+    database
+        .close()
+        .expect("failpoint must terminate before close returns");
     panic!("shutdown failpoint did not terminate the child process");
 }
 
