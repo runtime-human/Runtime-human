@@ -18,6 +18,8 @@ mod schema_preflight_tests;
 mod shutdown_tests;
 mod store;
 #[cfg(test)]
+mod terminal_recovery_tests;
+#[cfg(test)]
 mod tests;
 mod worker;
 
