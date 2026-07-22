@@ -64,6 +64,10 @@ export function parseCommitPersistedMonthRunCommand(
   const runId = parseMonthRunId(record.runId);
   const expectedSaveRevision = parseSaveRevision(record.expectedSaveRevision);
   const expectedRunRevision = parseMonthRunRevision(record.expectedRunRevision);
+  if (expectedRunRevision >= Number.MAX_SAFE_INTEGER) {
+    throw new RangeError("Expected MonthRun revision cannot advance beyond the safe integer range");
+  }
+  const nextRunRevision = expectedRunRevision + 1;
   const expectedCheckpointPayloadSha256 = parseSha256Hex(
     record.expectedCheckpointPayloadSha256,
     "expected checkpoint payload sha256",
@@ -84,7 +88,7 @@ export function parseCommitPersistedMonthRunCommand(
   if (identity.status !== "committed") {
     throw new TypeError("Final persistence requires a committed MonthRun checkpoint");
   }
-  if (identity.runRevision !== expectedRunRevision + 1) {
+  if (identity.runRevision !== nextRunRevision) {
     throw new TypeError("Committed checkpoint must be the next MonthRun revision");
   }
   if (identity.previousCheckpointHash !== expectedCheckpointHash) {
