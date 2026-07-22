@@ -11,7 +11,7 @@ updated: 2026-07-22
 > Сгенерировано `node scripts/build-toc.mjs` из metadata документов. Не редактировать вручную.
 > Канонический навигационный вход и порядок источников истины: [INDEX.md](INDEX.md).
 
-Всего документов: **182**.
+Всего документов: **183**.
 
 ## Навигация
 
@@ -193,6 +193,7 @@ updated: 2026-07-22
 - [Runtime Human integrated implementation roadmap](superpowers/plans/2026-07-22-runtime-human-integrated-roadmap.md) — `active`, `non-canon`
 - [Runtime Human source adaptation register](superpowers/plans/2026-07-22-runtime-human-source-adaptation-register.md) — `active`, `non-canon`
 - [SQLite Durable Store design](superpowers/specs/2026-07-21-month-run-sqlite-durable-store-design.md) — `active`, `canon`
+- [SQLite Durable Store final design addendum](superpowers/specs/2026-07-22-month-run-sqlite-durable-store-final-addendum.md) — `active`, `canon`
 - [SQLite Durable Store implementation plan](superpowers/plans/2026-07-21-month-run-sqlite-durable-store.md) — `active`, `non-canon`
 - [Technology & Ecosystem Engine — Implementation Plan](plans/TECHNOLOGY-ECOSYSTEM-IMPLEMENTATION-PLAN.md) — `draft`, `canon`
 - [Vertical Slice Plan](plans/VERTICAL-SLICE-PLAN.md) — `draft`, `canon`
