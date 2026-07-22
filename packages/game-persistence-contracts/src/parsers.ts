@@ -333,8 +333,8 @@ function jsonValuesEqual(left: unknown, right: unknown): boolean {
 
   const leftRecord = left as Readonly<Record<string, unknown>>;
   const rightRecord = right as Readonly<Record<string, unknown>>;
-  const leftKeys = Object.keys(leftRecord).sort();
-  const rightKeys = Object.keys(rightRecord).sort();
+  const leftKeys = Object.keys(leftRecord).sort(compareJsonObjectKeys);
+  const rightKeys = Object.keys(rightRecord).sort(compareJsonObjectKeys);
   return (
     leftKeys.length === rightKeys.length &&
     leftKeys.every(
@@ -342,6 +342,12 @@ function jsonValuesEqual(left: unknown, right: unknown): boolean {
         key === rightKeys[index] && jsonValuesEqual(leftRecord[key], rightRecord[key]),
     )
   );
+}
+
+function compareJsonObjectKeys(left: string, right: string): number {
+  if (left < right) return -1;
+  if (left > right) return 1;
+  return 0;
 }
 
 function utf8ByteLength(value: string): number {
