@@ -3,7 +3,7 @@ name: foundation
 on:
   push:
     branches:
-      - agent/month-run-protocol
+      - main
     paths:
       - "package.json"
       - "pnpm-lock.yaml"
@@ -23,7 +23,6 @@ on:
   pull_request:
     branches:
       - main
-      - agent/month-run-protocol
     paths:
       - "package.json"
       - "pnpm-lock.yaml"
@@ -42,7 +41,7 @@ on:
       - ".github/workflows/foundation.yml"
 
 concurrency:
-  group: foundation-${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref_name }}
+  group: foundation-${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
 permissions:
@@ -56,11 +55,7 @@ jobs:
   full-verification:
     if: >-
       github.event_name == 'push' ||
-      (github.event.pull_request.head.repo.full_name == github.repository &&
-       github.actor == 'MrFr3di' &&
-       ((github.base_ref == 'main' && github.head_ref == 'agent/month-run-protocol') ||
-        (github.base_ref == 'agent/month-run-protocol' &&
-         github.head_ref == 'agent/month-run-persistence')))
+      (github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: self-hosted
     timeout-minutes: 45
     steps:
@@ -115,5 +110,7 @@ jobs:
         run: pnpm rust:fmt:check
       - name: Check Rust workspace
         run: pnpm rust:check
-      - name: Run Rust tests
-        run: pnpm rust:test
+      - name: Run Rust tests sequentially
+        timeout-minutes: 12
+        run: |
+          cargo test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml -- --nocapture --test-threads=1
