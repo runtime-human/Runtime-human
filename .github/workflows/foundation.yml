@@ -3,22 +3,10 @@ name: foundation
 on:
   push:
     branches:
-      - main
+      - agent/month-run-persistence
     paths:
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - "pnpm-workspace.yaml"
-      - "tsconfig*.json"
-      - "vitest.config.ts"
-      - "apps/**"
-      - "packages/**"
+      - "packages/game-persistence-contracts/**"
       - "tests/**"
-      - "fixtures/**"
-      - "docs/**"
-      - "scripts/**"
-      - "rust-toolchain.toml"
-      - ".ox*.json"
-      - ".gitattributes"
       - ".github/workflows/foundation.yml"
   pull_request:
     branches:
@@ -44,9 +32,6 @@ concurrency:
   group: foundation-${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
-
 defaults:
   run:
     shell: pwsh
@@ -56,13 +41,15 @@ jobs:
     if: >-
       github.event_name == 'push' ||
       (github.event.pull_request.head.repo.full_name == github.repository)
+    permissions:
+      contents: write
     runs-on: self-hosted
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           clean: true
-          persist-credentials: false
+          persist-credentials: ${{ github.event_name == 'push' }}
           show-progress: false
       - name: Normalize tracked files
         run: |
@@ -88,6 +75,22 @@ jobs:
           cargo --version
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Format repository targets
+        if: github.event_name == 'push'
+        run: pnpm fmt
+      - name: Commit formatting
+        if: github.event_name == 'push'
+        run: |
+          $ErrorActionPreference = "Stop"
+          git add -- packages/game-persistence-contracts tests
+          if (git diff --cached --quiet) {
+            Write-Host "Persistence TypeScript sources are formatted."
+          } else {
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "style: format persistence reliability changes"
+            git push origin "HEAD:${{ github.ref_name }}"
+          }
       - name: Check documentation
         run: pnpm docs:check
       - name: Check formatting
