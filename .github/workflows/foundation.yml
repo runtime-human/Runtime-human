@@ -70,92 +70,54 @@ jobs:
           @'
           from pathlib import Path
 
+          def replace_once(text: str, old: str, new: str, label: str) -> str:
+              if text.count(old) != 1:
+                  raise SystemExit(f"{label} source changed; refusing blind patch")
+              return text.replace(old, new)
+
           contracts_path = Path("apps/desktop/src-tauri/src/persistence/contracts.rs")
           contracts = contracts_path.read_text(encoding="utf-8")
-          contracts_old = '''const CHECKPOINT_KEYS: [&str; 21] = [
-              "acceptedDecisions",
-              "baseSaveRevision",
-              "checkpointHash",
-              "compatibility",
-              "materializedOutcomes",
-              "pendingDecision",
-              "phase",
-              "plan",
-              "previousCheckpointHash",
-              "programCounter",
-              "provisionalState",
-              "rngState",
-              "runId",
-              "runRevision",
-              "saveId",
-              "schemaVersion",
-              "status",
-              "stepIndex",
-              "terminalReason",
-              "terminalResult",
-              "compatibility",
-          ];'''
-          contracts_new = '''const CHECKPOINT_KEYS: [&str; 20] = [
-              "acceptedDecisions",
-              "baseSaveRevision",
-              "checkpointHash",
-              "compatibility",
-              "materializedOutcomes",
-              "pendingDecision",
-              "phase",
-              "plan",
-              "previousCheckpointHash",
-              "programCounter",
-              "provisionalState",
-              "rngState",
-              "runId",
-              "runRevision",
-              "saveId",
-              "schemaVersion",
-              "status",
-              "stepIndex",
-              "terminalReason",
-              "terminalResult",
-          ];'''
-          if contracts.count(contracts_old) != 1:
-              raise SystemExit("contracts checkpoint-key source changed; refusing blind patch")
-          contracts_path.write_text(contracts.replace(contracts_old, contracts_new), encoding="utf-8", newline="\n")
+          contracts = replace_once(
+              contracts,
+              "const CHECKPOINT_KEYS: [&str; 21]",
+              "const CHECKPOINT_KEYS: [&str; 20]",
+              "checkpoint key count",
+          )
+          contracts = replace_once(
+              contracts,
+              '    "terminalResult",\n    "compatibility",\n];',
+              '    "terminalResult",\n];',
+              "duplicate checkpoint key",
+          )
+          contracts_path.write_text(contracts, encoding="utf-8", newline="\n")
 
           recovery_path = Path("apps/desktop/src-tauri/src/persistence/recovery.rs")
           recovery = recovery_path.read_text(encoding="utf-8")
-          recovery_old = '''            .prepare(
-                          "SELECT run_id FROM month_runs
-                           WHERE status IN ('ready', 'suspended', 'completed')
-                           ORDER BY run_id",
-                      )
-                      .map_err(|source| {
-                          PersistenceError::storage("preparing active run recovery scan", source)
-                      })?;
-                  let rows = statement
-                      .query_map([], |row| row.get::<_, String>(0))
-                      .map_err(|source| {
-                          PersistenceError::storage("querying active runs for recovery", source)
-                      })?;
-                  rows.collect::<rusqlite::Result<Vec<_>>>()
-                      .map_err(|source| {
-                          PersistenceError::storage("reading active runs for recovery", source)
-                      })?'''
-          recovery_new = '''            .prepare("SELECT run_id FROM month_runs ORDER BY run_id")
-                      .map_err(|source| {
-                          PersistenceError::storage("preparing MonthRun recovery scan", source)
-                      })?;
-                  let rows = statement
-                      .query_map([], |row| row.get::<_, String>(0))
-                      .map_err(|source| {
-                          PersistenceError::storage("querying MonthRuns for recovery", source)
-                      })?;
-                  rows.collect::<rusqlite::Result<Vec<_>>>()
-                      .map_err(|source| {
-                          PersistenceError::storage("reading MonthRuns for recovery", source)
-                      })?'''
-          if recovery.count(recovery_old) != 1:
-              raise SystemExit("recovery scan source changed; refusing blind patch")
-          recovery_path.write_text(recovery.replace(recovery_old, recovery_new), encoding="utf-8", newline="\n")
+          recovery = replace_once(
+              recovery,
+              "                 WHERE status IN ('ready', 'suspended', 'completed')\n                 ORDER BY run_id",
+              "                 ORDER BY run_id",
+              "MonthRun recovery query",
+          )
+          recovery = replace_once(
+              recovery,
+              "preparing active run recovery scan",
+              "preparing MonthRun recovery scan",
+              "recovery prepare context",
+          )
+          recovery = replace_once(
+              recovery,
+              "querying active runs for recovery",
+              "querying MonthRuns for recovery",
+              "recovery query context",
+          )
+          recovery = replace_once(
+              recovery,
+              "reading active runs for recovery",
+              "reading MonthRuns for recovery",
+              "recovery read context",
+          )
+          recovery_path.write_text(recovery, encoding="utf-8", newline="\n")
           '@ | python -
           cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all
       - name: Commit reliability patch
