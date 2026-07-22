@@ -10,6 +10,7 @@ mod hash;
 mod migrations;
 mod records;
 mod recovery;
+mod recovery_save;
 mod store;
 #[cfg(test)]
 mod tests;
