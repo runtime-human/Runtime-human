@@ -36,7 +36,7 @@ on:
       - "docs/**"
       - "scripts/**"
       - "rust-toolchain.toml"
-      - " .ox*.json"
+      - ".ox*.json"
       - ".gitattributes"
       - ".github/workflows/foundation.yml"
 
