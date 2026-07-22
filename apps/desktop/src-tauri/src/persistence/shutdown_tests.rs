@@ -28,12 +28,8 @@ fn interrupted_shutdown_remains_unclean_until_checkpoint_finishes() {
     let status = run_shutdown_crash_child(&database_path);
     assert_eq!(status.code(), Some(CRASH_EXIT_CODE));
 
-    let reopened =
-        Database::open_or_create(&database_path).expect("reopen interrupted shutdown");
-    assert_eq!(
-        reopened.recovery_status(),
-        RecoveryStatus::UncleanButValid
-    );
+    let reopened = Database::open_or_create(&database_path).expect("reopen interrupted shutdown");
+    assert_eq!(reopened.recovery_status(), RecoveryStatus::UncleanButValid);
     reopened.close().expect("close recovered database");
 }
 
