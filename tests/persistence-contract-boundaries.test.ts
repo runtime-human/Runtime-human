@@ -29,8 +29,8 @@ describe("persistence contract boundaries", () => {
   });
 
   it("compares checkpoint compatibility independently of object key insertion order", () => {
-    const compatibility = { alpha: 1, "é": 2, "é": 3, omega: 4 };
-    const checkpointCompatibility = { omega: 4, "é": 3, "é": 2, alpha: 1 };
+    const compatibility = { alpha: 1, é: 2, é: 3, omega: 4 };
+    const checkpointCompatibility = { omega: 4, é: 3, é: 2, alpha: 1 };
 
     const parsed = parseBeginPersistedMonthRunCommand({
       schemaVersion: "begin-persisted-month-run-command-v1",

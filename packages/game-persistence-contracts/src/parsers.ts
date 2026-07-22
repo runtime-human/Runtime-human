@@ -354,14 +354,7 @@ function utf8ByteLength(value: string): number {
   let size = 0;
   for (const character of value) {
     const firstCodeUnit = character.charCodeAt(0);
-    size +=
-      firstCodeUnit <= 0x7f
-        ? 1
-        : firstCodeUnit <= 0x7ff
-          ? 2
-          : character.length === 1
-            ? 3
-            : 4;
+    size += firstCodeUnit <= 0x7f ? 1 : firstCodeUnit <= 0x7ff ? 2 : character.length === 1 ? 3 : 4;
   }
   return size;
 }
