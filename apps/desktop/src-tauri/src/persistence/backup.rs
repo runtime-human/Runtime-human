@@ -41,6 +41,24 @@ impl Database {
         let request_key = sha256_hex(command.request_id.as_bytes());
         reject_conflicting_backup(backup_directory, &request_key, &payload_hash)?;
 
+        let backup_id = format!("backup-v1-{request_key}{payload_hash}");
+        let final_path = backup_path(backup_directory, &backup_id);
+        if final_path.exists() {
+            if !final_path.is_file() {
+                return Err(PersistenceError::BackupFailed(
+                    "backup destination is not a regular file".to_owned(),
+                ));
+            }
+            let metadata = inspect_backup(&final_path, &backup_id, &command.save_id)?;
+            insert_backup_receipt(
+                self.connection_mut()?,
+                &command.request_id,
+                &payload_hash,
+                &metadata,
+            )?;
+            return Ok(MutationOutcome::Accepted(metadata));
+        }
+
         let source_save = self
             .load_save(LoadSaveQueryV1 {
                 schema_version: "load-save-query-v1".to_owned(),
@@ -54,29 +72,15 @@ impl Database {
             })?
             .is_some();
 
-        let backup_id = format!("backup-v1-{request_key}{payload_hash}");
-        let final_path = backup_path(backup_directory, &backup_id);
-        if !final_path.exists() {
-            create_verified_backup(
-                self.connection()?,
-                backup_directory,
-                &backup_id,
-                &command.save_id,
-                source_save.revision,
-                source_has_active_run,
-            )?;
-        }
-
-        let metadata = BackupMetadataV1 {
-            schema_version: "backup-metadata-v1".to_owned(),
-            backup_id,
-            save_id: command.save_id,
-            save_revision: source_save.revision,
-            has_active_month_run: source_has_active_run,
-            quick_check: "ok".to_owned(),
-            foreign_key_violations: 0,
-        };
-        verify_backup_file(backup_directory, &metadata)?;
+        create_verified_backup(
+            self.connection()?,
+            backup_directory,
+            &backup_id,
+            &command.save_id,
+            source_save.revision,
+            source_has_active_run,
+        )?;
+        let metadata = inspect_backup(&final_path, &backup_id, &command.save_id)?;
         insert_backup_receipt(
             self.connection_mut()?,
             &command.request_id,
@@ -112,12 +116,14 @@ fn create_verified_backup(
         PersistenceError::storage("closing the backup destination", source)
     })?;
 
-    verify_backup_contents(
-        &partial_path,
-        save_id,
-        expected_revision,
-        expected_active_run,
-    )?;
+    let metadata = inspect_backup(&partial_path, backup_id, save_id)?;
+    if metadata.save_revision != expected_revision
+        || metadata.has_active_month_run != expected_active_run
+    {
+        return Err(PersistenceError::BackupFailed(
+            "backup snapshot does not match the source boundary".to_owned(),
+        ));
+    }
     fs::rename(&partial_path, &final_path)
         .map_err(|source| PersistenceError::io("publishing the verified backup", source))?;
     Ok(())
@@ -127,20 +133,24 @@ fn verify_backup_file(
     backup_directory: &Path,
     metadata: &BackupMetadataV1,
 ) -> Result<(), PersistenceError> {
-    verify_backup_contents(
+    let actual = inspect_backup(
         &backup_path(backup_directory, &metadata.backup_id),
+        &metadata.backup_id,
         &metadata.save_id,
-        metadata.save_revision,
-        metadata.has_active_month_run,
-    )
+    )?;
+    if actual != *metadata {
+        return Err(PersistenceError::BackupFailed(
+            "backup metadata does not match the verified snapshot".to_owned(),
+        ));
+    }
+    Ok(())
 }
 
-fn verify_backup_contents(
+fn inspect_backup(
     path: &Path,
+    backup_id: &str,
     save_id: &str,
-    expected_revision: u64,
-    expected_active_run: bool,
-) -> Result<(), PersistenceError> {
+) -> Result<BackupMetadataV1, PersistenceError> {
     let backup = Database::open_existing_read_only(path).map_err(|error| {
         PersistenceError::BackupFailed(format!("backup verification failed: {error}"))
     })?;
@@ -152,23 +162,22 @@ fn verify_backup_contents(
         .ok_or_else(|| {
             PersistenceError::BackupFailed("backup does not contain the save".to_owned())
         })?;
-    if save.revision != expected_revision {
-        return Err(PersistenceError::BackupFailed(
-            "backup save revision does not match the source".to_owned(),
-        ));
-    }
-    let has_active_run = backup
+    let has_active_month_run = backup
         .load_active_month_run(LoadActiveMonthRunQueryV1 {
             schema_version: "load-active-month-run-query-v1".to_owned(),
             save_id: save_id.to_owned(),
         })?
         .is_some();
-    if has_active_run != expected_active_run {
-        return Err(PersistenceError::BackupFailed(
-            "backup active MonthRun state does not match the source".to_owned(),
-        ));
-    }
-    backup.close()
+    backup.close()?;
+    Ok(BackupMetadataV1 {
+        schema_version: "backup-metadata-v1".to_owned(),
+        backup_id: backup_id.to_owned(),
+        save_id: save_id.to_owned(),
+        save_revision: save.revision,
+        has_active_month_run,
+        quick_check: "ok".to_owned(),
+        foreign_key_violations: 0,
+    })
 }
 
 fn reject_conflicting_backup(
