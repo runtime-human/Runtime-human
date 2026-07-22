@@ -1,16 +1,16 @@
-use std::fmt::Write;
-
 use sha2::{Digest, Sha256};
 
 use super::error::PersistenceError;
 
 pub(crate) const SHA256_HEX_LENGTH: usize = 64;
+const HEX_DIGITS: &[u8; 16] = b"0123456789abcdef";
 
 pub(crate) fn sha256_hex(bytes: impl AsRef<[u8]>) -> String {
     let digest = Sha256::digest(bytes.as_ref());
     let mut hex = String::with_capacity(SHA256_HEX_LENGTH);
     for byte in digest {
-        write!(&mut hex, "{byte:02x}").expect("writing to a String cannot fail");
+        hex.push(HEX_DIGITS[usize::from(byte >> 4)] as char);
+        hex.push(HEX_DIGITS[usize::from(byte & 0x0f)] as char);
     }
     hex
 }
