@@ -34,6 +34,7 @@ pub(crate) use error::{PersistenceError, PersistenceErrorV1};
 pub(crate) use records::{
     BackupMetadataV1, BeginPersistedMonthRunAcceptedV1, CommitPersistedMonthRunAcceptedV1,
     CreateSaveAcceptedV1, MonthRunRecordV1, MutationOutcome, PersistenceMutationResultV1,
-    PersistenceQueryResultV1, RecoveryStatusV1, SaveRecordV1, StoreMonthRunBoundaryAcceptedV1,
+    PersistenceQueryResultV1, RecoveryStatusV1, RecoveryStatusV1Value, SaveRecordV1,
+    StoreMonthRunBoundaryAcceptedV1,
 };
 pub(crate) use worker::PersistenceHandle;
