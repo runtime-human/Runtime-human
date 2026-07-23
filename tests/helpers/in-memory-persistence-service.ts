@@ -48,6 +48,7 @@ export function createInMemoryPersistenceHarness(input: Readonly<{
 }>): Readonly<{
   service: PersistenceService;
   loseNextAcknowledgement(operation: AcknowledgementLossOperation): void;
+  commitNextAsCompeting(input: Readonly<{ snapshot: unknown; result: unknown }>): void;
   setRecoveryStatus(status: RecoveryStatusV1): void;
   getSave(): SaveRecordV1;
   getRun(runId: MonthRunId): MonthRunRecordV1 | null;
@@ -73,6 +74,7 @@ export function createInMemoryPersistenceHarness(input: Readonly<{
   const runs = new Map<MonthRunId, MonthRunRecordV1>();
   const receipts = new Map<RequestId, Receipt>();
   const lostAcknowledgements = new Set<AcknowledgementLossOperation>();
+  let competingCommit: Readonly<{ snapshot: unknown; result: unknown }> | null = null;
   let beginMutations = 0;
   let boundaryMutations = 0;
   let commitMutations = 0;
@@ -169,6 +171,37 @@ export function createInMemoryPersistenceHarness(input: Readonly<{
       }, "storeMonthRunBoundary");
     },
     async commitMonthRun(command: CommitPersistedMonthRunCommandV1) {
+      if (competingCommit !== null) {
+        const source = runs.get(command.runId);
+        if (source === undefined || source.saveId !== command.saveId) {
+          return rejected("RunNotFound", "Run not found");
+        }
+        const committedCheckpoint = requireCheckpoint(command.committedCheckpoint.json);
+        sequence += 1;
+        const committedRevision = parseSaveRevision(save.revision + 1);
+        save = {
+          ...save,
+          revision: committedRevision,
+          snapshot: createCanonicalPayload(competingCommit.snapshot),
+          lastCommittedRunId: command.runId,
+          updatedSequence: sequence,
+        };
+        const run: MonthRunRecordV1 = {
+          ...source,
+          runRevision: committedCheckpoint.runRevision,
+          status: "committed",
+          checkpoint: command.committedCheckpoint,
+          checkpointHash: committedCheckpoint.checkpointHash,
+          previousCheckpointHash: committedCheckpoint.previousCheckpointHash,
+          committedSaveRevision: committedRevision,
+          result: createCanonicalPayload(competingCommit.result),
+          updatedSequence: sequence,
+        };
+        runs.set(run.runId, run);
+        commitMutations += 1;
+        competingCommit = null;
+        return rejected("RunAlreadyCommitted", "A competing commit won the race");
+      }
       return mutation(command.requestId, command, () => {
         const source = runs.get(command.runId);
         if (source === undefined || source.saveId !== command.saveId) {
@@ -231,6 +264,9 @@ export function createInMemoryPersistenceHarness(input: Readonly<{
     service,
     loseNextAcknowledgement(operation) {
       lostAcknowledgements.add(operation);
+    },
+    commitNextAsCompeting(input) {
+      competingCommit = input;
     },
     setRecoveryStatus(status) {
       recovery = status;
