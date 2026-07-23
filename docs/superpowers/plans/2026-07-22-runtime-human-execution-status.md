@@ -4,7 +4,7 @@ type: plan
 status: active
 canon: false
 depends_on: [ADR-004, ADR-005, ADR-007, ADR-010, ADR-015]
-updated: 2026-07-22
+updated: 2026-07-23
 ---
 
 # Runtime Human execution status and next gates
@@ -26,11 +26,11 @@ PR #18 delivered the direct `rusqlite` store, one-worker ownership, bounded comm
 
 ## Active work — `MR-ORCH-01`
 
-GitHub: **draft PR #20**, branch `agent/persisted-month-run-orchestration`.
+GitHub: **PR #20**, branch `agent/persisted-month-run-orchestration`. Implementation and authoritative verification are complete; the remaining operation is squash merge of the unchanged green head.
 
 Goal: connect the pure MonthRun kernel to the durable SQLite commands without moving gameplay authority into Rust.
 
-Required production behavior:
+Implemented production behavior:
 
 1. recovery preflight before gameplay or mutation;
 2. load save and active MonthRun;
@@ -41,7 +41,9 @@ Required production behavior:
 7. preserve the outer request ID across retry and derive stable bounded receipt IDs for internal persistence operations;
 8. restore an unchanged suspended decision after restart;
 9. commit a completed run atomically exactly once;
-10. block corruption, newer schema and incompatible checkpoints before invoking gameplay steps.
+10. block corruption, newer schema and incompatible checkpoints before invoking gameplay steps;
+11. reject a divergent competing commit instead of treating matching save/run links as idempotent success;
+12. classify non-authoritative stored compatibility JSON as corrupted persisted state rather than as a transport failure.
 
 Closed application results:
 
@@ -61,14 +63,30 @@ Acceptance matrix:
 - suspended → expose the identical pending decision without rerunning steps;
 - completed → commit once;
 - acknowledgement lost after begin/boundary/commit → retry with durable-receipt equivalence;
-- corrupted/read-only/incompatible → no gameplay step and no mutation;
+- corrupted persistence → `recovery` block with no gameplay step and no mutation;
+- newer persistence schema → distinct `incompatible-persistence` block;
+- incompatible checkpoint → block before gameplay steps;
+- conflicting committed snapshot/result → preserve the conflict instead of reporting idempotent success;
 - after commit, a later startup sees updated save and no active run.
+
+Verification evidence on the reviewed implementation:
+
+- Oxfmt and both Oxlint passes;
+- TypeScript 7 project build;
+- package-boundary verification;
+- focused Vitest suite including acknowledgement-loss and restart scenarios;
+- renderer and Storybook builds;
+- Rust format, workspace check and sequential Rust tests;
+- documentation front-matter and manifest verification;
+- SonarQube Quality Gate passed with no security hotspots and no new-code duplication;
+- no open review threads;
+- permanent `foundation` workflow remains read-only and does not format, commit or push source changes.
 
 ## Next stable work IDs
 
 | Work ID | Scope | State |
 |---|---|---|
-| `CONTENT-01` | deterministic compiled content foundation | planned |
+| `CONTENT-01` | deterministic compiled content foundation | next |
 | `DETERMINISM-02` | cross-runtime determinism hardening | planned |
 | `NPC-01` | minimal person state and directed relationships | planned, gated by playable need |
 | `NPC-02` | typed memory and beliefs | deferred until playtest evidence |
@@ -88,6 +106,7 @@ Future work uses stable IDs in plans. GitHub PR numbers are recorded only after 
 - no nondeterministic time/randomness in authoritative state;
 - no runtime LLM authority;
 - no merge without resolved Critical/Important findings;
-- final self-hosted Windows `foundation` workflow must pass on the unchanged reviewed head.
+- final self-hosted Windows `foundation` workflow must pass on the unchanged reviewed head;
+- the separate docs workflow must verify front matter and generated manifest on the same head.
 
-The self-hosted runner is intentionally unavailable until the evening of 23 July 2026. Draft PR #20 must remain unmerged and not ready-for-review until that authoritative gate can run.
+PR #20 may be squash-merged only if this documentation-aligned head remains unchanged and both authoritative workflows complete successfully.
