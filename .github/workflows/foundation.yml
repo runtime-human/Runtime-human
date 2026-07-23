@@ -57,7 +57,7 @@ jobs:
       github.event_name == 'push' ||
       (github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: self-hosted
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
@@ -79,15 +79,38 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
           pnpm --version
+      - name: Install Rust 1.97.0
+        run: |
+          $ErrorActionPreference = "Stop"
+          rustup toolchain install 1.97.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.97.0
+          rustc --version
+          cargo --version
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Capture TypeScript diagnostics
+      - name: Check documentation
+        run: pnpm docs:check
+      - name: Check formatting
+        run: pnpm fmt:check
+      - name: Run fast lint
+        run: pnpm lint
+      - name: Run typecheck
+        run: pnpm typecheck
+      - name: Check package boundaries
+        run: pnpm boundaries:check
+      - name: Run focused test suite
+        run: pnpm test
+      - name: Run type-aware lint
+        run: pnpm lint:type-aware
+      - name: Build renderer
+        run: pnpm build
+      - name: Build Storybook
+        run: pnpm storybook:build
+      - name: Check Rust formatting
+        run: pnpm rust:fmt:check
+      - name: Check Rust workspace
+        run: pnpm rust:check
+      - name: Run Rust tests sequentially
+        timeout-minutes: 12
         run: |
-          pnpm typecheck 2>&1 | Tee-Object -FilePath typecheck.log
-          exit $LASTEXITCODE
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: typecheck-diagnostics
-          path: typecheck.log
-          if-no-files-found: error
+          cargo test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml -- --nocapture --test-threads=1
