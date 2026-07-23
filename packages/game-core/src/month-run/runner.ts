@@ -39,7 +39,21 @@ export function runUntilBoundary(
       );
     }
 
-    const transition = transitionMonthRun(current, step(current));
+    let event: MonthRunEventV1;
+    try {
+      event = step(current);
+    } catch {
+      return {
+        kind: "rejected",
+        checkpoint: original,
+        error: {
+          code: "InvalidCommand",
+          message: `Deterministic MonthRun step failed at program counter ${current.programCounter}`,
+        },
+      };
+    }
+
+    const transition = transitionMonthRun(current, event);
     if (transition.kind === "rejected") {
       return { kind: "rejected", checkpoint: original, error: transition.error };
     }

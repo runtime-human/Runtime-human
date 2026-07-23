@@ -1,0 +1,58 @@
+{
+  "_schemaVersion": 1,
+  "updated": "2026-07-23",
+  "implementationProfile": "MVP Casual",
+  "repository": "MrFr3di/Runtime-human",
+  "defaultBranch": "main",
+  "mainHeadAtPlanning": "c41e531511134f3af4ce581857641b8ef8d7ad1f",
+  "currentPhase": "persisted-month-run-orchestration",
+  "milestones": [
+    {
+      "id": "repository-foundation",
+      "status": "complete",
+      "pullRequest": 15,
+      "commit": "63df5b5fef6e0f14c1aac25771eda352482f2930"
+    },
+    {
+      "id": "determinism-kernel",
+      "status": "complete",
+      "pullRequest": 16,
+      "commit": "7521ff64ddbe194a7775676f4b9784e482efee13"
+    },
+    {
+      "id": "month-run-protocol",
+      "status": "complete",
+      "pullRequest": 17,
+      "commit": "66d9ecbb9eaf7abd3b72d915883ef1746946d52f"
+    },
+    {
+      "id": "sqlite-durable-month-run-store",
+      "status": "complete",
+      "pullRequest": 18,
+      "commit": "c41e531511134f3af4ce581857641b8ef8d7ad1f"
+    },
+    {
+      "id": "persisted-month-run-orchestration",
+      "status": "ready-for-merge",
+      "pullRequest": 20,
+      "branch": "agent/persisted-month-run-orchestration"
+    },
+    {
+      "id": "compiled-content-foundation",
+      "status": "planned"
+    },
+    {
+      "id": "january-1990-playable-slice",
+      "status": "planned"
+    }
+  ],
+  "verification": {
+    "authoritativeWorkflow": "foundation",
+    "documentationWorkflow": "docs",
+    "runner": "self-hosted-windows",
+    "mergePolicy": "unchanged-green-head-required",
+    "qualityGate": "passed",
+    "currentConstraint": "final-head-must-remain-unchanged-and-green",
+    "currentPullRequestMayMerge": true
+  }
+}

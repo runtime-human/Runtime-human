@@ -51,11 +51,21 @@ PC-first бесплатный offline-first казуальный симулят�
 - [Исследования и design corrections](docs/research/)
 - [Vertical Slice](docs/plans/VERTICAL-SLICE-PLAN.md)
 - [Roadmap](docs/plans/ROADMAP.md)
+- [Machine-readable execution status](docs/EXECUTION-STATUS.jsonc)
 
 ## Источник истины
 
 Этот приватный репозиторий является единственным источником истины. При конфликте действует порядок из [`AGENTS.md`](AGENTS.md).
 
-## Статус
+## Актуальный статус
 
-Проект находится на стадии игрового и архитектурного проектирования первой вертикальной версии. Accepted ADR-015 закрепляет casual-first abstraction и запрещает реализовывать расширенную симуляцию раньше подтверждённой игровой потребности.
+По состоянию на 23 июля 2026 года завершены и объединены в `main`:
+
+- Repository Foundation — PR #15;
+- Determinism Kernel — PR #16;
+- crash-safe MonthRun Protocol — PR #17;
+- SQLite Durable MonthRun Store — PR #18.
+
+Активная работа: **persisted MonthRun application orchestration** в draft PR #20. Она соединяет pure MonthRun kernel с durable SQLite commands и закрывает restart/acknowledgement-loss сценарии.
+
+Первый играбельный январь 1990 года ещё не готов: production content compiler, January content и игровой desktop UI остаются следующими продуктовыми этапами. Self-hosted Windows workflow является обязательным merge gate; изменение не объединяется без зелёного прогона на неизменённом head.
