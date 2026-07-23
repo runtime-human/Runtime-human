@@ -51,6 +51,26 @@ describe("persisted MonthRun orchestration", () => {
     });
   });
 
+  it("recovers a lost begin acknowledgement without creating a second run", async () => {
+    const harness = createHarness();
+    const orchestrator = createOrchestrator(harness);
+    harness.loseNextAcknowledgement("beginMonthRun");
+
+    const lost = await orchestrator.begin(januaryBeginCommand());
+    expect(lost).toMatchObject({
+      kind: "rejected",
+      error: { category: "transport", retryable: true },
+    });
+
+    const retried = await orchestrator.retry();
+    expect(retried.kind).toBe("waiting-decision");
+    expect(harness.getStats()).toEqual({
+      beginMutations: 1,
+      boundaryMutations: 1,
+      commitMutations: 0,
+    });
+  });
+
   it(
     "retries acknowledgement loss with the same outer request without duplicate progress",
     async () => {
