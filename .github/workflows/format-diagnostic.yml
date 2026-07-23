@@ -43,15 +43,23 @@ jobs:
     needs: prepare
     runs-on: self-hosted
     steps:
-      - name: Capture formatter diff
+      - name: Capture formatter output
         run: |
           $ErrorActionPreference = "Stop"
           git diff -- packages tests apps scripts package.json pnpm-workspace.yaml tsconfig.base.json tsconfig.json vitest.config.ts .github/workflows/foundation.yml | Out-File -FilePath formatter.patch -Encoding utf8
           git diff --name-only
       - uses: actions/upload-artifact@v4
         with:
-          name: formatter-patch
-          path: formatter.patch
+          name: formatter-output
+          path: |
+            formatter.patch
+            packages/game-application/src/month-run-persistence-payload.ts
+            packages/game-application/src/persisted-month-run-orchestrator.ts
+            packages/game-application/src/persisted-month-run-types.ts
+            tests/fixtures/january-reference-program.ts
+            tests/helpers/in-memory-persistence-service.ts
+            tests/persisted-month-run-orchestrator.test.ts
+            tests/persisted-month-run-restart.test.ts
           if-no-files-found: error
       - name: Keep diagnostic red
         run: |
