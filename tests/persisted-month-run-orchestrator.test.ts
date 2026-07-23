@@ -132,9 +132,11 @@ describe("persisted MonthRun orchestration", () => {
     const harness = createHarness();
     const orchestrator = createPersistedMonthRunOrchestrator({
       persistence: harness.service,
-      steps: [() => {
-        throw new Error("deterministic step defect");
-      }],
+      steps: [
+        () => {
+          throw new Error("deterministic step defect");
+        },
+      ],
       expectedCompatibility: JANUARY_COMPATIBILITY,
       materializeCommit: materializeJanuaryCommit,
     });
