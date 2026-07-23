@@ -90,27 +90,8 @@ jobs:
         run: pnpm install --frozen-lockfile --reporter=silent
       - name: Check documentation
         run: pnpm docs:check
-      - name: Format diagnostic working copy
-        run: pnpm fmt
-      - uses: actions/upload-artifact@v4
-        with:
-          name: foundation-formatted-sources
-          path: |
-            packages/game-application/src/month-run-persistence-payload.ts
-            packages/game-application/src/persisted-month-run-orchestrator.ts
-            packages/game-application/src/persisted-month-run-types.ts
-            tests/fixtures/january-reference-program.ts
-            tests/helpers/in-memory-persistence-service.ts
-            tests/month-run-persistence-payload.test.ts
-            tests/persisted-month-run-orchestrator.test.ts
-            tests/persisted-month-run-restart.test.ts
-          if-no-files-found: error
-      - name: Report formatter changes
-        run: |
-          git diff --name-only
-          if (-not (git diff --quiet)) {
-            exit 1
-          }
+      - name: Check formatting
+        run: pnpm fmt:check
       - name: Run fast lint
         run: pnpm lint
       - name: Run typecheck

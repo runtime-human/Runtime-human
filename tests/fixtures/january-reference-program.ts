@@ -64,9 +64,7 @@ export const JANUARY_STEPS: readonly MonthRunStep[] = [
   }),
 ];
 
-export function januaryBeginCommand(
-  requestId = "begin-january-1990",
-): BeginMonthCommandV1 {
+export function januaryBeginCommand(requestId = "begin-january-1990"): BeginMonthCommandV1 {
   return {
     schemaVersion: "begin-month-command-v1",
     requestId: parseRequestId(requestId),
@@ -94,10 +92,12 @@ export function januaryResumeCommand(
   };
 }
 
-export function materializeJanuaryCommit(input: Readonly<{
-  save: SaveRecordV1;
-  completedCheckpoint: MonthRunCheckpointV1;
-}>) {
+export function materializeJanuaryCommit(
+  input: Readonly<{
+    save: SaveRecordV1;
+    completedCheckpoint: MonthRunCheckpointV1;
+  }>,
+) {
   return {
     snapshot: {
       schemaVersion: "january-save-v1",

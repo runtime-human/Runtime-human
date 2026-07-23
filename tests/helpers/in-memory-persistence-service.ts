@@ -23,10 +23,7 @@ import type {
   StoreMonthRunBoundaryAcceptedV1,
   StoreMonthRunBoundaryCommandV1,
 } from "@runtime-human/game-persistence-contracts";
-import {
-  createCanonicalPayload,
-  type PersistenceService,
-} from "@runtime-human/game-application";
+import { createCanonicalPayload, type PersistenceService } from "@runtime-human/game-application";
 
 export type AcknowledgementLossOperation =
   | "beginMonthRun"
@@ -41,11 +38,13 @@ export type InMemoryPersistenceStats = Readonly<{
 
 type Receipt = Readonly<{ payloadHash: string; value: unknown }>;
 
-export function createInMemoryPersistenceHarness(input: Readonly<{
-  saveId: SaveId;
-  saveSchemaFingerprint: SaveRecordV1["saveSchemaFingerprint"];
-  initialSnapshot?: unknown;
-}>): Readonly<{
+export function createInMemoryPersistenceHarness(
+  input: Readonly<{
+    saveId: SaveId;
+    saveSchemaFingerprint: SaveRecordV1["saveSchemaFingerprint"];
+    initialSnapshot?: unknown;
+  }>,
+): Readonly<{
   service: PersistenceService;
   loseNextAcknowledgement(operation: AcknowledgementLossOperation): void;
   commitNextAsCompeting(input: Readonly<{ snapshot: unknown; result: unknown }>): void;
@@ -89,42 +88,47 @@ export function createInMemoryPersistenceHarness(input: Readonly<{
       return query.saveId === save.saveId ? { kind: "found", value: save } : { kind: "not-found" };
     },
     async beginMonthRun(command: BeginPersistedMonthRunCommandV1) {
-      return mutation(command.requestId, command, () => {
-        if (command.saveId !== save.saveId) return rejected("SaveNotFound", "Save not found");
-        if (command.expectedSaveRevision !== save.revision) {
-          return rejected("SaveRevisionConflict", "Save revision is stale");
-        }
-        const active = [...runs.values()].find(
-          (run) => run.saveId === command.saveId && isActive(run),
-        );
-        if (active !== undefined) {
-          return rejected("ActiveRunExists", "An active run already exists");
-        }
-        const checkpoint = requireCheckpoint(command.checkpoint.json);
-        sequence += 1;
-        const run: MonthRunRecordV1 = {
-          schemaVersion: "month-run-record-v1",
-          runId: command.runId,
-          saveId: command.saveId,
-          baseSaveRevision: command.expectedSaveRevision,
-          runRevision: checkpoint.runRevision,
-          status: "ready",
-          checkpoint: command.checkpoint,
-          checkpointHash: checkpoint.checkpointHash,
-          previousCheckpointHash: checkpoint.previousCheckpointHash,
-          compatibility: command.compatibility,
-          committedSaveRevision: null,
-          result: null,
-          createdSequence: sequence,
-          updatedSequence: sequence,
-        };
-        runs.set(run.runId, run);
-        beginMutations += 1;
-        return accepted<BeginPersistedMonthRunAcceptedV1>({
-          schemaVersion: "begin-persisted-month-run-accepted-v1",
-          run,
-        });
-      }, "beginMonthRun");
+      return mutation(
+        command.requestId,
+        command,
+        () => {
+          if (command.saveId !== save.saveId) return rejected("SaveNotFound", "Save not found");
+          if (command.expectedSaveRevision !== save.revision) {
+            return rejected("SaveRevisionConflict", "Save revision is stale");
+          }
+          const active = [...runs.values()].find(
+            (run) => run.saveId === command.saveId && isActive(run),
+          );
+          if (active !== undefined) {
+            return rejected("ActiveRunExists", "An active run already exists");
+          }
+          const checkpoint = requireCheckpoint(command.checkpoint.json);
+          sequence += 1;
+          const run: MonthRunRecordV1 = {
+            schemaVersion: "month-run-record-v1",
+            runId: command.runId,
+            saveId: command.saveId,
+            baseSaveRevision: command.expectedSaveRevision,
+            runRevision: checkpoint.runRevision,
+            status: "ready",
+            checkpoint: command.checkpoint,
+            checkpointHash: checkpoint.checkpointHash,
+            previousCheckpointHash: checkpoint.previousCheckpointHash,
+            compatibility: command.compatibility,
+            committedSaveRevision: null,
+            result: null,
+            createdSequence: sequence,
+            updatedSequence: sequence,
+          };
+          runs.set(run.runId, run);
+          beginMutations += 1;
+          return accepted<BeginPersistedMonthRunAcceptedV1>({
+            schemaVersion: "begin-persisted-month-run-accepted-v1",
+            run,
+          });
+        },
+        "beginMonthRun",
+      );
     },
     async loadMonthRun(query) {
       const run = runs.get(query.runId);
@@ -137,38 +141,43 @@ export function createInMemoryPersistenceHarness(input: Readonly<{
       return run === undefined ? { kind: "not-found" } : { kind: "found", value: run };
     },
     async storeMonthRunBoundary(command: StoreMonthRunBoundaryCommandV1) {
-      return mutation(command.requestId, command, () => {
-        const source = runs.get(command.runId);
-        if (source === undefined || source.saveId !== command.saveId) {
-          return rejected("RunNotFound", "Run not found");
-        }
-        if (source.runRevision !== command.expectedRunRevision) {
-          return rejected("RunRevisionConflict", "Run revision is stale");
-        }
-        if (
-          source.checkpoint.sha256 !== command.expectedCheckpointPayloadSha256 ||
-          source.checkpointHash !== command.expectedCheckpointHash
-        ) {
-          return rejected("CheckpointHashConflict", "Checkpoint identity is stale");
-        }
-        const checkpoint = requireCheckpoint(command.checkpoint.json);
-        sequence += 1;
-        const run: MonthRunRecordV1 = {
-          ...source,
-          runRevision: parseMonthRunRevision(command.runRevision),
-          status: command.status,
-          checkpoint: command.checkpoint,
-          checkpointHash: checkpoint.checkpointHash,
-          previousCheckpointHash: checkpoint.previousCheckpointHash,
-          updatedSequence: sequence,
-        };
-        runs.set(run.runId, run);
-        boundaryMutations += 1;
-        return accepted<StoreMonthRunBoundaryAcceptedV1>({
-          schemaVersion: "store-month-run-boundary-accepted-v1",
-          run,
-        });
-      }, "storeMonthRunBoundary");
+      return mutation(
+        command.requestId,
+        command,
+        () => {
+          const source = runs.get(command.runId);
+          if (source === undefined || source.saveId !== command.saveId) {
+            return rejected("RunNotFound", "Run not found");
+          }
+          if (source.runRevision !== command.expectedRunRevision) {
+            return rejected("RunRevisionConflict", "Run revision is stale");
+          }
+          if (
+            source.checkpoint.sha256 !== command.expectedCheckpointPayloadSha256 ||
+            source.checkpointHash !== command.expectedCheckpointHash
+          ) {
+            return rejected("CheckpointHashConflict", "Checkpoint identity is stale");
+          }
+          const checkpoint = requireCheckpoint(command.checkpoint.json);
+          sequence += 1;
+          const run: MonthRunRecordV1 = {
+            ...source,
+            runRevision: parseMonthRunRevision(command.runRevision),
+            status: command.status,
+            checkpoint: command.checkpoint,
+            checkpointHash: checkpoint.checkpointHash,
+            previousCheckpointHash: checkpoint.previousCheckpointHash,
+            updatedSequence: sequence,
+          };
+          runs.set(run.runId, run);
+          boundaryMutations += 1;
+          return accepted<StoreMonthRunBoundaryAcceptedV1>({
+            schemaVersion: "store-month-run-boundary-accepted-v1",
+            run,
+          });
+        },
+        "storeMonthRunBoundary",
+      );
     },
     async commitMonthRun(command: CommitPersistedMonthRunCommandV1) {
       if (competingCommit !== null) {
@@ -202,55 +211,60 @@ export function createInMemoryPersistenceHarness(input: Readonly<{
         competingCommit = null;
         return rejected("RunAlreadyCommitted", "A competing commit won the race");
       }
-      return mutation(command.requestId, command, () => {
-        const source = runs.get(command.runId);
-        if (source === undefined || source.saveId !== command.saveId) {
-          return rejected("RunNotFound", "Run not found");
-        }
-        if (source.status === "committed") {
-          return rejected("RunAlreadyCommitted", "Run was already committed");
-        }
-        if (save.revision !== command.expectedSaveRevision) {
-          return rejected("SaveRevisionConflict", "Save revision is stale");
-        }
-        if (source.runRevision !== command.expectedRunRevision) {
-          return rejected("RunRevisionConflict", "Run revision is stale");
-        }
-        if (
-          source.checkpoint.sha256 !== command.expectedCheckpointPayloadSha256 ||
-          source.checkpointHash !== command.expectedCheckpointHash
-        ) {
-          return rejected("CheckpointHashConflict", "Checkpoint identity is stale");
-        }
-        const committedCheckpoint = requireCheckpoint(command.committedCheckpoint.json);
-        sequence += 1;
-        const committedRevision = parseSaveRevision(save.revision + 1);
-        save = {
-          ...save,
-          revision: committedRevision,
-          snapshot: command.snapshot,
-          lastCommittedRunId: command.runId,
-          updatedSequence: sequence,
-        };
-        const run: MonthRunRecordV1 = {
-          ...source,
-          runRevision: committedCheckpoint.runRevision,
-          status: "committed",
-          checkpoint: command.committedCheckpoint,
-          checkpointHash: committedCheckpoint.checkpointHash,
-          previousCheckpointHash: committedCheckpoint.previousCheckpointHash,
-          committedSaveRevision: committedRevision,
-          result: command.result,
-          updatedSequence: sequence,
-        };
-        runs.set(run.runId, run);
-        commitMutations += 1;
-        return accepted<CommitPersistedMonthRunAcceptedV1>({
-          schemaVersion: "commit-persisted-month-run-accepted-v1",
-          save,
-          run,
-        });
-      }, "commitMonthRun");
+      return mutation(
+        command.requestId,
+        command,
+        () => {
+          const source = runs.get(command.runId);
+          if (source === undefined || source.saveId !== command.saveId) {
+            return rejected("RunNotFound", "Run not found");
+          }
+          if (source.status === "committed") {
+            return rejected("RunAlreadyCommitted", "Run was already committed");
+          }
+          if (save.revision !== command.expectedSaveRevision) {
+            return rejected("SaveRevisionConflict", "Save revision is stale");
+          }
+          if (source.runRevision !== command.expectedRunRevision) {
+            return rejected("RunRevisionConflict", "Run revision is stale");
+          }
+          if (
+            source.checkpoint.sha256 !== command.expectedCheckpointPayloadSha256 ||
+            source.checkpointHash !== command.expectedCheckpointHash
+          ) {
+            return rejected("CheckpointHashConflict", "Checkpoint identity is stale");
+          }
+          const committedCheckpoint = requireCheckpoint(command.committedCheckpoint.json);
+          sequence += 1;
+          const committedRevision = parseSaveRevision(save.revision + 1);
+          save = {
+            ...save,
+            revision: committedRevision,
+            snapshot: command.snapshot,
+            lastCommittedRunId: command.runId,
+            updatedSequence: sequence,
+          };
+          const run: MonthRunRecordV1 = {
+            ...source,
+            runRevision: committedCheckpoint.runRevision,
+            status: "committed",
+            checkpoint: command.committedCheckpoint,
+            checkpointHash: committedCheckpoint.checkpointHash,
+            previousCheckpointHash: committedCheckpoint.previousCheckpointHash,
+            committedSaveRevision: committedRevision,
+            result: command.result,
+            updatedSequence: sequence,
+          };
+          runs.set(run.runId, run);
+          commitMutations += 1;
+          return accepted<CommitPersistedMonthRunAcceptedV1>({
+            schemaVersion: "commit-persisted-month-run-accepted-v1",
+            save,
+            run,
+          });
+        },
+        "commitMonthRun",
+      );
     },
     async createBackup(_command: CreateBackupCommandV1) {
       return rejected("BackupFailed", "Backup is outside this test harness scope");
@@ -313,7 +327,10 @@ function accepted<T>(value: T): PersistenceMutationResultV1<T> {
   return { kind: "accepted", value };
 }
 
-function rejected(code: PersistenceErrorCode, message: string): Readonly<{
+function rejected(
+  code: PersistenceErrorCode,
+  message: string,
+): Readonly<{
   kind: "rejected";
   error: PersistenceErrorV1;
 }> {

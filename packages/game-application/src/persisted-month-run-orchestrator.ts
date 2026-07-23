@@ -76,8 +76,7 @@ export function createPersistedMonthRunOrchestrator(
   async function execute(operation: Operation): Promise<PersistedMonthRunResult> {
     try {
       const result = await executeUnchecked(operation);
-      retryableOperation =
-        result.kind === "rejected" && result.error.retryable ? operation : null;
+      retryableOperation = result.kind === "rejected" && result.error.retryable ? operation : null;
       return result;
     } catch (error) {
       const retryable = !(error instanceof TypeError || error instanceof RangeError);
@@ -131,10 +130,7 @@ export function createPersistedMonthRunOrchestrator(
       });
     }
     if (saveResult.save.revision !== command.expectedSaveRevision) {
-      return protocolRejected(
-        "SaveRevisionConflict",
-        "BeginMonth expected save revision is stale",
-      );
+      return protocolRejected("SaveRevisionConflict", "BeginMonth expected save revision is stale");
     }
 
     const readyCheckpoint = createMonthRunCheckpoint({
@@ -178,10 +174,7 @@ export function createPersistedMonthRunOrchestrator(
     if (runResult.kind === "not-found") {
       return protocolRejected("RunNotFound", `MonthRun ${command.runId} does not exist`);
     }
-    const restored = restorePersistedCheckpoint(
-      runResult.run,
-      options.expectedCompatibility,
-    );
+    const restored = restorePersistedCheckpoint(runResult.run, options.expectedCompatibility);
     if (restored.kind === "blocked") {
       return checkpointBlocked(saveResult.save, runResult.run, restored);
     }
@@ -208,10 +201,7 @@ export function createPersistedMonthRunOrchestrator(
     }
 
     if (checkpoint.runRevision !== command.expectedRunRevision) {
-      return protocolRejected(
-        "RunRevisionConflict",
-        "ResumeMonth expected run revision is stale",
-      );
+      return protocolRejected("RunRevisionConflict", "ResumeMonth expected run revision is stale");
     }
     if (
       checkpoint.status !== "suspended" ||

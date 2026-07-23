@@ -71,27 +71,24 @@ describe("persisted MonthRun orchestration", () => {
     });
   });
 
-  it(
-    "retries acknowledgement loss with the same outer request without duplicate progress",
-    async () => {
-      const harness = createHarness();
-      const orchestrator = createOrchestrator(harness);
-      const started = await orchestrator.begin(januaryBeginCommand());
-      if (started.kind !== "waiting-decision") throw new Error("expected decision boundary");
+  it("retries acknowledgement loss with the same outer request without duplicate progress", async () => {
+    const harness = createHarness();
+    const orchestrator = createOrchestrator(harness);
+    const started = await orchestrator.begin(januaryBeginCommand());
+    if (started.kind !== "waiting-decision") throw new Error("expected decision boundary");
 
-      harness.loseNextAcknowledgement("storeMonthRunBoundary");
-      const lost = await orchestrator.resume(januaryResumeCommand(started.checkpoint));
-      expect(lost).toMatchObject({
-        kind: "rejected",
-        error: { category: "transport", retryable: true },
-      });
+    harness.loseNextAcknowledgement("storeMonthRunBoundary");
+    const lost = await orchestrator.resume(januaryResumeCommand(started.checkpoint));
+    expect(lost).toMatchObject({
+      kind: "rejected",
+      error: { category: "transport", retryable: true },
+    });
 
-      const retried = await orchestrator.retry();
-      expect(retried.kind).toBe("committed");
-      expect(harness.getSave().revision).toBe(1);
-      expect(harness.getStats().commitMutations).toBe(1);
-    },
-  );
+    const retried = await orchestrator.retry();
+    expect(retried.kind).toBe("committed");
+    expect(harness.getSave().revision).toBe(1);
+    expect(harness.getStats().commitMutations).toBe(1);
+  });
 
   it("recovers a lost commit acknowledgement without a second save commit", async () => {
     const harness = createHarness();

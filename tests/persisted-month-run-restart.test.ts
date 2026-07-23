@@ -68,13 +68,9 @@ describe("persisted MonthRun restart recovery", () => {
     if (started.kind !== "waiting-decision") throw new Error("expected decision boundary");
     let stepCount = 0;
 
-    const recovered = await createOrchestrator(
-      harness,
-      JANUARY_COMPATIBILITY,
-      () => {
-        stepCount += 1;
-      },
-    ).load(JANUARY_SAVE_ID);
+    const recovered = await createOrchestrator(harness, JANUARY_COMPATIBILITY, () => {
+      stepCount += 1;
+    }).load(JANUARY_SAVE_ID);
 
     expect(recovered.kind).toBe("waiting-decision");
     if (recovered.kind !== "waiting-decision") throw new Error("expected recovered decision");
@@ -82,27 +78,24 @@ describe("persisted MonthRun restart recovery", () => {
     expect(stepCount).toBe(0);
   });
 
-  it(
-    "commits a completed boundary after restart without duplicating the save revision",
-    async () => {
-      const harness = createHarness();
-      const first = createOrchestrator(harness);
-      const started = await first.begin(januaryBeginCommand());
-      if (started.kind !== "waiting-decision") throw new Error("expected decision boundary");
+  it("commits a completed boundary after restart without duplicating the save revision", async () => {
+    const harness = createHarness();
+    const first = createOrchestrator(harness);
+    const started = await first.begin(januaryBeginCommand());
+    if (started.kind !== "waiting-decision") throw new Error("expected decision boundary");
 
-      harness.loseNextAcknowledgement("storeMonthRunBoundary");
-      await first.resume(januaryResumeCommand(started.checkpoint));
-      expect(harness.getRun(JANUARY_RUN_ID)?.status).toBe("completed");
+    harness.loseNextAcknowledgement("storeMonthRunBoundary");
+    await first.resume(januaryResumeCommand(started.checkpoint));
+    expect(harness.getRun(JANUARY_RUN_ID)?.status).toBe("completed");
 
-      const recovered = await createOrchestrator(harness).load(JANUARY_SAVE_ID);
-      const repeated = await createOrchestrator(harness).load(JANUARY_SAVE_ID);
+    const recovered = await createOrchestrator(harness).load(JANUARY_SAVE_ID);
+    const repeated = await createOrchestrator(harness).load(JANUARY_SAVE_ID);
 
-      expect(recovered.kind).toBe("committed");
-      expect(repeated.kind).toBe("idle");
-      expect(harness.getSave().revision).toBe(1);
-      expect(harness.getStats().commitMutations).toBe(1);
-    },
-  );
+    expect(recovered.kind).toBe("committed");
+    expect(repeated.kind).toBe("idle");
+    expect(harness.getSave().revision).toBe(1);
+    expect(harness.getStats().commitMutations).toBe(1);
+  });
 
   it("blocks read-only recovery before invoking gameplay steps or mutations", async () => {
     const harness = createHarness();
@@ -115,13 +108,9 @@ describe("persisted MonthRun restart recovery", () => {
     let stepCount = 0;
     const before = harness.getStats();
 
-    const result = await createOrchestrator(
-      harness,
-      JANUARY_COMPATIBILITY,
-      () => {
-        stepCount += 1;
-      },
-    ).begin(januaryBeginCommand());
+    const result = await createOrchestrator(harness, JANUARY_COMPATIBILITY, () => {
+      stepCount += 1;
+    }).begin(januaryBeginCommand());
 
     expect(result).toMatchObject({ kind: "blocked", reason: "recovery" });
     expect(stepCount).toBe(0);
@@ -138,13 +127,9 @@ describe("persisted MonthRun restart recovery", () => {
     });
     let stepCount = 0;
 
-    const result = await createOrchestrator(
-      harness,
-      JANUARY_COMPATIBILITY,
-      () => {
-        stepCount += 1;
-      },
-    ).load(JANUARY_SAVE_ID);
+    const result = await createOrchestrator(harness, JANUARY_COMPATIBILITY, () => {
+      stepCount += 1;
+    }).load(JANUARY_SAVE_ID);
 
     expect(result).toMatchObject({
       kind: "blocked",
@@ -163,13 +148,9 @@ describe("persisted MonthRun restart recovery", () => {
       contentFingerprint: fingerprint("different-content", 1),
     };
 
-    const result = await createOrchestrator(
-      harness,
-      incompatible,
-      () => {
-        stepCount += 1;
-      },
-    ).load(JANUARY_SAVE_ID);
+    const result = await createOrchestrator(harness, incompatible, () => {
+      stepCount += 1;
+    }).load(JANUARY_SAVE_ID);
 
     expect(result).toMatchObject({
       kind: "blocked",
