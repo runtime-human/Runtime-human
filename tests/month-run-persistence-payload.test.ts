@@ -87,4 +87,22 @@ describe("MonthRun persistence payloads", () => {
       message: "Stored MonthRun row does not match its checkpoint",
     });
   });
+
+  it("classifies non-authoritative compatibility JSON as stored corruption", () => {
+    const invalidCompatibilityJson = "9007199254740992";
+    const record = {
+      ...readyRecord(),
+      compatibility: {
+        schemaVersion: "canonical-payload-v1" as const,
+        json: invalidCompatibilityJson,
+        sha256: sha256Hex(invalidCompatibilityJson),
+      },
+    };
+
+    expect(restorePersistedCheckpoint(record, JANUARY_COMPATIBILITY)).toEqual({
+      kind: "blocked",
+      code: "CorruptedCheckpoint",
+      message: "Stored MonthRun compatibility is not authoritative JSON",
+    });
+  });
 });
