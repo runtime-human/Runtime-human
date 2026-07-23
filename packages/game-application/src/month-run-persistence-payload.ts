@@ -210,10 +210,16 @@ export function restorePersistedCheckpoint(
   ) {
     return blocked("StoredRecordMismatch", "Stored MonthRun row does not match its checkpoint");
   }
-  if (
-    canonicalizeAuthoritative(persistedCompatibility) !==
-    canonicalizeAuthoritative(checkpoint.compatibility)
-  ) {
+  let canonicalPersistedCompatibility: string;
+  try {
+    canonicalPersistedCompatibility = canonicalizeAuthoritative(persistedCompatibility);
+  } catch {
+    return blocked(
+      "CorruptedCheckpoint",
+      "Stored MonthRun compatibility is not authoritative JSON",
+    );
+  }
+  if (canonicalPersistedCompatibility !== canonicalizeAuthoritative(checkpoint.compatibility)) {
     return blocked(
       "StoredRecordMismatch",
       "Stored MonthRun compatibility envelope does not match its checkpoint",
