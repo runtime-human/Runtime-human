@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - agent/persisted-month-run-orchestration
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -14,6 +17,9 @@ defaults:
 
 jobs:
   prepare:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
