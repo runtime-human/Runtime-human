@@ -46,5 +46,18 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: "24"
-      - name: Verify docs front-matter and manifest
-        run: node scripts/build-toc.mjs --check
+      - name: Generate documentation catalog
+        run: node scripts/build-toc.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: generated-documentation-index
+          path: |
+            docs/CATALOG.md
+            docs/MANIFEST.jsonc
+          if-no-files-found: error
+      - name: Report generated changes
+        run: |
+          git diff --name-only -- docs/CATALOG.md docs/MANIFEST.jsonc
+          if (-not (git diff --quiet -- docs/CATALOG.md docs/MANIFEST.jsonc)) {
+            exit 1
+          }
