@@ -13,6 +13,7 @@ import type {
   SaveId,
 } from "@runtime-human/game-schema";
 import type {
+  CommitPersistedMonthRunCommandV1,
   MonthRunRecordV1,
   PersistenceErrorV1,
   RecoveryStatusV1,
@@ -386,14 +387,13 @@ export function createPersistedMonthRunOrchestrator(
     }
 
     const committedCheckpoint = createCommittedCheckpoint(completedCheckpoint);
-    const committed = await options.persistence.commitMonthRun(
-      buildCommitPersistedMonthRunCommand({
-        source,
-        committedCheckpoint,
-        snapshot: materialized.snapshot,
-        result: materialized.result,
-      }),
-    );
+    const commitCommand = buildCommitPersistedMonthRunCommand({
+      source,
+      committedCheckpoint,
+      snapshot: materialized.snapshot,
+      result: materialized.result,
+    });
+    const committed = await options.persistence.commitMonthRun(commitCommand);
     if (committed.kind !== "rejected") {
       const restored = restorePersistedCheckpoint(
         committed.value.run,
@@ -420,9 +420,7 @@ export function createPersistedMonthRunOrchestrator(
       if (
         currentSave.kind === "found" &&
         currentRun.kind === "found" &&
-        currentRun.run.status === "committed" &&
-        currentSave.save.lastCommittedRunId === currentRun.run.runId &&
-        currentRun.run.committedSaveRevision === currentSave.save.revision
+        committedStateMatches(currentSave.save, currentRun.run, commitCommand)
       ) {
         return resolveRecord(currentSave.save, currentRun.run, "recovery", null);
       }
@@ -453,7 +451,10 @@ export function createPersistedMonthRunOrchestrator(
         kind: "result",
         result: {
           kind: "blocked",
-          reason: "recovery",
+          reason:
+            status.value.status === "newer-schema-read-only"
+              ? "incompatible-persistence"
+              : "recovery",
           message: `Persistence is read-only: ${status.value.status}`,
           recovery: status.value,
           save: null,
@@ -510,6 +511,25 @@ export function createPersistedMonthRunOrchestrator(
           )
         : execute(retryableOperation),
   };
+}
+
+function committedStateMatches(
+  save: SaveRecordV1,
+  run: MonthRunRecordV1,
+  command: CommitPersistedMonthRunCommandV1,
+): boolean {
+  return (
+    run.status === "committed" &&
+    save.lastCommittedRunId === run.runId &&
+    run.committedSaveRevision === save.revision &&
+    run.checkpoint.sha256 === command.committedCheckpoint.sha256 &&
+    run.checkpoint.json === command.committedCheckpoint.json &&
+    run.result !== null &&
+    run.result.sha256 === command.result.sha256 &&
+    run.result.json === command.result.json &&
+    save.snapshot.sha256 === command.snapshot.sha256 &&
+    save.snapshot.json === command.snapshot.json
+  );
 }
 
 function checkpointBlocked(
