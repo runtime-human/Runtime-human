@@ -1,0 +1,63 @@
+name: lockfile-generator
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: lockfile-generator-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  generate:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/compiled-content-foundation' &&
+      github.actor == 'MrFr3di'
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          clean: true
+          persist-credentials: true
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          $ErrorActionPreference = "Stop"
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Generate lockfile
+        run: pnpm install --lockfile-only
+      - name: Validate generated scope
+        run: |
+          $ErrorActionPreference = "Stop"
+          $changed = @(git diff --name-only)
+          $unexpected = @($changed | Where-Object { $_ -ne 'pnpm-lock.yaml' })
+          if ($unexpected.Count -gt 0) {
+            throw "Lockfile generation changed unexpected files: $($unexpected -join ', ')"
+          }
+      - name: Commit lockfile
+        run: |
+          $ErrorActionPreference = "Stop"
+          git add -- pnpm-lock.yaml
+          if (git diff --cached --quiet) {
+            Write-Host "Lockfile is already current."
+          } else {
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "build: update pnpm lockfile for content compiler"
+            git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
+          }
