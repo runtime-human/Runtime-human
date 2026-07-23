@@ -128,6 +128,38 @@ describe("persisted MonthRun orchestration", () => {
     expect(harness.getStats().commitMutations).toBe(1);
   });
 
+  it("contains deterministic step exceptions as non-retryable protocol failures", async () => {
+    const harness = createHarness();
+    const orchestrator = createPersistedMonthRunOrchestrator({
+      persistence: harness.service,
+      steps: [() => {
+        throw new Error("deterministic step defect");
+      }],
+      expectedCompatibility: JANUARY_COMPATIBILITY,
+      materializeCommit: materializeJanuaryCommit,
+    });
+
+    const result = await orchestrator.begin(januaryBeginCommand());
+
+    expect(result).toMatchObject({
+      kind: "rejected",
+      error: {
+        category: "protocol",
+        code: "InvalidCommand",
+        retryable: false,
+      },
+    });
+    expect(await orchestrator.retry()).toMatchObject({
+      kind: "rejected",
+      error: { code: "NoRetryableOperation" },
+    });
+    expect(harness.getStats()).toEqual({
+      beginMutations: 1,
+      boundaryMutations: 0,
+      commitMutations: 0,
+    });
+  });
+
   it("rejects an unexpected decision without writing another boundary", async () => {
     const harness = createHarness();
     const orchestrator = createOrchestrator(harness);
