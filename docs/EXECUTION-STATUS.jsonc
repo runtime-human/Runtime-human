@@ -5,7 +5,7 @@
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "c41e531511134f3af4ce581857641b8ef8d7ad1f",
-  "currentPhase": "foundation-integration",
+  "currentPhase": "persisted-month-run-orchestration",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -33,7 +33,7 @@
     },
     {
       "id": "persisted-month-run-orchestration",
-      "status": "in-progress",
+      "status": "ready-for-merge",
       "pullRequest": 20,
       "branch": "agent/persisted-month-run-orchestration"
     },
@@ -48,9 +48,11 @@
   ],
   "verification": {
     "authoritativeWorkflow": "foundation",
+    "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "currentConstraint": "runner-temporarily-offline-until-evening-2026-07-23",
-    "currentPullRequestMayMerge": false
+    "qualityGate": "passed",
+    "currentConstraint": "final-head-must-remain-unchanged-and-green",
+    "currentPullRequestMayMerge": true
   }
 }
