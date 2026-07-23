@@ -499,7 +499,7 @@ function diagnosticAtNode(
   code: ContentDiagnosticCode,
   message: string,
 ): ContentDiagnostic {
-  const node = findNodeAtLocation(document.root, path) ?? document.root;
+  const node = findNodeAtLocation(document.root, [...path]) ?? document.root;
   const location = offsetLocation(document.file.text, node.offset);
   return {
     code,
