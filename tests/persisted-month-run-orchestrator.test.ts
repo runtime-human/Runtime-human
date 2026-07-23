@@ -112,6 +112,25 @@ describe("persisted MonthRun orchestration", () => {
     expect(harness.getStats().commitMutations).toBe(1);
   });
 
+  it("does not accept a divergent competing commit as idempotent success", async () => {
+    const harness = createHarness();
+    const orchestrator = createOrchestrator(harness);
+    const started = await orchestrator.begin(januaryBeginCommand());
+    if (started.kind !== "waiting-decision") throw new Error("expected decision boundary");
+    harness.commitNextAsCompeting({
+      snapshot: { schemaVersion: "divergent-save-v1" },
+      result: { schemaVersion: "divergent-result-v1" },
+    });
+
+    const result = await orchestrator.resume(januaryResumeCommand(started.checkpoint));
+
+    expect(result).toMatchObject({
+      kind: "rejected",
+      error: { code: "RunAlreadyCommitted", retryable: false },
+    });
+    expect(harness.getStats().commitMutations).toBe(1);
+  });
+
   it("rejects an unexpected decision without writing another boundary", async () => {
     const harness = createHarness();
     const orchestrator = createOrchestrator(harness);
