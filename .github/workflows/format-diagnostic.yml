@@ -58,6 +58,7 @@ jobs:
             packages/game-application/src/persisted-month-run-types.ts
             tests/fixtures/january-reference-program.ts
             tests/helpers/in-memory-persistence-service.ts
+            tests/month-run-persistence-payload.test.ts
             tests/persisted-month-run-orchestrator.test.ts
             tests/persisted-month-run-restart.test.ts
           if-no-files-found: error
