@@ -43,11 +43,18 @@ jobs:
     needs: prepare
     runs-on: self-hosted
     steps:
-      - name: Report formatter diff
+      - name: Capture formatter diff
         run: |
           $ErrorActionPreference = "Stop"
+          git diff -- packages tests apps scripts package.json pnpm-workspace.yaml tsconfig.base.json tsconfig.json vitest.config.ts .github/workflows/foundation.yml | Out-File -FilePath formatter.patch -Encoding utf8
           git diff --name-only
-          git diff -- packages tests apps scripts package.json pnpm-workspace.yaml tsconfig.base.json tsconfig.json vitest.config.ts .github/workflows/foundation.yml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: formatter-patch
+          path: formatter.patch
+          if-no-files-found: error
+      - name: Keep diagnostic red
+        run: |
           if (-not (git diff --quiet)) {
             exit 1
           }
