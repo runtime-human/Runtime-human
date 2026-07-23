@@ -48,7 +48,11 @@ export type PersistedMonthRunResult =
     }>
   | Readonly<{
       kind: "blocked";
-      reason: "recovery" | "incompatible-checkpoint" | "corrupted-checkpoint";
+      reason:
+        | "recovery"
+        | "incompatible-persistence"
+        | "incompatible-checkpoint"
+        | "corrupted-checkpoint";
       message: string;
       recovery: RecoveryStatusV1 | null;
       save: SaveRecordV1 | null;
