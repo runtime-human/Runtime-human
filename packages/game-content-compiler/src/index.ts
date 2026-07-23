@@ -190,13 +190,23 @@ function parseFiles(
     const normalizedPath = normalizeSourcePath(file.path);
     if (normalizedPath === null) {
       diagnostics.push(
-        createDiagnostic(file, "INVALID_PATH", "Content source path must be relative and normalized", 0),
+        createDiagnostic(
+          file,
+          "INVALID_PATH",
+          "Content source path must be relative and normalized",
+          0,
+        ),
       );
       continue;
     }
     if (seenPaths.has(normalizedPath)) {
       diagnostics.push(
-        createDiagnostic(file, "DUPLICATE_PATH", `Duplicate content source path ${normalizedPath}`, 0),
+        createDiagnostic(
+          file,
+          "DUPLICATE_PATH",
+          `Duplicate content source path ${normalizedPath}`,
+          0,
+        ),
       );
       continue;
     }
@@ -281,7 +291,9 @@ function validateUniqueIds(
     }
     unique.set(document.source.id, document);
   }
-  return [...unique.values()].toSorted((left, right) => compareText(left.source.id, right.source.id));
+  return [...unique.values()].toSorted((left, right) =>
+    compareText(left.source.id, right.source.id),
+  );
 }
 
 function validateOwnChronology(
@@ -429,9 +441,7 @@ function normalizeEntry(source: ContentSourceDocumentV1): CompiledContentEntryV1
     availableFrom: source.availableFrom,
     entryPoint: source.entryPoint,
     references: source.references.toSorted(compareText),
-    provenance: source.provenance
-      .map((item) => ({ ...item }))
-      .toSorted(compareProvenance),
+    provenance: source.provenance.map((item) => ({ ...item })).toSorted(compareProvenance),
     payload: source.payload,
   };
   return source.availableTo === undefined ? base : { ...base, availableTo: source.availableTo };
@@ -474,7 +484,9 @@ function normalizeSourcePath(path: string): string | null {
     normalized.length === 0 ||
     normalized.startsWith("/") ||
     /^[A-Za-z]:\//u.test(normalized) ||
-    normalized.split("/").some((segment) => segment.length === 0 || segment === "." || segment === "..")
+    normalized
+      .split("/")
+      .some((segment) => segment.length === 0 || segment === "." || segment === "..")
   ) {
     return null;
   }

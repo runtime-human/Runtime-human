@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { compileContentSources, type ContentSourceFile } from "@runtime-human/game-content-compiler";
+import {
+  compileContentSources,
+  type ContentSourceFile,
+} from "@runtime-human/game-content-compiler";
 
 function source(path: string, value: unknown, comment?: string): ContentSourceFile {
   const json = JSON.stringify(value, null, 2);
@@ -158,10 +161,7 @@ describe("deterministic content compiler", () => {
 
   it("rejects missing references", () => {
     const result = compileContentSources([
-      source(
-        "content/storylet.jsonc",
-        firstProgram({ references: ["technology.missing"] }),
-      ),
+      source("content/storylet.jsonc", firstProgram({ references: ["technology.missing"] })),
     ]);
 
     expect(result).toMatchObject({

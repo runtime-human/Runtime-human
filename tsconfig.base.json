@@ -9,9 +9,7 @@
       "@runtime-human/game-core": ["./packages/game-core/src/index.ts"],
       "@runtime-human/game-application": ["./packages/game-application/src/index.ts"],
       "@runtime-human/game-content": ["./packages/game-content/src/index.ts"],
-      "@runtime-human/game-content-compiler": [
-        "./packages/game-content-compiler/src/index.ts"
-      ],
+      "@runtime-human/game-content-compiler": ["./packages/game-content-compiler/src/index.ts"],
       "@runtime-human/game-persistence-contracts": [
         "./packages/game-persistence-contracts/src/index.ts"
       ],
