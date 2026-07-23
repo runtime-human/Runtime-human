@@ -60,10 +60,12 @@ export type PersistedMonthRunResult =
     }>
   | Readonly<{ kind: "rejected"; error: PersistedMonthRunError }>;
 
-export type PersistedMonthRunCommitMaterializer = (input: Readonly<{
-  save: SaveRecordV1;
-  completedCheckpoint: MonthRunCheckpointV1;
-}>) => Readonly<{
+export type PersistedMonthRunCommitMaterializer = (
+  input: Readonly<{
+    save: SaveRecordV1;
+    completedCheckpoint: MonthRunCheckpointV1;
+  }>,
+) => Readonly<{
   snapshot: AuthoritativeJsonValue;
   result: AuthoritativeJsonValue;
 }>;
