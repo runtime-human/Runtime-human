@@ -128,6 +128,31 @@ describe("persisted MonthRun restart recovery", () => {
     expect(harness.getStats()).toEqual(before);
   });
 
+  it("classifies a newer persistence schema separately from corruption", async () => {
+    const harness = createHarness();
+    harness.setRecoveryStatus({
+      schemaVersion: "recovery-status-v1",
+      status: "newer-schema-read-only",
+      writable: false,
+      backupAvailable: false,
+    });
+    let stepCount = 0;
+
+    const result = await createOrchestrator(
+      harness,
+      JANUARY_COMPATIBILITY,
+      () => {
+        stepCount += 1;
+      },
+    ).load(JANUARY_SAVE_ID);
+
+    expect(result).toMatchObject({
+      kind: "blocked",
+      reason: "incompatible-persistence",
+    });
+    expect(stepCount).toBe(0);
+  });
+
   it("blocks an incompatible stored checkpoint before invoking gameplay steps", async () => {
     const harness = createHarness();
     const first = createOrchestrator(harness);
