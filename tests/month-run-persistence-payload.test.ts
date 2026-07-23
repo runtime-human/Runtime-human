@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import { createMonthRunCheckpoint, sha256Hex } from "@runtime-human/game-core";
 import { parseMonthRunRevision, parseRequestId } from "@runtime-human/game-schema";
-import type { MonthRunRecordV1 } from "@runtime-human/game-persistence-contracts";
+import {
+  parseCanonicalPayload,
+  type MonthRunRecordV1,
+} from "@runtime-human/game-persistence-contracts";
 import {
   createCanonicalPayload,
   derivePersistenceRequestId,
@@ -92,11 +95,11 @@ describe("MonthRun persistence payloads", () => {
     const invalidCompatibilityJson = "9007199254740992";
     const record = {
       ...readyRecord(),
-      compatibility: {
-        schemaVersion: "canonical-payload-v1" as const,
+      compatibility: parseCanonicalPayload({
+        schemaVersion: "canonical-payload-v1",
         json: invalidCompatibilityJson,
         sha256: sha256Hex(invalidCompatibilityJson),
-      },
+      }),
     };
 
     expect(restorePersistedCheckpoint(record, JANUARY_COMPATIBILITY)).toEqual({
