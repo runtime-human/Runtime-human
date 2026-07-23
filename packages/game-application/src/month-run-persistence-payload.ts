@@ -67,9 +67,7 @@ export function createCanonicalPayload(value: unknown): CanonicalPayloadV1 {
   });
 }
 
-export function derivePersistenceRequestId(
-  input: DerivePersistenceRequestIdInput,
-): RequestId {
+export function derivePersistenceRequestId(input: DerivePersistenceRequestIdInput): RequestId {
   return parseRequestId(
     fingerprint("persisted-month-run-receipt-v1", {
       stage: input.stage,
@@ -102,15 +100,17 @@ export function buildBeginPersistedMonthRunCommand(
   });
 }
 
-export function buildStoreMonthRunBoundaryCommand(input: Readonly<{
-  stage: Extract<
-    PersistenceReceiptStage,
-    "begin-boundary" | "resume-boundary" | "recovery-boundary"
-  >;
-  outerRequestId: RequestId | null;
-  source: MonthRunRecordV1;
-  checkpoint: MonthRunCheckpointV1;
-}>): StoreMonthRunBoundaryCommandV1 {
+export function buildStoreMonthRunBoundaryCommand(
+  input: Readonly<{
+    stage: Extract<
+      PersistenceReceiptStage,
+      "begin-boundary" | "resume-boundary" | "recovery-boundary"
+    >;
+    outerRequestId: RequestId | null;
+    source: MonthRunRecordV1;
+    checkpoint: MonthRunCheckpointV1;
+  }>,
+): StoreMonthRunBoundaryCommandV1 {
   const status = requireStorableBoundary(input.checkpoint.status);
   return parseStoreMonthRunBoundaryCommand({
     schemaVersion: "store-month-run-boundary-command-v1",
@@ -147,12 +147,14 @@ export function createCommittedCheckpoint(
   return transition.checkpoint;
 }
 
-export function buildCommitPersistedMonthRunCommand(input: Readonly<{
-  source: MonthRunRecordV1;
-  committedCheckpoint: MonthRunCheckpointV1;
-  snapshot: AuthoritativeJsonValue;
-  result: AuthoritativeJsonValue;
-}>): CommitPersistedMonthRunCommandV1 {
+export function buildCommitPersistedMonthRunCommand(
+  input: Readonly<{
+    source: MonthRunRecordV1;
+    committedCheckpoint: MonthRunCheckpointV1;
+    snapshot: AuthoritativeJsonValue;
+    result: AuthoritativeJsonValue;
+  }>,
+): CommitPersistedMonthRunCommandV1 {
   return parseCommitPersistedMonthRunCommand({
     schemaVersion: "commit-persisted-month-run-command-v1",
     requestId: derivePersistenceRequestId({
