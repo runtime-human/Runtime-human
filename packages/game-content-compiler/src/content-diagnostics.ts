@@ -13,7 +13,8 @@ export type ContentDiagnosticCode =
   | "NO_ENTRY_POINT"
   | "MISSING_REFERENCE"
   | "CHRONOLOGY_INVALID"
-  | "UNREACHABLE_CONTENT";
+  | "UNREACHABLE_CONTENT"
+  | "CONTENT_LIMIT_EXCEEDED";
 
 export type ContentDiagnostic = Readonly<{
   code: ContentDiagnosticCode;
