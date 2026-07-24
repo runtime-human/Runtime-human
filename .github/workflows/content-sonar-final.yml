@@ -1,0 +1,52 @@
+name: content-sonar-final
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  diagnose:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/compiled-content-foundation'
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - name: Fetch all Sonar PR issues
+        run: |
+          $ErrorActionPreference = "Stop"
+          $uri = "https://sonarcloud.io/api/issues/search?componentKeys=MrFr3di_Runtime-human&pullRequest=21&ps=100&additionalFields=_all"
+          $response = Invoke-RestMethod -Uri $uri -Method Get
+          $issues = @($response.issues | ForEach-Object {
+            [ordered]@{
+              key = $_.key
+              rule = $_.rule
+              severity = $_.severity
+              type = $_.type
+              status = $_.status
+              component = $_.component
+              line = $_.line
+              textRange = $_.textRange
+              message = $_.message
+              effort = $_.effort
+              cleanCodeAttribute = $_.cleanCodeAttribute
+              impacts = $_.impacts
+            }
+          })
+          [ordered]@{
+            total = $response.total
+            issues = $issues
+          } | ConvertTo-Json -Depth 20 | Set-Content -Encoding utf8 sonar-final.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: content-sonar-final
+          path: sonar-final.json
+          if-no-files-found: error
