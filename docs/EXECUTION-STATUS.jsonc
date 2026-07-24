@@ -54,7 +54,7 @@
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
     "qualityGate": "pending",
-    "currentConstraint": "content-compiler-completion-gates-pending",
+    "currentConstraint": "normalized-content-compiler-verification-pending",
     "currentPullRequestMayMerge": false
   }
 }
