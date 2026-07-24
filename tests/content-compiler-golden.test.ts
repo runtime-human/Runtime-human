@@ -26,7 +26,9 @@ function readSources(): ContentSourceFile[] {
 
 function requireBundle(result: ReturnType<typeof compileContentSources>) {
   if (result.kind === "failure") {
-    throw new Error(`Expected successful compilation:\n${JSON.stringify(result.diagnostics, null, 2)}`);
+    throw new Error(
+      `Expected successful compilation:\n${JSON.stringify(result.diagnostics, null, 2)}`,
+    );
   }
   return result.bundle;
 }
