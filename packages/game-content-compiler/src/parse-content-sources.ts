@@ -122,10 +122,7 @@ export function normalizeSourcePath(path: string): string | null {
   return normalized;
 }
 
-function validateJsoncStructure(
-  file: ContentSourceFile,
-  root: JsoncNode,
-): ContentDiagnostic[] {
+function validateJsoncStructure(file: ContentSourceFile, root: JsoncNode): ContentDiagnostic[] {
   const diagnostics: ContentDiagnostic[] = [];
   const pending: PendingJsoncNode[] = [{ node: root, depth: 0 }];
   let nodes = 0;
