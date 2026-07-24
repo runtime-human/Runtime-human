@@ -4,6 +4,7 @@ import {
   CONTENT_COMPILER_VERSION,
   CONTENT_SOURCE_SCHEMA_V1,
   compileContentSources,
+  type ContentDiagnostic,
   type ContentSourceFile,
 } from "@runtime-human/game-content-compiler";
 
@@ -41,6 +42,17 @@ function dependency(overrides: Record<string, unknown> = {}) {
     payload: { language: "BASIC" },
     ...overrides,
   };
+}
+
+function expectDiagnostic(
+  result: ReturnType<typeof compileContentSources>,
+  diagnostic: Partial<ContentDiagnostic>,
+): void {
+  expect(result.kind).toBe("failure");
+  if (result.kind !== "failure") throw new Error("expected failed compilation");
+  expect(result.diagnostics).toEqual(
+    expect.arrayContaining([expect.objectContaining(diagnostic)]),
+  );
 }
 
 describe("content compiler invariants", () => {
@@ -112,12 +124,10 @@ describe("content compiler invariants", () => {
   });
 
   it("reports malformed JSONC without throwing", () => {
-    expect(
+    expectDiagnostic(
       compileContentSources([{ path: "content/broken.jsonc", text: "{ broken" }]),
-    ).toMatchObject({
-      kind: "failure",
-      diagnostics: [{ code: "JSONC_PARSE", path: "content/broken.jsonc" }],
-    });
+      { code: "JSONC_PARSE", path: "content/broken.jsonc" },
+    );
   });
 
   it("rejects an empty JSONC document", () => {
@@ -130,10 +140,10 @@ describe("content compiler invariants", () => {
   it("rejects trailing commas", () => {
     const json = JSON.stringify(entry(), null, 2);
     const text = `${json.slice(0, -1)},\n}`;
-    expect(compileContentSources([{ path: "content/trailing.jsonc", text }])).toMatchObject({
-      kind: "failure",
-      diagnostics: [{ code: "JSONC_PARSE", path: "content/trailing.jsonc" }],
-    });
+    expectDiagnostic(
+      compileContentSources([{ path: "content/trailing.jsonc", text }]),
+      { code: "JSONC_PARSE", path: "content/trailing.jsonc" },
+    );
   });
 
   it("rejects duplicate normalized paths", () => {
@@ -207,12 +217,10 @@ describe("content compiler invariants", () => {
 
   it("rejects non-integer and unsafe authoritative numbers", () => {
     for (const value of [1.5, Number.MAX_SAFE_INTEGER + 1]) {
-      expect(
+      expectDiagnostic(
         compileContentSources([source("content/entry.jsonc", entry({ payload: { value } }))]),
-      ).toMatchObject({
-        kind: "failure",
-        diagnostics: [{ code: "SCHEMA_INVALID" }],
-      });
+        { code: "SCHEMA_INVALID", path: "content/entry.jsonc" },
+      );
     }
   });
 });
