@@ -1,4 +1,12 @@
-import { getNodeValue, parseTree, printParseErrorCode, type ParseError } from "jsonc-parser";
+import {
+  getNodeValue,
+  parseTree,
+  printParseErrorCode,
+  type Node as JsoncNode,
+  type ParseError,
+} from "jsonc-parser";
+
+import { canonicalizeAuthoritative } from "@runtime-human/game-core";
 
 import {
   createDiagnostic,
@@ -67,9 +75,29 @@ export function parseContentSources(
       continue;
     }
 
+    const duplicateProperties = duplicatePropertyDiagnostics(file, root);
+    if (duplicateProperties.length > 0) {
+      diagnostics.push(...duplicateProperties);
+      continue;
+    }
+
     const value: unknown = getNodeValue(root);
     if (!validateContentSource(value)) {
       diagnostics.push(...schemaDiagnostics(file, root, value, validateContentSource.errors ?? []));
+      continue;
+    }
+
+    try {
+      canonicalizeAuthoritative(value);
+    } catch (error) {
+      diagnostics.push(
+        createDiagnostic(
+          file,
+          "SCHEMA_INVALID",
+          `Authoritative content is invalid: ${readErrorMessage(error)}`,
+          root.offset,
+        ),
+      );
       continue;
     }
 
@@ -92,4 +120,52 @@ export function normalizeSourcePath(path: string): string | null {
     return null;
   }
   return normalized;
+}
+
+function duplicatePropertyDiagnostics(
+  file: ContentSourceFile,
+  root: JsoncNode,
+): ContentDiagnostic[] {
+  const diagnostics: ContentDiagnostic[] = [];
+  collectDuplicateProperties(file, root, diagnostics);
+  return diagnostics;
+}
+
+function collectDuplicateProperties(
+  file: ContentSourceFile,
+  node: JsoncNode,
+  diagnostics: ContentDiagnostic[],
+): void {
+  if (node.type === "object") {
+    const seen = new Set<string>();
+    for (const property of node.children ?? []) {
+      const keyNode = property.children?.[0];
+      const valueNode = property.children?.[1];
+      const key = typeof keyNode?.value === "string" ? keyNode.value : undefined;
+      if (key !== undefined) {
+        if (seen.has(key)) {
+          diagnostics.push(
+            createDiagnostic(
+              file,
+              "JSONC_PARSE",
+              `Duplicate JSONC property ${JSON.stringify(key)}`,
+              keyNode.offset,
+            ),
+          );
+        } else {
+          seen.add(key);
+        }
+      }
+      if (valueNode !== undefined) collectDuplicateProperties(file, valueNode, diagnostics);
+    }
+    return;
+  }
+
+  for (const child of node.children ?? []) {
+    collectDuplicateProperties(file, child, diagnostics);
+  }
+}
+
+function readErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "unknown authoritative value error";
 }
