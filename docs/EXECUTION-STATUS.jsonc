@@ -53,8 +53,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "pending",
-    "currentConstraint": "normalized-content-compiler-verification-pending",
+    "qualityGate": "pending-final-head",
+    "currentConstraint": "final-content-contract-and-review-verification-pending",
     "currentPullRequestMayMerge": false
   }
 }
