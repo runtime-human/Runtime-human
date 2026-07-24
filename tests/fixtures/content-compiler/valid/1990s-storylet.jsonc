@@ -1,0 +1,26 @@
+// deterministic compiler fixture
+{
+  "schemaVersion": "content-source-v1",
+  "id": "storylet.first-program",
+  "kind": "storylet",
+  "domain": "programming",
+  "era": "1990s",
+  "availableFrom": "1990-01",
+  "entryPoint": true,
+  "references": [
+    "technology.qbasic"
+  ],
+  "provenance": [
+    {
+      "sourceId": "design.first-program",
+      "title": "First program design source"
+    }
+  ],
+  "payload": {
+    "title": "Первая программа",
+    "choices": [
+      "independent",
+      "guided"
+    ]
+  }
+}
