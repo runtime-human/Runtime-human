@@ -1,0 +1,49 @@
+name: content-sonar-diagnostic
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  diagnose:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/compiled-content-foundation'
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - name: Fetch Sonar issues
+        run: |
+          $ErrorActionPreference = "Stop"
+          $uri = "https://sonarcloud.io/api/issues/search?componentKeys=MrFr3di_Runtime-human&pullRequest=21&issueStatuses=OPEN,CONFIRMED&ps=100"
+          $response = Invoke-RestMethod -Uri $uri -Method Get
+          $issues = @($response.issues | ForEach-Object {
+            [ordered]@{
+              key = $_.key
+              rule = $_.rule
+              severity = $_.severity
+              type = $_.type
+              component = $_.component
+              line = $_.line
+              message = $_.message
+              effort = $_.effort
+              cleanCodeAttribute = $_.cleanCodeAttribute
+            }
+          })
+          [ordered]@{
+            total = $response.total
+            issues = $issues
+          } | ConvertTo-Json -Depth 10 | Set-Content -Encoding utf8 sonar-issues.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: content-sonar-issues
+          path: sonar-issues.json
+          if-no-files-found: error
