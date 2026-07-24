@@ -167,6 +167,7 @@ describe("content compiler invariants", () => {
       "../escape.jsonc",
       "/content.jsonc",
       "C:/content.jsonc",
+      "C:content.jsonc",
       "content//entry.jsonc",
       "content/./entry.jsonc",
       "content/../entry.jsonc",
