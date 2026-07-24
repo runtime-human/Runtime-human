@@ -112,7 +112,7 @@ export function normalizeSourcePath(path: string): string | null {
   if (
     normalized.length === 0 ||
     normalized.startsWith("/") ||
-    /^[A-Za-z]:\//u.test(normalized) ||
+    /^[A-Za-z]:/u.test(normalized) ||
     normalized
       .split("/")
       .some((segment) => segment.length === 0 || segment === "." || segment === "..")
