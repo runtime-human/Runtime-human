@@ -39,7 +39,20 @@ export type CompileContentResult =
   | Readonly<{ kind: "failure"; diagnostics: readonly ContentDiagnostic[] }>;
 
 export function compareText(left: string, right: string): number {
-  if (left < right) return -1;
-  if (left > right) return 1;
+  let leftIndex = 0;
+  let rightIndex = 0;
+
+  while (leftIndex < left.length && rightIndex < right.length) {
+    const leftPoint = left.codePointAt(leftIndex);
+    const rightPoint = right.codePointAt(rightIndex);
+    if (leftPoint === undefined || rightPoint === undefined) break;
+    if (leftPoint < rightPoint) return -1;
+    if (leftPoint > rightPoint) return 1;
+    leftIndex += leftPoint > 0xffff ? 2 : 1;
+    rightIndex += rightPoint > 0xffff ? 2 : 1;
+  }
+
+  if (leftIndex < left.length) return 1;
+  if (rightIndex < right.length) return -1;
   return 0;
 }
