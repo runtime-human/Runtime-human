@@ -128,7 +128,8 @@ describe("content compiler invariants", () => {
   });
 
   it("rejects trailing commas", () => {
-    const text = `${JSON.stringify(entry(), null, 2).replace(/\n}\s*$/u, ",\n}")}`;
+    const json = JSON.stringify(entry(), null, 2);
+    const text = `${json.slice(0, -1)},\n}`;
     expect(compileContentSources([{ path: "content/trailing.jsonc", text }])).toMatchObject({
       kind: "failure",
       diagnostics: [{ code: "JSONC_PARSE", path: "content/trailing.jsonc" }],
