@@ -141,8 +141,8 @@ function collectDuplicateProperties(
     for (const property of node.children ?? []) {
       const keyNode = property.children?.[0];
       const valueNode = property.children?.[1];
-      const key = typeof keyNode?.value === "string" ? keyNode.value : undefined;
-      if (key !== undefined) {
+      if (keyNode !== undefined && typeof keyNode.value === "string") {
+        const key = keyNode.value;
         if (seen.has(key)) {
           diagnostics.push(
             createDiagnostic(
