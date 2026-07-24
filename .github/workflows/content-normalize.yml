@@ -50,6 +50,7 @@ jobs:
             packages/game-content/package.json `
             packages/game-content/src `
             packages/game-content-compiler `
+            tests/check-boundaries.test.ts `
             tests/content-compiler.test.ts `
             tests/content-compiler-invariants.test.ts `
             tests/content-compiler-parser-boundary.test.ts `
