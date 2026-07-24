@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { compileContentSources, type ContentSourceFile } from "@runtime-human/game-content-compiler";
+import {
+  compileContentSources,
+  type ContentSourceFile,
+} from "@runtime-human/game-content-compiler";
 
 function source(id: string, entryPoint: boolean): ContentSourceFile {
   return {
