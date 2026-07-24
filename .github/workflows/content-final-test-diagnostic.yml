@@ -37,7 +37,13 @@ jobs:
       - name: Capture current content tests
         continue-on-error: true
         run: |
-          pnpm vitest run tests/content-compiler*.test.ts *>&1 | Tee-Object -FilePath tests.log
+          pnpm vitest run `
+            tests/content-compiler.test.ts `
+            tests/content-compiler-invariants.test.ts `
+            tests/content-compiler-parser-boundary.test.ts `
+            tests/content-compiler-ordering.test.ts `
+            tests/content-compiler-golden.test.ts `
+            tests/content-compiler-chronology-boundaries.test.ts *>&1 | Tee-Object -FilePath tests.log
           "exit_code=$LASTEXITCODE" | Add-Content tests.log
       - uses: actions/upload-artifact@v4
         with:
