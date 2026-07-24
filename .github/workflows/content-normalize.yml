@@ -37,8 +37,23 @@ jobs:
           corepack prepare pnpm@11.11.0 --activate
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Apply repository formatting
-        run: pnpm fmt
+      - name: Apply CONTENT-01 formatting
+        run: |
+          pnpm exec oxfmt --no-error-on-unmatched-pattern `
+            package.json `
+            tsconfig.base.json `
+            tsconfig.json `
+            packages/game-content/package.json `
+            packages/game-content/src `
+            packages/game-content-compiler `
+            tests/content-compiler.test.ts `
+            tests/content-compiler-invariants.test.ts `
+            tests/content-compiler-golden.test.ts `
+            tests/check-build-only-dependencies.test.ts `
+            tests/fixtures/content-compiler/valid `
+            tests/tsconfig.json `
+            scripts/check-boundaries.mjs `
+            scripts/check-build-only-dependencies.mjs
       - name: Regenerate documentation indexes
         run: node scripts/build-toc.mjs
       - name: Remove one-shot workflow
