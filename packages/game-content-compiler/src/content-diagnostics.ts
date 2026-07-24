@@ -126,7 +126,7 @@ function jsonPointerPath(pointer: string): (string | number)[] {
     .slice(1)
     .split("/")
     .map((segment) => segment.replaceAll("~1", "/").replaceAll("~0", "~"))
-    .map((segment) => (/^(0|[1-9][0-9]*)$/u.test(segment) ? Number(segment) : segment));
+    .map((segment) => (/^(0|[1-9]\d*)$/u.test(segment) ? Number(segment) : segment));
 }
 
 function offsetLocation(text: string, offset: number): Readonly<{ line: number; column: number }> {
