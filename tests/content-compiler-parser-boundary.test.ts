@@ -70,13 +70,13 @@ describe("content compiler parser boundary", () => {
     });
   });
 
-  it("accepts depth 64 and rejects depth 65 before schema recursion", () => {
-    const acceptedText = JSON.stringify(entry(null), null, 2).replace("null", nestedPayload(63));
+  it("reserves canonical depth for the compiled chunk envelope", () => {
+    const acceptedText = JSON.stringify(entry(null), null, 2).replace("null", nestedPayload(60));
     expect(
       compileContentSources([{ path: "content/max-depth.jsonc", text: acceptedText }]).kind,
     ).toBe("success");
 
-    const rejectedText = JSON.stringify(entry(null), null, 2).replace("null", nestedPayload(64));
+    const rejectedText = JSON.stringify(entry(null), null, 2).replace("null", nestedPayload(61));
     expect(
       compileContentSources([{ path: "content/too-deep.jsonc", text: rejectedText }]),
     ).toMatchObject({
