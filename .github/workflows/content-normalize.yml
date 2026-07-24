@@ -54,6 +54,7 @@ jobs:
             tests/content-compiler.test.ts `
             tests/content-compiler-invariants.test.ts `
             tests/content-compiler-parser-boundary.test.ts `
+            tests/content-compiler-ordering.test.ts `
             tests/content-compiler-golden.test.ts `
             tests/check-build-only-dependencies.test.ts `
             tests/fixtures/content-compiler/valid `
