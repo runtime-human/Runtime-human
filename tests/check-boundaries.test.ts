@@ -51,6 +51,12 @@ describe("validateWorkspace", () => {
     addPackage(root, "packages", "shared-kernel");
     addPackage(root, "packages", "game-schema", ["shared-kernel"]);
     addPackage(root, "packages", "game-core", ["shared-kernel", "game-schema"]);
+    addPackage(root, "packages", "game-content", ["shared-kernel", "game-schema"]);
+    addPackage(root, "packages", "game-content-compiler", [
+      "game-schema",
+      "game-core",
+      "game-content",
+    ]);
     addPackage(root, "packages", "game-persistence-contracts", ["shared-kernel", "game-schema"]);
     addPackage(root, "packages", "game-platform-contracts", ["shared-kernel", "game-schema"]);
     addPackage(root, "packages", "game-application", [

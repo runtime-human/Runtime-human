@@ -1,0 +1,22 @@
+// deterministic compiler fixture
+{
+  "schemaVersion": "content-source-v1",
+  "id": "technology.qbasic",
+  "kind": "technology",
+  "domain": "programming",
+  "era": "1980s",
+  "availableFrom": "1985-01",
+  "entryPoint": false,
+  "references": [],
+  "provenance": [
+    {
+      "sourceId": "manual.qbasic",
+      "title": "QBasic historical reference",
+      "locator": "chapter-1",
+    },
+  ],
+  "payload": {
+    "language": "BASIC",
+    "environment": "DOS",
+  },
+}

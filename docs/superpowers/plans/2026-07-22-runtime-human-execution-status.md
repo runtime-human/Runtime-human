@@ -4,12 +4,12 @@ type: plan
 status: active
 canon: false
 depends_on: [ADR-004, ADR-005, ADR-007, ADR-010, ADR-015]
-updated: 2026-07-23
+updated: 2026-07-24
 ---
 
 # Runtime Human execution status and next gates
 
-Status snapshot: **23 July 2026**. Machine-readable companion: [`../../EXECUTION-STATUS.jsonc`](../../EXECUTION-STATUS.jsonc).
+Status snapshot: **24 July 2026**. Machine-readable companion: [`../../EXECUTION-STATUS.jsonc`](../../EXECUTION-STATUS.jsonc).
 
 This ledger records implementation state. Accepted ADRs and specialized specifications remain authoritative for design invariants.
 
@@ -21,75 +21,74 @@ This ledger records implementation state. Accepted ADRs and specialized specific
 | `DETERMINISM-01` | PR #16, `7521ff6` | complete |
 | `MONTHRUN-01` | PR #17, `66d9ecb` | complete |
 | `PERSISTENCE-01` | PR #18, `c41e531` | complete |
+| `MR-ORCH-01` | PR #20, `1357124` | complete |
 
-PR #18 delivered the direct `rusqlite` store, one-worker ownership, bounded commands, WAL + `synchronous=FULL`, dual-hash CAS, durable receipts, atomic final commit, verified backup, recovery read-only modes, typed Tauri commands and TypeScript persistence service. Its implementation is merged; older unchecked pre-merge checklist items are historical, not remaining work.
+PR #18 delivered the direct `rusqlite` durable store, one-worker ownership, bounded commands, WAL + `synchronous=FULL`, dual-hash CAS, durable receipts, atomic final commit, verified backup, recovery read-only modes, typed Tauri commands and TypeScript persistence service.
 
-## Active work — `MR-ORCH-01`
+PR #20 delivered persisted MonthRun orchestration around that store: recovery preflight, ready/suspended/completed resume paths, deterministic receipt IDs, acknowledgement-loss retry equivalence, exact suspended-decision restoration, atomic commit reconciliation and explicit incompatible/corrupted persistence classification.
 
-GitHub: **PR #20**, branch `agent/persisted-month-run-orchestration`. Implementation and authoritative verification are complete; the remaining operation is squash merge of the unchanged green head.
+## Active work — `CONTENT-01`
 
-Goal: connect the pure MonthRun kernel to the durable SQLite commands without moving gameplay authority into Rust.
+GitHub: **draft PR #21**, branch `agent/compiled-content-foundation`.
 
-Implemented production behavior:
+Goal: provide a deterministic build-time JSONC content compiler without moving content parsing, Ajv or arbitrary scripting into the game runtime.
 
-1. recovery preflight before gameplay or mutation;
-2. load save and active MonthRun;
-3. create a ready checkpoint only when no run exists;
-4. persist ready state before deterministic execution;
-5. advance ready/running states only in the pure core;
-6. persist every suspended/completed/exceptional boundary by revision + payload SHA + internal checkpoint hash CAS;
-7. preserve the outer request ID across retry and derive stable bounded receipt IDs for internal persistence operations;
-8. restore an unchanged suspended decision after restart;
-9. commit a completed run atomically exactly once;
-10. block corruption, newer schema and incompatible checkpoints before invoking gameplay steps;
-11. reject a divergent competing commit instead of treating matching save/run links as idempotent success;
-12. classify non-authoritative stored compatibility JSON as corrupted persisted state rather than as a transport failure.
-
-Closed application results:
+### Retained architecture
 
 ```text
-idle
-waiting-decision
-committed
-terminal
-blocked
-rejected
+JSONC source
+  -> Draft 2020-12 schema validation
+  -> normalized-path and stable-ID validation
+  -> reference and chronology validation
+  -> entry-point reachability validation
+  -> immutable era/domain chunks
+  -> canonical JSON artifacts and fingerprints
 ```
 
-Acceptance matrix:
+Package boundary:
 
-- no active run → `idle`;
-- ready → continue to the next durable boundary;
-- suspended → expose the identical pending decision without rerunning steps;
-- completed → commit once;
-- acknowledgement lost after begin/boundary/commit → retry with durable-receipt equivalence;
-- corrupted persistence → `recovery` block with no gameplay step and no mutation;
-- newer persistence schema → distinct `incompatible-persistence` block;
-- incompatible checkpoint → block before gameplay steps;
-- conflicting committed snapshot/result → preserve the conflict instead of reporting idempotent success;
-- after commit, a later startup sees updated save and no active run.
+- `@runtime-human/game-content` owns immutable runtime contracts only;
+- `@runtime-human/game-content-compiler` owns Ajv, `jsonc-parser`, diagnostics, graph checks and artifact generation;
+- renderer, UI, application and runtime content packages do not import Ajv or `jsonc-parser`;
+- this work contains no January gameplay content, NPC simulation, UI or persistence-schema change.
 
-Verification evidence on the reviewed implementation:
+### Implemented in the active PR
 
-- Oxfmt and both Oxlint passes;
-- TypeScript 7 project build;
-- package-boundary verification;
-- focused Vitest suite including acknowledgement-loss and restart scenarios;
-- renderer and Storybook builds;
-- Rust format, workspace check and sequential Rust tests;
-- documentation front-matter and manifest verification;
-- SonarQube Quality Gate passed with no security hotspots and no new-code duplication;
-- no open review threads;
-- permanent `foundation` workflow remains read-only and does not format, commit or push source changes.
+1. versioned compiled entry, chunk, descriptor, manifest, artifact and bundle contracts;
+2. JSONC parsing with deterministic path/line/column diagnostics;
+3. JSON Schema Draft 2020-12 validation with safe-integer authoritative values;
+4. normalized relative source paths and duplicate normalized-path rejection;
+5. duplicate stable-ID and missing-reference diagnostics;
+6. own chronology validation;
+7. full required-reference availability-window containment;
+8. explicit `NO_ENTRY_POINT` graph invariant without cascading unreachable diagnostics;
+9. cycle-safe reachability from declared entry points;
+10. deterministic code-point ordering for sources, IDs, references, provenance, chunks and artifacts;
+11. per-chunk and global content fingerprints through the existing authoritative canonical JSON boundary;
+12. compiler split into focused schema, diagnostic, parser, graph-validation, bundle-building and orchestration modules;
+13. adversarial tests for malformed JSONC, traversal/absolute paths, normalized path collisions, reversed chronology, cycles and unsafe numbers;
+14. checked-in JSONC fixtures plus byte-golden `manifest.json` and chunk artifacts;
+15. regression proof that changing one payload changes only its owning chunk and manifest.
+
+### Remaining gates before merge
+
+1. run formatter and apply only deterministic Oxfmt changes;
+2. resolve actual TypeScript, lint, boundary or Vitest failures from the modular implementation;
+3. verify the checked-in golden fingerprints against the production compiler output;
+4. verify Ajv and `jsonc-parser` remain absent from renderer/runtime dependency graphs;
+5. regenerate `docs/CATALOG.md` and `docs/MANIFEST.jsonc` after final documentation edits;
+6. complete architecture, security and determinism review;
+7. resolve all review threads;
+8. pass `docs`, `foundation` and Sonar on one unchanged final head;
+9. mark PR ready and squash-merge only with the expected head SHA.
 
 ## Next stable work IDs
 
 | Work ID | Scope | State |
 |---|---|---|
-| `CONTENT-01` | deterministic compiled content foundation | next |
-| `DETERMINISM-02` | cross-runtime determinism hardening | planned |
+| `DETERMINISM-02` | cross-runtime Xoshiro vectors, parity and RNG call accounting | planned after `CONTENT-01` |
 | `NPC-01` | minimal person state and directed relationships | planned, gated by playable need |
-| `NPC-02` | typed memory and beliefs | deferred until playtest evidence |
+| `NPC-02` | typed bounded memory and beliefs | deferred until playtest evidence |
 | `NPC-03` | utility social actions | deferred until playtest evidence |
 | `NPC-04` | storylets and Narrative Director integration | planned in minimal vertical-slice form |
 | `JAN-01` | January 1990 authored content | planned |
@@ -109,4 +108,4 @@ Future work uses stable IDs in plans. GitHub PR numbers are recorded only after 
 - final self-hosted Windows `foundation` workflow must pass on the unchanged reviewed head;
 - the separate docs workflow must verify front matter and generated manifest on the same head.
 
-PR #20 may be squash-merged only if this documentation-aligned head remains unchanged and both authoritative workflows complete successfully.
+PR #21 remains draft and must not merge until the content compiler completion plan and final unchanged-head gates are complete.

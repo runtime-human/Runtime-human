@@ -59,13 +59,14 @@ PC-first бесплатный offline-first казуальный симулят�
 
 ## Актуальный статус
 
-По состоянию на 23 июля 2026 года завершены и объединены в `main`:
+По состоянию на 24 июля 2026 года завершены и объединены в `main`:
 
 - Repository Foundation — PR #15;
 - Determinism Kernel — PR #16;
 - crash-safe MonthRun Protocol — PR #17;
-- SQLite Durable MonthRun Store — PR #18.
+- SQLite Durable MonthRun Store — PR #18;
+- persisted MonthRun application orchestration — PR #20.
 
-Активная работа: **persisted MonthRun application orchestration** в draft PR #20. Она соединяет pure MonthRun kernel с durable SQLite commands и закрывает restart/acknowledgement-loss сценарии.
+Активная работа: **deterministic compiled content foundation** в draft PR #21. Она добавляет build-time JSONC compiler, versioned runtime contracts, schema/reference/chronology/reachability validation, canonical era/domain chunks и byte-golden artifacts, не перенося Ajv или JSONC parsing в игровой runtime.
 
-Первый играбельный январь 1990 года ещё не готов: production content compiler, January content и игровой desktop UI остаются следующими продуктовыми этапами. Self-hosted Windows workflow является обязательным merge gate; изменение не объединяется без зелёного прогона на неизменённом head.
+Первый играбельный январь 1990 года ещё не готов: authored January content, NPC vertical-slice contracts и игровой desktop UI остаются следующими продуктовыми этапами. Self-hosted Windows workflow является обязательным merge gate; изменение не объединяется без зелёного прогона на неизменённом head.

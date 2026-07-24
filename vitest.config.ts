@@ -14,6 +14,12 @@ export default defineConfig({
       "@runtime-human/game-application": fileURLToPath(
         new URL("./packages/game-application/src/index.ts", import.meta.url),
       ),
+      "@runtime-human/game-content": fileURLToPath(
+        new URL("./packages/game-content/src/index.ts", import.meta.url),
+      ),
+      "@runtime-human/game-content-compiler": fileURLToPath(
+        new URL("./packages/game-content-compiler/src/index.ts", import.meta.url),
+      ),
       "@runtime-human/game-persistence-contracts": fileURLToPath(
         new URL("./packages/game-persistence-contracts/src/index.ts", import.meta.url),
       ),

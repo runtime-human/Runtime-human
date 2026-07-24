@@ -8,6 +8,7 @@
     { "path": "packages/game-platform-contracts" },
     { "path": "packages/game-application" },
     { "path": "packages/game-content" },
+    { "path": "packages/game-content-compiler" },
     { "path": "packages/game-ui" },
     { "path": "packages/game-ui-fixtures" },
     { "path": "apps/desktop" },
