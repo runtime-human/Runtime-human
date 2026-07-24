@@ -1,0 +1,46 @@
+name: content-pipeline-typecheck
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  diagnose:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/january-1990-playable-slice'
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          clean: true
+          persist-credentials: false
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: corepack enable
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Capture typecheck
+        run: |
+          $ErrorActionPreference = "Continue"
+          pnpm typecheck *> typecheck.txt
+          $exitCode = $LASTEXITCODE
+          "exitCode=$exitCode" | Add-Content typecheck.txt
+          exit 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: content-pipeline-typecheck
+          path: typecheck.txt
+          if-no-files-found: error
