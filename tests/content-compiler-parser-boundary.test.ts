@@ -17,6 +17,10 @@ function entry(payload: unknown): Record<string, unknown> {
   };
 }
 
+function nestedPayload(depth: number): string {
+  return `${'{"next":'.repeat(depth)}null${"}".repeat(depth)}`;
+}
+
 describe("content compiler parser boundary", () => {
   it("rejects duplicate JSONC object properties", () => {
     const text = JSON.stringify(entry({ title: "Entry" }), null, 2).replace(
@@ -66,16 +70,21 @@ describe("content compiler parser boundary", () => {
     });
   });
 
-  it("rejects a deeply nested source before schema recursion", () => {
-    const nestedPayload = `${'{"next":'.repeat(70)}null${"}".repeat(70)}`;
-    const text = JSON.stringify(entry(null), null, 2).replace("null", nestedPayload);
+  it("accepts depth 64 and rejects depth 65 before schema recursion", () => {
+    const acceptedText = JSON.stringify(entry(null), null, 2).replace("null", nestedPayload(63));
+    expect(
+      compileContentSources([{ path: "content/max-depth.jsonc", text: acceptedText }]).kind,
+    ).toBe("success");
 
-    expect(compileContentSources([{ path: "content/deep.jsonc", text }])).toMatchObject({
+    const rejectedText = JSON.stringify(entry(null), null, 2).replace("null", nestedPayload(64));
+    expect(
+      compileContentSources([{ path: "content/too-deep.jsonc", text: rejectedText }]),
+    ).toMatchObject({
       kind: "failure",
       diagnostics: [
         {
           code: "SCHEMA_INVALID",
-          path: "content/deep.jsonc",
+          path: "content/too-deep.jsonc",
         },
       ],
     });
