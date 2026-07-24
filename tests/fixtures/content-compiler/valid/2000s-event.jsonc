@@ -1,0 +1,20 @@
+// deterministic compiler fixture
+{
+  "schemaVersion": "content-source-v1",
+  "id": "event.open-source-era",
+  "kind": "event",
+  "domain": "ecosystem",
+  "era": "2000s",
+  "availableFrom": "2001-01",
+  "entryPoint": true,
+  "references": [],
+  "provenance": [
+    {
+      "sourceId": "history.open-source",
+      "title": "Open-source ecosystem timeline"
+    }
+  ],
+  "payload": {
+    "topic": "open-source"
+  }
+}
