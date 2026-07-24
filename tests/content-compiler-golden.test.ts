@@ -1,6 +1,5 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
@@ -9,7 +8,7 @@ import {
   type ContentSourceFile,
 } from "@runtime-human/game-content-compiler";
 
-const fixtureRoot = fileURLToPath(new URL("./fixtures/content-compiler/", import.meta.url));
+const fixtureRoot = join(process.cwd(), "tests", "fixtures", "content-compiler");
 const validRoot = join(fixtureRoot, "valid");
 const expectedRoot = join(fixtureRoot, "expected");
 const sourceNames = [
