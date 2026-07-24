@@ -12,6 +12,14 @@ import { createDiagnostic, schemaDiagnostics, type ContentDiagnostic } from "./c
 import { validateContentSource } from "./content-source-schema";
 import { compareText, type ContentSourceFile, type ParsedContentDocument } from "./content-types";
 
+const MAX_SOURCE_DEPTH = 64;
+const MAX_SOURCE_NODES = 100_000;
+
+type PendingJsoncNode = Readonly<{
+  node: JsoncNode;
+  depth: number;
+}>;
+
 export function parseContentSources(
   files: readonly ContentSourceFile[],
   diagnostics: ContentDiagnostic[],
@@ -67,18 +75,13 @@ export function parseContentSources(
       continue;
     }
 
-    const duplicateProperties = duplicatePropertyDiagnostics(file, root);
-    if (duplicateProperties.length > 0) {
-      diagnostics.push(...duplicateProperties);
+    const structuralDiagnostics = validateJsoncStructure(file, root);
+    if (structuralDiagnostics.length > 0) {
+      diagnostics.push(...structuralDiagnostics);
       continue;
     }
 
     const value: unknown = getNodeValue(root);
-    if (!validateContentSource(value)) {
-      diagnostics.push(...schemaDiagnostics(file, root, value, validateContentSource.errors ?? []));
-      continue;
-    }
-
     try {
       canonicalizeAuthoritative(value);
     } catch (error) {
@@ -90,6 +93,11 @@ export function parseContentSources(
           root.offset,
         ),
       );
+      continue;
+    }
+
+    if (!validateContentSource(value)) {
+      diagnostics.push(...schemaDiagnostics(file, root, value, validateContentSource.errors ?? []));
       continue;
     }
 
@@ -114,48 +122,80 @@ export function normalizeSourcePath(path: string): string | null {
   return normalized;
 }
 
-function duplicatePropertyDiagnostics(
+function validateJsoncStructure(
   file: ContentSourceFile,
   root: JsoncNode,
 ): ContentDiagnostic[] {
   const diagnostics: ContentDiagnostic[] = [];
-  collectDuplicateProperties(file, root, diagnostics);
-  return diagnostics;
-}
+  const pending: PendingJsoncNode[] = [{ node: root, depth: 0 }];
+  let nodes = 0;
 
-function collectDuplicateProperties(
-  file: ContentSourceFile,
-  node: JsoncNode,
-  diagnostics: ContentDiagnostic[],
-): void {
-  if (node.type === "object") {
-    const seen = new Set<string>();
-    for (const property of node.children ?? []) {
-      const keyNode = property.children?.[0];
-      const valueNode = property.children?.[1];
-      if (keyNode !== undefined && typeof keyNode.value === "string") {
-        const key = keyNode.value;
-        if (seen.has(key)) {
-          diagnostics.push(
-            createDiagnostic(
-              file,
-              "JSONC_PARSE",
-              `Duplicate JSONC property ${JSON.stringify(key)}`,
-              keyNode.offset,
-            ),
-          );
-        } else {
-          seen.add(key);
-        }
-      }
-      if (valueNode !== undefined) collectDuplicateProperties(file, valueNode, diagnostics);
+  while (pending.length > 0) {
+    const current = pending.pop();
+    if (current === undefined) break;
+
+    nodes += 1;
+    if (nodes > MAX_SOURCE_NODES) {
+      return [
+        createDiagnostic(
+          file,
+          "SCHEMA_INVALID",
+          `Content source exceeds ${MAX_SOURCE_NODES} value nodes`,
+          current.node.offset,
+        ),
+      ];
     }
-    return;
+    if (current.depth > MAX_SOURCE_DEPTH) {
+      return [
+        createDiagnostic(
+          file,
+          "SCHEMA_INVALID",
+          `Content source exceeds depth ${MAX_SOURCE_DEPTH}`,
+          current.node.offset,
+        ),
+      ];
+    }
+
+    if (current.node.type === "object") {
+      const seen = new Set<string>();
+      const values: JsoncNode[] = [];
+      for (const property of current.node.children ?? []) {
+        const keyNode = property.children?.[0];
+        const valueNode = property.children?.[1];
+        if (keyNode !== undefined && typeof keyNode.value === "string") {
+          const key = keyNode.value;
+          if (seen.has(key)) {
+            diagnostics.push(
+              createDiagnostic(
+                file,
+                "JSONC_PARSE",
+                `Duplicate JSONC property ${JSON.stringify(key)}`,
+                keyNode.offset,
+              ),
+            );
+          } else {
+            seen.add(key);
+          }
+        }
+        if (valueNode !== undefined) values.push(valueNode);
+      }
+      for (let index = values.length - 1; index >= 0; index -= 1) {
+        const value = values[index];
+        if (value !== undefined) pending.push({ node: value, depth: current.depth + 1 });
+      }
+      continue;
+    }
+
+    if (current.node.type === "array") {
+      const children = current.node.children ?? [];
+      for (let index = children.length - 1; index >= 0; index -= 1) {
+        const child = children[index];
+        if (child !== undefined) pending.push({ node: child, depth: current.depth + 1 });
+      }
+    }
   }
 
-  for (const child of node.children ?? []) {
-    collectDuplicateProperties(file, child, diagnostics);
-  }
+  return diagnostics;
 }
 
 function readErrorMessage(error: unknown): string {
