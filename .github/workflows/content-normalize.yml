@@ -47,9 +47,11 @@ jobs:
             package.json `
             tsconfig.base.json `
             tsconfig.json `
-            packages/game-content/package.json `
-            packages/game-content/src `
-            packages/game-content-compiler `
+            packages/game-content/src/compiled-content.ts `
+            packages/game-content/src/index.ts `
+            packages/game-content-compiler/package.json `
+            packages/game-content-compiler/tsconfig.json `
+            packages/game-content-compiler/src/*.ts `
             tests/check-boundaries.test.ts `
             tests/content-compiler.test.ts `
             tests/content-compiler-invariants.test.ts `
@@ -57,7 +59,7 @@ jobs:
             tests/content-compiler-ordering.test.ts `
             tests/content-compiler-golden.test.ts `
             tests/check-build-only-dependencies.test.ts `
-            tests/fixtures/content-compiler/valid `
+            tests/fixtures/content-compiler/valid/*.jsonc `
             tests/tsconfig.json `
             scripts/check-boundaries.mjs `
             scripts/check-build-only-dependencies.mjs
@@ -68,14 +70,39 @@ jobs:
       - name: Validate exact scope
         run: |
           $ErrorActionPreference = "Stop"
-          git fetch origin main --no-tags --quiet
-          $base = (git merge-base origin/main HEAD).Trim()
           $allowed = @(
-            @(git diff --name-only $base HEAD)
+            '.github/workflows/content-normalize.yml'
             'docs/CATALOG.md'
             'docs/MANIFEST.jsonc'
-            '.github/workflows/content-normalize.yml'
-          ) | Sort-Object -Unique
+            'package.json'
+            'tsconfig.base.json'
+            'tsconfig.json'
+            'packages/game-content/src/compiled-content.ts'
+            'packages/game-content/src/index.ts'
+            'packages/game-content-compiler/package.json'
+            'packages/game-content-compiler/tsconfig.json'
+            'packages/game-content-compiler/src/build-content-bundle.ts'
+            'packages/game-content-compiler/src/compile-content-sources.ts'
+            'packages/game-content-compiler/src/content-diagnostics.ts'
+            'packages/game-content-compiler/src/content-source-schema.ts'
+            'packages/game-content-compiler/src/content-types.ts'
+            'packages/game-content-compiler/src/index.ts'
+            'packages/game-content-compiler/src/parse-content-sources.ts'
+            'packages/game-content-compiler/src/validate-content-graph.ts'
+            'tests/check-boundaries.test.ts'
+            'tests/check-build-only-dependencies.test.ts'
+            'tests/content-compiler.test.ts'
+            'tests/content-compiler-invariants.test.ts'
+            'tests/content-compiler-parser-boundary.test.ts'
+            'tests/content-compiler-ordering.test.ts'
+            'tests/content-compiler-golden.test.ts'
+            'tests/fixtures/content-compiler/valid/1980s-technology.jsonc'
+            'tests/fixtures/content-compiler/valid/1990s-storylet.jsonc'
+            'tests/fixtures/content-compiler/valid/2000s-event.jsonc'
+            'tests/tsconfig.json'
+            'scripts/check-boundaries.mjs'
+            'scripts/check-build-only-dependencies.mjs'
+          )
           $changed = @(git status --short | ForEach-Object { $_.Substring(3) })
           $unexpected = @($changed | Where-Object { $_ -notin $allowed })
           if ($unexpected.Count -gt 0) {
