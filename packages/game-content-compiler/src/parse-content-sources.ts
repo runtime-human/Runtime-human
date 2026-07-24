@@ -55,7 +55,7 @@ export function parseContentSources(
 
     const parseErrors: ParseError[] = [];
     const root = parseTree(file.text, parseErrors, {
-      allowTrailingComma: false,
+      allowTrailingComma: true,
       disallowComments: false,
     });
     if (root === undefined || parseErrors.length > 0) {
