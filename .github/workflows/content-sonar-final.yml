@@ -21,10 +21,16 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Fetch all Sonar PR issues
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           $ErrorActionPreference = "Stop"
+          if ([string]::IsNullOrWhiteSpace($env:SONAR_TOKEN)) {
+            throw "SONAR_TOKEN is not configured for authenticated issue review"
+          }
+          $headers = @{ Authorization = "Bearer $env:SONAR_TOKEN" }
           $uri = "https://sonarcloud.io/api/issues/search?componentKeys=MrFr3di_Runtime-human&pullRequest=21&ps=100&additionalFields=_all"
-          $response = Invoke-RestMethod -Uri $uri -Method Get
+          $response = Invoke-RestMethod -Uri $uri -Method Get -Headers $headers
           $issues = @($response.issues | ForEach-Object {
             [ordered]@{
               key = $_.key
@@ -47,6 +53,6 @@ jobs:
           } | ConvertTo-Json -Depth 20 | Set-Content -Encoding utf8 sonar-final.json
       - uses: actions/upload-artifact@v4
         with:
-          name: content-sonar-final
+          name: content-sonar-final-authenticated
           path: sonar-final.json
           if-no-files-found: error
