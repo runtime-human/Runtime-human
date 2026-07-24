@@ -1,11 +1,11 @@
 {
   "_schemaVersion": 1,
-  "updated": "2026-07-23",
+  "updated": "2026-07-24",
   "implementationProfile": "MVP Casual",
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
-  "mainHeadAtPlanning": "c41e531511134f3af4ce581857641b8ef8d7ad1f",
-  "currentPhase": "persisted-month-run-orchestration",
+  "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
+  "currentPhase": "compiled-content-foundation",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -33,13 +33,15 @@
     },
     {
       "id": "persisted-month-run-orchestration",
-      "status": "ready-for-merge",
+      "status": "complete",
       "pullRequest": 20,
-      "branch": "agent/persisted-month-run-orchestration"
+      "commit": "1357124e85a5b38c41819ec0413183969c679d60"
     },
     {
       "id": "compiled-content-foundation",
-      "status": "planned"
+      "status": "in-progress",
+      "pullRequest": 21,
+      "branch": "agent/compiled-content-foundation"
     },
     {
       "id": "january-1990-playable-slice",
@@ -51,8 +53,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "passed",
-    "currentConstraint": "final-head-must-remain-unchanged-and-green",
-    "currentPullRequestMayMerge": true
+    "qualityGate": "pending",
+    "currentConstraint": "content-compiler-completion-gates-pending",
+    "currentPullRequestMayMerge": false
   }
 }
