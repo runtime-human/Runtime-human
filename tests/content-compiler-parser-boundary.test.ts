@@ -65,4 +65,19 @@ describe("content compiler parser boundary", () => {
       ],
     });
   });
+
+  it("rejects a deeply nested source before schema recursion", () => {
+    const nestedPayload = `${'{"next":'.repeat(70)}null${"}".repeat(70)}`;
+    const text = JSON.stringify(entry(null), null, 2).replace("null", nestedPayload);
+
+    expect(compileContentSources([{ path: "content/deep.jsonc", text }])).toMatchObject({
+      kind: "failure",
+      diagnostics: [
+        {
+          code: "SCHEMA_INVALID",
+          path: "content/deep.jsonc",
+        },
+      ],
+    });
+  });
 });
