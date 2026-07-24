@@ -24,24 +24,28 @@ function readSources(): ContentSourceFile[] {
   }));
 }
 
+function requireBundle(result: ReturnType<typeof compileContentSources>) {
+  if (result.kind === "failure") {
+    throw new Error(`Expected successful compilation:\n${JSON.stringify(result.diagnostics, null, 2)}`);
+  }
+  return result.bundle;
+}
+
 describe("compiled content byte contract", () => {
   it("matches checked-in manifest and chunk bytes independent of source order", () => {
     const sources = readSources();
-    const result = compileContentSources(sources);
-    const reversed = compileContentSources([...sources].reverse());
+    const bundle = requireBundle(compileContentSources(sources));
+    const reversedBundle = requireBundle(compileContentSources([...sources].reverse()));
 
-    expect(result.kind).toBe("success");
-    expect(reversed).toEqual(result);
-    if (result.kind !== "success") throw new Error("expected successful compilation");
-
-    expect(result.bundle.artifacts.map((artifact) => artifact.path)).toEqual([
+    expect(reversedBundle).toEqual(bundle);
+    expect(bundle.artifacts.map((artifact) => artifact.path)).toEqual([
       "chunks/1980s/programming.json",
       "chunks/1990s/programming.json",
       "chunks/2000s/ecosystem.json",
       "manifest.json",
     ]);
 
-    for (const artifact of result.bundle.artifacts) {
+    for (const artifact of bundle.artifacts) {
       const expected = readFileSync(join(expectedRoot, `${artifact.path}.txt`), "utf8");
       expect(artifact.json).toBe(expected);
     }
@@ -58,20 +62,13 @@ describe("compiled content byte contract", () => {
         : source,
     );
 
-    const baseline = compileContentSources(sources);
-    const changed = compileContentSources(changedSources);
-
-    expect(baseline.kind).toBe("success");
-    expect(changed.kind).toBe("success");
-    if (baseline.kind !== "success" || changed.kind !== "success") {
-      throw new Error("expected successful compilation");
-    }
-
+    const baseline = requireBundle(compileContentSources(sources));
+    const changed = requireBundle(compileContentSources(changedSources));
     const baselineArtifacts = new Map(
-      baseline.bundle.artifacts.map((artifact) => [artifact.path, artifact.json]),
+      baseline.artifacts.map((artifact) => [artifact.path, artifact.json]),
     );
     const changedArtifacts = new Map(
-      changed.bundle.artifacts.map((artifact) => [artifact.path, artifact.json]),
+      changed.artifacts.map((artifact) => [artifact.path, artifact.json]),
     );
 
     expect(changedArtifacts.get("chunks/1980s/programming.json")).toBe(
