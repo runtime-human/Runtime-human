@@ -1,3 +1,11 @@
+---
+title: "January 1990 playable slice implementation plan"
+type: plan
+status: active
+canon: false
+depends_on: [ADR-001, ADR-004, ADR-005, ADR-007, ADR-019, ADR-020]
+updated: 2026-07-24
+---
 # January 1990 Playable Slice Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
@@ -52,7 +60,7 @@ export function loadContentSourceFiles(
 
 Returned paths are POSIX-style and relative to `repositoryRoot`.
 
-- [ ] **Step 1: Write a failing deterministic-order test**
+- [x] **Step 1: Write a failing deterministic-order test**
 
 ```ts
 it("loads configured JSONC roots in normalized code-point order", async () => {
@@ -69,7 +77,7 @@ it("loads configured JSONC roots in normalized code-point order", async () => {
 });
 ```
 
-- [ ] **Step 2: Write failing path and symlink boundary tests**
+- [x] **Step 2: Write failing path and symlink boundary tests**
 
 ```ts
 it.each(["../outside", "/absolute", "C:/absolute"])(
@@ -82,13 +90,13 @@ it.each(["../outside", "/absolute", "C:/absolute"])(
 );
 ```
 
-- [ ] **Step 3: Verify RED**
+- [x] **Step 3: Verify RED**
 
 Run: `pnpm vitest run tests/content-source-loader.test.ts`
 
 Expected: FAIL because `loadContentSourceFiles` is not exported.
 
-- [ ] **Step 4: Implement iterative discovery**
+- [x] **Step 4: Implement iterative discovery**
 
 Requirements:
 
@@ -102,7 +110,7 @@ Requirements:
 - reject duplicate normalized paths;
 - read UTF-8 only after validation.
 
-- [ ] **Step 5: Verify GREEN**
+- [x] **Step 5: Verify GREEN**
 
 Run:
 
@@ -114,7 +122,7 @@ pnpm lint:type-aware
 
 Expected: all commands exit 0.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add packages/game-content-compiler/src/load-content-source-files.ts \

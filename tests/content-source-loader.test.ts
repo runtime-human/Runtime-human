@@ -25,13 +25,13 @@ describe("content source discovery", () => {
     const repositoryRoot = await createRepositoryFixture();
     await mkdir(join(repositoryRoot, "content", "1990s", "nested"), { recursive: true });
     await mkdir(join(repositoryRoot, "content", "sources"), { recursive: true });
-    await writeFile(join(repositoryRoot, "content", "1990s", "a.jsonc"), "{\"id\":\"a\"}\n");
+    await writeFile(join(repositoryRoot, "content", "1990s", "a.jsonc"), '{"id":"a"}\n');
     await writeFile(
       join(repositoryRoot, "content", "1990s", "nested", "β.jsonc"),
-      "{\"id\":\"beta\"}\n",
+      '{"id":"beta"}\n',
     );
     await writeFile(join(repositoryRoot, "content", "1990s", "ignored.txt"), "ignored\n");
-    await writeFile(join(repositoryRoot, "content", "sources", "z.jsonc"), "{\"id\":\"z\"}\n");
+    await writeFile(join(repositoryRoot, "content", "sources", "z.jsonc"), '{"id":"z"}\n');
 
     const files = await loadContentSourceFiles({
       repositoryRoot,
@@ -39,9 +39,9 @@ describe("content source discovery", () => {
     });
 
     expect(files).toEqual([
-      { path: "content/1990s/a.jsonc", text: "{\"id\":\"a\"}\n" },
-      { path: "content/1990s/nested/β.jsonc", text: "{\"id\":\"beta\"}\n" },
-      { path: "content/sources/z.jsonc", text: "{\"id\":\"z\"}\n" },
+      { path: "content/1990s/a.jsonc", text: '{"id":"a"}\n' },
+      { path: "content/1990s/nested/β.jsonc", text: '{"id":"beta"}\n' },
+      { path: "content/sources/z.jsonc", text: '{"id":"z"}\n' },
     ]);
   });
 
