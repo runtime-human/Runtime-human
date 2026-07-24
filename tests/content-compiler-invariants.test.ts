@@ -135,13 +135,19 @@ describe("content compiler invariants", () => {
     });
   });
 
-  it("rejects trailing commas", () => {
-    const json = JSON.stringify(entry(), null, 2);
-    const text = `${json.slice(0, -1)},\n}`;
-    expectDiagnostic(compileContentSources([{ path: "content/trailing.jsonc", text }]), {
-      code: "JSONC_PARSE",
-      path: "content/trailing.jsonc",
-    });
+  it("accepts trailing commas without changing compiled artifacts", () => {
+    const value = entry();
+    const canonical = compileContentSources([source("content/entry.jsonc", value)]);
+    const json = JSON.stringify(value, null, 2);
+    const trailing = compileContentSources([
+      {
+        path: "content/entry.jsonc",
+        text: `${json.slice(0, -1)},\n}`,
+      },
+    ]);
+
+    expect(canonical.kind).toBe("success");
+    expect(trailing).toEqual(canonical);
   });
 
   it("rejects duplicate normalized paths", () => {
