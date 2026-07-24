@@ -43,7 +43,7 @@ describe("compiled content byte contract", () => {
     ]);
 
     for (const artifact of result.bundle.artifacts) {
-      const expected = readFileSync(join(expectedRoot, artifact.path), "utf8");
+      const expected = readFileSync(join(expectedRoot, `${artifact.path}.txt`), "utf8");
       expect(artifact.json).toBe(expected);
     }
   });
