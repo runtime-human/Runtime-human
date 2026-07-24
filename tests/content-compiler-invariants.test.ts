@@ -129,6 +129,23 @@ describe("content compiler invariants", () => {
     });
   });
 
+  it("rejects an empty JSONC document", () => {
+    expect(
+      compileContentSources([{ path: "content/empty.jsonc", text: "  \r\n" }]),
+    ).toMatchObject({
+      kind: "failure",
+      diagnostics: [{ code: "JSONC_PARSE", path: "content/empty.jsonc" }],
+    });
+  });
+
+  it("rejects trailing commas", () => {
+    const text = `${JSON.stringify(entry(), null, 2).replace(/\n}\s*$/u, ",\n}")}`;
+    expect(compileContentSources([{ path: "content/trailing.jsonc", text }])).toMatchObject({
+      kind: "failure",
+      diagnostics: [{ code: "JSONC_PARSE", path: "content/trailing.jsonc" }],
+    });
+  });
+
   it("rejects duplicate normalized paths", () => {
     expect(
       compileContentSources([
@@ -141,8 +158,15 @@ describe("content compiler invariants", () => {
     });
   });
 
-  it("rejects path traversal and absolute paths", () => {
-    for (const path of ["../escape.jsonc", "/content.jsonc", "C:/content.jsonc"]) {
+  it("rejects non-normalized, traversal and absolute paths", () => {
+    for (const path of [
+      "../escape.jsonc",
+      "/content.jsonc",
+      "C:/content.jsonc",
+      "content//entry.jsonc",
+      "content/./entry.jsonc",
+      "content/../entry.jsonc",
+    ]) {
       expect(compileContentSources([source(path, entry())])).toMatchObject({
         kind: "failure",
         diagnostics: [{ code: "INVALID_PATH", path }],
@@ -181,6 +205,20 @@ describe("content compiler invariants", () => {
     ]);
 
     expect(result.kind).toBe("success");
+  });
+
+  it("emits identical artifacts for comments and Windows path separators", () => {
+    const value = entry();
+    const canonical = compileContentSources([source("content/entry.jsonc", value)]);
+    const commented = compileContentSources([
+      {
+        path: "content\\entry.jsonc",
+        text: `// equivalent author comment\r\n${JSON.stringify(value, null, 2)}\r\n`,
+      },
+    ]);
+
+    expect(canonical.kind).toBe("success");
+    expect(commented).toEqual(canonical);
   });
 
   it("rejects non-integer and unsafe authoritative numbers", () => {
