@@ -50,9 +50,7 @@ function expectDiagnostic(
 ): void {
   expect(result.kind).toBe("failure");
   if (result.kind !== "failure") throw new Error("expected failed compilation");
-  expect(result.diagnostics).toEqual(
-    expect.arrayContaining([expect.objectContaining(diagnostic)]),
-  );
+  expect(result.diagnostics).toEqual(expect.arrayContaining([expect.objectContaining(diagnostic)]));
 }
 
 describe("content compiler invariants", () => {
@@ -124,10 +122,10 @@ describe("content compiler invariants", () => {
   });
 
   it("reports malformed JSONC without throwing", () => {
-    expectDiagnostic(
-      compileContentSources([{ path: "content/broken.jsonc", text: "{ broken" }]),
-      { code: "JSONC_PARSE", path: "content/broken.jsonc" },
-    );
+    expectDiagnostic(compileContentSources([{ path: "content/broken.jsonc", text: "{ broken" }]), {
+      code: "JSONC_PARSE",
+      path: "content/broken.jsonc",
+    });
   });
 
   it("rejects an empty JSONC document", () => {
@@ -140,10 +138,10 @@ describe("content compiler invariants", () => {
   it("rejects trailing commas", () => {
     const json = JSON.stringify(entry(), null, 2);
     const text = `${json.slice(0, -1)},\n}`;
-    expectDiagnostic(
-      compileContentSources([{ path: "content/trailing.jsonc", text }]),
-      { code: "JSONC_PARSE", path: "content/trailing.jsonc" },
-    );
+    expectDiagnostic(compileContentSources([{ path: "content/trailing.jsonc", text }]), {
+      code: "JSONC_PARSE",
+      path: "content/trailing.jsonc",
+    });
   });
 
   it("rejects duplicate normalized paths", () => {
