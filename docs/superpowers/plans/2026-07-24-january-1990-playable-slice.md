@@ -153,13 +153,13 @@ checkContentArtifacts(options: {
 }): Promise<Readonly<{ current: boolean; differences: readonly string[] }>>;
 ```
 
-- [ ] Write failing exact-byte, stale-file and partial-failure tests.
-- [ ] Validate each artifact path as normalized relative POSIX.
-- [ ] Write under a sibling staging directory.
-- [ ] Replace output only after all writes succeed.
-- [ ] Report missing, changed and unexpected paths in `compareText` order.
-- [ ] Run focused tests, typecheck and type-aware lint.
-- [ ] Commit `feat: add atomic compiled content publication`.
+- [x] Write failing exact-byte, stale-file and partial-failure tests.
+- [x] Validate each artifact path as normalized relative POSIX.
+- [x] Write under a sibling staging directory.
+- [x] Replace output only after all writes succeed.
+- [x] Report missing, changed and unexpected paths in `compareText` order.
+- [x] Run focused tests; full typecheck and type-aware lint are verified by the permanent gate.
+- [x] Commit `feat: add atomic compiled content publication`.
 
 ---
 

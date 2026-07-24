@@ -5,10 +5,7 @@ import { mkdtemp } from "node:fs/promises";
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import {
-  checkContentArtifacts,
-  writeContentArtifacts,
-} from "@runtime-human/game-content-compiler";
+import { checkContentArtifacts, writeContentArtifacts } from "@runtime-human/game-content-compiler";
 import type { CompiledContentArtifactV1 } from "@runtime-human/game-content";
 
 const temporaryRoots: string[] = [];
@@ -38,17 +35,17 @@ describe("compiled content artifact publication", () => {
     await writeContentArtifacts({
       outputRoot,
       artifacts: [
-        artifact("manifest.json", "{\"manifest\":true}\n"),
-        artifact("chunks/1990s/programming.json", "{\"chunk\":true}\n"),
+        artifact("manifest.json", '{"manifest":true}\n'),
+        artifact("chunks/1990s/programming.json", '{"chunk":true}\n'),
       ],
     });
 
     await expect(readFile(join(outputRoot, "manifest.json"), "utf8")).resolves.toBe(
-      "{\"manifest\":true}\n",
+      '{"manifest":true}\n',
     );
     await expect(
       readFile(join(outputRoot, "chunks", "1990s", "programming.json"), "utf8"),
-    ).resolves.toBe("{\"chunk\":true}\n");
+    ).resolves.toBe('{"chunk":true}\n');
     await expect(readFile(join(outputRoot, "stale.json"), "utf8")).rejects.toMatchObject({
       code: "ENOENT",
     });
@@ -86,10 +83,7 @@ describe("compiled content artifact publication", () => {
     await expect(
       writeContentArtifacts({
         outputRoot,
-        artifacts: [
-          artifact("conflict", "file\n"),
-          artifact("conflict/child.json", "child\n"),
-        ],
+        artifacts: [artifact("conflict", "file\n"), artifact("conflict/child.json", "child\n")],
       }),
     ).rejects.toThrow("Artifact path conflicts with a parent artifact path");
 
