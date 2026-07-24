@@ -5,6 +5,7 @@ import type { ContentSourceDocumentV1 } from "./content-types";
 export const CONTENT_COMPILER_VERSION = "content-compiler-v1" as const;
 
 const IDENTIFIER_PATTERN = "^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$";
+const CHUNK_SEGMENT_PATTERN = "^[a-z0-9][a-z0-9]*(?:[.-][a-z0-9]+)*$";
 const MONTH_PATTERN = "^[0-9]{4}-(0[1-9]|1[0-2])$";
 
 export const CONTENT_SOURCE_SCHEMA_V1 = {
@@ -29,7 +30,7 @@ export const CONTENT_SOURCE_SCHEMA_V1 = {
     id: { $ref: "#/$defs/identifier" },
     kind: { enum: ["event", "reference", "storylet", "technology"] },
     domain: { $ref: "#/$defs/identifier" },
-    era: { $ref: "#/$defs/identifier" },
+    era: { $ref: "#/$defs/chunkSegment" },
     availableFrom: { $ref: "#/$defs/month" },
     availableTo: { $ref: "#/$defs/month" },
     entryPoint: { type: "boolean" },
@@ -51,6 +52,12 @@ export const CONTENT_SOURCE_SCHEMA_V1 = {
       pattern: IDENTIFIER_PATTERN,
       minLength: 1,
       maxLength: 160,
+    },
+    chunkSegment: {
+      type: "string",
+      pattern: CHUNK_SEGMENT_PATTERN,
+      minLength: 1,
+      maxLength: 80,
     },
     month: {
       type: "string",
