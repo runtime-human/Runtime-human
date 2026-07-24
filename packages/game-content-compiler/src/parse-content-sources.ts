@@ -12,7 +12,7 @@ import { createDiagnostic, schemaDiagnostics, type ContentDiagnostic } from "./c
 import { validateContentSource } from "./content-source-schema";
 import { compareText, type ContentSourceFile, type ParsedContentDocument } from "./content-types";
 
-const MAX_SOURCE_DEPTH = 64;
+const MAX_SOURCE_DEPTH = 61;
 const MAX_SOURCE_NODES = 100_000;
 
 type PendingJsoncNode = Readonly<{
