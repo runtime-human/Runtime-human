@@ -1,5 +1,9 @@
 import { buildContentBundle } from "./build-content-bundle";
-import { compareDiagnostics, type ContentDiagnostic } from "./content-diagnostics";
+import {
+  compareDiagnostics,
+  createContentSetDiagnostic,
+  type ContentDiagnostic,
+} from "./content-diagnostics";
 import { parseContentSources } from "./parse-content-sources";
 import type { CompileContentResult, ContentSourceFile } from "./content-types";
 import {
@@ -24,5 +28,20 @@ export function compileContentSources(files: readonly ContentSourceFile[]): Comp
     return { kind: "failure", diagnostics: diagnostics.toSorted(compareDiagnostics) };
   }
 
-  return { kind: "success", bundle: buildContentBundle(uniqueDocuments) };
+  try {
+    return { kind: "success", bundle: buildContentBundle(uniqueDocuments) };
+  } catch (error) {
+    if (error instanceof RangeError && error.message.startsWith("Authoritative value exceeds ")) {
+      return {
+        kind: "failure",
+        diagnostics: [
+          createContentSetDiagnostic(
+            "CONTENT_LIMIT_EXCEEDED",
+            `Compiled content exceeds authoritative limits: ${error.message}`,
+          ),
+        ],
+      };
+    }
+    throw error;
+  }
 }
