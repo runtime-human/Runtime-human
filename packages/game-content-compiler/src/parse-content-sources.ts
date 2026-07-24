@@ -8,17 +8,9 @@ import {
 
 import { canonicalizeAuthoritative } from "@runtime-human/game-core";
 
-import {
-  createDiagnostic,
-  schemaDiagnostics,
-  type ContentDiagnostic,
-} from "./content-diagnostics";
+import { createDiagnostic, schemaDiagnostics, type ContentDiagnostic } from "./content-diagnostics";
 import { validateContentSource } from "./content-source-schema";
-import {
-  compareText,
-  type ContentSourceFile,
-  type ParsedContentDocument,
-} from "./content-types";
+import { compareText, type ContentSourceFile, type ParsedContentDocument } from "./content-types";
 
 export function parseContentSources(
   files: readonly ContentSourceFile[],

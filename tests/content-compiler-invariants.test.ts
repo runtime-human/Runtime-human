@@ -54,19 +54,19 @@ describe("content compiler invariants", () => {
   });
 
   it("rejects a valid graph without an entry point", () => {
-    expect(
-      compileContentSources([source("content/dependency.jsonc", dependency())]),
-    ).toMatchObject({
-      kind: "failure",
-      diagnostics: [
-        {
-          code: "NO_ENTRY_POINT",
-          path: "<content-set>",
-          line: 1,
-          column: 1,
-        },
-      ],
-    });
+    expect(compileContentSources([source("content/dependency.jsonc", dependency())])).toMatchObject(
+      {
+        kind: "failure",
+        diagnostics: [
+          {
+            code: "NO_ENTRY_POINT",
+            path: "<content-set>",
+            line: 1,
+            column: 1,
+          },
+        ],
+      },
+    );
   });
 
   it("rejects an empty content set", () => {
@@ -78,10 +78,7 @@ describe("content compiler invariants", () => {
 
   it("rejects a reference whose target does not cover the full source window", () => {
     const result = compileContentSources([
-      source(
-        "content/dependency.jsonc",
-        dependency({ availableTo: "1991-12" }),
-      ),
+      source("content/dependency.jsonc", dependency({ availableTo: "1991-12" })),
       source(
         "content/entry.jsonc",
         entry({
@@ -104,14 +101,8 @@ describe("content compiler invariants", () => {
 
   it("rejects an open-ended source that requires a finite target", () => {
     const result = compileContentSources([
-      source(
-        "content/dependency.jsonc",
-        dependency({ availableTo: "1991-12" }),
-      ),
-      source(
-        "content/entry.jsonc",
-        entry({ references: ["technology.dependency"] }),
-      ),
+      source("content/dependency.jsonc", dependency({ availableTo: "1991-12" })),
+      source("content/entry.jsonc", entry({ references: ["technology.dependency"] })),
     ]);
 
     expect(result).toMatchObject({
@@ -130,9 +121,7 @@ describe("content compiler invariants", () => {
   });
 
   it("rejects an empty JSONC document", () => {
-    expect(
-      compileContentSources([{ path: "content/empty.jsonc", text: "  \r\n" }]),
-    ).toMatchObject({
+    expect(compileContentSources([{ path: "content/empty.jsonc", text: "  \r\n" }])).toMatchObject({
       kind: "failure",
       diagnostics: [{ code: "JSONC_PARSE", path: "content/empty.jsonc" }],
     });
@@ -177,10 +166,7 @@ describe("content compiler invariants", () => {
   it("rejects a reversed availability interval", () => {
     expect(
       compileContentSources([
-        source(
-          "content/entry.jsonc",
-          entry({ availableFrom: "1991-01", availableTo: "1990-12" }),
-        ),
+        source("content/entry.jsonc", entry({ availableFrom: "1991-01", availableTo: "1990-12" })),
       ]),
     ).toMatchObject({
       kind: "failure",
@@ -198,10 +184,7 @@ describe("content compiler invariants", () => {
           references: ["technology.b"],
         }),
       ),
-      source(
-        "content/b.jsonc",
-        dependency({ id: "technology.b", references: ["technology.a"] }),
-      ),
+      source("content/b.jsonc", dependency({ id: "technology.b", references: ["technology.a"] })),
     ]);
 
     expect(result.kind).toBe("success");
@@ -224,9 +207,7 @@ describe("content compiler invariants", () => {
   it("rejects non-integer and unsafe authoritative numbers", () => {
     for (const value of [1.5, Number.MAX_SAFE_INTEGER + 1]) {
       expect(
-        compileContentSources([
-          source("content/entry.jsonc", entry({ payload: { value } })),
-        ]),
+        compileContentSources([source("content/entry.jsonc", entry({ payload: { value } }))]),
       ).toMatchObject({
         kind: "failure",
         diagnostics: [{ code: "SCHEMA_INVALID" }],

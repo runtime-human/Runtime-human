@@ -84,8 +84,6 @@ describe("compiled content byte contract", () => {
     expect(changedArtifacts.get("chunks/1990s/programming.json")).not.toBe(
       baselineArtifacts.get("chunks/1990s/programming.json"),
     );
-    expect(changedArtifacts.get("manifest.json")).not.toBe(
-      baselineArtifacts.get("manifest.json"),
-    );
+    expect(changedArtifacts.get("manifest.json")).not.toBe(baselineArtifacts.get("manifest.json"));
   });
 });

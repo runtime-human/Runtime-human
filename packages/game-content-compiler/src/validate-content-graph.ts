@@ -75,10 +75,7 @@ export function validateReferences(
         target.source.availableTo !== undefined &&
         (document.source.availableTo === undefined ||
           document.source.availableTo > target.source.availableTo);
-      if (
-        document.source.availableFrom < target.source.availableFrom ||
-        sourceEndsAfterTarget
-      ) {
+      if (document.source.availableFrom < target.source.availableFrom || sourceEndsAfterTarget) {
         diagnostics.push(
           diagnosticAtNode(
             document,

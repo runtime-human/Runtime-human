@@ -11,10 +11,10 @@
   "provenance": [
     {
       "sourceId": "history.open-source",
-      "title": "Open-source ecosystem timeline"
-    }
+      "title": "Open-source ecosystem timeline",
+    },
   ],
   "payload": {
-    "topic": "open-source"
-  }
+    "topic": "open-source",
+  },
 }

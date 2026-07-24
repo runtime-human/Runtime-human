@@ -12,11 +12,11 @@
     {
       "sourceId": "manual.qbasic",
       "title": "QBasic historical reference",
-      "locator": "chapter-1"
-    }
+      "locator": "chapter-1",
+    },
   ],
   "payload": {
     "language": "BASIC",
-    "environment": "DOS"
-  }
+    "environment": "DOS",
+  },
 }

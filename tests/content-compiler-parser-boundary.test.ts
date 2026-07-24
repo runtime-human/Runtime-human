@@ -36,10 +36,7 @@ describe("content compiler parser boundary", () => {
   });
 
   it("returns a diagnostic for authoritative negative zero instead of throwing", () => {
-    const text = JSON.stringify(entry({ value: 0 }), null, 2).replace(
-      '"value": 0',
-      '"value": -0',
-    );
+    const text = JSON.stringify(entry({ value: 0 }), null, 2).replace('"value": 0', '"value": -0');
 
     expect(compileContentSources([{ path: "content/negative-zero.jsonc", text }])).toMatchObject({
       kind: "failure",

@@ -57,9 +57,7 @@ describe("validateBuildOnlyDependencies", () => {
     addPackage(root, "game-content", { ajv: "8.20.0" });
 
     expect(validateBuildOnlyDependencies(root)).toContainEqual(
-      expect.stringContaining(
-        "game-content cannot depend on build-only external dependency ajv",
-      ),
+      expect.stringContaining("game-content cannot depend on build-only external dependency ajv"),
     );
   });
 

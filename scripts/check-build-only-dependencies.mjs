@@ -39,10 +39,7 @@ export function validateBuildOnlyDependencies(root) {
       : packageName;
 
     for (const dependency of dependencyNames(manifest)) {
-      if (
-        BUILD_ONLY_EXTERNAL_DEPENDENCIES.has(dependency) &&
-        shortName !== BUILD_ONLY_OWNER
-      ) {
+      if (BUILD_ONLY_EXTERNAL_DEPENDENCIES.has(dependency) && shortName !== BUILD_ONLY_OWNER) {
         diagnostics.push(
           `${path.relative(root, manifestPath)}: ${shortName} cannot depend on build-only external dependency ${dependency}`,
         );
