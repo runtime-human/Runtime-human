@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "docs:check": "node scripts/build-toc.mjs --check",
-    "fmt": "oxfmt --no-error-on-unmatched-pattern package.json pnpm-workspace.yaml tsconfig.base.json tsconfig.json vitest.config.ts tests apps packages scripts/*.mjs .github/workflows/foundation.yml",
-    "fmt:check": "oxfmt --check --no-error-on-unmatched-pattern package.json pnpm-workspace.yaml tsconfig.base.json tsconfig.json vitest.config.ts tests apps packages scripts/*.mjs .github/workflows/foundation.yml",
-    "lint": "oxlint --no-error-on-unmatched-pattern scripts/*.mjs tests apps packages",
+    "fmt": "oxfmt --no-error-on-unmatched-pattern package.json pnpm-workspace.yaml tsconfig.base.json tsconfig.json vitest.config.ts tests apps packages scripts/check-boundaries.mjs scripts/check-build-only-dependencies.mjs .github/workflows/foundation.yml",
+    "fmt:check": "oxfmt --check --no-error-on-unmatched-pattern package.json pnpm-workspace.yaml tsconfig.base.json tsconfig.json vitest.config.ts tests apps packages scripts/check-boundaries.mjs scripts/check-build-only-dependencies.mjs .github/workflows/foundation.yml",
+    "lint": "oxlint --no-error-on-unmatched-pattern scripts/check-boundaries.mjs scripts/check-build-only-dependencies.mjs tests apps packages",
     "lint:type-aware": "oxlint --type-aware --no-error-on-unmatched-pattern tests apps packages",
     "typecheck": "tsc -b --pretty false",
     "boundaries:check": "node scripts/check-boundaries.mjs && node scripts/check-build-only-dependencies.mjs",
