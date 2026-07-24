@@ -16,7 +16,7 @@ export function compileContentSources(files: readonly ContentSourceFile[]): Comp
 
   validateOwnChronology(uniqueDocuments, diagnostics);
   validateReferences(uniqueDocuments, diagnostics);
-  if (uniqueDocuments.length > 0 || files.length === 0) {
+  if (diagnostics.length === 0) {
     validateReachability(uniqueDocuments, diagnostics);
   }
 
