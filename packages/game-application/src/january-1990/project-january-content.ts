@@ -3,16 +3,23 @@ import {
   JANUARY_1990_REASON_CODES as R,
   JANUARY_1990_REQUIRED_CHUNK_IDS,
   type January1990ContentContext,
+  type January1990ContentId,
+  type January1990ReasonCode,
   type JanuaryAccessRoute,
   type JanuaryEventDefinition,
   type JanuaryLearningActivity,
   type JanuaryProjectDefinition,
+  type JanuaryQuality,
   type JanuarySituationDefinition,
   type JanuarySkillDefinition,
   type JanuaryTechnologyContext,
+  type JanuaryWorkPackage,
 } from "@runtime-human/game-core";
 
-import type { JanuaryContentEntryPort, JanuaryContentRegistryPort } from "./january-content-registry-port";
+import type {
+  JanuaryContentEntryPort,
+  JanuaryContentRegistryPort,
+} from "./january-content-registry-port";
 import {
   deepFreezeJanuary,
   requireJanuaryEntry,
@@ -23,24 +30,120 @@ import {
   type JanuaryPayloadObject,
 } from "./january-payload-readers";
 
+const ACCESS_SPECS: readonly AccessSpec[] = [
+  [
+    C.homePcAccess,
+    "home-pc",
+    "household-availability",
+    [C.dosPcPlatform, C.gwBasicInterpreterToolchain],
+    R.homePcAccess,
+  ],
+  [
+    C.sharedSchoolPcAccess,
+    "shared-school-pc",
+    "limited-schedule",
+    [C.offlineManualsEcosystem, C.dosPcPlatform, C.gwBasicInterpreterToolchain],
+    R.sharedSchoolPcAccess,
+  ],
+];
+
+const SKILL_SPECS: readonly SkillSpec[] = [
+  [C.debuggingSkill, "debugging", "correctness"],
+  [C.problemDecompositionSkill, "problem-decomposition", "clarity"],
+  [C.programReadingSkill, "program-reading", "clarity"],
+  [C.programWritingSkill, "program-writing", "correctness"],
+  [C.toolUseSkill, "tool-use", "reliability"],
+];
+
+const LEARNING_SPECS: readonly LearningSpec[] = [
+  [
+    C.firstListingActivity,
+    "first-listing",
+    "read-and-run",
+    [
+      C.modifyListingActivity,
+      C.personalUtilityProject,
+      C.problemDecompositionSkill,
+      C.programReadingSkill,
+      C.programWritingSkill,
+      C.toolUseSkill,
+    ],
+    [
+      C.problemDecompositionSkill,
+      C.programReadingSkill,
+      C.programWritingSkill,
+      C.toolUseSkill,
+    ],
+    R.readAndRunLearning,
+  ],
+  [
+    C.modifyListingActivity,
+    "modify-listing",
+    "edit-and-debug",
+    [C.debuggingSkill, C.validationFixWorkPackage],
+    [C.debuggingSkill],
+    R.editAndDebugLearning,
+  ],
+];
+
+const WORK_PACKAGE_SPECS: readonly WorkPackageSpec[] = [
+  [
+    C.inputOutputWorkPackage,
+    "input-output",
+    "correctness",
+    [C.problemDecompositionSkill, C.programWritingSkill, C.toolUseSkill],
+    [
+      C.problemDecompositionSkill,
+      C.programWritingSkill,
+      C.toolUseSkill,
+      C.gwBasicDos1990Band,
+    ],
+    R.inputOutputProject,
+  ],
+  [
+    C.validationFixWorkPackage,
+    "validation-fix",
+    "reliability",
+    [C.debuggingSkill],
+    [C.programRunsEvent, C.firstBugSituation, C.debuggingSkill],
+    R.validationFixProject,
+  ],
+];
+
+const EVENT_SPECS: readonly EventSpec[] = [
+  [
+    C.accessWindowEvent,
+    "access-window",
+    [C.firstListingActivity, C.manualFoundEvent, C.homePcAccess, C.sharedSchoolPcAccess],
+    R.accessWindowEvent,
+  ],
+  [C.logicErrorEvent, "logic-error", [C.programRunsEvent], R.logicErrorSituation],
+  [
+    C.manualFoundEvent,
+    "manual-found",
+    [C.offlineManualsEcosystem, C.programReadingSkill],
+    R.manualFoundEvent,
+  ],
+  [C.programRunsEvent, "program-runs", [], R.programRunsOutcome],
+  [C.syntaxErrorEvent, "syntax-error", [C.programRunsEvent], R.syntaxErrorSituation],
+];
+
 export function projectJanuary1990Content(
   registry: JanuaryContentRegistryPort,
 ): January1990ContentContext {
-  const context = {
+  return deepFreezeJanuary({
     schemaVersion: "january-1990-content-context-v1",
     month: "1990-01",
     contentFingerprint: registry.contentFingerprint,
     requiredChunkIds: JANUARY_1990_REQUIRED_CHUNK_IDS,
     technology: projectTechnology(registry),
-    accessRoutes: projectAccessRoutes(registry),
-    skills: projectSkills(registry),
-    learningActivities: projectLearningActivities(registry),
+    accessRoutes: ACCESS_SPECS.map((spec) => projectAccess(registry, spec)),
+    skills: SKILL_SPECS.map((spec) => projectSkill(registry, spec)),
+    learningActivities: LEARNING_SPECS.map((spec) => projectLearning(registry, spec)),
     project: projectProject(registry),
     situation: projectSituation(registry),
-    events: projectEvents(registry),
-  } as const satisfies January1990ContentContext;
-
-  return deepFreezeJanuary(context);
+    events: EVENT_SPECS.map((spec) => projectEvent(registry, spec)),
+  } as const satisfies January1990ContentContext);
 }
 
 function projectTechnology(registry: JanuaryContentRegistryPort): JanuaryTechnologyContext {
@@ -93,9 +196,24 @@ function projectTechnology(registry: JanuaryContentRegistryPort): JanuaryTechnol
     [C.dosPcPlatform],
   );
 
-  requireLiteralString(technology.payload.familyId, C.basicTechnologyFamily, technology.entry.id, "familyId");
-  requireLiteralString(band.payload.technologyId, C.gwBasicTechnology, band.entry.id, "technologyId");
-  requireLiteralString(toolchain.payload.technologyId, C.gwBasicTechnology, toolchain.entry.id, "technologyId");
+  requireLiteralString(
+    technology.payload.familyId,
+    C.basicTechnologyFamily,
+    technology.entry.id,
+    "familyId",
+  );
+  requireLiteralString(
+    band.payload.technologyId,
+    C.gwBasicTechnology,
+    band.entry.id,
+    "technologyId",
+  );
+  requireLiteralString(
+    toolchain.payload.technologyId,
+    C.gwBasicTechnology,
+    toolchain.entry.id,
+    "technologyId",
+  );
 
   return {
     familyId: C.basicTechnologyFamily,
@@ -110,7 +228,12 @@ function projectTechnology(registry: JanuaryContentRegistryPort): JanuaryTechnol
     bandId: C.gwBasicDos1990Band,
     tier: requireLiteralString(band.payload.tier, "A", band.entry.id, "tier"),
     platformId: C.dosPcPlatform,
-    platform: requireLiteralString(platform.payload.platform, "dos-pc", platform.entry.id, "platform"),
+    platform: requireLiteralString(
+      platform.payload.platform,
+      "dos-pc",
+      platform.entry.id,
+      "platform",
+    ),
     toolchainId: C.gwBasicInterpreterToolchain,
     toolchain: requireLiteralString(
       toolchain.payload.toolchain,
@@ -128,69 +251,34 @@ function projectTechnology(registry: JanuaryContentRegistryPort): JanuaryTechnol
   };
 }
 
-function projectAccessRoutes(registry: JanuaryContentRegistryPort): readonly JanuaryAccessRoute[] {
-  const home = read(
+function projectAccess(
+  registry: JanuaryContentRegistryPort,
+  [id, route, constraint, references, reasonCode]: AccessSpec,
+): JanuaryAccessRoute {
+  const result = read(
     registry,
-    C.homePcAccess,
+    id,
     "reference",
     "local-tech-availability",
     ["accessRoute", "constraint", "contentType"],
-    [C.dosPcPlatform, C.gwBasicInterpreterToolchain],
+    references,
   );
-  const school = read(
-    registry,
-    C.sharedSchoolPcAccess,
-    "reference",
-    "local-tech-availability",
-    ["accessRoute", "constraint", "contentType"],
-    [C.offlineManualsEcosystem, C.dosPcPlatform, C.gwBasicInterpreterToolchain],
-  );
-  return [
-    {
-      id: C.homePcAccess,
-      route: requireLiteralString(home.payload.accessRoute, "home-pc", home.entry.id, "accessRoute"),
-      constraint: requireLiteralString(
-        home.payload.constraint,
-        "household-availability",
-        home.entry.id,
-        "constraint",
-      ),
-      reasonCode: R.homePcAccess,
-    },
-    {
-      id: C.sharedSchoolPcAccess,
-      route: requireLiteralString(
-        school.payload.accessRoute,
-        "shared-school-pc",
-        school.entry.id,
-        "accessRoute",
-      ),
-      constraint: requireLiteralString(
-        school.payload.constraint,
-        "limited-schedule",
-        school.entry.id,
-        "constraint",
-      ),
-      reasonCode: R.sharedSchoolPcAccess,
-    },
-  ];
-}
-
-function projectSkills(registry: JanuaryContentRegistryPort): readonly JanuarySkillDefinition[] {
-  return [
-    projectSkill(registry, C.debuggingSkill, "debugging", "correctness"),
-    projectSkill(registry, C.problemDecompositionSkill, "problem-decomposition", "clarity"),
-    projectSkill(registry, C.programReadingSkill, "program-reading", "clarity"),
-    projectSkill(registry, C.programWritingSkill, "program-writing", "correctness"),
-    projectSkill(registry, C.toolUseSkill, "tool-use", "reliability"),
-  ];
+  return {
+    id,
+    route: requireLiteralString(result.payload.accessRoute, route, result.entry.id, "accessRoute"),
+    constraint: requireLiteralString(
+      result.payload.constraint,
+      constraint,
+      result.entry.id,
+      "constraint",
+    ),
+    reasonCode,
+  };
 }
 
 function projectSkill(
   registry: JanuaryContentRegistryPort,
-  id: JanuarySkillDefinition["id"],
-  skill: JanuarySkillDefinition["skill"],
-  quality: JanuarySkillDefinition["quality"],
+  [id, skill, quality]: SkillSpec,
 ): JanuarySkillDefinition {
   const result = read(
     registry,
@@ -207,72 +295,34 @@ function projectSkill(
   };
 }
 
-function projectLearningActivities(
+function projectLearning(
   registry: JanuaryContentRegistryPort,
-): readonly JanuaryLearningActivity[] {
-  const first = read(
+  [id, activity, practiceMode, references, skillIds, reasonCode]: LearningSpec,
+): JanuaryLearningActivity {
+  const result = read(
     registry,
-    C.firstListingActivity,
+    id,
     "storylet",
     "learning-activity",
     ["activity", "contentType", "practiceMode"],
-    [
-      C.modifyListingActivity,
-      C.personalUtilityProject,
-      C.problemDecompositionSkill,
-      C.programReadingSkill,
-      C.programWritingSkill,
-      C.toolUseSkill,
-    ],
+    references,
   );
-  const modify = read(
-    registry,
-    C.modifyListingActivity,
-    "storylet",
-    "learning-activity",
-    ["activity", "contentType", "practiceMode"],
-    [C.debuggingSkill, C.validationFixWorkPackage],
-  );
-  return [
-    {
-      id: C.firstListingActivity,
-      activity: requireLiteralString(first.payload.activity, "first-listing", first.entry.id, "activity"),
-      practiceMode: requireLiteralString(
-        first.payload.practiceMode,
-        "read-and-run",
-        first.entry.id,
-        "practiceMode",
-      ),
-      skillIds: [
-        C.problemDecompositionSkill,
-        C.programReadingSkill,
-        C.programWritingSkill,
-        C.toolUseSkill,
-      ],
-      reasonCode: R.readAndRunLearning,
-    },
-    {
-      id: C.modifyListingActivity,
-      activity: requireLiteralString(
-        modify.payload.activity,
-        "modify-listing",
-        modify.entry.id,
-        "activity",
-      ),
-      practiceMode: requireLiteralString(
-        modify.payload.practiceMode,
-        "edit-and-debug",
-        modify.entry.id,
-        "practiceMode",
-      ),
-      skillIds: [C.debuggingSkill],
-      reasonCode: R.editAndDebugLearning,
-    },
-  ];
+  return {
+    id,
+    activity: requireLiteralString(result.payload.activity, activity, result.entry.id, "activity"),
+    practiceMode: requireLiteralString(
+      result.payload.practiceMode,
+      practiceMode,
+      result.entry.id,
+      "practiceMode",
+    ),
+    skillIds,
+    reasonCode,
+  };
 }
 
 function projectProject(registry: JanuaryContentRegistryPort): JanuaryProjectDefinition {
-  const project = read(
+  const result = read(
     registry,
     C.personalUtilityProject,
     "storylet",
@@ -280,58 +330,26 @@ function projectProject(registry: JanuaryContentRegistryPort): JanuaryProjectDef
     ["archetype", "contentType", "qualities"],
     [C.inputOutputWorkPackage, C.validationFixWorkPackage],
   );
-  requireLiteralStringArray(
-    project.payload.qualities,
-    ["clarity", "correctness", "reliability"] as const,
-    project.entry.id,
-    "qualities",
-  );
+  const qualities = ["clarity", "correctness", "reliability"] as const;
+  requireLiteralStringArray(result.payload.qualities, qualities, result.entry.id, "qualities");
+
   return {
     id: C.personalUtilityProject,
     archetype: requireLiteralString(
-      project.payload.archetype,
+      result.payload.archetype,
       "personal-utility",
-      project.entry.id,
+      result.entry.id,
       "archetype",
     ),
-    qualities: ["clarity", "correctness", "reliability"],
-    workPackages: [
-      projectWorkPackage(
-        registry,
-        C.inputOutputWorkPackage,
-        "input-output",
-        "correctness",
-        [C.problemDecompositionSkill, C.programWritingSkill, C.toolUseSkill],
-        [
-          C.problemDecompositionSkill,
-          C.programWritingSkill,
-          C.toolUseSkill,
-          C.gwBasicDos1990Band,
-        ],
-        R.inputOutputProject,
-      ),
-      projectWorkPackage(
-        registry,
-        C.validationFixWorkPackage,
-        "validation-fix",
-        "reliability",
-        [C.debuggingSkill],
-        [C.programRunsEvent, C.firstBugSituation, C.debuggingSkill],
-        R.validationFixProject,
-      ),
-    ],
+    qualities,
+    workPackages: WORK_PACKAGE_SPECS.map((spec) => projectWorkPackage(registry, spec)),
   };
 }
 
 function projectWorkPackage(
   registry: JanuaryContentRegistryPort,
-  id: JanuaryProjectDefinition["workPackages"][number]["id"],
-  goal: JanuaryProjectDefinition["workPackages"][number]["goal"],
-  quality: JanuaryProjectDefinition["workPackages"][number]["quality"],
-  skillIds: JanuaryProjectDefinition["workPackages"][number]["skillIds"],
-  references: readonly string[],
-  reasonCode: JanuaryProjectDefinition["workPackages"][number]["reasonCode"],
-): JanuaryProjectDefinition["workPackages"][number] {
+  [id, goal, quality, skillIds, references, reasonCode]: WorkPackageSpec,
+): JanuaryWorkPackage {
   const result = read(
     registry,
     id,
@@ -350,7 +368,7 @@ function projectWorkPackage(
 }
 
 function projectSituation(registry: JanuaryContentRegistryPort): JanuarySituationDefinition {
-  const situation = read(
+  const result = read(
     registry,
     C.firstBugSituation,
     "storylet",
@@ -361,49 +379,18 @@ function projectSituation(registry: JanuaryContentRegistryPort): JanuarySituatio
   return {
     id: C.firstBugSituation,
     issueType: requireLiteralString(
-      situation.payload.issueType,
+      result.payload.issueType,
       "first-bug",
-      situation.entry.id,
+      result.entry.id,
       "issueType",
     ),
     eventIds: [C.logicErrorEvent, C.syntaxErrorEvent],
   };
 }
 
-function projectEvents(registry: JanuaryContentRegistryPort): readonly JanuaryEventDefinition[] {
-  return [
-    projectEvent(
-      registry,
-      C.accessWindowEvent,
-      "access-window",
-      [C.firstListingActivity, C.manualFoundEvent, C.homePcAccess, C.sharedSchoolPcAccess],
-      R.accessWindowEvent,
-    ),
-    projectEvent(registry, C.logicErrorEvent, "logic-error", [C.programRunsEvent], R.logicErrorSituation),
-    projectEvent(
-      registry,
-      C.manualFoundEvent,
-      "manual-found",
-      [C.offlineManualsEcosystem, C.programReadingSkill],
-      R.manualFoundEvent,
-    ),
-    projectEvent(registry, C.programRunsEvent, "program-runs", [], R.programRunsOutcome),
-    projectEvent(
-      registry,
-      C.syntaxErrorEvent,
-      "syntax-error",
-      [C.programRunsEvent],
-      R.syntaxErrorSituation,
-    ),
-  ];
-}
-
 function projectEvent(
   registry: JanuaryContentRegistryPort,
-  id: JanuaryEventDefinition["id"],
-  eventType: JanuaryEventDefinition["eventType"],
-  references: readonly string[],
-  reasonCode: JanuaryEventDefinition["reasonCode"],
+  [id, eventType, references, reasonCode]: EventSpec,
 ): JanuaryEventDefinition {
   const result = read(
     registry,
@@ -415,7 +402,12 @@ function projectEvent(
   );
   return {
     id,
-    eventType: requireLiteralString(result.payload.eventType, eventType, result.entry.id, "eventType"),
+    eventType: requireLiteralString(
+      result.payload.eventType,
+      eventType,
+      result.entry.id,
+      "eventType",
+    ),
     reasonCode,
   };
 }
@@ -427,7 +419,7 @@ function read(
   contentType: string,
   keys: readonly string[],
   references: readonly string[],
-): Readonly<{ entry: JanuaryContentEntryPort; payload: JanuaryPayloadObject }> {
+): ReadResult {
   const entry = requireJanuaryEntry(registry, id, kind);
   requireJanuaryReferences(entry, references);
   return {
@@ -435,3 +427,47 @@ function read(
     payload: requireJanuaryPayload(entry, contentType, keys),
   };
 }
+
+type ReadResult = Readonly<{
+  entry: JanuaryContentEntryPort;
+  payload: JanuaryPayloadObject;
+}>;
+
+type AccessSpec = readonly [
+  id: January1990ContentId,
+  route: JanuaryAccessRoute["route"],
+  constraint: JanuaryAccessRoute["constraint"],
+  references: readonly string[],
+  reasonCode: January1990ReasonCode,
+];
+
+type SkillSpec = readonly [
+  id: January1990ContentId,
+  skill: JanuarySkillDefinition["skill"],
+  quality: JanuaryQuality,
+];
+
+type LearningSpec = readonly [
+  id: January1990ContentId,
+  activity: JanuaryLearningActivity["activity"],
+  practiceMode: JanuaryLearningActivity["practiceMode"],
+  references: readonly string[],
+  skillIds: readonly January1990ContentId[],
+  reasonCode: January1990ReasonCode,
+];
+
+type WorkPackageSpec = readonly [
+  id: January1990ContentId,
+  goal: JanuaryWorkPackage["goal"],
+  quality: JanuaryQuality,
+  skillIds: readonly January1990ContentId[],
+  references: readonly string[],
+  reasonCode: January1990ReasonCode,
+];
+
+type EventSpec = readonly [
+  id: January1990ContentId,
+  eventType: JanuaryEventDefinition["eventType"],
+  references: readonly string[],
+  reasonCode: January1990ReasonCode,
+];
