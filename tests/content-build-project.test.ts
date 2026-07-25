@@ -1,7 +1,6 @@
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { mkdtemp } from "node:fs/promises";
 
 import { afterEach, describe, expect, it } from "vitest";
 
@@ -107,6 +106,25 @@ describe("content build project", () => {
     });
     await expect(readFile(join(repositoryRoot, "generated", "content", "manifest.json"))).rejects
       .toMatchObject({ code: "ENOENT" });
+  });
+
+  it("rejects an output root that traverses a linked parent component", async () => {
+    const repositoryRoot = await createRepositoryFixture();
+    const linkedTarget = join(repositoryRoot, "linked-target");
+    await mkdir(linkedTarget, { recursive: true });
+    await writeFile(join(repositoryRoot, "content", "entry.jsonc"), source());
+    await symlink(linkedTarget, join(repositoryRoot, "generated"), "junction");
+
+    await expect(
+      runContentBuild({
+        repositoryRoot,
+        config: { sourceRoots: ["content"], outputRoot: "generated/content" },
+        mode: "write",
+      }),
+    ).rejects.toThrow("Compiled content output root must not traverse symbolic links");
+    await expect(readFile(join(linkedTarget, "content", "manifest.json"))).rejects.toMatchObject({
+      code: "ENOENT",
+    });
   });
 
   it("parses a closed normalized build config", () => {
