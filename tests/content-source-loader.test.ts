@@ -70,6 +70,18 @@ describe("content source discovery", () => {
     ).rejects.toThrow("Symbolic links are not allowed in content source roots");
   });
 
+  it("rejects a source root that traverses a linked parent component", async () => {
+    const repositoryRoot = await createRepositoryFixture();
+    const target = join(repositoryRoot, "target", "nested");
+    await mkdir(target, { recursive: true });
+    await writeFile(join(target, "entry.jsonc"), "{}\n");
+    await symlink(join(repositoryRoot, "target"), join(repositoryRoot, "content"), "junction");
+
+    await expect(
+      loadContentSourceFiles({ repositoryRoot, sourceRoots: ["content/nested"] }),
+    ).rejects.toThrow("Content source root must not traverse symbolic links");
+  });
+
   it("rejects duplicate files discovered through repeated roots", async () => {
     const repositoryRoot = await createRepositoryFixture();
     await mkdir(join(repositoryRoot, "content"), { recursive: true });
