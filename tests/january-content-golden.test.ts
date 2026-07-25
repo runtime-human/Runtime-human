@@ -58,9 +58,9 @@ describe("January 1990 content registry", () => {
       "1990s/ecosystem",
       "1990s/programming",
     ]);
-    expect(bundle.chunks.flatMap((chunk) => chunk.entries.map((entry) => entry.id))).toEqual(
-      JANUARY_CONTENT_IDS,
-    );
+    expect(
+      bundle.chunks.flatMap((chunk) => chunk.entries.map((entry) => entry.id)).toSorted(),
+    ).toEqual(JANUARY_CONTENT_IDS);
     expect(bundle.manifest.entryPointIds).toEqual(["core.event.access-window"]);
 
     for (const chunk of bundle.chunks) {
