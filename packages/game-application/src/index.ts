@@ -7,13 +7,16 @@ export {
   JanuaryContentProjectionError,
   materializeJanuary1990Commit,
   projectJanuary1990Content,
+  projectJanuary1990RuntimeView,
 } from "./january-1990";
 export type {
   CreateJanuary1990CompatibilityInput,
   CreateJanuary1990RuntimeInput,
   January1990BeginInput,
+  January1990DecisionViewKind,
   January1990ResumeInput,
   January1990Runtime,
+  January1990RuntimeView,
   JanuaryContentEntryPort,
   JanuaryContentProjectionErrorCode,
   JanuaryContentRegistryPort,
