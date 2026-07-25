@@ -37,6 +37,21 @@ describe("January 1990 MonthPlan contracts", () => {
     expect(Object.isFrozen(plan.requiredChunkIds)).toBe(true);
   });
 
+  it("rejects content contexts outside the exact January boundary", () => {
+    expect(() =>
+      createJanuary1990MonthPlan({
+        ...contentContext,
+        month: "1990-02",
+      } as unknown as January1990ContentContext),
+    ).toThrow(TypeError);
+    expect(() =>
+      createJanuary1990MonthPlan({
+        ...contentContext,
+        requiredChunkIds: ["1990s/programming", "1990s/ecosystem"],
+      } as unknown as January1990ContentContext),
+    ).toThrow(TypeError);
+  });
+
   it("parses only the exact immutable MonthPlan contract", () => {
     const validPlan = {
       schemaVersion: "january-1990-month-plan-v1",
