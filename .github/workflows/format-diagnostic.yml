@@ -13,10 +13,10 @@ defaults:
     shell: pwsh
 
 jobs:
-  capture-oxfmt-patch:
+  capture-oxfmt-output:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: self-hosted
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
@@ -39,18 +39,26 @@ jobs:
           corepack prepare pnpm@11.11.0 --activate
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Capture pinned Oxfmt patch
+      - name: Apply pinned Oxfmt
         run: |
           $ErrorActionPreference = "Stop"
           pnpm fmt
-          git diff --binary -- . ':!docs/**' | Out-File -FilePath oxfmt.patch -Encoding utf8
-          if ((Get-Item oxfmt.patch).Length -eq 0) {
-            "No formatting changes." | Out-File -FilePath oxfmt.patch -Encoding utf8
-          }
-      - name: Upload formatting patch
+          New-Item -ItemType Directory -Force -Path formatted/packages/game-application/src/january-1990 | Out-Null
+          New-Item -ItemType Directory -Force -Path formatted/packages/game-core/src/january-1990 | Out-Null
+          New-Item -ItemType Directory -Force -Path formatted/tests | Out-Null
+          Copy-Item packages/game-application/src/january-1990/project-january-content.ts formatted/packages/game-application/src/january-1990/project-january-content.ts
+          Copy-Item packages/game-core/src/january-1990/january-content-context.ts formatted/packages/game-core/src/january-1990/january-content-context.ts
+          Copy-Item tests/january-1990-content-projection.test.ts formatted/tests/january-1990-content-projection.test.ts
+          Copy-Item tests/january-1990-contracts.test.ts formatted/tests/january-1990-contracts.test.ts
+      - name: Upload formatted files
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: oxfmt-patch
-          path: oxfmt.patch
+          name: oxfmt-files
+          path: formatted
           if-no-files-found: error
           retention-days: 1
+      - name: Run TypeScript build after formatting
+        run: pnpm typecheck
+      - name: Run focused January tests after formatting
+        if: always()
+        run: pnpm vitest run tests/january-1990-contracts.test.ts tests/january-1990-content-projection.test.ts tests/check-boundaries.test.ts
