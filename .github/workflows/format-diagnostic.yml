@@ -1,0 +1,56 @@
+name: format-diagnostic
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  capture-oxfmt-patch:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: self-hosted
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          clean: true
+          persist-credentials: false
+          show-progress: false
+      - name: Normalize tracked files
+        run: |
+          $ErrorActionPreference = "Stop"
+          git config --local core.autocrlf false
+          git config --local core.eol lf
+          git checkout-index --all --force
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          $ErrorActionPreference = "Stop"
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Capture pinned Oxfmt patch
+        run: |
+          $ErrorActionPreference = "Stop"
+          pnpm fmt
+          git diff --binary -- . ':!docs/**' | Out-File -FilePath oxfmt.patch -Encoding utf8
+          if ((Get-Item oxfmt.patch).Length -eq 0) {
+            "No formatting changes." | Out-File -FilePath oxfmt.patch -Encoding utf8
+          }
+      - name: Upload formatting patch
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: oxfmt-patch
+          path: oxfmt.patch
+          if-no-files-found: error
+          retention-days: 1
