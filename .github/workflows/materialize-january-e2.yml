@@ -33,21 +33,32 @@ jobs:
           corepack prepare pnpm@11.11.0 --activate
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Capture E2 diagnostics
+      - name: Capture balance writer
         run: |
-          pnpm exec tsx scripts/write-january-1990-balance-trace.mts *>&1 | Tee-Object balance-writer.log
-          $balanceExit = $LASTEXITCODE
-          pnpm exec tsx scripts/write-january-1990-persistence-flow.mts *>&1 | Tee-Object persistence-writer.log
-          $persistenceExit = $LASTEXITCODE
-          pnpm typecheck *>&1 | Tee-Object typecheck.log
-          $typecheckExit = $LASTEXITCODE
-          pnpm exec vitest run tests/january-1990-desktop-concurrency.test.ts tests/january-1990-balance-trace.test.ts tests/january-1990-persistence-flow.test.ts *>&1 | Tee-Object tests.log
-          $testsExit = $LASTEXITCODE
-          "BALANCE_EXIT=$balanceExit" | Set-Content exit-codes.txt
-          "PERSISTENCE_EXIT=$persistenceExit" | Add-Content exit-codes.txt
-          "TYPECHECK_EXIT=$typecheckExit" | Add-Content exit-codes.txt
-          "TESTS_EXIT=$testsExit" | Add-Content exit-codes.txt
+          cmd /c "pnpm exec tsx scripts/write-january-1990-balance-trace.mts > balance-writer.log 2>&1"
+          "BALANCE_EXIT=$LASTEXITCODE" | Set-Content balance.exit
+          exit 0
+      - name: Capture persistence writer
+        run: |
+          cmd /c "pnpm exec tsx scripts/write-january-1990-persistence-flow.mts > persistence-writer.log 2>&1"
+          "PERSISTENCE_EXIT=$LASTEXITCODE" | Set-Content persistence.exit
+          exit 0
+      - name: Capture typecheck
+        run: |
+          cmd /c "pnpm typecheck > typecheck.log 2>&1"
+          "TYPECHECK_EXIT=$LASTEXITCODE" | Set-Content typecheck.exit
+          exit 0
+      - name: Capture focused tests
+        run: |
+          cmd /c "pnpm exec vitest run tests/january-1990-desktop-concurrency.test.ts tests/january-1990-balance-trace.test.ts tests/january-1990-persistence-flow.test.ts > tests.log 2>&1"
+          "TESTS_EXIT=$LASTEXITCODE" | Set-Content tests.exit
+          exit 0
+      - name: Combine exit codes
+        if: always()
+        run: |
+          Get-Content *.exit | Set-Content exit-codes.txt
       - name: Upload E2 diagnostics and generated fixtures
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: january-e2-diagnostics
@@ -62,6 +73,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 1
       - name: Fail on captured diagnostics
+        if: always()
         run: |
           Get-Content exit-codes.txt
           if ((Get-Content exit-codes.txt) -match "=[1-9]") { exit 1 }
