@@ -5,8 +5,8 @@
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "mainHeadAtCurrentSliceStart": "2d5066a683e2765e5a259696fd114061772dd65b",
-  "currentPhase": "january-1990-content-projection",
+  "mainHeadAtCurrentSliceStart": "3f70d937c5eb0740997a88f5e2f6196275ba5110",
+  "currentPhase": "january-1990-deterministic-month-run",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -64,12 +64,18 @@
     },
     {
       "id": "january-1990-content-projection",
-      "status": "in-progress",
+      "status": "complete",
       "pullRequest": 28,
-      "branch": "agent/january-1990-content-projections"
+      "commit": "3f70d937c5eb0740997a88f5e2f6196275ba5110"
     },
     {
       "id": "january-1990-deterministic-month-run",
+      "status": "in-progress",
+      "pullRequest": 29,
+      "branch": "agent/january-1990-deterministic-month-run"
+    },
+    {
+      "id": "january-1990-persisted-composition",
       "status": "planned"
     },
     {
@@ -92,8 +98,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "pending-pr-28-final-head",
-    "currentConstraint": "projection-typecheck-tests-and-review-pending",
+    "qualityGate": "pending-pr-29-red-green-refactor",
+    "currentConstraint": "month-plan-answer-contracts-and-fixed-month-run-not-yet-implemented",
     "currentPullRequestMayMerge": false
   }
 }
