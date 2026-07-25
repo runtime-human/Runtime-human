@@ -8,64 +8,55 @@ updated: 2026-07-24
 ---
 # January 1990 Playable Slice Implementation Plan
 
-> **For agentic workers:** execute one bounded delivery at a time. Every delivery follows RED → GREEN → REFACTOR and may merge only after all permanent checks pass on one unchanged head.
+> **For agentic workers:** REQUIRED SUB-SKILL: use `superpowers:subagent-driven-development` or `superpowers:executing-plans`. Execute one bounded delivery at a time. Every production change follows RED → GREEN → REFACTOR and merges only after all permanent gates pass on one unchanged head.
 
 **Goal:** Deliver the first deterministic, suspendable, resumable and atomically committable January 1990 gameplay month using verified compiled-content v1.
 
-**Architecture:** Build-time JSONC compiles to canonical immutable artifacts. `game-content` validates and publishes a selected runtime registry; `game-application` composes that registry with pure `game-core` January contracts; existing MonthRun and Rust SQLite orchestration remain authoritative.
+**Architecture:** Author JSONC remains build-time input. `game-content` validates canonical compiled artifacts and publishes an immutable registry. `game-application` projects that registry through a minimal structural port into content-package-independent `game-core` contracts. Existing MonthRun transitions and the Rust-owned single-writer SQLite store remain authoritative.
 
 **Tech Stack:** TypeScript 7.0.2, Node.js 24, pnpm 11.11.0, Vitest 4.1.10, Oxfmt/Oxlint, React 19, Vite 8, Tauri 2, Rust 1.97 and rusqlite/SQLite.
 
 ## Global constraints
 
 - Preserve Xoshiro256**, canonical hashing, MonthRun transitions and checkpoint serialization.
-- Preserve the existing Rust-owned single-writer SQLite store, revision/hash CAS, durable receipts and atomic commit.
+- Preserve the existing Rust-owned single-writer SQLite store, revision/hash CAS, durable receipts, recovery and atomic commit.
 - JSONC, Ajv and `jsonc-parser` remain build-time only.
 - Runtime accepts canonical compiled JSON only.
-- `game-core` must not import `game-content`.
-- `game-content` must not import `game-core`.
-- `game-application` is the allowed composition layer for content + core + persistence.
-- Content may produce typed inputs/proposals but may not mutate progression, projects, money, equipment or relationships directly.
+- `game-core` must not import or depend on `game-content`.
+- `game-content` must not import or depend on `game-core`.
+- `game-application` may consume a minimal structural registry port; do not add package or lockfile coupling unless a failing test proves it necessary.
+- Content may produce typed inputs and proposals but may not mutate progression, projects, money, equipment or relationships directly.
 - No `Math.random()`, wall-clock decisions, locale-dependent sorting or runtime Cartesian expansion.
-- No generic mod loader, runtime DSL, city simulation, NPC memory engine, vector memory or runtime LLM.
-- Performance issue #24 may add measurement infrastructure but must not delay January or reopen persistence.
+- No generic mod loader, runtime DSL, city simulation, NPC memory engine, vector memory or authoritative runtime LLM.
+- Performance issue #24 may add measurement infrastructure after the playable path exists, but must not delay January or reopen persistence.
+- January uses GW-BASIC and DOS context. QBasic is excluded because it belongs to the DOS 5.0/1991 timeline.
 
 ## Repository state
 
 | Delivery | State | Evidence |
 |---|---|---|
-| CONTENT-02A | complete | PR #23 merged at `6b5af703f7ae23cf76ccbafb8b8dada8a4455522` |
-| CONTENT-02B | complete | PR #25 merged at `4cacfabd051065cbd3c2b2dd5c90e82f63452714` |
-| CONTENT-02C | active | draft PR #26, `agent/compiled-content-runtime-loader` |
-| CONTENT-02D1 | planned | PR #27, January projection boundary |
-| CONTENT-02D2 | planned | PR #28, deterministic persisted MonthRun |
-| CONTENT-02E1 | planned | PR #29, thin playable UI |
-| CONTENT-02E2 | planned | PR #30, hardening and issue closure |
-
-January uses GW-BASIC and DOS context. QBasic is excluded because it belongs to the DOS 5.0/1991 timeline.
+| Repository foundation | complete | PR #15, `63df5b5fef6e0f14c1aac25771eda352482f2930` |
+| Determinism kernel | complete | PR #16, `7521ff64ddbe194a7775676f4b9784e482efee13` |
+| MonthRun protocol | complete | PR #17, `66d9ecbb9eaf7abd3b72d915883ef1746946d52f` |
+| SQLite durable store | complete | PR #18, `c41e531511134f3af4ce581857641b8ef8d7ad1f` |
+| Persisted MonthRun orchestration | complete | PR #20, `1357124e85a5b38c41819ec0413183969c679d60` |
+| CONTENT-02A compiled repository API | complete | PR #23, `6b5af703f7ae23cf76ccbafb8b8dada8a4455522` |
+| CONTENT-02B January registry | complete | PR #25, `4cacfabd051065cbd3c2b2dd5c90e82f63452714` |
+| CONTENT-02C runtime loader | complete | PR #26, `2d5066a683e2765e5a259696fd114061772dd65b` |
+| Obsolete projection attempt | superseded | PR #27 closed without merge; direct package coupling rejected |
+| CONTENT-02D1 projection boundary | active | PR #28, `agent/january-1990-content-projections` |
+| CONTENT-02D2 deterministic core MonthRun | next | starts only after PR #28 merge |
+| CONTENT-02D3 persisted January composition | queued | starts after pure core MonthRun |
+| CONTENT-02E1 thin playable UI | queued | starts after persisted flow is stable |
+| CONTENT-02E2 hardening and issue closure | queued | final January delivery |
 
 ---
 
-## PR #26 — CONTENT-02C: verified compiled-content runtime loader
+## Completed delivery — CONTENT-02C runtime loader
 
-### Files
+PR #26 is merged. The final unchanged head passed frozen install, documentation, pinned formatting, lint, TypeScript 7, `content:check`, package boundaries, complete Vitest, renderer, Storybook, Rust, Sonar and review gates.
 
-```text
-packages/game-content/src/
-├── content-errors.ts
-├── compiled-content-shape.ts
-├── compiled-content-invariants.ts
-├── compiled-content-runtime.ts
-├── select-required-chunks.ts
-├── content-registry.ts
-├── content-loader.ts
-└── index.ts
-
-tests/compiled-content-runtime-loader.test.ts
-docs/EXECUTION-STATUS.jsonc
-```
-
-### Public interfaces
+Delivered contracts:
 
 ```ts
 export type CompiledContentRuntimePrimitives = Readonly<{
@@ -85,110 +76,35 @@ export type ContentRegistry = Readonly<{
 }>;
 ```
 
-### Delivered parser behavior
-
-- [x] Parse through native `JSON.parse` only.
-- [x] Limit artifact bytes, JSON depth, node count, collection size, object keys and strings.
-- [x] Reject unsafe integers, negative zero and lone UTF-16 surrogates.
-- [x] Require canonical compiler bytes with an optional single terminal LF.
-- [x] Reject duplicate JSON keys through canonical-byte mismatch.
-- [x] Enforce closed manifest/chunk/entry/provenance field sets.
-- [x] Match build-time identifier, chunk-segment, month and provenance bounds.
-- [x] Enforce manifest-wide content-ID uniqueness and entry-point integrity.
-- [x] Recompute fingerprints through injected authoritative game-core primitives.
-- [x] Reject incompatible schema/compiler versions and corrupt fingerprints.
-- [x] Deep-freeze accepted artifacts and payloads.
-
-### Delivered registry behavior
-
-- [x] Select exactly `1990s/ecosystem` and `1990s/programming` for January.
-- [x] Load a verified selected subset when later-era descriptors exist.
-- [x] Reject missing, unexpected, duplicate or descriptor-mismatched chunks.
-- [x] Require all references in the selected closure to resolve.
-- [x] Publish only after complete validation.
-- [x] Expose immutable `get`, `require` and `listByKind` APIs.
-- [x] Retain the whole-manifest content fingerprint.
-- [x] Add no package dependency or lockfile churn to `game-content`.
-- [x] Keep internal validators out of the package root API.
-
-### Final closure steps
-
-- [ ] Run `pnpm install --frozen-lockfile --reporter=silent` on the final head.
-- [ ] Run `pnpm docs:check` and `pnpm fmt:check`.
-- [ ] Run `pnpm lint` and `pnpm lint:type-aware`.
-- [ ] Run `pnpm typecheck` with TypeScript 7.0.2.
-- [ ] Run `pnpm content:check` and `pnpm boundaries:check`.
-- [ ] Run focused loader tests and complete `pnpm test`.
-- [ ] Run renderer and Storybook production builds.
-- [ ] Run Rust format/check/test gates.
-- [ ] Confirm Sonar Quality Gate and zero unresolved security hotspots.
-- [ ] Confirm zero unresolved review threads.
-- [ ] Update PR body with exact final head and evidence.
-- [ ] Mark ready only after the same head passes every gate.
-- [ ] Squash-merge with `expected_head_sha` equal to that verified head.
+The loader validates canonical bytes, bounds, closed shapes, schema/compiler versions, fingerprints, descriptor agreement, selected-subset closure, references, entry points and immutability. No runtime Ajv, filesystem API, generic mod loader or package-cycle was introduced.
 
 ---
 
-## PR #27 — CONTENT-02D1: January content projection boundary
+## Active delivery — CONTENT-02D1 content projection boundary
 
-### Architecture correction
-
-The previous draft placed content-consuming files directly in `game-core`. That violates the approved dependency graph. The corrected split is:
-
-```text
-game-content
-  compiled types + verified immutable registry
-        ↓
-game-application
-  closed registry-to-context adapter
-        ↓
-game-core
-  pure January DTOs, reason codes and deterministic rules
-```
-
-Only `game-application → game-content` is added. `game-core → game-content` remains forbidden.
-
-### Task 1: approve the composition dependency
-
-**Files:**
-
-- Modify: `packages/game-application/package.json`
-- Modify: `packages/game-application/tsconfig.json`
-- Modify: `scripts/check-boundaries.mjs`
-- Modify: `tests/check-boundaries.test.ts`
-- Modify: `pnpm-lock.yaml` importer only
-
-**Produces:**
-
-```text
-game-application may depend on game-content
-game-core may not depend on game-content
-game-ui may not bypass game-application
-```
-
-- [ ] Add a failing boundary test where application declares/imports `game-content`.
-- [ ] Run `pnpm vitest run tests/check-boundaries.test.ts` and verify the intended failure.
-- [ ] Add `game-content` to the approved application dependencies.
-- [ ] Add the package dependency, TypeScript project reference and lockfile importer link.
-- [ ] Re-run the boundary test and `pnpm boundaries:check`.
-- [ ] Commit as `build: allow application content composition`.
-
-### Task 2: define pure January contracts in game-core
-
-**Files:**
+### Responsibility map
 
 ```text
 packages/game-core/src/january-1990/
-├── january-content-ids.ts
-├── january-reason-codes.ts
-├── january-content-context.ts
-└── index.ts
+├── january-content-ids.ts          exact stable IDs and chunk IDs
+├── january-reason-codes.ts         stable UI/audit reason codes
+├── january-content-context.ts      pure readonly DTOs
+└── index.ts                        public January exports
 
-packages/game-core/src/index.ts
-tests/january-1990-contracts.test.ts
+packages/game-application/src/january-1990/
+├── january-content-registry-port.ts     minimal structural input port
+├── january-content-projection-error.ts  closed deterministic errors
+├── january-payload-readers.ts           exact payload/reference guards
+├── project-january-content.ts           registry → pure context adapter
+└── index.ts                              public application exports
+
+tests/
+├── january-1990-contracts.test.ts
+├── january-1990-content-projection.test.ts
+└── check-boundaries.test.ts
 ```
 
-**Produces:**
+### Public interfaces
 
 ```ts
 export const JANUARY_1990_REQUIRED_CHUNK_IDS: readonly [
@@ -196,250 +112,325 @@ export const JANUARY_1990_REQUIRED_CHUNK_IDS: readonly [
   "1990s/programming",
 ];
 
-export type January1990ContentContext = Readonly<{
-  schemaVersion: "january-1990-content-context-v1";
-  month: "1990-01";
+export type JanuaryContentRegistryPort = Readonly<{
   contentFingerprint: Fingerprint;
-  technology: JanuaryTechnologyContext;
-  accessRoutes: readonly JanuaryAccessRoute[];
-  skills: readonly JanuarySkillDefinition[];
-  learningActivities: readonly JanuaryLearningActivity[];
-  project: JanuaryProjectDefinition;
-  situation: JanuarySituationDefinition;
-  events: readonly JanuaryEventDefinition[];
+  get(id: string): JanuaryContentEntryPort | undefined;
 }>;
-```
 
-- [ ] Write a failing test for the exact 24 stable IDs and two chunk IDs.
-- [ ] Define content-package-independent readonly DTOs.
-- [ ] Define closed stable reason codes for access, learning, project and defect explanations.
-- [ ] Freeze exported constant collections.
-- [ ] Export only public January contracts from `game-core`.
-- [ ] Run `pnpm vitest run tests/january-1990-contracts.test.ts` and `pnpm typecheck`.
-- [ ] Commit as `feat: add January 1990 core contracts`.
-
-### Task 3: add a closed projection error model
-
-**Files:**
-
-```text
-packages/game-application/src/january-1990/
-├── january-content-projection-error.ts
-└── index.ts
-```
-
-**Produces:**
-
-```ts
-export type JanuaryContentProjectionErrorCode =
-  | "MISSING_CONTENT"
-  | "WRONG_KIND"
-  | "WRONG_CONTENT_TYPE"
-  | "INVALID_PAYLOAD"
-  | "REFERENCE_MISMATCH";
-
-export class JanuaryContentProjectionError extends Error {
-  readonly code: JanuaryContentProjectionErrorCode;
-  readonly contentId: string;
-}
-```
-
-- [ ] Write one failing test per error code using a minimal fake registry.
-- [ ] Implement the closed error class without transport/UI concerns.
-- [ ] Verify all error objects are deterministic and contain the stable ID.
-- [ ] Commit as `feat: add January projection errors`.
-
-### Task 4: project the real registry into a pure context
-
-**Files:**
-
-```text
-packages/game-application/src/january-1990/
-├── project-january-content.ts
-├── january-payload-readers.ts
-└── index.ts
-
-packages/game-application/src/index.ts
-tests/january-1990-content-projection.test.ts
-```
-
-**Consumes:** `ContentRegistry`, January core IDs/contracts.
-
-**Produces:**
-
-```ts
 export function projectJanuary1990Content(
-  registry: ContentRegistry,
+  registry: JanuaryContentRegistryPort,
 ): January1990ContentContext;
 ```
 
-- [ ] Load the committed manifest and two chunks through `createCompiledContentRuntime` in the test.
-- [ ] Write a failing golden assertion for the exact projected context.
-- [ ] Require every January stable ID through the registry.
-- [ ] Verify expected kind, exact `contentType`, closed payload keys and expected references.
-- [ ] Project GW-BASIC/DOS technology context and two access routes.
-- [ ] Project five skills and two learning activities without applying progression.
-- [ ] Project the personal-utility archetype and two work packages without mutating projects.
-- [ ] Project first-bug plus five events without selecting an event.
-- [ ] Attach stable reason codes and the registry content fingerprint.
-- [ ] Deep-freeze the returned context.
-- [ ] Add negative tests for missing ID, wrong kind, wrong content type, malformed payload and wrong references.
-- [ ] Run focused tests, typecheck and boundaries.
-- [ ] Commit as `feat: project January compiled content`.
+### Implemented TDD blocks
 
-### PR #27 closure
+- [x] RED test for the exact two chunk IDs, 24 stable IDs and closed reason-code set.
+- [x] Pure content-package-independent readonly contracts in `game-core`.
+- [x] Frozen public ID and reason-code collections.
+- [x] Explicit boundary regression: `game-core → game-content` remains forbidden.
+- [x] Closed projection errors: `MISSING_CONTENT`, `WRONG_KIND`, `WRONG_CONTENT_TYPE`, `INVALID_PAYLOAD`, `REFERENCE_MISMATCH`.
+- [x] Real-artifact golden projection using the committed manifest and both January chunks.
+- [x] Exact kind, `contentType`, payload-field and reference checks for all 24 definitions.
+- [x] Projection of GW-BASIC/DOS context, two access routes, five skills, two learning activities, personal-utility project, two work packages, first-bug situation and five events.
+- [x] Whole-manifest content fingerprint propagated into the context.
+- [x] Deep-frozen result.
+- [x] No package, tsconfig-reference or lockfile coupling to `game-content`.
+- [x] PR #27 closed as superseded; only PR #28 remains canonical.
 
-- [ ] Full unchanged-head repository verification.
-- [ ] Sonar and review-thread closure.
-- [ ] No MonthRun steps, UI or persistence changes in the diff.
-- [ ] Squash-merge from the verified head.
+### Remaining closure work
+
+- [ ] Pass pinned Oxfmt on every changed source/test file.
+- [ ] Pass fast lint and type-aware lint.
+- [ ] Pass TypeScript 7 project build.
+- [ ] Pass focused contract/projection tests and complete Vitest.
+- [ ] Pass `content:check` and package-boundary checks.
+- [ ] Pass renderer, Storybook and Rust gates unchanged.
+- [ ] Confirm Sonar Quality Gate and zero unresolved hotspots.
+- [ ] Resolve all review threads.
+- [ ] Update PR #28 body with exact final head and evidence.
+- [ ] Mark ready only after the same head passes every permanent gate.
+- [ ] Squash-merge with `expected_head_sha` equal to the verified head.
+
+### Explicit non-goals
+
+No MonthRun steps, RNG selection, persistence change, UI, NPC state, performance rewrite or generic content interpreter belongs in PR #28.
 
 ---
 
-## PR #28 — CONTENT-02D2: deterministic persisted January MonthRun
+## Next delivery — CONTENT-02D2 deterministic January core MonthRun
 
-### Task 1: replace the protocol fixture with production rules
+### Task 1: decision and plan contracts
 
 **Files:**
 
 ```text
 packages/game-core/src/january-1990/
 ├── january-month-plan.ts
-├── january-month-steps.ts
-├── january-outcome.ts
-└── january-compatibility.ts
+├── january-decisions.ts
+├── january-answers.ts
+└── index.ts
 
-packages/game-core/src/index.ts
+tests/january-1990-month-plan.test.ts
+```
+
+**Produces:**
+
+```ts
+export type January1990MonthPlanV1 = Readonly<{
+  schemaVersion: "january-1990-month-plan-v1";
+  month: "1990-01";
+  program: "january-1990-v1";
+  contentFingerprint: Fingerprint;
+  requiredChunkIds: readonly ["1990s/ecosystem", "1990s/programming"];
+}>;
+
+export type JanuaryAccessAnswerV1 = Readonly<{
+  schemaVersion: "january-access-answer-v1";
+  route: "home-pc" | "shared-school-pc";
+}>;
+
+export type JanuaryLearningAnswerV1 = Readonly<{
+  schemaVersion: "january-learning-answer-v1";
+  practice: "read-and-run" | "edit-and-debug";
+}>;
+
+export type JanuaryDefectAnswerV1 = Readonly<{
+  schemaVersion: "january-defect-answer-v1";
+  response: "inspect-listing" | "change-input" | "ask-for-guidance";
+}>;
+```
+
+- [ ] Write failing parsers for exact field sets and literal values.
+- [ ] Reject unknown fields, unsafe values and wrong decision IDs.
+- [ ] Keep answers as authoritative JSON DTOs; do not add UI copy.
+- [ ] Derive the plan only from `January1990ContentContext`.
+- [ ] Freeze every accepted plan/answer.
+
+### Task 2: fixed deterministic step table
+
+**Files:**
+
+```text
+packages/game-core/src/january-1990/
+├── january-month-steps.ts
+├── january-provisional-state.ts
+├── january-outcome.ts
+└── january-rng-scopes.ts
+
 tests/january-1990-month-run.test.ts
 ```
 
 **Produces:**
 
 ```ts
-export function createJanuary1990MonthPlan(
-  context: January1990ContentContext,
-): MonthPlanV1;
-
 export function createJanuary1990MonthSteps(
   context: January1990ContentContext,
 ): readonly MonthRunStep[];
 ```
 
-**Fixed step table:**
+**Fixed execution order:**
 
 1. start;
-2. choose/resolve access route;
-3. choose learning practice;
-4. materialize input/output work;
-5. select the bounded syntax/logic branch;
-6. accept the response;
-7. materialize programming outcome/evidence;
-8. complete.
+2. suspend for access route;
+3. materialize access outcome;
+4. suspend for learning practice;
+5. materialize input/output work;
+6. select one bounded syntax/logic branch;
+7. suspend for defect response;
+8. materialize programming evidence and visible trade-offs;
+9. complete.
 
-- [ ] Write fixed-seed boundary and checkpoint-hash tests first.
-- [ ] Use named Xoshiro forks `month/content`, `month/narrative` and `month/outcome`.
-- [ ] Assert bounded RNG calls per scope.
-- [ ] Suspend only at meaningful decisions.
-- [ ] Keep all effects typed and core-owned.
-- [ ] Remove production reliance on fake fixture compatibility values.
+- [ ] Write fixed-seed boundary and checkpoint-hash golden tests before production steps.
+- [ ] Use only named forks `month/content`, `month/narrative` and `month/outcome`.
+- [ ] Record and assert exact bounded RNG calls per scope.
+- [ ] Use stable ID tie-breaks before RNG.
+- [ ] Suspend only on the three meaningful player decisions.
+- [ ] Preserve the existing MonthRun reducer and checkpoint format.
+- [ ] Keep duplicate execution RNG-neutral.
+- [ ] Ensure every terminal result contains a programming outcome.
 
-### Task 2: build compatibility from verified content
+### Task 3: compatibility contract
 
 **Files:**
 
 ```text
-packages/game-application/src/january-1990/
-├── create-january-runtime.ts
-├── january-compatibility.ts
-└── january-commit-materializer.ts
-
-tests/january-1990-persisted-run.test.ts
+packages/game-core/src/january-1990/january-compatibility.ts
+tests/january-1990-compatibility.test.ts
 ```
 
 **Produces:**
 
 ```ts
-export function createJanuary1990Runtime(input: {
-  persistence: PersistenceService;
-  registry: ContentRegistry;
-}): PersistedMonthRunOrchestrator;
+export function createJanuary1990RulesFingerprint(): Fingerprint;
 ```
 
-- [ ] Bind game-core canonicalize/fingerprint into `createCompiledContentRuntime` once in application.
-- [ ] Project the registry and build production steps.
-- [ ] Derive `rulesFingerprint` from slice ID, plan version, compiler version and required chunk IDs.
-- [ ] Use the whole manifest fingerprint as `contentFingerprint`.
-- [ ] Reuse existing checkpoint/save schema and determinism manifest fields.
-- [ ] Supply existing orchestrator `steps`, `expectedCompatibility` and `materializeCommit`.
-- [ ] Add no SQL/schema changes unless a failing test proves an existing field insufficient.
+Fingerprint input must include only stable deterministic inputs:
 
-### Task 3: persisted restart and exactly-once matrix
+```text
+slice ID
+plan schema/version
+fixed step-table version
+answer schema versions
+named RNG scopes
+required chunk IDs
+```
 
-- [ ] Begin with the same request twice and verify one durable receipt/result.
-- [ ] Suspend/reopen/resume at every decision boundary.
-- [ ] Repeat an accepted answer and receive the persisted result.
-- [ ] Reuse a request ID with another payload and receive `RequestPayloadConflict`.
-- [ ] Reject stale run revision without mutation.
-- [ ] Reject changed/missing compiled content before continuation.
-- [ ] Commit twice and verify the save revision advances once.
-- [ ] Run process-reopen tests against the real SQLite worker.
-- [ ] Confirm no new persistence API or arbitrary SQL path exists.
+The manifest fingerprint remains a separate `contentFingerprint`; do not combine it into `rulesFingerprint`.
 
 ---
 
-## PR #29 — CONTENT-02E1: thin playable UI
+## Following delivery — CONTENT-02D3 persisted January composition
 
-**Files:** follow existing `game-ui` and desktop composition patterns; do not introduce a new design system.
+### Responsibility map
 
-- [ ] Render January idle/start/resume state.
-- [ ] Render application-owned access, learning and defect choices.
-- [ ] Dispatch one typed application command per explicit action.
+```text
+packages/game-application/src/january-1990/
+├── load-january-content.ts
+├── create-january-runtime.ts
+├── january-compatibility.ts
+├── january-commands.ts
+└── january-commit-materializer.ts
+
+tests/
+├── january-1990-persisted-run.test.ts
+├── january-1990-persisted-restart.test.ts
+└── january-1990-exactly-once.test.ts
+```
+
+### Runtime factory
+
+```ts
+export function createJanuary1990Runtime(input: Readonly<{
+  persistence: PersistenceService;
+  contentRegistry: JanuaryContentRegistryPort;
+}>): January1990Runtime;
+```
+
+The factory must:
+
+1. project the verified registry;
+2. construct the pure plan and fixed step table;
+3. build `MonthRunCompatibilityV1` from existing checkpoint/save schema, rules fingerprint, whole-manifest content fingerprint and determinism manifest;
+4. supply the existing persisted orchestrator with steps, expected compatibility and commit materializer;
+5. expose typed begin/resume/load/commit application commands.
+
+### Restart and exactly-once matrix
+
+- [ ] Same begin request twice returns one durable result.
+- [ ] Same resume request twice returns one durable result.
+- [ ] Same request ID with another payload returns `RequestPayloadConflict`.
+- [ ] Stale save/run revisions mutate nothing.
+- [ ] Close/reopen at every decision boundary reproduces the same checkpoint hash.
+- [ ] Changed or missing content fingerprint is rejected before continuation.
+- [ ] Completed month committed twice advances save revision once.
+- [ ] `after_commit_before_reply` recovery returns the persisted receipt.
+- [ ] Real SQLite worker tests prove no new schema or arbitrary SQL path is needed.
+
+### Persistence boundary
+
+Do not modify SQLite schema, worker ownership, WAL/FULL settings, CAS, receipts, backup or recovery unless a focused failing test proves an existing contract insufficient. Any required persistence change becomes its own bounded prerequisite PR rather than being hidden in gameplay code.
+
+---
+
+## Following delivery — CONTENT-02E1 thin playable UI
+
+**Files:** follow existing `game-ui` and desktop composition patterns. Do not introduce another state manager or design system.
+
+Required states:
+
+```text
+idle
+starting
+access-decision
+learning-decision
+programming-work
+first-defect-decision
+completed
+committing
+committed
+content-incompatible
+revision-conflict
+recovery-required
+fatal-error
+```
+
+- [ ] Render one application-owned view model per durable boundary.
+- [ ] Dispatch one typed command per explicit player action.
 - [ ] Disable duplicate submission while a command is pending.
-- [ ] Render stable reason-code explanations and compact programmer-first outcomes.
-- [ ] Handle incompatible content, persistence conflict and recovery-blocked states.
-- [ ] Add Storybook states for every boundary and error class.
-- [ ] Add keyboard, focus and accessibility tests.
-- [ ] Verify close/reopen returns to the same pending boundary.
+- [ ] Show stable reason-code explanations and compact programmer-first outcomes.
+- [ ] Keep persistence DTOs and compiled payloads out of React components.
+- [ ] Add Storybook state for every boundary and error class.
+- [ ] Add keyboard, focus, accessible-name and live-region tests.
+- [ ] Verify desktop close/reopen returns to the same pending decision.
+- [ ] Avoid navigation, design-system or broad visual redesign.
 
 ---
 
-## PR #30 — CONTENT-02E2: hardening and issue #22 closure
+## Final delivery — CONTENT-02E2 hardening and issue #22 closure
 
-### Bounded trace evidence
+### Bounded evidence set
 
-Record for a committed seed set:
+For a committed deterministic seed set, record:
 
 - event and choice frequency;
 - RNG calls by scope;
-- transition and durable-boundary counts;
+- transition count;
+- durable-boundary count;
+- checkpoint hashes;
 - outcome distribution;
 - soft-lock detection;
 - programmer-action share;
 - restart parity;
 - exactly-once commit evidence.
 
-### Closure
+### Acceptance criteria
 
-- [ ] No seed soft-locks.
-- [ ] Every run reaches a meaningful programming outcome.
-- [ ] Restart points reproduce identical hashes.
-- [ ] The final save advances once.
+- [ ] Every seed reaches a meaningful programming outcome.
+- [ ] No route or decision creates a permanent soft lock.
+- [ ] Same seed and answers reproduce identical checkpoints and final result.
+- [ ] Every reopen point reproduces the same hash and pending decision.
+- [ ] Final save advances exactly once.
+- [ ] Content mismatch blocks resume without mutation.
+- [ ] UI exposes every recoverable/error state without raw internal data.
 - [ ] All permanent workflows, Sonar and review gates pass on one unchanged head.
-- [ ] Update execution status and issue #22 checklist with exact evidence.
-- [ ] Record January complete and close issue #22.
+- [ ] `docs/EXECUTION-STATUS.jsonc` records exact merged commits and evidence.
+- [ ] Issue #22 checklist is updated and the issue is closed.
 
 ---
 
-## Deferred work
+## Work after issue #22
 
-- Micro-optimization before the playable workload exists.
-- Persistence redesign, pools, ORM or frontend SQL.
-- Generic content/mod loading from arbitrary files or URLs.
+### Performance issue #24
+
+Start with measurement, not rewrites:
+
+1. OPT-00 baseline: install, docs, format, lint, typecheck, content, tests, renderer, Storybook and Rust timings;
+2. split cacheable and non-cacheable CI work only where evidence supports it;
+3. profile Vitest discovery/setup and isolate expensive suites;
+4. profile renderer/Storybook bundles and duplicate dependencies;
+5. profile Rust compile/test and SQLite test serialization;
+6. optimize runtime only against the real January workload.
+
+Do not replace persistence, add pools/ORM, or weaken deterministic verification for benchmark gains.
+
+### First NPC slice
+
+Only after January is complete, introduce guardian, mentor and peer with:
+
+- directed relationships;
+- bounded typed memory;
+- integer utility actions;
+- storylets;
+- Narrative Director integration;
+- event-driven deterministic updates.
+
+Do not add daily city simulation, vector storage, embeddings or authoritative runtime LLM.
+
+## Deferred
+
+- Generic arbitrary-file mod loading.
 - Runtime executable content or generalized DSL.
 - Full technology encyclopedia.
 - Broad career/company/open-source systems.
+- Persistence redesign, connection pools, ORM or frontend SQL.
 - NPC city simulation, vector memory and authoritative runtime LLM.
-
-## Next slice after issue #22
-
-Introduce only guardian, mentor and peer with directed relationships, bounded typed memory, integer utility actions, storylets and Narrative Director integration. Keep simulation event-driven and deterministic; do not add daily city simulation, vector storage or authoritative runtime LLM.
