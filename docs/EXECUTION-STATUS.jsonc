@@ -98,8 +98,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "pending-pr-29-red-green-refactor",
-    "currentConstraint": "month-plan-answer-contracts-and-fixed-month-run-not-yet-implemented",
+    "qualityGate": "pending-pr-29-final-head",
+    "currentConstraint": "month-run-implementation-complete-final-verification-and-review-pending",
     "currentPullRequestMayMerge": false
   }
 }
