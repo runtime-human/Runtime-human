@@ -1,10 +1,7 @@
 import { resolve } from "node:path";
 
 import type { ContentDiagnostic } from "./content-diagnostics";
-import {
-  parseContentBuildConfig,
-  type ContentBuildConfig,
-} from "./content-build-config";
+import { parseContentBuildConfig, type ContentBuildConfig } from "./content-build-config";
 import { compileContentSources } from "./compile-content-sources";
 import { loadContentSourceFiles } from "./load-content-source-files";
 import { resolveRepositoryPath } from "./repository-path";
