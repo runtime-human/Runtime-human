@@ -9,10 +9,7 @@ import {
   JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
   type PersistenceService,
 } from "@runtime-human/game-application";
-import type {
-  CreateSaveCommandV1,
-  SaveRecordV1,
-} from "@runtime-human/game-persistence-contracts";
+import type { CreateSaveCommandV1, SaveRecordV1 } from "@runtime-human/game-persistence-contracts";
 import { parseSaveId, parseSaveRevision } from "@runtime-human/game-schema";
 
 import { ensureJanuarySave } from "../apps/desktop/src/january/bootstrap-january-save";
@@ -42,11 +39,13 @@ function createSaveRecord(): SaveRecordV1 {
   };
 }
 
-function createPersistenceStub(input: Readonly<{
-  save: SaveRecordV1;
-  loadKind: "found" | "not-found";
-  createdCommands: CreateSaveCommandV1[];
-}>): PersistenceService {
+function createPersistenceStub(
+  input: Readonly<{
+    save: SaveRecordV1;
+    loadKind: "found" | "not-found";
+    createdCommands: CreateSaveCommandV1[];
+  }>,
+): PersistenceService {
   const unsupported = async (): Promise<never> => {
     throw new Error("Unexpected persistence operation in bootstrap test");
   };

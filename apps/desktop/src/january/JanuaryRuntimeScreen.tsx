@@ -32,12 +32,7 @@ export function JanuaryRuntimeScreen({
 
   return (
     <main className="january-shell">
-      <section
-        className="january-frame"
-        aria-busy={busy}
-        aria-label="Игровой месяц"
-        role="region"
-      >
+      <section className="january-frame" aria-busy={busy} aria-label="Игровой месяц" role="region">
         <header className="january-header">
           <div>
             <p className="january-brand">RUNTIME HUMAN</p>
