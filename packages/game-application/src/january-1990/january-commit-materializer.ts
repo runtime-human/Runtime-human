@@ -1,6 +1,7 @@
 import { parseJanuary1990MonthPlan, snapshotAuthoritativeValue } from "@runtime-human/game-core";
 
 import type { PersistedMonthRunCommitMaterializer } from "../persisted-month-run-types";
+import { parseJanuary1990SaveSnapshot } from "./january-save-snapshot";
 
 export const materializeJanuary1990Commit: PersistedMonthRunCommitMaterializer = ({
   save,
@@ -9,28 +10,31 @@ export const materializeJanuary1990Commit: PersistedMonthRunCommitMaterializer =
   if (completedCheckpoint.status !== "completed" || completedCheckpoint.terminalResult === null) {
     throw new TypeError("January commit requires a completed checkpoint with a terminal result");
   }
+  const previousSnapshot = parseJanuary1990SaveSnapshot(parsePersistedJson(save.snapshot.json));
+  if (previousSnapshot.completedMonth !== null) {
+    throw new TypeError("January save snapshot already contains a completed month");
+  }
   const plan = parseJanuary1990MonthPlan(completedCheckpoint.plan);
-  const previousSnapshot = parsePreviousSnapshot(save.snapshot.json);
-  const outcomes = completedCheckpoint.materializedOutcomes.map((outcome) => ({
-    outcomeId: outcome.outcomeId,
-    scope: outcome.scope,
-    payload: outcome.payload,
-    payloadHash: outcome.payloadHash,
-  }));
+  const snapshot = parseJanuary1990SaveSnapshot({
+    schemaVersion: "january-1990-save-snapshot-v1",
+    completedMonth: {
+      schemaVersion: "january-1990-completed-month-v1",
+      month: plan.month,
+      runId: completedCheckpoint.runId,
+      baseSaveRevision: completedCheckpoint.baseSaveRevision,
+      completedCheckpointHash: completedCheckpoint.checkpointHash,
+      terminalResult: completedCheckpoint.terminalResult,
+      outcomes: completedCheckpoint.materializedOutcomes.map((outcome) => ({
+        outcomeId: outcome.outcomeId,
+        scope: outcome.scope,
+        payload: outcome.payload,
+        payloadHash: outcome.payloadHash,
+      })),
+    },
+  });
 
   return Object.freeze({
-    snapshot: snapshotAuthoritativeValue({
-      schemaVersion: "january-1990-save-snapshot-v1",
-      previousSnapshot,
-      completedMonth: {
-        month: plan.month,
-        runId: completedCheckpoint.runId,
-        baseSaveRevision: completedCheckpoint.baseSaveRevision,
-        completedCheckpointHash: completedCheckpoint.checkpointHash,
-        terminalResult: completedCheckpoint.terminalResult,
-        outcomes,
-      },
-    }),
+    snapshot,
     result: snapshotAuthoritativeValue({
       schemaVersion: "january-1990-commit-result-v1",
       month: plan.month,
@@ -41,12 +45,12 @@ export const materializeJanuary1990Commit: PersistedMonthRunCommitMaterializer =
   });
 };
 
-function parsePreviousSnapshot(json: string) {
+function parsePersistedJson(json: string): unknown {
   try {
-    return snapshotAuthoritativeValue(JSON.parse(json) as unknown);
+    return JSON.parse(json) as unknown;
   } catch (error) {
     throw new TypeError(
-      `Persisted save snapshot is not valid authoritative JSON: ${error instanceof Error ? error.message : "unknown error"}`,
+      `Persisted save snapshot is not valid JSON: ${error instanceof Error ? error.message : "unknown error"}`,
     );
   }
 }
