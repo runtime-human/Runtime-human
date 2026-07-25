@@ -4,7 +4,7 @@ type: plan
 status: active
 canon: false
 depends_on: [ADR-001, ADR-004, ADR-005, ADR-007, ADR-019, ADR-020]
-updated: 2026-07-25
+updated: 2026-07-24
 ---
 # January 1990 Playable Slice Implementation Plan
 
