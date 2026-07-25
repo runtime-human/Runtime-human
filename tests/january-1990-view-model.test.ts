@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { projectJanuary1990RuntimeView } from "@runtime-human/game-application";
+import { parseMonthRunId, parseSaveId } from "@runtime-human/game-schema";
 
 import {
   createHarnessedJanuaryRuntime,
@@ -31,8 +32,8 @@ describe("January 1990 persisted runtime view model", () => {
     });
 
     const learningSource = await createHarnessedJanuaryRuntime({
-      saveId: (await import("@runtime-human/game-schema")).parseSaveId("save-january-view-learning"),
-      runId: (await import("@runtime-human/game-schema")).parseMonthRunId("run-january-view-learning"),
+      saveId: parseSaveId("save-january-view-learning"),
+      runId: parseMonthRunId("run-january-view-learning"),
     });
     const learning = await reachJanuaryLearningBoundary(
       learningSource.runtime,
@@ -42,8 +43,8 @@ describe("January 1990 persisted runtime view model", () => {
     expect(projectJanuary1990RuntimeView(learning).kind).toBe("learning-decision");
 
     const defectSource = await createHarnessedJanuaryRuntime({
-      saveId: (await import("@runtime-human/game-schema")).parseSaveId("save-january-view-defect"),
-      runId: (await import("@runtime-human/game-schema")).parseMonthRunId("run-january-view-defect"),
+      saveId: parseSaveId("save-january-view-defect"),
+      runId: parseMonthRunId("run-january-view-defect"),
     });
     const defect = await reachJanuaryDefectBoundary(
       defectSource.runtime,
@@ -55,8 +56,8 @@ describe("January 1990 persisted runtime view model", () => {
 
   it("projects a committed result without exposing persistence internals", async () => {
     const source = await createHarnessedJanuaryRuntime({
-      saveId: (await import("@runtime-human/game-schema")).parseSaveId("save-january-view-commit"),
-      runId: (await import("@runtime-human/game-schema")).parseMonthRunId("run-january-view-commit"),
+      saveId: parseSaveId("save-january-view-commit"),
+      runId: parseMonthRunId("run-january-view-commit"),
     });
     const defect = await reachJanuaryDefectBoundary(
       source.runtime,
