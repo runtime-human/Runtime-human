@@ -32,7 +32,6 @@ export {
 export type { January1990ContentId } from "./january-content-ids";
 export { JANUARY_1990_DECISION_IDS } from "./january-decisions";
 export type { January1990DecisionId } from "./january-decisions";
-export { createJanuary1990MonthSteps } from "./january-month-steps";
 export { createJanuary1990MonthPlan, parseJanuary1990MonthPlan } from "./january-month-plan";
 export type { January1990MonthPlanV1 } from "./january-month-plan";
 export {
@@ -58,3 +57,6 @@ export {
   JANUARY_1990_RNG_SCOPES,
 } from "./january-rng-scopes";
 export type { January1990RngScope } from "./january-rng-scopes";
+export {
+  createJanuary1990ValidatedMonthSteps as createJanuary1990MonthSteps,
+} from "./january-validated-month-steps";
