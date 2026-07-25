@@ -18,6 +18,9 @@
       "path": "../game-core"
     },
     {
+      "path": "../game-content"
+    },
+    {
       "path": "../game-persistence-contracts"
     },
     {
