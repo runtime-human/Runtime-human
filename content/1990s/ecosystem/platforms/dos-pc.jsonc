@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "content-source-v1",
+  "id": "core.platform.dos-pc",
+  "kind": "reference",
+  "domain": "ecosystem",
+  "era": "1990s",
+  "availableFrom": "1981-08",
+  "entryPoint": false,
+  "references": [],
+  "provenance": [
+    {
+      "sourceId": "microsoft.ms-dos.sources",
+      "title": "Microsoft MS-DOS historical source repository",
+      "locator": "microsoft/MS-DOS; versions 1.25, 2.0 and 4.0",
+    },
+  ],
+  "payload": {
+    "contentType": "platform",
+    "platform": "dos-pc",
+  },
+}

@@ -5,10 +5,12 @@
   "type": "module",
   "scripts": {
     "docs:check": "node scripts/build-toc.mjs --check",
-    "fmt": "oxfmt --no-error-on-unmatched-pattern package.json pnpm-workspace.yaml tsconfig.base.json tsconfig.json vitest.config.ts tests apps packages scripts/check-boundaries.mjs scripts/check-build-only-dependencies.mjs .github/workflows/foundation.yml",
-    "fmt:check": "oxfmt --check --no-error-on-unmatched-pattern package.json pnpm-workspace.yaml tsconfig.base.json tsconfig.json vitest.config.ts tests apps packages scripts/check-boundaries.mjs scripts/check-build-only-dependencies.mjs .github/workflows/foundation.yml",
-    "lint": "oxlint --no-error-on-unmatched-pattern scripts/check-boundaries.mjs scripts/check-build-only-dependencies.mjs tests apps packages",
-    "lint:type-aware": "oxlint --type-aware --no-error-on-unmatched-pattern tests apps packages",
+    "content:build": "tsx scripts/build-game-content.ts",
+    "content:check": "tsx scripts/build-game-content.ts --check",
+    "fmt": "oxfmt --no-error-on-unmatched-pattern package.json pnpm-workspace.yaml tsconfig.base.json tsconfig.json vitest.config.ts tests apps packages content scripts/build-game-content.ts scripts/tsconfig.json scripts/check-boundaries.mjs scripts/check-build-only-dependencies.mjs .github/workflows/foundation.yml",
+    "fmt:check": "oxfmt --check --no-error-on-unmatched-pattern package.json pnpm-workspace.yaml tsconfig.base.json tsconfig.json vitest.config.ts tests apps packages content scripts/build-game-content.ts scripts/tsconfig.json scripts/check-boundaries.mjs scripts/check-build-only-dependencies.mjs .github/workflows/foundation.yml",
+    "lint": "oxlint --no-error-on-unmatched-pattern scripts/build-game-content.ts scripts/check-boundaries.mjs scripts/check-build-only-dependencies.mjs tests apps packages",
+    "lint:type-aware": "oxlint --type-aware --no-error-on-unmatched-pattern scripts/build-game-content.ts tests apps packages",
     "typecheck": "tsc -b --pretty false",
     "boundaries:check": "node scripts/check-boundaries.mjs && node scripts/check-build-only-dependencies.mjs",
     "test": "vitest run",
@@ -18,10 +20,11 @@
     "rust:fmt:check": "cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all -- --check",
     "rust:check": "cargo check --locked --manifest-path apps/desktop/src-tauri/Cargo.toml",
     "rust:test": "cargo test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml",
-    "check:fast": "pnpm docs:check && pnpm fmt:check && pnpm lint && pnpm typecheck && pnpm boundaries:check && pnpm test",
+    "check:fast": "pnpm docs:check && pnpm fmt:check && pnpm lint && pnpm typecheck && pnpm content:check && pnpm boundaries:check && pnpm test",
     "verify": "pnpm check:fast && pnpm lint:type-aware && pnpm build && pnpm storybook:build && pnpm rust:fmt:check && pnpm rust:check && pnpm rust:test"
   },
   "devDependencies": {
+    "@runtime-human/game-content-compiler": "workspace:*",
     "@testing-library/dom": "10.4.1",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.2",
@@ -34,6 +37,7 @@
     "oxlint-tsgolint": "0.24.0",
     "react": "19.2.7",
     "react-dom": "19.2.7",
+    "tsx": "4.23.1",
     "typescript": "7.0.2",
     "vitest": "4.1.10"
   },

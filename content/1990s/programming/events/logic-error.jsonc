@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "content-source-v1",
+  "id": "core.event.logic-error",
+  "kind": "event",
+  "domain": "programming",
+  "era": "1990s",
+  "availableFrom": "1990-01",
+  "entryPoint": false,
+  "references": ["core.event.program-runs"],
+  "provenance": [
+    {
+      "sourceId": "runtime-human.january-1990-design",
+      "title": "Logic error event",
+      "locator": "Runtime Human January 1990 playable flow",
+    },
+  ],
+  "payload": {
+    "contentType": "event",
+    "eventType": "logic-error",
+  },
+}

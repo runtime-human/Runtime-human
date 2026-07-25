@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "content-source-v1",
+  "id": "core.situation-kernel.first-bug",
+  "kind": "storylet",
+  "domain": "programming",
+  "era": "1990s",
+  "availableFrom": "1990-01",
+  "entryPoint": false,
+  "references": ["core.event.logic-error", "core.event.syntax-error"],
+  "provenance": [
+    {
+      "sourceId": "runtime-human.january-1990-design",
+      "title": "First bug professional situation",
+      "locator": "Runtime Human January 1990 playable flow",
+    },
+  ],
+  "payload": {
+    "contentType": "professional-situation",
+    "issueType": "first-bug",
+  },
+}

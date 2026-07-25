@@ -6,6 +6,7 @@
     "**/dist/**",
     "**/storybook-static/**",
     "**/target/**",
+    "apps/desktop/public/content/**",
     "pnpm-lock.yaml"
   ]
 }

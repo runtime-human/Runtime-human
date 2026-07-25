@@ -12,6 +12,7 @@
     { "path": "packages/game-ui" },
     { "path": "packages/game-ui-fixtures" },
     { "path": "apps/desktop" },
-    { "path": "tests" }
+    { "path": "tests" },
+    { "path": "scripts" }
   ]
 }

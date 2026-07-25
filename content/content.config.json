@@ -1,0 +1,8 @@
+{
+  "sourceRoots": [
+    "content/sources/technology",
+    "content/1990s/programming",
+    "content/1990s/ecosystem"
+  ],
+  "outputRoot": "apps/desktop/public/content"
+}

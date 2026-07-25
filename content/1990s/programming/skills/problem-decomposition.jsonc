@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "content-source-v1",
+  "id": "core.skill.problem-decomposition",
+  "kind": "reference",
+  "domain": "programming",
+  "era": "1990s",
+  "availableFrom": "1990-01",
+  "entryPoint": false,
+  "references": [],
+  "provenance": [
+    {
+      "sourceId": "runtime-human.skill-model",
+      "title": "Problem decomposition skill definition",
+      "locator": "Runtime Human progression design",
+    },
+  ],
+  "payload": {
+    "contentType": "skill",
+    "quality": "clarity",
+    "skill": "problem-decomposition",
+  },
+}

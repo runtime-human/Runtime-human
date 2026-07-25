@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "outDir": "../.tsbuild/scripts",
+    "tsBuildInfoFile": "../.tsbuild/scripts.tsbuildinfo",
+    "lib": ["ES2024"],
+    "types": ["node"]
+  },
+  "include": ["./build-game-content.ts"],
+  "references": [{ "path": "../packages/game-content-compiler" }]
+}

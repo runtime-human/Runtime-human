@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "content-source-v1",
+  "id": "core.local-tech-availability.home-pc",
+  "kind": "reference",
+  "domain": "ecosystem",
+  "era": "1990s",
+  "availableFrom": "1990-01",
+  "entryPoint": false,
+  "references": ["core.platform.dos-pc", "core.toolchain.gw-basic-interpreter"],
+  "provenance": [
+    {
+      "sourceId": "runtime-human.january-1990-fiction",
+      "title": "Fictional household PC access route",
+      "locator": "Runtime Human January 1990 local diffusion model",
+    },
+  ],
+  "payload": {
+    "accessRoute": "home-pc",
+    "constraint": "household-availability",
+    "contentType": "local-tech-availability",
+  },
+}

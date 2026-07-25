@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "content-source-v1",
+  "id": "core.skill.program-writing",
+  "kind": "reference",
+  "domain": "programming",
+  "era": "1990s",
+  "availableFrom": "1990-01",
+  "entryPoint": false,
+  "references": [],
+  "provenance": [
+    {
+      "sourceId": "runtime-human.skill-model",
+      "title": "Program writing skill definition",
+      "locator": "Runtime Human progression design",
+    },
+  ],
+  "payload": {
+    "contentType": "skill",
+    "quality": "correctness",
+    "skill": "program-writing",
+  },
+}
