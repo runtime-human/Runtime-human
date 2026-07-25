@@ -8,7 +8,5 @@
     "types": ["node"]
   },
   "include": ["./build-game-content.ts"],
-  "references": [
-    { "path": "../packages/game-content-compiler" }
-  ]
+  "references": [{ "path": "../packages/game-content-compiler" }]
 }
