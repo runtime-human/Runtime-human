@@ -74,7 +74,40 @@ describe("validateWorkspace", () => {
       "game-platform-contracts",
       "game-ui",
     ]);
-    addPackage(root, "apps", "desktop", ["game-ui", "game-ui-fixtures"]);
+    addPackage(root, "apps", "desktop", [
+      "game-schema",
+      "game-core",
+      "game-application",
+      "game-content",
+      "game-ui",
+      "game-ui-fixtures",
+    ]);
+
+    expect(validateWorkspace(root)).toEqual([]);
+  });
+
+  it("accepts only the approved desktop composition-root imports", () => {
+    const root = createRoot();
+    addPackage(root, "packages", "shared-kernel");
+    addPackage(root, "packages", "game-schema", ["shared-kernel"]);
+    addPackage(root, "packages", "game-core", ["shared-kernel", "game-schema"]);
+    addPackage(root, "packages", "game-content", ["shared-kernel", "game-schema"]);
+    addPackage(root, "packages", "game-application", ["game-schema", "game-core"]);
+    addPackage(root, "packages", "game-ui", ["game-application"]);
+    addPackage(root, "packages", "game-ui-fixtures", ["game-ui"]);
+    addPackage(
+      root,
+      "apps",
+      "desktop",
+      ["game-schema", "game-core", "game-application", "game-content", "game-ui"],
+      [
+        'import "@runtime-human/game-schema";',
+        'import "@runtime-human/game-core";',
+        'import "@runtime-human/game-application";',
+        'import "@runtime-human/game-content";',
+        'import "@runtime-human/game-ui";',
+      ].join("\n"),
+    );
 
     expect(validateWorkspace(root)).toEqual([]);
   });
