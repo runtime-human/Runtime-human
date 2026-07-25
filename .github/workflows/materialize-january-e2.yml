@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: materialize-january-e2-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
@@ -59,4 +63,6 @@ jobs:
           git rm .github/workflows/materialize-january-e2.yml
           git add -A
           git commit -m "test: finalize January hardening evidence"
+          git fetch origin ${{ github.event.pull_request.head.ref }}
+          git rebase origin/${{ github.event.pull_request.head.ref }}
           git push origin HEAD:${{ github.event.pull_request.head.ref }}
