@@ -1,0 +1,54 @@
+name: apply-january-month-run-format
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  format-and-remove-self:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/january-1990-deterministic-month-run'
+    runs-on: self-hosted
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          clean: true
+          persist-credentials: true
+          show-progress: false
+      - name: Normalize tracked files
+        run: |
+          $ErrorActionPreference = "Stop"
+          git config --local core.autocrlf false
+          git config --local core.eol lf
+          git checkout-index --all --force
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          $ErrorActionPreference = "Stop"
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Apply pinned formatter and remove workflow
+        run: |
+          $ErrorActionPreference = "Stop"
+          pnpm fmt
+          git rm .github/workflows/apply-january-month-run-format.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packages/game-core/src tests docs/EXECUTION-STATUS.jsonc
+          git commit -m "style: format final January MonthRun changes"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
