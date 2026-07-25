@@ -1,0 +1,41 @@
+name: january-golden-format-diagnostic
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  format:
+    if: github.event.pull_request.head.ref == 'agent/january-1990-content-registry'
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          clean: true
+          persist-credentials: false
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Format golden test
+        run: pnpm oxfmt tests/january-content-golden.test.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: january-golden-format-diagnostic
+          path: tests/january-content-golden.test.ts
+          if-no-files-found: error
