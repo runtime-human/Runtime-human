@@ -12,7 +12,12 @@
     "tauri": "tauri"
   },
   "dependencies": {
+    "@runtime-human/game-application": "workspace:*",
+    "@runtime-human/game-content": "workspace:*",
+    "@runtime-human/game-core": "workspace:*",
+    "@runtime-human/game-schema": "workspace:*",
     "@runtime-human/game-ui": "workspace:*",
+    "@tauri-apps/api": "2.11.1",
     "react": "19.2.7",
     "react-dom": "19.2.7"
   },

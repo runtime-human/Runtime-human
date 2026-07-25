@@ -11,6 +11,18 @@
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "references": [
     {
+      "path": "../../packages/game-application"
+    },
+    {
+      "path": "../../packages/game-content"
+    },
+    {
+      "path": "../../packages/game-core"
+    },
+    {
+      "path": "../../packages/game-schema"
+    },
+    {
       "path": "../../packages/game-ui"
     },
     {

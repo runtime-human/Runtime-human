@@ -5,8 +5,8 @@
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "mainHeadAtCurrentSliceStart": "080d97355f9739a467d941cdcc00cc29c5c8daa4",
-  "currentPhase": "january-1990-persisted-composition",
+  "mainHeadAtCurrentSliceStart": "445634282dbd6c8984440cdfcb938dea77ffdc52",
+  "currentPhase": "january-1990-playable-ui",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -84,9 +84,9 @@
     },
     {
       "id": "january-1990-persisted-composition",
-      "status": "implementation-complete",
+      "status": "complete",
       "pullRequest": 30,
-      "branch": "agent/january-1990-persisted-composition",
+      "commit": "445634282dbd6c8984440cdfcb938dea77ffdc52",
       "evidence": {
         "decisionBoundaries": [2, 4, 7],
         "boundaryMutations": 4,
@@ -101,12 +101,6 @@
         "exactlyOnceSaveRevision": 1,
         "saveSnapshotSchema": "january-1990-save-snapshot-v1",
         "initialAndCommittedSnapshotShareSchema": true,
-        "exactStoredOutcomes": [
-          "january-1990/access",
-          "january-1990/work",
-          "january-1990/defect",
-          "january-1990/programming-outcome"
-        ],
         "storedOutcomePayloadHashesValidated": true,
         "durableViewKinds": [
           "idle",
@@ -122,11 +116,51 @@
     },
     {
       "id": "january-1990-playable-ui",
-      "status": "planned"
+      "status": "implementation-complete",
+      "pullRequest": 31,
+      "branch": "agent/january-1990-playable-ui",
+      "evidence": {
+        "canonicalSaveBootstrap": true,
+        "compiledContentBrowserLoad": true,
+        "tauriPersistenceAdapter": true,
+        "activeRunResume": true,
+        "deterministicDesktopRequestIds": true,
+        "decisionChoiceCounts": {
+          "access": 2,
+          "learning": 2,
+          "defect": 3
+        },
+        "storybookStates": [
+          "loading",
+          "idle",
+          "access-decision",
+          "learning-decision",
+          "defect-decision",
+          "committed",
+          "blocked",
+          "retryable-rejected"
+        ],
+        "focusedInteractionTests": 11,
+        "qualityScoreMaximums": {
+          "clarity": 10,
+          "correctness": 11,
+          "reliability": 9
+        },
+        "foundationPlaceholderReplaced": true
+      }
     },
     {
       "id": "january-1990-hardening-and-closure",
-      "status": "planned"
+      "status": "planned",
+      "scope": [
+        "real-tauri-sqlite-smoke",
+        "restart-at-pc-2-4-7",
+        "duplicate-click-stress",
+        "bounded-seed-balance-traces",
+        "soft-lock-detection",
+        "programmer-action-share",
+        "issue-22-acceptance-audit"
+      ]
     }
   ],
   "supersededPullRequests": [
@@ -140,8 +174,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "pending-pr-30-final-head",
-    "currentConstraint": "persisted-composition-and-canonical-save-contract-complete-final-verification-and-review-pending",
+    "qualityGate": "pending-pr-31-final-head",
+    "currentConstraint": "playable-ui-implementation-complete-final-permanent-verification-and-review-pending",
     "currentPullRequestMayMerge": false
   }
 }

@@ -1,0 +1,426 @@
+:root {
+  color: #eef2ec;
+  background: #090c0b;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(184, 255, 171, 0.08), transparent 28rem),
+    radial-gradient(circle at 86% 84%, rgba(255, 185, 98, 0.07), transparent 30rem), #090c0b;
+}
+
+button {
+  font: inherit;
+}
+
+button:focus-visible {
+  outline: 2px solid #d6ff66;
+  outline-offset: 3px;
+}
+
+.january-shell {
+  min-height: 100vh;
+  padding: clamp(1rem, 3vw, 2.5rem);
+}
+
+.january-frame {
+  width: min(1180px, 100%);
+  min-height: calc(100vh - clamp(2rem, 6vw, 5rem));
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid rgba(224, 236, 221, 0.13);
+  border-radius: 28px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.035), transparent 35%), rgba(14, 19, 17, 0.92);
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(18px);
+}
+
+.january-header,
+.january-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.35rem clamp(1.25rem, 3vw, 2.5rem);
+}
+
+.january-brand,
+.january-era,
+.january-eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.january-brand {
+  color: #f7f9f3;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.january-era {
+  margin-top: 0.34rem;
+  color: #7f8c83;
+  font-size: 0.68rem;
+}
+
+.january-local-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.58rem 0.82rem;
+  border: 1px solid rgba(214, 255, 102, 0.18);
+  border-radius: 999px;
+  color: #b6c4ba;
+  background: rgba(214, 255, 102, 0.04);
+  font-size: 0.7rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+}
+
+.january-local-dot {
+  width: 0.46rem;
+  height: 0.46rem;
+  border-radius: 50%;
+  background: #d6ff66;
+  box-shadow: 0 0 0 5px rgba(214, 255, 102, 0.08);
+}
+
+.january-progress {
+  height: 2px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.january-progress > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #d6ff66, #f4c56f);
+  transition: width 300ms ease;
+}
+
+.january-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
+  gap: clamp(1rem, 2.4vw, 2rem);
+  padding: clamp(1.25rem, 4vw, 3rem);
+}
+
+.january-card,
+.january-terminal {
+  min-height: 540px;
+  border-radius: 22px;
+}
+
+.january-card {
+  display: flex;
+  flex-direction: column;
+  padding: clamp(1.5rem, 4vw, 3.4rem);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #f0f2eb;
+  color: #111612;
+}
+
+.january-card--decision {
+  background: linear-gradient(145deg, rgba(214, 255, 102, 0.08), transparent 38%), #f0f2eb;
+}
+
+.january-card--success {
+  background: linear-gradient(145deg, rgba(149, 203, 93, 0.16), transparent 40%), #eef3e8;
+}
+
+.january-card--warning,
+.january-card--error {
+  background: linear-gradient(145deg, rgba(217, 118, 80, 0.12), transparent 38%), #f3eee8;
+}
+
+.january-eyebrow {
+  color: #647066;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.january-card h1 {
+  max-width: 13ch;
+  margin: 1rem 0 0;
+  font-size: clamp(2.45rem, 5vw, 4.8rem);
+  font-weight: 760;
+  letter-spacing: -0.06em;
+  line-height: 0.95;
+}
+
+.january-summary {
+  max-width: 57ch;
+  margin: 1.5rem 0 0;
+  color: #303a33;
+  font-size: clamp(1rem, 1.5vw, 1.16rem);
+  line-height: 1.58;
+}
+
+.january-detail {
+  max-width: 60ch;
+  margin: 0.8rem 0 0;
+  color: #69736c;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.january-choices {
+  display: grid;
+  gap: 0.68rem;
+  margin-top: auto;
+  padding-top: 2rem;
+}
+
+.january-choice {
+  display: grid;
+  grid-template-columns: 2.2rem 1fr auto;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+  padding: 1rem 1.05rem;
+  border: 1px solid #d4dad1;
+  border-radius: 14px;
+  color: #121713;
+  background: rgba(255, 255, 255, 0.54);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.january-choice:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: #909d91;
+  background: #ffffff;
+}
+
+.january-choice:disabled,
+.january-primary:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.january-choice-index {
+  color: #8b958d;
+  font-family: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.7rem;
+}
+
+.january-choice strong,
+.january-choice small {
+  display: block;
+}
+
+.january-choice strong {
+  font-size: 0.95rem;
+}
+
+.january-choice small {
+  margin-top: 0.25rem;
+  color: #6b756e;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.january-choice-arrow {
+  color: #65715f;
+  font-size: 1.2rem;
+}
+
+.january-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  width: min(100%, 21rem);
+  margin-top: auto;
+  padding: 1rem 1.2rem;
+  border: 0;
+  border-radius: 12px;
+  color: #12170f;
+  background: #d6ff66;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(82, 102, 37, 0.17);
+}
+
+.january-quality {
+  display: grid;
+  gap: 1rem;
+  margin-top: auto;
+  padding-top: 2rem;
+}
+
+.january-quality-item > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: #4d5850;
+  font-size: 0.78rem;
+}
+
+.january-quality-item strong {
+  color: #111612;
+  font-family: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+.january-quality-track {
+  height: 8px;
+  margin-top: 0.42rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #d9dfd5;
+}
+
+.january-quality-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #1d2a20;
+}
+
+.january-terminal {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(133, 182, 118, 0.16);
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.012) 0,
+      rgba(255, 255, 255, 0.012) 1px,
+      transparent 1px,
+      transparent 4px
+    ),
+    #0a110d;
+  box-shadow: inset 0 0 70px rgba(0, 0, 0, 0.6);
+}
+
+.january-terminal::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background: radial-gradient(circle at 50% 45%, transparent 45%, rgba(0, 0, 0, 0.38));
+}
+
+.january-terminal-bar,
+.january-terminal-meta {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  color: #7f9b83;
+  font-family: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+}
+
+.january-terminal-bar {
+  border-bottom: 1px solid rgba(133, 182, 118, 0.13);
+}
+
+.january-terminal pre {
+  position: relative;
+  z-index: 1;
+  min-height: 335px;
+  margin: 0;
+  padding: clamp(1.5rem, 4vw, 3rem) 1.4rem;
+  color: #b9f5a8;
+  font-family: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: clamp(0.86rem, 1.5vw, 1.05rem);
+  line-height: 1.9;
+  text-shadow: 0 0 12px rgba(150, 255, 122, 0.2);
+  white-space: pre-wrap;
+}
+
+.january-terminal-meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  justify-content: initial;
+  border-top: 1px solid rgba(133, 182, 118, 0.13);
+}
+
+.january-terminal-meta strong {
+  color: #bed5c1;
+  font-weight: 500;
+}
+
+.january-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  color: #69756e;
+  font-size: 0.68rem;
+}
+
+@media (max-width: 860px) {
+  .january-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .january-card,
+  .january-terminal {
+    min-height: auto;
+  }
+
+  .january-terminal pre {
+    min-height: 220px;
+  }
+}
+
+@media (max-width: 560px) {
+  .january-shell {
+    padding: 0;
+  }
+
+  .january-frame {
+    min-height: 100vh;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .january-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .january-card h1 {
+    font-size: 2.55rem;
+  }
+
+  .january-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
