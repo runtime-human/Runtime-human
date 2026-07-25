@@ -43,6 +43,7 @@ export function createJanuarySessionController(
   input: CreateJanuarySessionControllerInput,
 ): JanuarySessionController {
   let view: JanuarySessionView = Object.freeze({ kind: "loading" });
+  let inFlight: Promise<JanuarySessionView> | null = null;
 
   async function apply(operation: () => ReturnType<typeof input.runtime.load>) {
     try {
@@ -59,12 +60,23 @@ export function createJanuarySessionController(
     return view;
   }
 
+  function runExclusive(
+    operation: () => ReturnType<typeof input.runtime.load>,
+  ): Promise<JanuarySessionView> {
+    if (inFlight !== null) return inFlight;
+    const current = apply(operation).finally(() => {
+      if (inFlight === current) inFlight = null;
+    });
+    inFlight = current;
+    return current;
+  }
+
   return Object.freeze({
     get view() {
       return view;
     },
     load() {
-      return apply(() => input.runtime.load(input.saveId));
+      return runExclusive(() => input.runtime.load(input.saveId));
     },
     start() {
       const current = view;
@@ -74,7 +86,7 @@ export function createJanuarySessionController(
         );
       }
       const saveRevision = current.saveRevision;
-      return apply(() =>
+      return runExclusive(() =>
         input.runtime.begin({
           requestId: requestId("begin", input, saveRevision, null),
           saveId: input.saveId,
@@ -95,7 +107,7 @@ export function createJanuarySessionController(
           rejectInvalidAction("Выбранный ответ не относится к текущему решению"),
         );
       }
-      return apply(() =>
+      return runExclusive(() =>
         input.runtime.resume({
           requestId: requestId("resume", input, current.runRevision, choice),
           saveId: input.saveId,
@@ -107,7 +119,7 @@ export function createJanuarySessionController(
       );
     },
     retry() {
-      return apply(() => input.runtime.retry());
+      return runExclusive(() => input.runtime.retry());
     },
   });
 
