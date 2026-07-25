@@ -210,7 +210,11 @@ describe("projectJanuary1990Content", () => {
       (registry: ContentRegistry) =>
         overrideEntry(registry, "core.skill.debugging", (entry) => ({
           ...entry,
-          payload: { ...entry.payload, contentType: "event" },
+          payload: {
+            contentType: "event",
+            quality: "correctness",
+            skill: "debugging",
+          },
         })),
     ],
     [
@@ -218,7 +222,12 @@ describe("projectJanuary1990Content", () => {
       (registry: ContentRegistry) =>
         overrideEntry(registry, "core.skill.debugging", (entry) => ({
           ...entry,
-          payload: { ...entry.payload, extra: true },
+          payload: {
+            contentType: "skill",
+            extra: true,
+            quality: "correctness",
+            skill: "debugging",
+          },
         })),
     ],
     [
