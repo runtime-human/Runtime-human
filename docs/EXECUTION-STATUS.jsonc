@@ -5,8 +5,8 @@
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "mainHeadAtCurrentSliceStart": "445634282dbd6c8984440cdfcb938dea77ffdc52",
-  "currentPhase": "january-1990-playable-ui",
+  "mainHeadAtCurrentSliceStart": "7b71cb19d1a7e6f8724d29c83b85cb0a84ef9a47",
+  "currentPhase": "january-1990-hardening-and-closure",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -116,9 +116,9 @@
     },
     {
       "id": "january-1990-playable-ui",
-      "status": "implementation-complete",
+      "status": "complete",
       "pullRequest": 31,
-      "branch": "agent/january-1990-playable-ui",
+      "commit": "7b71cb19d1a7e6f8724d29c83b85cb0a84ef9a47",
       "evidence": {
         "canonicalSaveBootstrap": true,
         "compiledContentBrowserLoad": true,
@@ -146,20 +146,65 @@
           "correctness": 11,
           "reliability": 9
         },
-        "foundationPlaceholderReplaced": true
+        "foundationPlaceholderReplaced": true,
+        "desktopCompositionRootBoundary": true
       }
     },
     {
       "id": "january-1990-hardening-and-closure",
-      "status": "planned",
+      "status": "implementation-complete",
+      "pullRequest": 32,
+      "branch": "agent/january-1990-hardening-closure",
+      "evidence": {
+        "concurrentDesktopActionsCoalesced": ["start", "decision"],
+        "balanceTrace": {
+          "schemaVersion": "january-1990-balance-trace-v1",
+          "seedRange": [1, 64],
+          "answerProfiles": 12,
+          "totalRuns": 768,
+          "decisionBoundariesPerRun": 3,
+          "transitionsPerRun": 12,
+          "fixedStepsPerRun": 9,
+          "materializedOutcomesPerRun": 4,
+          "rngCallBudget": {
+            "content": 0,
+            "narrative": 1,
+            "outcome": 1
+          },
+          "defectEvents": {
+            "logicError": 396,
+            "syntaxError": 372
+          },
+          "failures": 0,
+          "softLocks": 0,
+          "programmerActionShare": {
+            "programmerActions": 2,
+            "totalDecisions": 3
+          }
+        },
+        "actualJanuarySQLiteReplay": {
+          "fileBacked": true,
+          "reopenProgramCounters": [2, 4, 7],
+          "completedProgramCounter": 9,
+          "finalSaveRevision": 1,
+          "duplicateCommitReceipt": true,
+          "completedCheckpointHash": "af3f371f2d40799eb590fbc93545fce478f85b0675784d0d3f671807a139647b",
+          "committedCheckpointHash": "1e6b2c5069714d23795f5108290a83ad1b818b27c8900487d938f99d717e7a28"
+        },
+        "repositoryEvidenceCommand": "pnpm evidence:january:e2",
+        "issue22AcceptanceAudit": "implementation-satisfied-final-gates-pending"
+      }
+    },
+    {
+      "id": "npc-foundation",
+      "status": "planned-after-content-02-closure",
       "scope": [
-        "real-tauri-sqlite-smoke",
-        "restart-at-pc-2-4-7",
-        "duplicate-click-stress",
-        "bounded-seed-balance-traces",
-        "soft-lock-detection",
-        "programmer-action-share",
-        "issue-22-acceptance-audit"
+        "guardian-mentor-peer",
+        "directed-relationships",
+        "bounded-typed-memory",
+        "integer-utility-actions",
+        "storylets",
+        "narrative-director-integration"
       ]
     }
   ],
@@ -174,8 +219,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "pending-pr-31-final-head",
-    "currentConstraint": "playable-ui-implementation-complete-final-permanent-verification-and-review-pending",
+    "qualityGate": "pending-pr-32-final-head",
+    "currentConstraint": "january-hardening-implementation-complete-generated-evidence-final-verification-and-review-pending",
     "currentPullRequestMayMerge": false
   }
 }
