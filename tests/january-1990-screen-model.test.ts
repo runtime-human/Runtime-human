@@ -1,20 +1,19 @@
 import { describe, expect, it } from "vitest";
 
-import { buildJanuaryScreenModel } from "../apps/desktop/src/january/january-screen-model";
 import type { January1990RuntimeView } from "@runtime-human/game-application";
+import { fingerprint } from "@runtime-human/game-core";
 import {
-  parseFingerprint,
   parseMonthRunId,
   parseMonthRunRevision,
   parseSaveId,
   parseSaveRevision,
 } from "@runtime-human/game-schema";
 
+import { buildJanuaryScreenModel } from "../apps/desktop/src/january/january-screen-model";
+
 const saveId = parseSaveId("save-january-screen-model");
 const runId = parseMonthRunId("run-january-screen-model");
-const checkpointHash = parseFingerprint(
-  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-);
+const checkpointHash = fingerprint("january-screen-checkpoint-test", { version: 1 });
 
 function decisionView(
   kind: "access-decision" | "learning-decision" | "defect-decision",
@@ -27,6 +26,13 @@ function decisionView(
     checkpointHash,
     prompt: { schemaVersion: `${kind}-prompt-v1` },
   };
+}
+
+function choiceLabels(kind: "access-decision" | "learning-decision" | "defect-decision") {
+  return buildJanuaryScreenModel(decisionView(kind)).choices.map(({ value, label }) => ({
+    value,
+    label,
+  }));
 }
 
 describe("January 1990 desktop screen model", () => {
@@ -42,15 +48,15 @@ describe("January 1990 desktop screen model", () => {
       primaryAction: { kind: "start", label: "Начать январь" },
     });
 
-    expect(buildJanuaryScreenModel(decisionView("access-decision")).choices).toEqual([
+    expect(choiceLabels("access-decision")).toEqual([
       { value: "home-pc", label: "Домашний компьютер" },
       { value: "shared-school-pc", label: "Школьный компьютер по расписанию" },
     ]);
-    expect(buildJanuaryScreenModel(decisionView("learning-decision")).choices).toEqual([
+    expect(choiceLabels("learning-decision")).toEqual([
       { value: "read-and-run", label: "Перепечатать и запустить" },
       { value: "edit-and-debug", label: "Изменять и отлаживать" },
     ]);
-    expect(buildJanuaryScreenModel(decisionView("defect-decision")).choices).toEqual([
+    expect(choiceLabels("defect-decision")).toEqual([
       { value: "inspect-listing", label: "Проверить листинг" },
       { value: "change-input", label: "Изменить входные данные" },
       { value: "ask-for-guidance", label: "Попросить объяснение" },
