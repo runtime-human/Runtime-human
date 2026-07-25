@@ -2,7 +2,9 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import {
+  createJanuary1990InitialSaveSnapshot,
   createJanuary1990Runtime,
+  JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
   type January1990Runtime,
   type PersistedMonthRunResult,
 } from "@runtime-human/game-application";
@@ -29,11 +31,10 @@ const CONTENT_RUNTIME = createCompiledContentRuntime({
   fingerprint,
 });
 
-export const JANUARY_TEST_SAVE_SCHEMA_FINGERPRINT = fingerprint("january-1990-save-schema-test", {
-  version: 1,
-});
-
-export type JanuaryWaitingResult = Extract<PersistedMonthRunResult, { kind: "waiting-decision" }>;
+export type JanuaryWaitingResult = Extract<
+  PersistedMonthRunResult,
+  { kind: "waiting-decision" }
+>;
 export type JanuaryCommittedResult = Extract<PersistedMonthRunResult, { kind: "committed" }>;
 
 export async function loadJanuaryTestRegistry(): Promise<ContentRegistry> {
@@ -61,17 +62,17 @@ export async function createHarnessedJanuaryRuntime(
 ) {
   const saveId = input.saveId ?? parseSaveId("save-january-1990-runtime");
   const runId = input.runId ?? parseMonthRunId("run-january-1990-runtime");
-  const saveSchemaFingerprint = input.saveSchemaFingerprint ?? JANUARY_TEST_SAVE_SCHEMA_FINGERPRINT;
+  const saveSchemaFingerprint =
+    input.saveSchemaFingerprint ?? JANUARY_1990_SAVE_SCHEMA_FINGERPRINT;
   const harness = createInMemoryPersistenceHarness({
     saveId,
     saveSchemaFingerprint,
-    initialSnapshot: { schemaVersion: "initial-save-v1" },
+    initialSnapshot: createJanuary1990InitialSaveSnapshot(),
   });
   const registry = input.registry ?? (await loadJanuaryTestRegistry());
   const runtime = createJanuary1990Runtime({
     persistence: harness.service,
     contentRegistry: registry,
-    saveSchemaFingerprint,
   });
   return { harness, runtime, saveId, runId, registry, saveSchemaFingerprint };
 }
@@ -80,13 +81,11 @@ export function reopenJanuaryRuntime(
   source: Awaited<ReturnType<typeof createHarnessedJanuaryRuntime>>,
   input: Readonly<{
     registry?: ContentRegistry;
-    saveSchemaFingerprint?: Fingerprint;
   }> = {},
 ): January1990Runtime {
   return createJanuary1990Runtime({
     persistence: source.harness.service,
     contentRegistry: input.registry ?? source.registry,
-    saveSchemaFingerprint: input.saveSchemaFingerprint ?? source.saveSchemaFingerprint,
   });
 }
 
