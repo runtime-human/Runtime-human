@@ -3,10 +3,7 @@ import type { Fingerprint } from "@runtime-human/game-schema";
 import { fingerprint } from "../determinism/hash";
 import { JANUARY_1990_REQUIRED_CHUNK_IDS } from "./january-content-ids";
 import { JANUARY_1990_DECISION_IDS } from "./january-decisions";
-import {
-  JANUARY_1990_RNG_CALL_BUDGET,
-  JANUARY_1990_RNG_SCOPES,
-} from "./january-rng-scopes";
+import { JANUARY_1990_RNG_CALL_BUDGET, JANUARY_1990_RNG_SCOPES } from "./january-rng-scopes";
 
 export const JANUARY_1990_STEP_TABLE_VERSION = "january-1990-step-table-v1" as const;
 

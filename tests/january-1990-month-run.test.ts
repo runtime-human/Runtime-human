@@ -252,16 +252,15 @@ function acceptAndRun(
   answer: Record<string, string>,
 ): MonthRunCheckpointV1 {
   return requireBoundary(
-    gameCore.runUntilBoundary(
-      acceptDecision(checkpoint, requestId, decisionId, answer),
-      steps,
-    ),
+    gameCore.runUntilBoundary(acceptDecision(checkpoint, requestId, decisionId, answer), steps),
     "January MonthRun did not reach a boundary",
   );
 }
 
-function runCompleted(seed: bigint, response: DefectResponse = "inspect-listing"):
-  MonthRunCheckpointV1 {
+function runCompleted(
+  seed: bigint,
+  response: DefectResponse = "inspect-listing",
+): MonthRunCheckpointV1 {
   const steps = createSteps();
   const decisionIds = requireDecisionIds();
 
@@ -407,9 +406,7 @@ describe("January 1990 deterministic MonthRun", () => {
       ),
     );
 
-    expect([...defectIds].toSorted()).toEqual(
-      [C.logicErrorEvent, C.syntaxErrorEvent].toSorted(),
-    );
+    expect([...defectIds].toSorted()).toEqual([C.logicErrorEvent, C.syntaxErrorEvent].toSorted());
   });
 
   it("produces visible trade-offs for the three defect responses", () => {

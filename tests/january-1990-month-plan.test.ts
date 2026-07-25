@@ -80,10 +80,7 @@ describe("January 1990 MonthPlan contracts", () => {
   });
 
   it("parses only the exact immutable MonthPlan contract", () => {
-    const parsePlan = requireFunction(
-      api.parseJanuary1990MonthPlan,
-      "parseJanuary1990MonthPlan",
-    );
+    const parsePlan = requireFunction(api.parseJanuary1990MonthPlan, "parseJanuary1990MonthPlan");
     const validPlan = {
       schemaVersion: "january-1990-month-plan-v1",
       month: "1990-01",
