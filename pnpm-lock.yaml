@@ -99,6 +99,9 @@ importers:
 
   packages/game-application:
     dependencies:
+      '@runtime-human/game-content':
+        specifier: workspace:*
+        version: link:../game-content
       '@runtime-human/game-core':
         specifier: workspace:*
         version: link:../game-core
