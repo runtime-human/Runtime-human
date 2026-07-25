@@ -153,30 +153,40 @@ async function readOutputFiles(outputRoot: string): Promise<Map<string, string>>
   while (pending.length > 0) {
     const current = pending.pop();
     if (current === undefined) break;
-
-    const metadata = await lstat(current);
-    if (metadata.isSymbolicLink()) {
-      throw new TypeError("Symbolic links are not allowed in compiled content output");
-    }
-
-    if (metadata.isDirectory()) {
-      const children = (await readdir(current)).toSorted(compareText);
-      for (let index = children.length - 1; index >= 0; index -= 1) {
-        const child = children[index];
-        if (child !== undefined) pending.push(join(current, child));
-      }
-      continue;
-    }
-
-    if (!metadata.isFile()) {
-      throw new TypeError("Compiled content output contains an unsupported filesystem entry");
-    }
-
-    const path = toOutputPath(outputRoot, current);
-    files.set(path, await readFile(current, "utf8"));
+    await processOutputEntry(outputRoot, current, pending, files);
   }
 
   return files;
+}
+
+async function processOutputEntry(
+  outputRoot: string,
+  current: string,
+  pending: string[],
+  files: Map<string, string>,
+): Promise<void> {
+  const metadata = await lstat(current);
+  if (metadata.isSymbolicLink()) {
+    throw new TypeError("Symbolic links are not allowed in compiled content output");
+  }
+  if (metadata.isDirectory()) {
+    await enqueueOutputChildren(current, pending);
+    return;
+  }
+  if (!metadata.isFile()) {
+    throw new TypeError("Compiled content output contains an unsupported filesystem entry");
+  }
+
+  const path = toOutputPath(outputRoot, current);
+  files.set(path, await readFile(current, "utf8"));
+}
+
+async function enqueueOutputChildren(current: string, pending: string[]): Promise<void> {
+  const children = (await readdir(current)).toSorted(compareText);
+  for (let index = children.length - 1; index >= 0; index -= 1) {
+    const child = children[index];
+    if (child !== undefined) pending.push(join(current, child));
+  }
 }
 
 function toOutputPath(outputRoot: string, absolutePath: string): string {
