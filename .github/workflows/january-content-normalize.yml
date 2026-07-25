@@ -1,0 +1,59 @@
+name: january-content-normalize
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  normalize:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/january-1990-content-registry'
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: agent/january-1990-content-registry
+          clean: true
+          persist-credentials: true
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Format January content
+        run: pnpm oxfmt content tests/january-content-golden.test.ts
+      - name: Remove one-shot workflow
+        run: Remove-Item .github/workflows/january-content-normalize.yml
+      - name: Validate exact scope
+        run: |
+          $allowed = @(
+            '.github/workflows/january-content-normalize.yml',
+            'tests/january-content-golden.test.ts'
+          )
+          $changed = @(git status --short | ForEach-Object { $_.Substring(3).Replace('\\', '/') })
+          foreach ($path in $changed) {
+            if ($path -like 'content/*') { continue }
+            if ($allowed -notcontains $path) { throw "Unexpected changed path: $path" }
+          }
+      - name: Commit normalized registry
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add content tests/january-content-golden.test.ts .github/workflows/january-content-normalize.yml
+          git commit -m "style: normalize January content registry"
+          git push origin HEAD:agent/january-1990-content-registry
