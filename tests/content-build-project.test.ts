@@ -59,10 +59,12 @@ describe("content build project", () => {
       readFile(join(repositoryRoot, "generated", "content", "manifest.json"), "utf8"),
     ).resolves.toContain('"schemaVersion":"compiled-content-manifest-v1"');
 
-    await expect(runContentBuild({ repositoryRoot, config, mode: "check" })).resolves.toMatchObject({
-      kind: "current",
-      artifactCount: 2,
-    });
+    await expect(runContentBuild({ repositoryRoot, config, mode: "check" })).resolves.toMatchObject(
+      {
+        kind: "current",
+        artifactCount: 2,
+      },
+    );
   });
 
   it("reports deterministic differences without changing generated files", async () => {
@@ -82,10 +84,7 @@ describe("content build project", () => {
 
     expect(result).toEqual({
       kind: "outdated",
-      differences: [
-        "changed:chunks/1990s/bootstrap.json",
-        "changed:manifest.json",
-      ],
+      differences: ["changed:chunks/1990s/bootstrap.json", "changed:manifest.json"],
     });
     await expect(readFile(manifestPath, "utf8")).resolves.toBe(originalManifest);
   });
@@ -104,8 +103,9 @@ describe("content build project", () => {
       kind: "content-invalid",
       diagnostics: [{ code: "JSONC_PARSE", path: "content/broken.jsonc" }],
     });
-    await expect(readFile(join(repositoryRoot, "generated", "content", "manifest.json"))).rejects
-      .toMatchObject({ code: "ENOENT" });
+    await expect(
+      readFile(join(repositoryRoot, "generated", "content", "manifest.json")),
+    ).rejects.toMatchObject({ code: "ENOENT" });
   });
 
   it("rejects an output root that traverses a linked parent component", async () => {
