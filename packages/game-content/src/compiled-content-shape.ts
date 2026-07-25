@@ -102,7 +102,7 @@ export function requireBoolean(value: unknown, path: string): boolean {
 
 export function requireBoundedString(value: unknown, path: string, maximumLength: number): string {
   const text = requireString(value, path);
-  if ([...text].length > maximumLength) {
+  if (Array.from(text).length > maximumLength) {
     throw invalidShape(`${path} exceeds ${maximumLength} characters`, path);
   }
   return text;
