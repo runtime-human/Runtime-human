@@ -8,9 +8,14 @@
     "jsx": "react-jsx",
     "types": ["node", "vitest/globals", "@testing-library/jest-dom"]
   },
-  "include": ["./**/*.ts", "./**/*.tsx", "../vitest.config.ts"],
+  "include": [
+    "./**/*.ts",
+    "./**/*.tsx",
+    "../apps/desktop/src/january/**/*.ts",
+    "../apps/desktop/src/january/**/*.tsx",
+    "../vitest.config.ts"
+  ],
   "references": [
-    { "path": "../apps/desktop/tsconfig.app.json" },
     { "path": "../packages/game-schema" },
     { "path": "../packages/game-core" },
     { "path": "../packages/game-application" },
