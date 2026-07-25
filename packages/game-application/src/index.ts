@@ -1,3 +1,13 @@
+export {
+  JANUARY_CONTENT_PROJECTION_ERROR_CODES,
+  JanuaryContentProjectionError,
+  projectJanuary1990Content,
+} from "./january-1990";
+export type {
+  JanuaryContentEntryPort,
+  JanuaryContentProjectionErrorCode,
+  JanuaryContentRegistryPort,
+} from "./january-1990";
 export { PERSISTENCE_COMMANDS } from "./persistence-port";
 export type { PersistenceInvokePort } from "./persistence-port";
 export { createPersistenceService } from "./persistence-service";

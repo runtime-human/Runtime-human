@@ -5,8 +5,8 @@
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "mainHeadAtCurrentSliceStart": "4cacfabd051065cbd3c2b2dd5c90e82f63452714",
-  "currentPhase": "january-1990-runtime-loader",
+  "mainHeadAtCurrentSliceStart": "2d5066a683e2765e5a259696fd114061772dd65b",
+  "currentPhase": "january-1990-content-projection",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -58,17 +58,33 @@
     },
     {
       "id": "january-1990-runtime-loader",
-      "status": "in-progress",
+      "status": "complete",
       "pullRequest": 26,
-      "branch": "agent/compiled-content-runtime-loader"
+      "commit": "2d5066a683e2765e5a259696fd114061772dd65b"
     },
     {
-      "id": "january-1990-domain-and-month-run",
+      "id": "january-1990-content-projection",
+      "status": "in-progress",
+      "pullRequest": 28,
+      "branch": "agent/january-1990-content-projections"
+    },
+    {
+      "id": "january-1990-deterministic-month-run",
       "status": "planned"
     },
     {
-      "id": "january-1990-playable-ui-and-closure",
+      "id": "january-1990-playable-ui",
       "status": "planned"
+    },
+    {
+      "id": "january-1990-hardening-and-closure",
+      "status": "planned"
+    }
+  ],
+  "supersededPullRequests": [
+    {
+      "pullRequest": 27,
+      "reason": "Replaced by PR #28 structural registry port without package or lockfile coupling"
     }
   ],
   "verification": {
@@ -76,8 +92,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "pending-pr-26-final-head",
-    "currentConstraint": "runtime-loader-final-verification-and-review-pending",
+    "qualityGate": "pending-pr-28-final-head",
+    "currentConstraint": "projection-typecheck-tests-and-review-pending",
     "currentPullRequestMayMerge": false
   }
 }

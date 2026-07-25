@@ -1,0 +1,61 @@
+export const JANUARY_1990_REQUIRED_CHUNK_IDS = Object.freeze([
+  "1990s/ecosystem",
+  "1990s/programming",
+] as const);
+
+export const JANUARY_1990_CONTENT_IDS = Object.freeze({
+  firstListingActivity: "core.activity.first-listing",
+  modifyListingActivity: "core.activity.modify-listing",
+  offlineManualsEcosystem: "core.ecosystem-profile.offline-manuals",
+  accessWindowEvent: "core.event.access-window",
+  logicErrorEvent: "core.event.logic-error",
+  manualFoundEvent: "core.event.manual-found",
+  programRunsEvent: "core.event.program-runs",
+  syntaxErrorEvent: "core.event.syntax-error",
+  homePcAccess: "core.local-tech-availability.home-pc",
+  sharedSchoolPcAccess: "core.local-tech-availability.shared-school-pc",
+  dosPcPlatform: "core.platform.dos-pc",
+  personalUtilityProject: "core.project-archetype.personal-utility",
+  firstBugSituation: "core.situation-kernel.first-bug",
+  debuggingSkill: "core.skill.debugging",
+  problemDecompositionSkill: "core.skill.problem-decomposition",
+  programReadingSkill: "core.skill.program-reading",
+  programWritingSkill: "core.skill.program-writing",
+  toolUseSkill: "core.skill.tool-use",
+  gwBasicDos1990Band: "core.tech-band.gw-basic-dos-1990",
+  basicTechnologyFamily: "core.tech-family.basic",
+  gwBasicTechnology: "core.technology.gw-basic",
+  gwBasicInterpreterToolchain: "core.toolchain.gw-basic-interpreter",
+  inputOutputWorkPackage: "core.work-package.input-output",
+  validationFixWorkPackage: "core.work-package.validation-fix",
+} as const);
+
+export type January1990ContentId =
+  (typeof JANUARY_1990_CONTENT_IDS)[keyof typeof JANUARY_1990_CONTENT_IDS];
+
+export const JANUARY_1990_STABLE_IDS = Object.freeze([
+  JANUARY_1990_CONTENT_IDS.firstListingActivity,
+  JANUARY_1990_CONTENT_IDS.modifyListingActivity,
+  JANUARY_1990_CONTENT_IDS.offlineManualsEcosystem,
+  JANUARY_1990_CONTENT_IDS.accessWindowEvent,
+  JANUARY_1990_CONTENT_IDS.logicErrorEvent,
+  JANUARY_1990_CONTENT_IDS.manualFoundEvent,
+  JANUARY_1990_CONTENT_IDS.programRunsEvent,
+  JANUARY_1990_CONTENT_IDS.syntaxErrorEvent,
+  JANUARY_1990_CONTENT_IDS.homePcAccess,
+  JANUARY_1990_CONTENT_IDS.sharedSchoolPcAccess,
+  JANUARY_1990_CONTENT_IDS.dosPcPlatform,
+  JANUARY_1990_CONTENT_IDS.personalUtilityProject,
+  JANUARY_1990_CONTENT_IDS.firstBugSituation,
+  JANUARY_1990_CONTENT_IDS.debuggingSkill,
+  JANUARY_1990_CONTENT_IDS.problemDecompositionSkill,
+  JANUARY_1990_CONTENT_IDS.programReadingSkill,
+  JANUARY_1990_CONTENT_IDS.programWritingSkill,
+  JANUARY_1990_CONTENT_IDS.toolUseSkill,
+  JANUARY_1990_CONTENT_IDS.gwBasicDos1990Band,
+  JANUARY_1990_CONTENT_IDS.basicTechnologyFamily,
+  JANUARY_1990_CONTENT_IDS.gwBasicTechnology,
+  JANUARY_1990_CONTENT_IDS.gwBasicInterpreterToolchain,
+  JANUARY_1990_CONTENT_IDS.inputOutputWorkPackage,
+  JANUARY_1990_CONTENT_IDS.validationFixWorkPackage,
+] as const satisfies readonly January1990ContentId[]);
