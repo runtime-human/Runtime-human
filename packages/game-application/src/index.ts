@@ -1,9 +1,19 @@
 export {
+  createJanuary1990BeginCommand,
+  createJanuary1990Compatibility,
+  createJanuary1990ResumeCommand,
+  createJanuary1990Runtime,
   JANUARY_CONTENT_PROJECTION_ERROR_CODES,
   JanuaryContentProjectionError,
+  materializeJanuary1990Commit,
   projectJanuary1990Content,
 } from "./january-1990";
 export type {
+  CreateJanuary1990CompatibilityInput,
+  CreateJanuary1990RuntimeInput,
+  January1990BeginInput,
+  January1990ResumeInput,
+  January1990Runtime,
   JanuaryContentEntryPort,
   JanuaryContentProjectionErrorCode,
   JanuaryContentRegistryPort,
