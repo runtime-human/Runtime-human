@@ -1,0 +1,55 @@
+name: january-ts-errors
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  diagnose-and-remove-self:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/january-1990-deterministic-month-run'
+    runs-on: self-hosted
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          clean: true
+          persist-credentials: true
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          $ErrorActionPreference = "Stop"
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Print TypeScript errors only
+        id: typecheck
+        continue-on-error: true
+        run: |
+          $lines = & pnpm typecheck 2>&1
+          $exitCode = $LASTEXITCODE
+          $lines | Select-String -Pattern "error TS"
+          if ($exitCode -ne 0) { exit $exitCode }
+      - name: Remove diagnostic workflow
+        if: always()
+        run: |
+          $ErrorActionPreference = "Stop"
+          git rm .github/workflows/january-ts-errors.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "ci: remove January TypeScript diagnostic"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
