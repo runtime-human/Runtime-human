@@ -9,9 +9,16 @@ import {
   type SaveRevision,
 } from "@runtime-human/game-schema";
 
+const EXPECTED_OUTCOMES = Object.freeze([
+  Object.freeze({ outcomeId: "january-1990/access", scope: "month/content" }),
+  Object.freeze({ outcomeId: "january-1990/work", scope: "month/content" }),
+  Object.freeze({ outcomeId: "january-1990/defect", scope: "month/narrative" }),
+  Object.freeze({ outcomeId: "january-1990/programming-outcome", scope: "month/outcome" }),
+] as const);
+
 export type January1990StoredOutcomeV1 = Readonly<{
-  outcomeId: string;
-  scope: string;
+  outcomeId: (typeof EXPECTED_OUTCOMES)[number]["outcomeId"];
+  scope: (typeof EXPECTED_OUTCOMES)[number]["scope"];
   payload: AuthoritativeJsonValue;
   payloadHash: Fingerprint;
 }>;
@@ -47,7 +54,10 @@ export const JANUARY_1990_SAVE_SCHEMA_FINGERPRINT = fingerprint(
       "schemaVersion",
       "terminalResult",
     ],
+    outcomes: EXPECTED_OUTCOMES,
     outcomeFields: ["outcomeId", "payload", "payloadHash", "scope"],
+    payloadHashNamespace: "month-run-materialized-outcome-v1",
+    terminalResultSchema: "january-1990-result-v1",
   },
 );
 
@@ -94,14 +104,13 @@ function parseCompletedMonth(value: unknown): January1990CompletedMonthV1 {
   ) {
     throw new TypeError("January completed month schema or month is incompatible");
   }
-  const terminalResult = snapshotAuthoritativeValue(record.terminalResult);
-  if (terminalResult === null) {
-    throw new TypeError("January completed month terminal result cannot be null");
+  const terminalResult = parseTerminalResult(record.terminalResult);
+  if (!Array.isArray(record.outcomes) || record.outcomes.length !== EXPECTED_OUTCOMES.length) {
+    throw new TypeError("January completed month requires the exact four outcomes");
   }
-  if (!Array.isArray(record.outcomes)) {
-    throw new TypeError("January completed month outcomes must be an array");
-  }
-  const outcomes = Object.freeze(record.outcomes.map(parseStoredOutcome));
+  const outcomes = Object.freeze(
+    record.outcomes.map((outcome, index) => parseStoredOutcome(outcome, index)),
+  );
   return Object.freeze({
     schemaVersion: "january-1990-completed-month-v1",
     month: "1990-01",
@@ -116,18 +125,55 @@ function parseCompletedMonth(value: unknown): January1990CompletedMonthV1 {
   });
 }
 
-function parseStoredOutcome(value: unknown): January1990StoredOutcomeV1 {
+function parseTerminalResult(value: unknown): AuthoritativeJsonValue {
+  const snapshot = snapshotAuthoritativeValue(value);
+  const record = requireRecord(
+    snapshot,
+    ["month", "outcomeEventId", "programmingOutcome", "projectId", "schemaVersion"],
+    "January terminal result",
+  );
+  if (record.schemaVersion !== "january-1990-result-v1" || record.month !== "1990-01") {
+    throw new TypeError("January terminal result schema or month is incompatible");
+  }
+  return freezeAuthoritative(snapshot);
+}
+
+function parseStoredOutcome(value: unknown, index: number): January1990StoredOutcomeV1 {
+  const expected = EXPECTED_OUTCOMES[index];
+  if (expected === undefined) throw new TypeError("Unexpected January outcome position");
   const record = requireRecord(
     value,
     ["outcomeId", "payload", "payloadHash", "scope"],
     "January stored outcome",
   );
+  if (record.outcomeId !== expected.outcomeId || record.scope !== expected.scope) {
+    throw new TypeError("January stored outcome order, ID or scope is incompatible");
+  }
+  const payload = freezeAuthoritative(snapshotAuthoritativeValue(record.payload));
+  const payloadHash = parseFingerprint(record.payloadHash, "January outcome payload hash");
+  if (payloadHash !== fingerprint("month-run-materialized-outcome-v1", payload)) {
+    throw new TypeError("January stored outcome payload hash does not match its payload");
+  }
   return Object.freeze({
-    outcomeId: parseToken(record.outcomeId, "outcomeId"),
-    scope: parseToken(record.scope, "scope"),
-    payload: snapshotAuthoritativeValue(record.payload),
-    payloadHash: parseFingerprint(record.payloadHash, "January outcome payload hash"),
+    outcomeId: expected.outcomeId,
+    scope: expected.scope,
+    payload,
+    payloadHash,
   });
+}
+
+function freezeAuthoritative(value: AuthoritativeJsonValue): AuthoritativeJsonValue {
+  if (Array.isArray(value)) {
+    return Object.freeze(value.map((entry) => freezeAuthoritative(entry)));
+  }
+  if (typeof value === "object" && value !== null) {
+    return Object.freeze(
+      Object.fromEntries(
+        Object.entries(value).map(([key, entry]) => [key, freezeAuthoritative(entry)]),
+      ),
+    );
+  }
+  return value;
 }
 
 function requireRecord(
@@ -153,13 +199,6 @@ function requireRecord(
     throw new TypeError(`${label} field set does not match the closed contract`);
   }
   return record;
-}
-
-function parseToken(value: unknown, field: string): string {
-  if (typeof value !== "string" || value.length === 0 || value.length > 256) {
-    throw new TypeError(`January stored outcome ${field} must contain 1-256 characters`);
-  }
-  return value;
 }
 
 function compareText(left: string, right: string): number {
