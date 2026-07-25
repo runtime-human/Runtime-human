@@ -34,6 +34,7 @@ type JanuaryContractApi = Readonly<{
     defect: DecisionId;
   }>;
   createJanuary1990MonthPlan?: (context: January1990ContentContext) => January1990MonthPlanV1;
+  parseJanuary1990MonthPlan?: (value: unknown) => January1990MonthPlanV1;
   parseJanuaryAccessAnswer?: (decisionId: unknown, value: unknown) => JanuaryAccessAnswerV1;
   parseJanuaryLearningAnswer?: (decisionId: unknown, value: unknown) => JanuaryLearningAnswerV1;
   parseJanuaryDefectAnswer?: (decisionId: unknown, value: unknown) => JanuaryDefectAnswerV1;
@@ -76,6 +77,37 @@ describe("January 1990 MonthPlan contracts", () => {
     });
     expect(Object.isFrozen(plan)).toBe(true);
     expect(Object.isFrozen(plan.requiredChunkIds)).toBe(true);
+  });
+
+  it("parses only the exact immutable MonthPlan contract", () => {
+    const parsePlan = requireFunction(
+      api.parseJanuary1990MonthPlan,
+      "parseJanuary1990MonthPlan",
+    );
+    const validPlan = {
+      schemaVersion: "january-1990-month-plan-v1",
+      month: "1990-01",
+      program: "january-1990-v1",
+      contentFingerprint,
+      requiredChunkIds: ["1990s/ecosystem", "1990s/programming"],
+    };
+
+    const plan = parsePlan(validPlan);
+
+    expect(plan).toEqual(validPlan);
+    expect(Object.isFrozen(plan)).toBe(true);
+    expect(Object.isFrozen(plan.requiredChunkIds)).toBe(true);
+    expect(() => parsePlan({ ...validPlan, extra: true })).toThrow(TypeError);
+    expect(() => parsePlan({ ...validPlan, program: "another-program" })).toThrow(TypeError);
+    expect(() => parsePlan({ ...validPlan, contentFingerprint: "not-a-fingerprint" })).toThrow(
+      TypeError,
+    );
+    expect(() =>
+      parsePlan({
+        ...validPlan,
+        requiredChunkIds: ["1990s/programming", "1990s/ecosystem"],
+      }),
+    ).toThrow(TypeError);
   });
 
   it("publishes the exact stable decision IDs", () => {
