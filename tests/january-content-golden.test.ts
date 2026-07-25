@@ -1,8 +1,12 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import {
   compileContentSources,
   loadContentSourceFiles,
+  type ContentSourceFile,
 } from "@runtime-human/game-content-compiler";
 
 const JANUARY_SOURCE_ROOTS = [
@@ -10,6 +14,7 @@ const JANUARY_SOURCE_ROOTS = [
   "content/1990s/programming",
   "content/1990s/ecosystem",
 ] as const;
+const GENERATED_ROOT = join(process.cwd(), "apps", "desktop", "public", "content");
 
 const JANUARY_CONTENT_IDS = [
   "core.activity.first-listing",
@@ -38,11 +43,14 @@ const JANUARY_CONTENT_IDS = [
   "core.work-package.validation-fix",
 ] as const;
 
-async function compileJanuaryContent() {
-  const sources = await loadContentSourceFiles({
+async function loadJanuarySources(): Promise<readonly ContentSourceFile[]> {
+  return loadContentSourceFiles({
     repositoryRoot: process.cwd(),
     sourceRoots: JANUARY_SOURCE_ROOTS,
   });
+}
+
+function requireBundle(sources: readonly ContentSourceFile[]) {
   const result = compileContentSources(sources);
   if (result.kind === "failure") {
     throw new Error(
@@ -54,7 +62,7 @@ async function compileJanuaryContent() {
 
 describe("January 1990 content registry", () => {
   it("compiles the exact reachable registry into programming and ecosystem chunks", async () => {
-    const bundle = await compileJanuaryContent();
+    const bundle = requireBundle(await loadJanuarySources());
 
     expect(bundle.manifest.chunks.map((chunk) => chunk.chunkId)).toEqual([
       "1990s/ecosystem",
@@ -69,6 +77,31 @@ describe("January 1990 content registry", () => {
       for (const entry of chunk.entries) {
         expect(entry.provenance.length, entry.id).toBeGreaterThan(0);
       }
+    }
+  });
+
+  it("matches committed artifact bytes independent of source order and comments", async () => {
+    const sources = await loadJanuarySources();
+    const bundle = requireBundle(sources);
+    const reversed = requireBundle([...sources].reverse());
+    const commented = requireBundle(
+      sources.map((source, index) =>
+        index === 0 ? { ...source, text: `// authoring comment\n${source.text}` } : source,
+      ),
+    );
+
+    expect(reversed).toEqual(bundle);
+    expect(commented).toEqual(bundle);
+    expect(bundle.artifacts.map((artifact) => artifact.path)).toEqual([
+      "chunks/1990s/ecosystem.json",
+      "chunks/1990s/programming.json",
+      "manifest.json",
+    ]);
+
+    for (const artifact of bundle.artifacts) {
+      await expect(readFile(join(GENERATED_ROOT, artifact.path), "utf8")).resolves.toBe(
+        artifact.json,
+      );
     }
   });
 });
