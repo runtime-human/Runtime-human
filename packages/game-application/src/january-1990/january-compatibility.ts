@@ -6,9 +6,10 @@ import {
   type MonthRunCompatibilityV1,
 } from "@runtime-human/game-schema";
 
+import { JANUARY_1990_SAVE_SCHEMA_FINGERPRINT } from "./january-save-snapshot";
+
 export type CreateJanuary1990CompatibilityInput = Readonly<{
   contentFingerprint: Fingerprint;
-  saveSchemaFingerprint: Fingerprint;
 }>;
 
 export function createJanuary1990Compatibility(
@@ -18,7 +19,7 @@ export function createJanuary1990Compatibility(
     checkpointSchema: "month-run-checkpoint-v1",
     rulesFingerprint: createJanuary1990RulesFingerprint(),
     contentFingerprint: parseFingerprint(input.contentFingerprint),
-    saveSchemaFingerprint: parseFingerprint(input.saveSchemaFingerprint),
+    saveSchemaFingerprint: JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
     determinismManifest: DETERMINISM_MANIFEST_V1,
   });
 }
