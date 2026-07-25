@@ -1,0 +1,51 @@
+name: verify-january-save-schema
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  verify-format-remove:
+    if: github.event.pull_request.head.ref == 'agent/january-1990-persisted-composition'
+    runs-on: self-hosted
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          clean: true
+          persist-credentials: true
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          $ErrorActionPreference = "Stop"
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Format and verify canonical save schema
+        run: |
+          $ErrorActionPreference = "Stop"
+          pnpm fmt
+          pnpm typecheck
+          pnpm vitest run tests/january-1990-save-snapshot.test.ts tests/january-1990-persisted-run.test.ts tests/january-1990-persisted-restart.test.ts tests/january-1990-exactly-once.test.ts tests/january-1990-view-model.test.ts tests/persisted-month-run-orchestrator.test.ts
+      - name: Commit formatting and remove workflow
+        run: |
+          $ErrorActionPreference = "Stop"
+          git rm .github/workflows/verify-january-save-schema.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packages/game-application/src tests
+          git commit -m "fix: close the January save snapshot contract"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
