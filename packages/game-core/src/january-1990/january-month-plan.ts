@@ -1,4 +1,4 @@
-import type { Fingerprint } from "@runtime-human/game-schema";
+import type { AuthoritativeJsonValue, Fingerprint } from "@runtime-human/game-schema";
 
 import type { January1990ContentContext } from "./january-content-context";
 import { JANUARY_1990_REQUIRED_CHUNK_IDS } from "./january-content-ids";
@@ -18,7 +18,8 @@ export type January1990MonthPlanV1 = Readonly<{
   program: "january-1990-v1";
   contentFingerprint: Fingerprint;
   requiredChunkIds: readonly ["1990s/ecosystem", "1990s/programming"];
-}>;
+}> &
+  AuthoritativeJsonValue;
 
 export function createJanuary1990MonthPlan(
   context: January1990ContentContext,
@@ -69,7 +70,7 @@ export function parseJanuary1990MonthPlan(value: unknown): January1990MonthPlanV
     program: "january-1990-v1",
     contentFingerprint: record.contentFingerprint as Fingerprint,
     requiredChunkIds: JANUARY_1990_REQUIRED_CHUNK_IDS,
-  });
+  }) as January1990MonthPlanV1;
 }
 
 function requireJanuaryContext(context: January1990ContentContext): void {
