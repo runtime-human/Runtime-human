@@ -8,10 +8,8 @@ import type {
   ContentKindV1,
 } from "./compiled-content";
 import { CompiledContentError } from "./content-errors";
-import {
-  compareText,
-  type CompiledContentValidators,
-} from "./compiled-content-runtime";
+import type { CompiledContentValidators } from "./compiled-content-runtime";
+import { compareText } from "./compiled-content-shape";
 
 const EMPTY_ENTRIES = Object.freeze([]) as readonly CompiledContentEntryV1[];
 
