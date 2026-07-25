@@ -1,0 +1,47 @@
+name: verify-january-ui-types
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  verify-and-cleanup:
+    if: github.event.pull_request.head.ref == 'agent/january-1990-playable-ui'
+    runs-on: self-hosted
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          clean: true
+          persist-credentials: true
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Verify E1 TypeScript and behavior
+        run: |
+          pnpm typecheck
+          pnpm exec vitest run tests/january-1990-desktop-session.test.ts tests/january-1990-screen-model.test.ts tests/january-1990-desktop-bootstrap.test.ts tests/january-1990-runtime-screen.test.tsx
+      - name: Remove verification workflow
+        if: always()
+        run: |
+          git config user.name "runtime-human-agent"
+          git config user.email "runtime-human-agent@users.noreply.github.com"
+          git rm .github/workflows/verify-january-ui-types.yml
+          git commit -m "ci: remove January UI type verification"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
