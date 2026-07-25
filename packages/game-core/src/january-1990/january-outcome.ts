@@ -42,12 +42,7 @@ export function materializeJanuaryProgrammingState(
   const learningPractice = requireValue(state.learningPractice, "learning practice");
   const defectResponse = requireValue(state.defectResponse, "defect response");
   return Object.freeze({
-    qualityScores: createQualityScores(
-      accessRoute,
-      learningPractice,
-      defectResponse,
-      outcomeRoll,
-    ),
+    qualityScores: createQualityScores(accessRoute, learningPractice, defectResponse, outcomeRoll),
     evidence: createEvidence(accessRoute, learningPractice, defectResponse),
   });
 }
@@ -115,8 +110,7 @@ function createQualityScores(
   return Object.freeze({
     clarity: 3 + learningValue + (defectResponse === "inspect-listing" ? 2 : 1) + outcomeRoll,
     correctness: 3 + learningValue + defectValue + outcomeRoll,
-    reliability:
-      3 + accessValue + (defectResponse === "change-input" ? 2 : 1) + outcomeRoll,
+    reliability: 3 + accessValue + (defectResponse === "change-input" ? 2 : 1) + outcomeRoll,
   });
 }
 
@@ -173,5 +167,6 @@ function requireContextId(
   expected: January1990ContentId,
   label: string,
 ): void {
-  if (actual !== expected) throw new TypeError(`January ${label} does not match the approved context`);
+  if (actual !== expected)
+    throw new TypeError(`January ${label} does not match the approved context`);
 }

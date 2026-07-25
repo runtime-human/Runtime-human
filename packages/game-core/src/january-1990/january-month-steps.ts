@@ -92,7 +92,8 @@ function materializeAccess(
     requireAcceptedAnswer(checkpoint, JANUARY_1990_DECISION_IDS.access),
   );
   const route = context.accessRoutes.find((candidate) => candidate.route === answer.route);
-  if (route === undefined) throw new TypeError("Accepted January access route is absent from context");
+  if (route === undefined)
+    throw new TypeError("Accepted January access route is absent from context");
   const nextState = updateJanuaryProvisionalState(
     parseJanuaryProvisionalState(checkpoint.provisionalState),
     { accessRoute: answer.route },
@@ -251,10 +252,7 @@ function materializeProgrammingOutcome(
   const random = Xoshiro256StarStar.fromState(checkpoint.rngState).fork(
     JANUARY_1990_RNG_SCOPES.outcome,
   );
-  const materialized = materializeJanuaryProgrammingState(
-    stateWithAnswer,
-    random.nextInt(0, 3),
-  );
+  const materialized = materializeJanuaryProgrammingState(stateWithAnswer, random.nextInt(0, 3));
   const finalState = updateJanuaryProvisionalState(stateWithAnswer, materialized);
   const programmingOutcome = createJanuaryProgrammingOutcomeFromState(context, finalState);
 
@@ -295,15 +293,17 @@ function createDecision(
   });
 }
 
-function materializedEvent(input: Readonly<{
-  checkpoint: MonthRunCheckpointV1;
-  outcomeId: string;
-  scope: string;
-  phase: "materialize" | "resolve";
-  state: unknown;
-  payload: unknown;
-  rngState?: MonthRunCheckpointV1["rngState"];
-}>): MonthRunEventV1 {
+function materializedEvent(
+  input: Readonly<{
+    checkpoint: MonthRunCheckpointV1;
+    outcomeId: string;
+    scope: string;
+    phase: "materialize" | "resolve";
+    state: unknown;
+    payload: unknown;
+    rngState?: MonthRunCheckpointV1["rngState"];
+  }>,
+): MonthRunEventV1 {
   return {
     type: "materialize-outcome",
     outcomeId: input.outcomeId,

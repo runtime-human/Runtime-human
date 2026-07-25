@@ -118,7 +118,10 @@ function parseEvidence(value: unknown): readonly JanuaryEvidenceV1[] {
   return Object.freeze(
     value.map((item) => {
       const record = requireRecord(item, ["amount", "reasonCode", "skillId"], "evidence item");
-      if (typeof record.skillId !== "string" || !SKILL_IDS.has(record.skillId as January1990ContentId)) {
+      if (
+        typeof record.skillId !== "string" ||
+        !SKILL_IDS.has(record.skillId as January1990ContentId)
+      ) {
         throw new TypeError("January evidence skillId is not part of the January skill set");
       }
       if (!Number.isSafeInteger(record.amount) || (record.amount as number) <= 0) {
@@ -141,11 +144,7 @@ function parseEvidence(value: unknown): readonly JanuaryEvidenceV1[] {
 
 function parseQualityScores(value: unknown): JanuaryQualityScoresV1 | null {
   if (value === null) return null;
-  const record = requireRecord(
-    value,
-    ["clarity", "correctness", "reliability"],
-    "quality scores",
-  );
+  const record = requireRecord(value, ["clarity", "correctness", "reliability"], "quality scores");
   const clarity = parseScore(record.clarity, "clarity");
   const correctness = parseScore(record.correctness, "correctness");
   const reliability = parseScore(record.reliability, "reliability");

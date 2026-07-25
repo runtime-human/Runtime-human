@@ -173,10 +173,7 @@ function createContext(): January1990ContentContext {
 }
 
 function createInitialCheckpoint(seed: bigint): MonthRunCheckpointV1 {
-  const createPlan = requireFunction(
-    api.createJanuary1990MonthPlan,
-    "createJanuary1990MonthPlan",
-  );
+  const createPlan = requireFunction(api.createJanuary1990MonthPlan, "createJanuary1990MonthPlan");
   const createRulesFingerprint = requireFunction(
     api.createJanuary1990RulesFingerprint,
     "createJanuary1990RulesFingerprint",
@@ -236,35 +233,26 @@ function runCompleted(seed: bigint): MonthRunCheckpointV1 {
   expect(first.checkpoint.programCounter).toBe(2);
   expect(first.checkpoint.pendingDecision?.decisionId).toBe(decisionIds.access);
 
-  const learning = acceptAndRun(
-    first.checkpoint,
-    steps,
-    "request-access",
-    decisionIds.access,
-    { schemaVersion: "january-access-answer-v1", route: "home-pc" },
-  );
+  const learning = acceptAndRun(first.checkpoint, steps, "request-access", decisionIds.access, {
+    schemaVersion: "january-access-answer-v1",
+    route: "home-pc",
+  });
   expect(learning.status).toBe("suspended");
   expect(learning.programCounter).toBe(4);
   expect(learning.pendingDecision?.decisionId).toBe(decisionIds.learning);
 
-  const defect = acceptAndRun(
-    learning,
-    steps,
-    "request-learning",
-    decisionIds.learning,
-    { schemaVersion: "january-learning-answer-v1", practice: "edit-and-debug" },
-  );
+  const defect = acceptAndRun(learning, steps, "request-learning", decisionIds.learning, {
+    schemaVersion: "january-learning-answer-v1",
+    practice: "edit-and-debug",
+  });
   expect(defect.status).toBe("suspended");
   expect(defect.programCounter).toBe(7);
   expect(defect.pendingDecision?.decisionId).toBe(decisionIds.defect);
 
-  const completed = acceptAndRun(
-    defect,
-    steps,
-    "request-defect",
-    decisionIds.defect,
-    { schemaVersion: "january-defect-answer-v1", response: "inspect-listing" },
-  );
+  const completed = acceptAndRun(defect, steps, "request-defect", decisionIds.defect, {
+    schemaVersion: "january-defect-answer-v1",
+    response: "inspect-listing",
+  });
   expect(completed.status).toBe("completed");
   expect(completed.programCounter).toBe(9);
   return completed;

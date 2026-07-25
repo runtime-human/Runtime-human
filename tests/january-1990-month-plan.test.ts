@@ -33,9 +33,7 @@ type JanuaryContractApi = Readonly<{
     learning: DecisionId;
     defect: DecisionId;
   }>;
-  createJanuary1990MonthPlan?: (
-    context: January1990ContentContext,
-  ) => January1990MonthPlanV1;
+  createJanuary1990MonthPlan?: (context: January1990ContentContext) => January1990MonthPlanV1;
   parseJanuaryAccessAnswer?: (decisionId: unknown, value: unknown) => JanuaryAccessAnswerV1;
   parseJanuaryLearningAnswer?: (decisionId: unknown, value: unknown) => JanuaryLearningAnswerV1;
   parseJanuaryDefectAnswer?: (decisionId: unknown, value: unknown) => JanuaryDefectAnswerV1;
