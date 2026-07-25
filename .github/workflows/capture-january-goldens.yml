@@ -1,15 +1,15 @@
 name: capture-january-goldens
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/january-1990-deterministic-month-run
+      - main
 
 permissions:
   contents: read
 
 concurrency:
-  group: capture-january-goldens
+  group: capture-january-goldens-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 defaults:
@@ -18,12 +18,12 @@ defaults:
 
 jobs:
   capture:
+    if: github.event.pull_request.head.ref == 'agent/january-1990-deterministic-month-run'
     runs-on: self-hosted
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
-          ref: agent/january-1990-deterministic-month-run
           clean: true
           persist-credentials: false
           show-progress: false
