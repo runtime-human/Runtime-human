@@ -7,6 +7,7 @@ import {
 } from "./content-build-config";
 import { compileContentSources } from "./compile-content-sources";
 import { loadContentSourceFiles } from "./load-content-source-files";
+import { resolveRepositoryPath } from "./repository-path";
 import { checkContentArtifacts, writeContentArtifacts } from "./write-content-artifacts";
 
 export type ContentBuildMode = "check" | "write";
@@ -37,7 +38,11 @@ export async function runContentBuild(
     return { kind: "content-invalid", diagnostics: compilation.diagnostics };
   }
 
-  const outputRoot = resolve(repositoryRoot, ...config.outputRoot.split("/"));
+  const outputRoot = await resolveRepositoryPath(
+    repositoryRoot,
+    config.outputRoot,
+    "Compiled content output root",
+  );
   const artifacts = compilation.bundle.artifacts;
   if (options.mode === "write") {
     await writeContentArtifacts({ outputRoot, artifacts });
