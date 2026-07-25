@@ -56,11 +56,28 @@ export type January1990BalanceTrace = Readonly<{
   answerProfiles: number;
   totalRuns: number;
   decisionBoundariesPerRun: 3;
+  transitionsPerRun: 12;
   fixedStepsPerRun: 9;
+  materializedOutcomesPerRun: 4;
   rngCallBudget: Readonly<{ content: 0; narrative: 1; outcome: 1 }>;
   failures: 0;
   softLocks: 0;
   programmerActionShare: Readonly<{ programmerActions: 2; totalDecisions: 3 }>;
+  choiceFrequencies: Readonly<{
+    accessRoute: Readonly<{ "home-pc": number; "shared-school-pc": number }>;
+    learningPractice: Readonly<{ "read-and-run": number; "edit-and-debug": number }>;
+    defectResponse: Readonly<{
+      "inspect-listing": number;
+      "change-input": number;
+      "ask-for-guidance": number;
+    }>;
+  }>;
+  outcomeFrequencies: Readonly<{
+    access: number;
+    work: number;
+    defect: number;
+    programmingOutcome: number;
+  }>;
   defectEvents: Readonly<{ logicError: number; syntaxError: number }>;
   responseQualityProfiles: readonly Readonly<{
     response: DefectResponse;
@@ -119,23 +136,49 @@ export async function generateJanuary1990BalanceTrace(
   const answerProfiles =
     ACCESS_ROUTES.length * LEARNING_PRACTICES.length * DEFECT_RESPONSES.length;
   const totalRuns = seedCount * answerProfiles;
+  const accessChoiceRuns = seedCount * LEARNING_PRACTICES.length * DEFECT_RESPONSES.length;
+  const learningChoiceRuns = seedCount * ACCESS_ROUTES.length * DEFECT_RESPONSES.length;
+  const defectChoiceRuns = seedCount * ACCESS_ROUTES.length * LEARNING_PRACTICES.length;
   return Object.freeze({
     schemaVersion: "january-1990-balance-trace-v1",
     seedRange: Object.freeze({ start: input.seedStart, end: input.seedEnd, count: seedCount }),
     answerProfiles,
     totalRuns,
     decisionBoundariesPerRun: 3,
+    transitionsPerRun: 12,
     fixedStepsPerRun: 9,
+    materializedOutcomesPerRun: 4,
     rngCallBudget: Object.freeze({ ...JANUARY_1990_RNG_CALL_BUDGET }),
     failures: 0,
     softLocks: 0,
     programmerActionShare: Object.freeze({ programmerActions: 2, totalDecisions: 3 }),
+    choiceFrequencies: Object.freeze({
+      accessRoute: Object.freeze({
+        "home-pc": accessChoiceRuns,
+        "shared-school-pc": accessChoiceRuns,
+      }),
+      learningPractice: Object.freeze({
+        "read-and-run": learningChoiceRuns,
+        "edit-and-debug": learningChoiceRuns,
+      }),
+      defectResponse: Object.freeze({
+        "inspect-listing": defectChoiceRuns,
+        "change-input": defectChoiceRuns,
+        "ask-for-guidance": defectChoiceRuns,
+      }),
+    }),
+    outcomeFrequencies: Object.freeze({
+      access: totalRuns,
+      work: totalRuns,
+      defect: totalRuns,
+      programmingOutcome: totalRuns,
+    }),
     defectEvents: Object.freeze({ logicError, syntaxError }),
     responseQualityProfiles: Object.freeze(
       DEFECT_RESPONSES.map((response) =>
         Object.freeze({
           response,
-          runs: seedCount * ACCESS_ROUTES.length * LEARNING_PRACTICES.length,
+          runs: defectChoiceRuns,
           vectors: Object.freeze(
             [...requireVectorMap(vectorCounts, response).values()].toSorted(compareQualityVectors),
           ),
