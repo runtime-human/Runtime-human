@@ -5,8 +5,8 @@
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "mainHeadAtCurrentSliceStart": "2d5066a683e2765e5a259696fd114061772dd65b",
-  "currentPhase": "january-1990-content-projection",
+  "mainHeadAtCurrentSliceStart": "3f70d937c5eb0740997a88f5e2f6196275ba5110",
+  "currentPhase": "january-1990-deterministic-month-run",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -64,12 +64,26 @@
     },
     {
       "id": "january-1990-content-projection",
-      "status": "in-progress",
+      "status": "complete",
       "pullRequest": 28,
-      "branch": "agent/january-1990-content-projections"
+      "commit": "3f70d937c5eb0740997a88f5e2f6196275ba5110"
     },
     {
       "id": "january-1990-deterministic-month-run",
+      "status": "implementation-complete",
+      "pullRequest": 29,
+      "branch": "agent/january-1990-deterministic-month-run",
+      "evidence": {
+        "fixedSeed": 42,
+        "rulesFingerprint": "dbc8a2753735120daa5ff111995907e928ce0eb3c6cf84e26f409b1097296869",
+        "accessCheckpointHash": "f6d0c8aa6995f84b9ae0af393a718aba291711cf2b294bf37e8e1600180d9b71",
+        "learningCheckpointHash": "1ebbe332f96a265f3fc2b2522ba46190acbe73dcfa97e6e4bbdd558bf3dbe8a5",
+        "defectCheckpointHash": "a8f89b470e6ca637b3f023f84f66933cc9fd375367b097b1425c45c9f7f35358",
+        "completedCheckpointHash": "09fb5a72c270570cb71c6b1918ede862f9e02dc312d0732918a95948a1cbd490"
+      }
+    },
+    {
+      "id": "january-1990-persisted-composition",
       "status": "planned"
     },
     {
@@ -92,8 +106,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "pending-pr-28-final-head",
-    "currentConstraint": "projection-typecheck-tests-and-review-pending",
+    "qualityGate": "pending-pr-29-final-head",
+    "currentConstraint": "month-run-implementation-and-golden-vectors-complete-final-verification-and-review-pending",
     "currentPullRequestMayMerge": false
   }
 }
