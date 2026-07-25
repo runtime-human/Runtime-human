@@ -5,8 +5,8 @@
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "mainHeadAtCurrentSliceStart": "3f70d937c5eb0740997a88f5e2f6196275ba5110",
-  "currentPhase": "january-1990-deterministic-month-run",
+  "mainHeadAtCurrentSliceStart": "080d97355f9739a467d941cdcc00cc29c5c8daa4",
+  "currentPhase": "january-1990-persisted-composition",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -70,9 +70,9 @@
     },
     {
       "id": "january-1990-deterministic-month-run",
-      "status": "implementation-complete",
+      "status": "complete",
       "pullRequest": 29,
-      "branch": "agent/january-1990-deterministic-month-run",
+      "commit": "080d97355f9739a467d941cdcc00cc29c5c8daa4",
       "evidence": {
         "fixedSeed": 42,
         "rulesFingerprint": "dbc8a2753735120daa5ff111995907e928ce0eb3c6cf84e26f409b1097296869",
@@ -84,7 +84,22 @@
     },
     {
       "id": "january-1990-persisted-composition",
-      "status": "planned"
+      "status": "implementation-complete",
+      "pullRequest": 30,
+      "branch": "agent/january-1990-persisted-composition",
+      "evidence": {
+        "decisionBoundaries": [2, 4, 7],
+        "boundaryMutations": 4,
+        "commitMutations": 1,
+        "restartBoundariesCovered": [2, 4, 7],
+        "duplicateReceiptsCovered": true,
+        "requestPayloadConflictCovered": true,
+        "saveAndRunRevisionConflictsCovered": true,
+        "acknowledgementLossCovered": ["begin", "boundary", "commit"],
+        "saveSchemaCompatibilityGuard": true,
+        "contentCompatibilityGuard": true,
+        "exactlyOnceSaveRevision": 1
+      }
     },
     {
       "id": "january-1990-playable-ui",
@@ -106,8 +121,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "pending-pr-29-final-head",
-    "currentConstraint": "month-run-implementation-and-golden-vectors-complete-final-verification-and-review-pending",
+    "qualityGate": "pending-pr-30-final-head",
+    "currentConstraint": "persisted-composition-implementation-complete-final-verification-and-review-pending",
     "currentPullRequestMayMerge": false
   }
 }
