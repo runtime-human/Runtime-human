@@ -109,6 +109,8 @@ export function createPersistedMonthRunOrchestrator(
     const saveResult = await loadSave(saveId);
     if (saveResult.kind === "result") return saveResult.result;
     if (saveResult.kind === "not-found") return { kind: "idle", save: null };
+    const incompatibleSave = blockIncompatibleSave(saveResult.save, null);
+    if (incompatibleSave !== null) return incompatibleSave;
 
     const runResult = await loadActiveRun(saveId);
     if (runResult.kind === "result") return runResult.result;
@@ -129,6 +131,8 @@ export function createPersistedMonthRunOrchestrator(
         message: "Save does not exist",
       });
     }
+    const incompatibleSave = blockIncompatibleSave(saveResult.save, null);
+    if (incompatibleSave !== null) return incompatibleSave;
     if (saveResult.save.revision !== command.expectedSaveRevision) {
       return protocolRejected("SaveRevisionConflict", "BeginMonth expected save revision is stale");
     }
@@ -168,6 +172,9 @@ export function createPersistedMonthRunOrchestrator(
         message: "Save does not exist",
       });
     }
+
+    const incompatibleSave = blockIncompatibleSave(saveResult.save, null);
+    if (incompatibleSave !== null) return incompatibleSave;
 
     const runResult = await loadRun(command.runId);
     if (runResult.kind === "result") return runResult.result;
@@ -353,6 +360,8 @@ export function createPersistedMonthRunOrchestrator(
       });
     }
     const latestSave = latestSaveResult.save;
+    const incompatibleSave = blockIncompatibleSave(latestSave, source);
+    if (incompatibleSave !== null) return incompatibleSave;
     if (latestSave.revision !== source.baseSaveRevision) {
       return persistenceRejected({
         schemaVersion: "persistence-error-v1",
@@ -416,6 +425,23 @@ export function createPersistedMonthRunOrchestrator(
       }
     }
     return persistenceRejected(committed.error);
+  }
+
+  function blockIncompatibleSave(
+    save: SaveRecordV1,
+    run: MonthRunRecordV1 | null,
+  ): PersistedMonthRunResult | null {
+    if (save.saveSchemaFingerprint === options.expectedCompatibility.saveSchemaFingerprint) {
+      return null;
+    }
+    return {
+      kind: "blocked",
+      reason: "incompatible-persistence",
+      message: "Save schema fingerprint is incompatible with the current MonthRun runtime",
+      recovery: null,
+      save,
+      run,
+    };
   }
 
   async function requireWritablePersistence(): Promise<PreflightResult> {
