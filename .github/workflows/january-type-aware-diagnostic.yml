@@ -1,0 +1,71 @@
+name: january-type-aware-diagnostic
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  capture-and-remove-self:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/january-1990-deterministic-month-run'
+    runs-on: self-hosted
+    timeout-minutes: 20
+    steps:
+      - name: Check out PR merge ref
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          clean: true
+          persist-credentials: false
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          $ErrorActionPreference = "Stop"
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Capture type-aware lint
+        id: lint
+        continue-on-error: true
+        run: |
+          $lines = & pnpm lint:type-aware 2>&1
+          $exitCode = $LASTEXITCODE
+          @("LINT_EXIT_CODE=$exitCode") + $lines | Set-Content -Path type-aware-lint.txt -Encoding utf8
+          if ($exitCode -ne 0) { exit $exitCode }
+      - name: Upload lint output
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: january-type-aware-lint
+          path: type-aware-lint.txt
+          if-no-files-found: error
+          retention-days: 1
+      - name: Check out PR head for cleanup
+        if: always()
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          clean: true
+          persist-credentials: true
+          show-progress: false
+      - name: Remove diagnostic workflow
+        if: always()
+        run: |
+          $ErrorActionPreference = "Stop"
+          git rm .github/workflows/january-type-aware-diagnostic.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "ci: remove January type-aware lint diagnostic"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
