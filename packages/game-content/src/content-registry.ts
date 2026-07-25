@@ -175,12 +175,8 @@ function verifyEntryPoints(
   descriptors: readonly CompiledContentChunkDescriptorV1[],
   entries: ReadonlyMap<string, CompiledContentEntryV1>,
 ): void {
-  const loadedContentIds = new Set(
-    descriptors.flatMap((descriptor) => descriptor.contentIds),
-  );
-  const expectedEntryPointIds = manifest.entryPointIds.filter((id) =>
-    loadedContentIds.has(id),
-  );
+  const loadedContentIds = new Set(descriptors.flatMap((descriptor) => descriptor.contentIds));
+  const expectedEntryPointIds = manifest.entryPointIds.filter((id) => loadedContentIds.has(id));
   const actualEntryPointIds = [...entries.values()]
     .filter((entry) => entry.entryPoint)
     .map((entry) => entry.id)
