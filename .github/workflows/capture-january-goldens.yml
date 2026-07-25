@@ -1,0 +1,106 @@
+name: capture-january-goldens
+
+on:
+  push:
+    branches:
+      - agent/january-1990-deterministic-month-run
+
+permissions:
+  contents: read
+
+concurrency:
+  group: capture-january-goldens
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  capture:
+    runs-on: self-hosted
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: agent/january-1990-deterministic-month-run
+          clean: true
+          persist-credentials: false
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          $ErrorActionPreference = "Stop"
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Capture fixed-seed vectors
+        run: |
+          $ErrorActionPreference = "Stop"
+          @'
+
+          it("captures fixed-seed golden vectors", () => {
+            const steps = createSteps();
+            const access = requireBoundary(
+              runUntilBoundary(createInitialCheckpoint(42n), steps),
+              "golden access boundary missing",
+            );
+            const learning = acceptAndRun(
+              access,
+              steps,
+              "golden-access",
+              JANUARY_1990_DECISION_IDS.access,
+              { schemaVersion: "january-access-answer-v1", route: "home-pc" },
+            );
+            const defect = acceptAndRun(
+              learning,
+              steps,
+              "golden-learning",
+              JANUARY_1990_DECISION_IDS.learning,
+              { schemaVersion: "january-learning-answer-v1", practice: "edit-and-debug" },
+            );
+            const completed = acceptAndRun(
+              defect,
+              steps,
+              "golden-defect",
+              JANUARY_1990_DECISION_IDS.defect,
+              { schemaVersion: "january-defect-answer-v1", response: "inspect-listing" },
+            );
+            const golden = {
+              rulesFingerprint: createJanuary1990RulesFingerprint(),
+              access: {
+                checkpointHash: access.checkpointHash,
+                rngState: access.rngState,
+                programCounter: access.programCounter,
+              },
+              learning: {
+                checkpointHash: learning.checkpointHash,
+                rngState: learning.rngState,
+                programCounter: learning.programCounter,
+              },
+              defect: {
+                checkpointHash: defect.checkpointHash,
+                rngState: defect.rngState,
+                programCounter: defect.programCounter,
+                eventId: readOutcomeField(defect, "january-1990/defect", "eventId"),
+              },
+              completed: {
+                checkpointHash: completed.checkpointHash,
+                rngState: completed.rngState,
+                programCounter: completed.programCounter,
+              },
+            };
+            console.log(`JANUARY_GOLDEN=${JSON.stringify(golden)}`);
+          });
+          '@ | Add-Content tests/january-1990-month-run.test.ts
+          pnpm vitest run tests/january-1990-month-run.test.ts --reporter=verbose *>&1 | Tee-Object january-goldens.txt
+      - name: Upload golden vectors
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: january-golden-vectors
+          path: january-goldens.txt
+          if-no-files-found: error
+          retention-days: 1
