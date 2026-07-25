@@ -244,4 +244,19 @@ describe("projectJanuary1990Content", () => {
       }),
     );
   });
+
+  it("rejects a registry entry returned under another stable ID", async () => {
+    const registry = await loadRegistry();
+    const mismatched = overrideEntry(registry, "core.skill.debugging", (entry) => ({
+      ...entry,
+      id: "core.skill.program-reading",
+    }));
+
+    expect(() => projectJanuary1990Content(mismatched)).toThrow(
+      expect.objectContaining<Partial<JanuaryContentProjectionError>>({
+        code: "INVALID_PAYLOAD",
+        contentId: "core.skill.debugging",
+      }),
+    );
+  });
 });
