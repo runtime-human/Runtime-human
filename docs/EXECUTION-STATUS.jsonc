@@ -70,9 +70,17 @@
     },
     {
       "id": "january-1990-deterministic-month-run",
-      "status": "in-progress",
+      "status": "implementation-complete",
       "pullRequest": 29,
-      "branch": "agent/january-1990-deterministic-month-run"
+      "branch": "agent/january-1990-deterministic-month-run",
+      "evidence": {
+        "fixedSeed": 42,
+        "rulesFingerprint": "dbc8a2753735120daa5ff111995907e928ce0eb3c6cf84e26f409b1097296869",
+        "accessCheckpointHash": "f6d0c8aa6995f84b9ae0af393a718aba291711cf2b294bf37e8e1600180d9b71",
+        "learningCheckpointHash": "1ebbe332f96a265f3fc2b2522ba46190acbe73dcfa97e6e4bbdd558bf3dbe8a5",
+        "defectCheckpointHash": "a8f89b470e6ca637b3f023f84f66933cc9fd375367b097b1425c45c9f7f35358",
+        "completedCheckpointHash": "09fb5a72c270570cb71c6b1918ede862f9e02dc312d0732918a95948a1cbd490"
+      }
     },
     {
       "id": "january-1990-persisted-composition",
@@ -99,7 +107,7 @@
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
     "qualityGate": "pending-pr-29-final-head",
-    "currentConstraint": "month-run-implementation-and-runtime-invariant-review-complete-final-verification-and-review-pending",
+    "currentConstraint": "month-run-implementation-and-golden-vectors-complete-final-verification-and-review-pending",
     "currentPullRequestMayMerge": false
   }
 }
