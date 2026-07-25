@@ -4,11 +4,7 @@ import {
   type January1990ContentContext,
   type January1990MonthPlanV1,
 } from "@runtime-human/game-core";
-import type {
-  Fingerprint,
-  MonthRunCompatibilityV1,
-  SaveId,
-} from "@runtime-human/game-schema";
+import type { Fingerprint, MonthRunCompatibilityV1, SaveId } from "@runtime-human/game-schema";
 
 import { createPersistedMonthRunOrchestrator } from "../persisted-month-run-orchestrator";
 import type { PersistedMonthRunResult } from "../persisted-month-run-types";
@@ -40,9 +36,7 @@ export type January1990Runtime = Readonly<{
   retry(): Promise<PersistedMonthRunResult>;
 }>;
 
-export function createJanuary1990Runtime(
-  input: CreateJanuary1990RuntimeInput,
-): January1990Runtime {
+export function createJanuary1990Runtime(input: CreateJanuary1990RuntimeInput): January1990Runtime {
   const contentContext = projectJanuary1990Content(input.contentRegistry);
   const plan = createJanuary1990MonthPlan(contentContext);
   const compatibility = createJanuary1990Compatibility({

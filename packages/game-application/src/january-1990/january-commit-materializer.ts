@@ -1,7 +1,4 @@
-import {
-  parseJanuary1990MonthPlan,
-  snapshotAuthoritativeValue,
-} from "@runtime-human/game-core";
+import { parseJanuary1990MonthPlan, snapshotAuthoritativeValue } from "@runtime-human/game-core";
 
 import type { PersistedMonthRunCommitMaterializer } from "../persisted-month-run-types";
 

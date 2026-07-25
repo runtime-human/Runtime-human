@@ -10,10 +10,7 @@ import type {
   PersistenceService,
 } from "@runtime-human/game-application";
 import { canonicalizeAuthoritative, fingerprint } from "@runtime-human/game-core";
-import {
-  createCompiledContentRuntime,
-  type ContentRegistry,
-} from "@runtime-human/game-content";
+import { createCompiledContentRuntime, type ContentRegistry } from "@runtime-human/game-content";
 import {
   parseDecisionId,
   parseMonthRunId,
@@ -40,7 +37,7 @@ const CONTENT_RUNTIME = createCompiledContentRuntime({
 });
 const SAVE_SCHEMA_FINGERPRINT = fingerprint("january-1990-save-schema-test", { version: 1 });
 
- type JanuaryRuntimeBeginInput = Readonly<{
+type JanuaryRuntimeBeginInput = Readonly<{
   requestId: RequestId;
   saveId: SaveId;
   expectedSaveRevision: SaveRevision;
@@ -48,7 +45,7 @@ const SAVE_SCHEMA_FINGERPRINT = fingerprint("january-1990-save-schema-test", { v
   seed: bigint;
 }>;
 
- type JanuaryRuntimeResumeInput = Readonly<{
+type JanuaryRuntimeResumeInput = Readonly<{
   requestId: RequestId;
   saveId: SaveId;
   runId: MonthRunId;
@@ -57,7 +54,7 @@ const SAVE_SCHEMA_FINGERPRINT = fingerprint("january-1990-save-schema-test", { v
   answer: AuthoritativeJsonValue;
 }>;
 
- type January1990Runtime = Readonly<{
+type January1990Runtime = Readonly<{
   compatibility: MonthRunCompatibilityV1;
   load(saveId: SaveId): Promise<PersistedMonthRunResult>;
   begin(input: JanuaryRuntimeBeginInput): Promise<PersistedMonthRunResult>;
@@ -65,12 +62,14 @@ const SAVE_SCHEMA_FINGERPRINT = fingerprint("january-1990-save-schema-test", { v
   retry(): Promise<PersistedMonthRunResult>;
 }>;
 
- type JanuaryRuntimeApi = Readonly<{
-  createJanuary1990Runtime?: (input: Readonly<{
-    persistence: PersistenceService;
-    contentRegistry: JanuaryContentRegistryPort;
-    saveSchemaFingerprint: Fingerprint;
-  }>) => January1990Runtime;
+type JanuaryRuntimeApi = Readonly<{
+  createJanuary1990Runtime?: (
+    input: Readonly<{
+      persistence: PersistenceService;
+      contentRegistry: JanuaryContentRegistryPort;
+      saveSchemaFingerprint: Fingerprint;
+    }>,
+  ) => January1990Runtime;
 }>;
 
 const api = gameApplication as typeof gameApplication & JanuaryRuntimeApi;
@@ -98,19 +97,17 @@ async function loadRegistry(): Promise<ContentRegistry> {
   return CONTENT_RUNTIME.createContentRegistry(manifest, chunks, chunkIds);
 }
 
-function requireWaiting(result: PersistedMonthRunResult): Extract<
-  PersistedMonthRunResult,
-  { kind: "waiting-decision" }
-> {
+function requireWaiting(
+  result: PersistedMonthRunResult,
+): Extract<PersistedMonthRunResult, { kind: "waiting-decision" }> {
   expect(result.kind).toBe("waiting-decision");
   if (result.kind !== "waiting-decision") throw new Error("Expected persisted decision boundary");
   return result;
 }
 
-function requireCommitted(result: PersistedMonthRunResult): Extract<
-  PersistedMonthRunResult,
-  { kind: "committed" }
-> {
+function requireCommitted(
+  result: PersistedMonthRunResult,
+): Extract<PersistedMonthRunResult, { kind: "committed" }> {
   expect(result.kind).toBe("committed");
   if (result.kind !== "committed") throw new Error("Expected committed January MonthRun");
   return result;
