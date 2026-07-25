@@ -68,12 +68,7 @@ const LEARNING_SPECS: readonly LearningSpec[] = [
       C.programWritingSkill,
       C.toolUseSkill,
     ],
-    [
-      C.problemDecompositionSkill,
-      C.programReadingSkill,
-      C.programWritingSkill,
-      C.toolUseSkill,
-    ],
+    [C.problemDecompositionSkill, C.programReadingSkill, C.programWritingSkill, C.toolUseSkill],
     R.readAndRunLearning,
   ],
   [
@@ -92,12 +87,7 @@ const WORK_PACKAGE_SPECS: readonly WorkPackageSpec[] = [
     "input-output",
     "correctness",
     [C.problemDecompositionSkill, C.programWritingSkill, C.toolUseSkill],
-    [
-      C.problemDecompositionSkill,
-      C.programWritingSkill,
-      C.toolUseSkill,
-      C.gwBasicDos1990Band,
-    ],
+    [C.problemDecompositionSkill, C.programWritingSkill, C.toolUseSkill, C.gwBasicDos1990Band],
     R.inputOutputProject,
   ],
   [
@@ -280,14 +270,7 @@ function projectSkill(
   registry: JanuaryContentRegistryPort,
   [id, skill, quality]: SkillSpec,
 ): JanuarySkillDefinition {
-  const result = read(
-    registry,
-    id,
-    "reference",
-    "skill",
-    ["contentType", "quality", "skill"],
-    [],
-  );
+  const result = read(registry, id, "reference", "skill", ["contentType", "quality", "skill"], []);
   return {
     id,
     skill: requireLiteralString(result.payload.skill, skill, result.entry.id, "skill"),
@@ -392,14 +375,7 @@ function projectEvent(
   registry: JanuaryContentRegistryPort,
   [id, eventType, references, reasonCode]: EventSpec,
 ): JanuaryEventDefinition {
-  const result = read(
-    registry,
-    id,
-    "event",
-    "event",
-    ["contentType", "eventType"],
-    references,
-  );
+  const result = read(registry, id, "event", "event", ["contentType", "eventType"], references);
   return {
     id,
     eventType: requireLiteralString(

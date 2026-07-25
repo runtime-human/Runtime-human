@@ -29,12 +29,7 @@ export type JanuaryAccessRoute = Readonly<{
 
 export type JanuarySkillDefinition = Readonly<{
   id: January1990ContentId;
-  skill:
-    | "debugging"
-    | "problem-decomposition"
-    | "program-reading"
-    | "program-writing"
-    | "tool-use";
+  skill: "debugging" | "problem-decomposition" | "program-reading" | "program-writing" | "tool-use";
   quality: JanuaryQuality;
 }>;
 
@@ -69,12 +64,7 @@ export type JanuarySituationDefinition = Readonly<{
 
 export type JanuaryEventDefinition = Readonly<{
   id: January1990ContentId;
-  eventType:
-    | "access-window"
-    | "logic-error"
-    | "manual-found"
-    | "program-runs"
-    | "syntax-error";
+  eventType: "access-window" | "logic-error" | "manual-found" | "program-runs" | "syntax-error";
   reasonCode: January1990ReasonCode;
 }>;
 

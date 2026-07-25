@@ -50,20 +50,13 @@ const EXPECTED_REASON_CODES = [
 
 describe("January 1990 core contracts", () => {
   it("publishes the exact closed content and chunk IDs", () => {
-    expect(JANUARY_1990_REQUIRED_CHUNK_IDS).toEqual([
-      "1990s/ecosystem",
-      "1990s/programming",
-    ]);
+    expect(JANUARY_1990_REQUIRED_CHUNK_IDS).toEqual(["1990s/ecosystem", "1990s/programming"]);
     expect(JANUARY_1990_STABLE_IDS).toEqual(EXPECTED_STABLE_IDS);
-    expect(Object.values(JANUARY_1990_CONTENT_IDS).toSorted()).toEqual(
-      EXPECTED_STABLE_IDS,
-    );
+    expect(Object.values(JANUARY_1990_CONTENT_IDS).toSorted()).toEqual(EXPECTED_STABLE_IDS);
   });
 
   it("publishes closed stable reason codes", () => {
-    expect(Object.values(JANUARY_1990_REASON_CODES).toSorted()).toEqual(
-      EXPECTED_REASON_CODES,
-    );
+    expect(Object.values(JANUARY_1990_REASON_CODES).toSorted()).toEqual(EXPECTED_REASON_CODES);
   });
 
   it("freezes public constant collections", () => {

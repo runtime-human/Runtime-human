@@ -28,10 +28,7 @@ async function loadRegistry(): Promise<ContentRegistry> {
   const chunks = await Promise.all(
     chunkIds.map(async (chunkId) =>
       CONTENT_RUNTIME.parseCompiledContentChunk(
-        await readFile(
-          join(CONTENT_ROOT, "chunks", ...chunkId.split("/")).concat(".json"),
-          "utf8",
-        ),
+        await readFile(join(CONTENT_ROOT, "chunks", ...chunkId.split("/")).concat(".json"), "utf8"),
       ),
     ),
   );
@@ -193,8 +190,7 @@ describe("projectJanuary1990Content", () => {
       "MISSING_CONTENT",
       (registry: ContentRegistry) => ({
         contentFingerprint: registry.contentFingerprint,
-        get: (id: string) =>
-          id === "core.skill.debugging" ? undefined : registry.get(id),
+        get: (id: string) => (id === "core.skill.debugging" ? undefined : registry.get(id)),
       }),
     ],
     [
