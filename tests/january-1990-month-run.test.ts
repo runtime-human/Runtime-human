@@ -158,7 +158,7 @@ function createContext(): January1990ContentContext {
         reasonCode: R.syntaxErrorSituation,
       },
     ],
-  });
+  } as const satisfies January1990ContentContext);
 }
 
 function createInitialCheckpoint(seed: bigint): MonthRunCheckpointV1 {
