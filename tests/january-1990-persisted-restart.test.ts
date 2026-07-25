@@ -15,7 +15,25 @@ import {
   requireJanuaryWaiting,
   resumeJanuary,
   startJanuary,
+  type JanuaryWaitingResult,
 } from "./helpers/january-1990-runtime-fixture";
+
+type RestartBoundary = "access" | "learning" | "defect";
+type HarnessedJanuaryRuntime = Awaited<ReturnType<typeof createHarnessedJanuaryRuntime>>;
+
+async function reachRestartBoundary(
+  source: HarnessedJanuaryRuntime,
+  boundary: RestartBoundary,
+): Promise<JanuaryWaitingResult> {
+  switch (boundary) {
+    case "access":
+      return startJanuary(source.runtime, source.saveId, source.runId);
+    case "learning":
+      return reachJanuaryLearningBoundary(source.runtime, source.saveId, source.runId);
+    case "defect":
+      return reachJanuaryDefectBoundary(source.runtime, source.saveId, source.runId);
+  }
+}
 
 describe("January 1990 persisted restart and compatibility", () => {
   it.each([
@@ -24,12 +42,7 @@ describe("January 1990 persisted restart and compatibility", () => {
     ["defect", 7],
   ] as const)("reopens the %s boundary without state drift", async (boundary, programCounter) => {
     const source = await createHarnessedJanuaryRuntime();
-    const expected =
-      boundary === "access"
-        ? await startJanuary(source.runtime, source.saveId, source.runId)
-        : boundary === "learning"
-          ? await reachJanuaryLearningBoundary(source.runtime, source.saveId, source.runId)
-          : await reachJanuaryDefectBoundary(source.runtime, source.saveId, source.runId);
+    const expected = await reachRestartBoundary(source, boundary);
 
     const reopened = reopenJanuaryRuntime(source);
     const loaded = requireJanuaryWaiting(await reopened.load(source.saveId));
