@@ -24,12 +24,19 @@ type JanuaryRuntimeApi = Readonly<{
     narrative: "month/narrative";
     outcome: "month/outcome";
   }>;
+  JANUARY_1990_RNG_CALL_BUDGET?: Readonly<{
+    content: 0;
+    narrative: 1;
+    outcome: 1;
+  }>;
   createJanuary1990MonthPlan?: (context: January1990ContentContext) => unknown;
   createJanuary1990MonthSteps?: (
     context: January1990ContentContext,
   ) => readonly gameCore.MonthRunStep[];
   createJanuary1990RulesFingerprint?: () => Fingerprint;
 }>;
+
+type DefectResponse = "inspect-listing" | "change-input" | "ask-for-guidance";
 
 const api = gameCore as typeof gameCore & JanuaryRuntimeApi;
 const C = gameCore.JANUARY_1990_CONTENT_IDS;
@@ -194,9 +201,34 @@ function createInitialCheckpoint(seed: bigint): MonthRunCheckpointV1 {
   });
 }
 
-function acceptAndRun(
+function createSteps(): readonly gameCore.MonthRunStep[] {
+  const createMonthSteps = requireFunction(
+    api.createJanuary1990MonthSteps,
+    "createJanuary1990MonthSteps",
+  );
+  const steps = createMonthSteps(createContext());
+  expect(steps).toHaveLength(9);
+  return steps;
+}
+
+function requireDecisionIds(): NonNullable<JanuaryRuntimeApi["JANUARY_1990_DECISION_IDS"]> {
+  const decisionIds = api.JANUARY_1990_DECISION_IDS;
+  expect(decisionIds).toBeDefined();
+  if (decisionIds === undefined) throw new Error("January decision IDs are missing");
+  return decisionIds;
+}
+
+function requireBoundary(
+  result: gameCore.MonthRunRunResult,
+  message: string,
+): MonthRunCheckpointV1 {
+  expect(result.kind).toBe("boundary");
+  if (result.kind !== "boundary") throw new Error(message);
+  return result.checkpoint;
+}
+
+function acceptDecision(
   checkpoint: MonthRunCheckpointV1,
-  steps: readonly gameCore.MonthRunStep[],
   requestId: string,
   decisionId: string,
   answer: Record<string, string>,
@@ -209,31 +241,39 @@ function acceptAndRun(
   });
   expect(accepted.kind).toBe("accepted");
   if (accepted.kind !== "accepted") throw new Error("Decision acceptance failed");
-  const run = gameCore.runUntilBoundary(accepted.checkpoint, steps);
-  expect(run.kind).toBe("boundary");
-  if (run.kind !== "boundary") throw new Error("January MonthRun did not reach a boundary");
-  return run.checkpoint;
+  return accepted.checkpoint;
 }
 
-function runCompleted(seed: bigint): MonthRunCheckpointV1 {
-  const createSteps = requireFunction(
-    api.createJanuary1990MonthSteps,
-    "createJanuary1990MonthSteps",
+function acceptAndRun(
+  checkpoint: MonthRunCheckpointV1,
+  steps: readonly gameCore.MonthRunStep[],
+  requestId: string,
+  decisionId: string,
+  answer: Record<string, string>,
+): MonthRunCheckpointV1 {
+  return requireBoundary(
+    gameCore.runUntilBoundary(
+      acceptDecision(checkpoint, requestId, decisionId, answer),
+      steps,
+    ),
+    "January MonthRun did not reach a boundary",
   );
-  const decisionIds = api.JANUARY_1990_DECISION_IDS;
-  expect(decisionIds).toBeDefined();
-  if (decisionIds === undefined) throw new Error("January decision IDs are missing");
-  const steps = createSteps(createContext());
-  expect(steps).toHaveLength(9);
+}
 
-  const first = gameCore.runUntilBoundary(createInitialCheckpoint(seed), steps);
-  expect(first.kind).toBe("boundary");
-  if (first.kind !== "boundary") throw new Error("January MonthRun did not start");
-  expect(first.checkpoint.status).toBe("suspended");
-  expect(first.checkpoint.programCounter).toBe(2);
-  expect(first.checkpoint.pendingDecision?.decisionId).toBe(decisionIds.access);
+function runCompleted(seed: bigint, response: DefectResponse = "inspect-listing"):
+  MonthRunCheckpointV1 {
+  const steps = createSteps();
+  const decisionIds = requireDecisionIds();
 
-  const learning = acceptAndRun(first.checkpoint, steps, "request-access", decisionIds.access, {
+  const first = requireBoundary(
+    gameCore.runUntilBoundary(createInitialCheckpoint(seed), steps),
+    "January MonthRun did not start",
+  );
+  expect(first.status).toBe("suspended");
+  expect(first.programCounter).toBe(2);
+  expect(first.pendingDecision?.decisionId).toBe(decisionIds.access);
+
+  const learning = acceptAndRun(first, steps, "request-access", decisionIds.access, {
     schemaVersion: "january-access-answer-v1",
     route: "home-pc",
   });
@@ -251,21 +291,46 @@ function runCompleted(seed: bigint): MonthRunCheckpointV1 {
 
   const completed = acceptAndRun(defect, steps, "request-defect", decisionIds.defect, {
     schemaVersion: "january-defect-answer-v1",
-    response: "inspect-listing",
+    response,
   });
   expect(completed.status).toBe("completed");
   expect(completed.programCounter).toBe(9);
   return completed;
 }
 
+function readOutcomeField(
+  checkpoint: MonthRunCheckpointV1,
+  outcomeId: string,
+  field: string,
+): unknown {
+  const outcome = checkpoint.materializedOutcomes.find(
+    (candidate) => candidate.outcomeId === outcomeId,
+  );
+  if (
+    outcome === undefined ||
+    typeof outcome.payload !== "object" ||
+    outcome.payload === null ||
+    Array.isArray(outcome.payload)
+  ) {
+    throw new Error(`Outcome ${outcomeId} is missing or malformed`);
+  }
+  return (outcome.payload as Readonly<Record<string, unknown>>)[field];
+}
+
 describe("January 1990 deterministic MonthRun", () => {
-  it("publishes the exact closed RNG scopes", () => {
+  it("publishes the exact closed RNG scopes and call budget", () => {
     expect(api.JANUARY_1990_RNG_SCOPES).toEqual({
       content: "month/content",
       narrative: "month/narrative",
       outcome: "month/outcome",
     });
+    expect(api.JANUARY_1990_RNG_CALL_BUDGET).toEqual({
+      content: 0,
+      narrative: 1,
+      outcome: 1,
+    });
     expect(Object.isFrozen(api.JANUARY_1990_RNG_SCOPES)).toBe(true);
+    expect(Object.isFrozen(api.JANUARY_1990_RNG_CALL_BUDGET)).toBe(true);
   });
 
   it("reaches three decisions and one programming result in nine fixed steps", () => {
@@ -297,6 +362,97 @@ describe("January 1990 deterministic MonthRun", () => {
     expect(second.rngState).toBe(first.rngState);
     expect(second.materializedOutcomes).toEqual(first.materializedOutcomes);
     expect(second.terminalResult).toEqual(first.terminalResult);
+  });
+
+  it("replays an identical pre-defect checkpoint without extra RNG work", () => {
+    const steps = createSteps();
+    const decisionIds = requireDecisionIds();
+    const accessBoundary = requireBoundary(
+      gameCore.runUntilBoundary(createInitialCheckpoint(19n), steps),
+      "January access boundary was not reached",
+    );
+    const learningBoundary = acceptAndRun(
+      accessBoundary,
+      steps,
+      "replay-access",
+      decisionIds.access,
+      { schemaVersion: "january-access-answer-v1", route: "home-pc" },
+    );
+    const acceptedLearning = acceptDecision(
+      learningBoundary,
+      "replay-learning",
+      decisionIds.learning,
+      { schemaVersion: "january-learning-answer-v1", practice: "edit-and-debug" },
+    );
+
+    const first = requireBoundary(
+      gameCore.runUntilBoundary(acceptedLearning, steps),
+      "First replay did not reach the defect boundary",
+    );
+    const second = requireBoundary(
+      gameCore.runUntilBoundary(acceptedLearning, steps),
+      "Second replay did not reach the defect boundary",
+    );
+
+    expect(second.checkpointHash).toBe(first.checkpointHash);
+    expect(second.rngState).toBe(first.rngState);
+    expect(second.materializedOutcomes).toEqual(first.materializedOutcomes);
+    expect(second.pendingDecision).toEqual(first.pendingDecision);
+  });
+
+  it("covers both bounded syntax and logic defect branches", () => {
+    const defectIds = new Set(
+      Array.from({ length: 32 }, (_, index) =>
+        readOutcomeField(runCompleted(BigInt(index + 1)), "january-1990/defect", "eventId"),
+      ),
+    );
+
+    expect([...defectIds].toSorted()).toEqual(
+      [C.logicErrorEvent, C.syntaxErrorEvent].toSorted(),
+    );
+  });
+
+  it("produces visible trade-offs for the three defect responses", () => {
+    const inspect = readOutcomeField(
+      runCompleted(42n, "inspect-listing"),
+      "january-1990/programming-outcome",
+      "qualityScores",
+    );
+    const changeInput = readOutcomeField(
+      runCompleted(42n, "change-input"),
+      "january-1990/programming-outcome",
+      "qualityScores",
+    );
+    const guidance = readOutcomeField(
+      runCompleted(42n, "ask-for-guidance"),
+      "january-1990/programming-outcome",
+      "qualityScores",
+    );
+
+    expect(changeInput).not.toEqual(inspect);
+    expect(guidance).not.toEqual(inspect);
+    expect(guidance).not.toEqual(changeInput);
+  });
+
+  it("rejects a MonthPlan that does not match January compatibility", () => {
+    const checkpoint = createInitialCheckpoint(7n);
+    const incompatible = {
+      ...checkpoint,
+      plan: {
+        schemaVersion: "january-1990-month-plan-v1",
+        month: "1990-01",
+        program: "another-program",
+        contentFingerprint,
+        requiredChunkIds: ["1990s/ecosystem", "1990s/programming"],
+      },
+    } as unknown as MonthRunCheckpointV1;
+
+    const result = gameCore.runUntilBoundary(incompatible, createSteps());
+
+    expect(result.kind).toBe("rejected");
+    if (result.kind !== "rejected") throw new Error("Incompatible MonthPlan was accepted");
+    expect(result.error.code).toBe("InvalidCommand");
+    expect(result.checkpoint).toBe(incompatible);
   });
 
   it("keeps the rules fingerprint stable and separate from content", () => {
