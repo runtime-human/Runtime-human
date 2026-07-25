@@ -79,6 +79,16 @@ describe("validateWorkspace", () => {
     expect(validateWorkspace(root)).toEqual([]);
   });
 
+  it("rejects game-core depending on game-content", () => {
+    const root = createRoot();
+    addPackage(root, "packages", "game-content");
+    addPackage(root, "packages", "game-core", ["game-content"]);
+
+    expect(validateWorkspace(root)).toContainEqual(
+      expect.stringContaining("game-core cannot depend on game-content"),
+    );
+  });
+
   it("rejects game-ui depending on game-core", () => {
     const root = createRoot();
     addPackage(root, "packages", "game-core");
