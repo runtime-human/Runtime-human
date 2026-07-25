@@ -36,7 +36,17 @@ const ALLOWED_WORKSPACE_DEPENDENCIES = new Map([
       "game-ui",
     ]),
   ],
-  ["desktop", new Set(["game-ui", "game-ui-fixtures"])],
+  [
+    "desktop",
+    new Set([
+      "game-schema",
+      "game-core",
+      "game-application",
+      "game-content",
+      "game-ui",
+      "game-ui-fixtures",
+    ]),
+  ],
 ]);
 
 function listDirectories(root, relativeParent) {
