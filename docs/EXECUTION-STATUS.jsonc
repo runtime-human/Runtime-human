@@ -1,11 +1,12 @@
 {
   "_schemaVersion": 1,
-  "updated": "2026-07-24",
+  "updated": "2026-07-25",
   "implementationProfile": "MVP Casual",
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "currentPhase": "compiled-content-foundation",
+  "mainHeadAtCurrentSliceStart": "4cacfabd051065cbd3c2b2dd5c90e82f63452714",
+  "currentPhase": "january-1990-runtime-loader",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -38,13 +39,35 @@
       "commit": "1357124e85a5b38c41819ec0413183969c679d60"
     },
     {
-      "id": "compiled-content-foundation",
-      "status": "in-progress",
+      "id": "compiled-content-contract",
+      "status": "complete",
       "pullRequest": 21,
-      "branch": "agent/compiled-content-foundation"
+      "commit": "4355c0917ef7aa95f4a352bae70599dd38aba33f"
     },
     {
-      "id": "january-1990-playable-slice",
+      "id": "compiled-content-publication",
+      "status": "complete",
+      "pullRequest": 23,
+      "commit": "6b5af703f7ae23cf76ccbafb8b8dada8a4455522"
+    },
+    {
+      "id": "january-1990-content-registry",
+      "status": "complete",
+      "pullRequest": 25,
+      "commit": "4cacfabd051065cbd3c2b2dd5c90e82f63452714"
+    },
+    {
+      "id": "january-1990-runtime-loader",
+      "status": "in-progress",
+      "pullRequest": 26,
+      "branch": "agent/compiled-content-runtime-loader"
+    },
+    {
+      "id": "january-1990-domain-and-month-run",
+      "status": "planned"
+    },
+    {
+      "id": "january-1990-playable-ui-and-closure",
       "status": "planned"
     }
   ],
@@ -53,8 +76,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "pending-final-head",
-    "currentConstraint": "final-content-contract-and-review-verification-pending",
+    "qualityGate": "pending-pr-26-final-head",
+    "currentConstraint": "runtime-loader-final-verification-and-review-pending",
     "currentPullRequestMayMerge": false
   }
 }
