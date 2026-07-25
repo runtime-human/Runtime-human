@@ -14,11 +14,6 @@ export type {
   JanuaryContentEntryPort,
   JanuaryContentRegistryPort,
 } from "./january-content-registry-port";
-export {
-  projectJanuary1990RuntimeView,
-} from "./january-view-model";
-export type {
-  January1990DecisionViewKind,
-  January1990RuntimeView,
-} from "./january-view-model";
+export { projectJanuary1990RuntimeView } from "./january-view-model";
+export type { January1990DecisionViewKind, January1990RuntimeView } from "./january-view-model";
 export { projectJanuary1990Content } from "./project-january-content";

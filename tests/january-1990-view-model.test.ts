@@ -59,11 +59,7 @@ describe("January 1990 persisted runtime view model", () => {
       saveId: parseSaveId("save-january-view-commit"),
       runId: parseMonthRunId("run-january-view-commit"),
     });
-    const defect = await reachJanuaryDefectBoundary(
-      source.runtime,
-      source.saveId,
-      source.runId,
-    );
+    const defect = await reachJanuaryDefectBoundary(source.runtime, source.saveId, source.runId);
     const committed = requireJanuaryCommitted(
       await resumeJanuary(source.runtime, defect, {
         requestId: "resume-january-view-commit",
