@@ -140,7 +140,7 @@ jobs:
           corepack prepare pnpm@11.11.0 --activate
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Emit exact formatting patch
+      - name: Create formatting patch
         run: |
           $ErrorActionPreference = "Stop"
           $paths = @(
@@ -155,7 +155,11 @@ jobs:
             "tests/compiled-content-runtime-loader.test.ts"
           )
           pnpm exec oxfmt @paths
-          git diff --no-ext-diff --text -- @paths
-          if (-not (git diff --quiet -- @paths)) {
-            exit 1
-          }
+          git diff --no-ext-diff --binary -- @paths | Out-File -FilePath runtime-loader-format.patch -Encoding utf8NoBOM
+      - name: Upload formatting patch
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: runtime-loader-format-patch
+          path: runtime-loader-format.patch
+          if-no-files-found: error
+          retention-days: 1
