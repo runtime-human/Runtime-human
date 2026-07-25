@@ -1,15 +1,9 @@
-import type {
-  CompiledContentChunkV1,
-  CompiledContentManifestV1,
-} from "./compiled-content";
+import type { CompiledContentChunkV1, CompiledContentManifestV1 } from "./compiled-content";
 import {
   createCompiledContentValidators,
   type CompiledContentRuntimePrimitives,
 } from "./compiled-content-runtime";
-import {
-  createContentRegistryWithValidators,
-  type ContentRegistry,
-} from "./content-registry";
+import { createContentRegistryWithValidators, type ContentRegistry } from "./content-registry";
 import { selectJanuary1990ChunkIdsWithValidators } from "./select-required-chunks";
 
 export type CompiledContentRuntime = Readonly<{
@@ -38,12 +32,7 @@ export function createCompiledContentRuntime(
       chunks: readonly CompiledContentChunkV1[],
       requiredChunkIds?: readonly string[],
     ): ContentRegistry {
-      return createContentRegistryWithValidators(
-        validators,
-        manifest,
-        chunks,
-        requiredChunkIds,
-      );
+      return createContentRegistryWithValidators(validators, manifest, chunks, requiredChunkIds);
     },
   });
 }
