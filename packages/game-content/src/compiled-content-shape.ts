@@ -31,11 +31,9 @@ export function parseCanonicalJsonArtifact(
   try {
     value = JSON.parse(json) as unknown;
   } catch {
-    throw new CompiledContentError(
-      "INVALID_JSON",
-      `Invalid JSON in compiled content ${artifact}`,
-      { artifact },
-    );
+    throw new CompiledContentError("INVALID_JSON", `Invalid JSON in compiled content ${artifact}`, {
+      artifact,
+    });
   }
 
   validateJsonTree(value, artifact);
@@ -102,11 +100,7 @@ export function requireBoolean(value: unknown, path: string): boolean {
   return value;
 }
 
-export function requireBoundedString(
-  value: unknown,
-  path: string,
-  maximumLength: number,
-): string {
+export function requireBoundedString(value: unknown, path: string, maximumLength: number): string {
   const text = requireString(value, path);
   if ([...text].length > maximumLength) {
     throw invalidShape(`${path} exceeds ${maximumLength} characters`, path);
@@ -180,11 +174,7 @@ export function deepFreeze<T>(value: T): T {
   return Object.freeze(value);
 }
 
-function enqueueChildren(
-  item: JsonTreeItem,
-  stack: JsonTreeItem[],
-  artifact: string,
-): void {
+function enqueueChildren(item: JsonTreeItem, stack: JsonTreeItem[], artifact: string): void {
   const { value, depth } = item;
   if (value === null || typeof value === "boolean") return;
   if (typeof value === "string") {
