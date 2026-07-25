@@ -8,26 +8,59 @@ import {
 import { fingerprint } from "@runtime-human/game-core";
 import { parseMonthRunId, parseSaveRevision } from "@runtime-human/game-schema";
 
+function storedOutcome(outcomeId: string, scope: string, payload: Record<string, unknown>) {
+  return {
+    outcomeId,
+    scope,
+    payload,
+    payloadHash: fingerprint("month-run-materialized-outcome-v1", payload),
+  };
+}
+
+const TERMINAL_RESULT = {
+  schemaVersion: "january-1990-result-v1",
+  month: "1990-01",
+  projectId: "core.project-archetype.personal-utility",
+  outcomeEventId: "core.event.program-runs",
+  programmingOutcome: {
+    schemaVersion: "january-1990-programming-outcome-v1",
+    month: "1990-01",
+    projectId: "core.project-archetype.personal-utility",
+    workPackageId: "core.work-package.input-output",
+    defectEventId: "core.event.logic-error",
+    outcomeEventId: "core.event.program-runs",
+    accessRoute: "home-pc",
+    learningPractice: "edit-and-debug",
+    defectResponse: "inspect-listing",
+    qualityScores: { clarity: 8, correctness: 10, reliability: 7 },
+    evidence: [],
+  },
+} as const;
+
 const COMPLETED_MONTH = {
   schemaVersion: "january-1990-completed-month-v1",
   month: "1990-01",
   runId: parseMonthRunId("run-january-save-snapshot"),
   baseSaveRevision: parseSaveRevision(0),
   completedCheckpointHash: fingerprint("january-save-checkpoint-test", { version: 1 }),
-  terminalResult: {
-    schemaVersion: "january-1990-result-v1",
-    month: "1990-01",
-  },
+  terminalResult: TERMINAL_RESULT,
   outcomes: [
-    {
-      outcomeId: "january-1990/programming-outcome",
-      scope: "month/outcome",
-      payload: {
-        schemaVersion: "january-1990-programming-outcome-v1",
-        qualityScores: { clarity: 8, correctness: 10, reliability: 7 },
-      },
-      payloadHash: fingerprint("january-save-outcome-test", { version: 1 }),
-    },
+    storedOutcome("january-1990/access", "month/content", {
+      schemaVersion: "january-1990-access-outcome-v1",
+      route: "home-pc",
+    }),
+    storedOutcome("january-1990/work", "month/content", {
+      schemaVersion: "january-1990-work-outcome-v1",
+      goal: "input-output",
+    }),
+    storedOutcome("january-1990/defect", "month/narrative", {
+      schemaVersion: "january-1990-defect-outcome-v1",
+      eventId: "core.event.logic-error",
+    }),
+    storedOutcome("january-1990/programming-outcome", "month/outcome", {
+      schemaVersion: "january-1990-programming-outcome-v1",
+      qualityScores: { clarity: 8, correctness: 10, reliability: 7 },
+    }),
   ],
 } as const;
 
@@ -54,8 +87,10 @@ describe("January 1990 save snapshot contract", () => {
     expect(snapshot).toEqual(value);
     expect(Object.isFrozen(snapshot)).toBe(true);
     expect(Object.isFrozen(snapshot.completedMonth)).toBe(true);
+    expect(Object.isFrozen(snapshot.completedMonth?.terminalResult)).toBe(true);
     expect(Object.isFrozen(snapshot.completedMonth?.outcomes)).toBe(true);
     expect(Object.isFrozen(snapshot.completedMonth?.outcomes[0])).toBe(true);
+    expect(Object.isFrozen(snapshot.completedMonth?.outcomes[0]?.payload)).toBe(true);
   });
 
   it.each([
@@ -79,7 +114,25 @@ describe("January 1990 save snapshot contract", () => {
       schemaVersion: "january-1990-save-snapshot-v1",
       completedMonth: {
         ...COMPLETED_MONTH,
-        terminalResult: null,
+        terminalResult: { ...TERMINAL_RESULT, schemaVersion: "another-result-v1" },
+      },
+    },
+    {
+      schemaVersion: "january-1990-save-snapshot-v1",
+      completedMonth: {
+        ...COMPLETED_MONTH,
+        outcomes: COMPLETED_MONTH.outcomes.slice(0, 3),
+      },
+    },
+    {
+      schemaVersion: "january-1990-save-snapshot-v1",
+      completedMonth: {
+        ...COMPLETED_MONTH,
+        outcomes: [
+          { ...COMPLETED_MONTH.outcomes[1] },
+          { ...COMPLETED_MONTH.outcomes[0] },
+          ...COMPLETED_MONTH.outcomes.slice(2),
+        ],
       },
     },
     {
@@ -89,8 +142,9 @@ describe("January 1990 save snapshot contract", () => {
         outcomes: [
           {
             ...COMPLETED_MONTH.outcomes[0],
-            unknown: true,
+            payloadHash: fingerprint("wrong-outcome-hash", { version: 2 }),
           },
+          ...COMPLETED_MONTH.outcomes.slice(1),
         ],
       },
     },
