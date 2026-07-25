@@ -8,6 +8,10 @@ export {
   parseJanuaryDefectAnswer,
   parseJanuaryLearningAnswer,
 } from "./january-answers";
+export {
+  createJanuary1990RulesFingerprint,
+  JANUARY_1990_STEP_TABLE_VERSION,
+} from "./january-compatibility";
 export type {
   January1990ContentContext,
   JanuaryAccessRoute,
@@ -28,7 +32,26 @@ export {
 export type { January1990ContentId } from "./january-content-ids";
 export { JANUARY_1990_DECISION_IDS } from "./january-decisions";
 export type { January1990DecisionId } from "./january-decisions";
+export { createJanuary1990MonthSteps } from "./january-month-steps";
 export { createJanuary1990MonthPlan } from "./january-month-plan";
 export type { January1990MonthPlanV1 } from "./january-month-plan";
+export {
+  createJanuary1990Result,
+  createJanuaryProgrammingOutcomeFromState,
+  materializeJanuaryProgrammingState,
+} from "./january-outcome";
+export type { January1990ResultV1, JanuaryProgrammingOutcomeV1 } from "./january-outcome";
+export {
+  createJanuaryInitialProvisionalState,
+  parseJanuaryProvisionalState,
+  updateJanuaryProvisionalState,
+} from "./january-provisional-state";
+export type {
+  JanuaryEvidenceV1,
+  JanuaryProvisionalStateV1,
+  JanuaryQualityScoresV1,
+} from "./january-provisional-state";
 export { JANUARY_1990_REASON_CODES } from "./january-reason-codes";
 export type { January1990ReasonCode } from "./january-reason-codes";
+export { JANUARY_1990_RNG_SCOPES } from "./january-rng-scopes";
+export type { January1990RngScope } from "./january-rng-scopes";
