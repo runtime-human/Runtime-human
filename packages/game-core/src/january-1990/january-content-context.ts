@@ -69,7 +69,12 @@ export type JanuarySituationDefinition = Readonly<{
 
 export type JanuaryEventDefinition = Readonly<{
   id: January1990ContentId;
-  eventType: "access-window" | "logic-error" | "manual-found" | "program-runs" | "syntax-error";
+  eventType:
+    | "access-window"
+    | "logic-error"
+    | "manual-found"
+    | "program-runs"
+    | "syntax-error";
   reasonCode: January1990ReasonCode;
 }>;
 
