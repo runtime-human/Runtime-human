@@ -89,8 +89,10 @@ export function buildJanuaryScreenModel(view: JanuarySessionView): JanuaryScreen
       return model({
         eyebrow: "Первый месяц карьеры",
         title: "Январь 1990",
-        summary: "Получите доступ к компьютеру, освоите GW-BASIC и напишете первую полезную программу.",
-        detail: "Все решения сохраняются локально. Месяц можно закрыть и продолжить с последней границы.",
+        summary:
+          "Получите доступ к компьютеру, освоите GW-BASIC и напишете первую полезную программу.",
+        detail:
+          "Все решения сохраняются локально. Месяц можно закрыть и продолжить с последней границы.",
         progress: 0,
         primaryAction: { kind: "start", label: "Начать январь" },
         tone: "neutral",
@@ -129,7 +131,8 @@ export function buildJanuaryScreenModel(view: JanuarySessionView): JanuaryScreen
       return model({
         eyebrow: "Месяц завершён",
         title: "Первая программа готова",
-        summary: "Результат сохранён атомарно. Январский прогресс больше не зависит от повторной отправки команды.",
+        summary:
+          "Результат сохранён атомарно. Январский прогресс больше не зависит от повторной отправки команды.",
         detail: `Ревизия сохранения: ${view.saveRevision}.`,
         progress: 100,
         qualityScores: readQualityScores(view),
@@ -160,9 +163,7 @@ export function buildJanuaryScreenModel(view: JanuarySessionView): JanuaryScreen
         summary: view.message,
         detail: `Код: ${view.code}.`,
         progress: 0,
-        primaryAction: view.retryable
-          ? { kind: "retry", label: "Повторить безопасно" }
-          : null,
+        primaryAction: view.retryable ? { kind: "retry", label: "Повторить безопасно" } : null,
         tone: "error",
       });
   }

@@ -1,8 +1,5 @@
 import { buildJanuaryScreenModel } from "./january-screen-model";
-import type {
-  JanuarySessionChoice,
-  JanuarySessionView,
-} from "./january-session-controller";
+import type { JanuarySessionChoice, JanuarySessionView } from "./january-session-controller";
 
 export type JanuaryRuntimeScreenProps = Readonly<{
   view: JanuarySessionView;
@@ -137,9 +134,9 @@ function terminalListing(kind: JanuarySessionView["kind"]): string {
     case "idle":
       return '10 INPUT "NAME"; N$\n20 PRINT "HELLO, "; N$\n30 END';
     case "access-decision":
-      return '10 REM FIND A COMPUTER\n20 INPUT ACCESS$\n30 GOSUB 100';
+      return "10 REM FIND A COMPUTER\n20 INPUT ACCESS$\n30 GOSUB 100";
     case "learning-decision":
-      return '10 READ A, B\n20 PRINT A + B\n30 DATA 7, 5';
+      return "10 READ A, B\n20 PRINT A + B\n30 DATA 7, 5";
     case "defect-decision":
       return '10 INPUT X\n20 IF X > 0 THEN 40\n30 PRINT "?ERROR"\n40 END';
     case "committed":

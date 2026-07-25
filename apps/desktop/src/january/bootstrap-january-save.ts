@@ -22,9 +22,7 @@ export async function ensureJanuarySave(
 
   const created = await persistence.createSave({
     schemaVersion: "create-save-command-v1",
-    requestId: parseRequestId(
-      fingerprint("january-1990-desktop-save-bootstrap-v1", { saveId }),
-    ),
+    requestId: parseRequestId(fingerprint("january-1990-desktop-save-bootstrap-v1", { saveId })),
     saveId,
     saveSchemaFingerprint: JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
     snapshot: createCanonicalPayload(createJanuary1990InitialSaveSnapshot()),

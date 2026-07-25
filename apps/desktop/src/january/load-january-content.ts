@@ -1,8 +1,5 @@
 import { canonicalizeAuthoritative, fingerprint } from "@runtime-human/game-core";
-import {
-  createCompiledContentRuntime,
-  type ContentRegistry,
-} from "@runtime-human/game-content";
+import { createCompiledContentRuntime, type ContentRegistry } from "@runtime-human/game-content";
 
 export type JanuaryContentFetchPort = (
   input: string,

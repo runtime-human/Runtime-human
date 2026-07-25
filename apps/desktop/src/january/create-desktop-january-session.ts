@@ -1,7 +1,4 @@
-import {
-  createJanuary1990Runtime,
-  type PersistenceService,
-} from "@runtime-human/game-application";
+import { createJanuary1990Runtime, type PersistenceService } from "@runtime-human/game-application";
 import {
   parseMonthRunId,
   parseSaveId,
@@ -14,10 +11,7 @@ import {
   createJanuarySessionController,
   type JanuarySessionController,
 } from "./january-session-controller";
-import {
-  loadJanuaryContentRegistry,
-  type JanuaryContentFetchPort,
-} from "./load-january-content";
+import { loadJanuaryContentRegistry, type JanuaryContentFetchPort } from "./load-january-content";
 import { createTauriPersistenceService } from "./tauri-persistence";
 
 export const DESKTOP_JANUARY_SAVE_ID = parseSaveId("runtime-human-january-1990");

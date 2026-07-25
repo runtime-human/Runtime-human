@@ -59,9 +59,24 @@ importers:
 
   apps/desktop:
     dependencies:
+      '@runtime-human/game-application':
+        specifier: workspace:*
+        version: link:../../packages/game-application
+      '@runtime-human/game-content':
+        specifier: workspace:*
+        version: link:../../packages/game-content
+      '@runtime-human/game-core':
+        specifier: workspace:*
+        version: link:../../packages/game-core
+      '@runtime-human/game-schema':
+        specifier: workspace:*
+        version: link:../../packages/game-schema
       '@runtime-human/game-ui':
         specifier: workspace:*
         version: link:../../packages/game-ui
+      '@tauri-apps/api':
+        specifier: 2.11.1
+        version: 2.11.1
       react:
         specifier: 19.2.7
         version: 19.2.7
@@ -1252,6 +1267,9 @@ packages:
         optional: true
       typescript:
         optional: true
+
+  '@tauri-apps/api@2.11.1':
+    resolution: {integrity: sha512-M2FPuYND2m+wh5hfW9ZpSdxMPdEJovPBWwoHJmwUpysTYNHaOkVFN419m/K0LIgjb/7KU2vBgsUepJWugQCvAA==}
 
   '@tauri-apps/cli-darwin-arm64@2.11.4':
     resolution: {integrity: sha512-1ryOF3ZhpZ/nemHV5zVwBQBz9jDGKmKPvWPADOhc83ig0P4bMc2iER4NbC6r9sjeIZ6RVQ4g3RZIYvezhcl4TQ==}
@@ -3130,6 +3148,8 @@ snapshots:
       typescript: 7.0.2
     transitivePeerDependencies:
       - supports-color
+
+  '@tauri-apps/api@2.11.1': {}
 
   '@tauri-apps/cli-darwin-arm64@2.11.4':
     optional: true

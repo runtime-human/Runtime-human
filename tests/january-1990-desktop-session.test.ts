@@ -4,18 +4,11 @@ import {
   createJanuarySessionController,
   type JanuarySessionController,
 } from "../apps/desktop/src/january/january-session-controller";
-import {
-  createHarnessedJanuaryRuntime,
-} from "./helpers/january-1990-runtime-fixture";
+import { createHarnessedJanuaryRuntime } from "./helpers/january-1990-runtime-fixture";
 
 async function expectView(
   controller: JanuarySessionController,
-  kind:
-    | "idle"
-    | "access-decision"
-    | "learning-decision"
-    | "defect-decision"
-    | "committed",
+  kind: "idle" | "access-decision" | "learning-decision" | "defect-decision" | "committed",
 ) {
   expect(controller.view.kind).toBe(kind);
 }

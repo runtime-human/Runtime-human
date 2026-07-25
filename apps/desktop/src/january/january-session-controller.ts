@@ -66,7 +66,9 @@ export function createJanuarySessionController(
     },
     start() {
       if (view.kind !== "idle" || view.saveRevision === null) {
-        return Promise.resolve(rejectInvalidAction("Начать январь можно только из начального состояния"));
+        return Promise.resolve(
+          rejectInvalidAction("Начать январь можно только из начального состояния"),
+        );
       }
       return apply(() =>
         input.runtime.begin({
@@ -84,7 +86,9 @@ export function createJanuarySessionController(
       }
       const answer = answerFor(view.kind, choice);
       if (answer === null) {
-        return Promise.resolve(rejectInvalidAction("Выбранный ответ не относится к текущему решению"));
+        return Promise.resolve(
+          rejectInvalidAction("Выбранный ответ не относится к текущему решению"),
+        );
       }
       return apply(() =>
         input.runtime.resume({
@@ -126,9 +130,7 @@ function isDecisionView(
   );
 }
 
-function decisionIdFor(
-  kind: "access-decision" | "learning-decision" | "defect-decision",
-) {
+function decisionIdFor(kind: "access-decision" | "learning-decision" | "defect-decision") {
   switch (kind) {
     case "access-decision":
       return "january-1990/access" as const;
