@@ -72,12 +72,11 @@ describe("January 1990 persisted restart and compatibility", () => {
   });
 
   it("blocks an idle save before begin when its schema fingerprint differs", async () => {
-    const source = await createHarnessedJanuaryRuntime();
-    const reopened = reopenJanuaryRuntime(source, {
+    const source = await createHarnessedJanuaryRuntime({
       saveSchemaFingerprint: fingerprint("different-save-schema", { version: 2 }),
     });
 
-    const result = await reopened.load(source.saveId);
+    const result = await source.runtime.load(source.saveId);
 
     expect(result).toMatchObject({
       kind: "blocked",
