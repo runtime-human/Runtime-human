@@ -273,9 +273,11 @@ function completeJanuary(
 ): MonthRunEventV1 {
   const state = parseJanuaryProvisionalState(checkpoint.provisionalState);
   const programmingOutcome = createJanuaryProgrammingOutcomeFromState(context, state);
+  const result = snapshotAuthoritativeValue(createJanuary1990Result(programmingOutcome));
+  if (result === null) throw new TypeError("January terminal result cannot be null");
   return {
     type: "complete",
-    result: snapshotAuthoritativeValue(createJanuary1990Result(programmingOutcome)),
+    result,
   };
 }
 
