@@ -52,9 +52,9 @@ describe("January 1990 MonthPlan contracts", () => {
     expect(Object.isFrozen(plan)).toBe(true);
     expect(Object.isFrozen(plan.requiredChunkIds)).toBe(true);
     expect(() => parseJanuary1990MonthPlan({ ...validPlan, extra: true })).toThrow(TypeError);
-    expect(() =>
-      parseJanuary1990MonthPlan({ ...validPlan, program: "another-program" }),
-    ).toThrow(TypeError);
+    expect(() => parseJanuary1990MonthPlan({ ...validPlan, program: "another-program" })).toThrow(
+      TypeError,
+    );
     expect(() =>
       parseJanuary1990MonthPlan({
         ...validPlan,

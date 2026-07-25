@@ -184,10 +184,7 @@ function createSteps(): readonly MonthRunStep[] {
   return steps;
 }
 
-function requireBoundary(
-  result: MonthRunRunResult,
-  message: string,
-): MonthRunCheckpointV1 {
+function requireBoundary(result: MonthRunRunResult, message: string): MonthRunCheckpointV1 {
   expect(result.kind).toBe("boundary");
   if (result.kind !== "boundary") throw new Error(message);
   return result.checkpoint;
@@ -237,16 +234,10 @@ function runCompleted(
   expect(first.programCounter).toBe(2);
   expect(first.pendingDecision?.decisionId).toBe(JANUARY_1990_DECISION_IDS.access);
 
-  const learning = acceptAndRun(
-    first,
-    steps,
-    "request-access",
-    JANUARY_1990_DECISION_IDS.access,
-    {
-      schemaVersion: "january-access-answer-v1",
-      route: "home-pc",
-    },
-  );
+  const learning = acceptAndRun(first, steps, "request-access", JANUARY_1990_DECISION_IDS.access, {
+    schemaVersion: "january-access-answer-v1",
+    route: "home-pc",
+  });
   expect(learning.status).toBe("suspended");
   expect(learning.programCounter).toBe(4);
   expect(learning.pendingDecision?.decisionId).toBe(JANUARY_1990_DECISION_IDS.learning);
