@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { parseRequestId, parseSaveRevision } from "@runtime-human/game-schema";
+
 import {
   createHarnessedJanuaryRuntime,
   reachJanuaryDefectBoundary,
@@ -15,9 +17,9 @@ describe("January 1990 persisted exactly-once recovery", () => {
     source.harness.loseNextAcknowledgement("beginMonthRun");
 
     const lost = await source.runtime.begin({
-      requestId: (await import("@runtime-human/game-schema")).parseRequestId("lost-january-begin"),
+      requestId: parseRequestId("lost-january-begin"),
       saveId: source.saveId,
-      expectedSaveRevision: (await import("@runtime-human/game-schema")).parseSaveRevision(0),
+      expectedSaveRevision: parseSaveRevision(0),
       runId: source.runId,
       seed: 42n,
     });
