@@ -2,6 +2,7 @@ import { lstat, readdir, readFile } from "node:fs/promises";
 import { relative, resolve } from "node:path";
 
 import { normalizeSourcePath } from "./parse-content-sources";
+import { resolveRepositoryPath } from "./repository-path";
 import { compareText, type ContentSourceFile } from "./content-types";
 
 export type LoadContentSourceFilesOptions = Readonly<{
@@ -18,8 +19,11 @@ export async function loadContentSourceFiles(
 
   for (const sourceRoot of options.sourceRoots) {
     const normalizedRoot = requireNormalizedSourceRoot(sourceRoot);
-    const absoluteRoot = resolve(repositoryRoot, ...normalizedRoot.split("/"));
-    assertResolvedPath(repositoryRoot, absoluteRoot, normalizedRoot);
+    const absoluteRoot = await resolveRepositoryPath(
+      repositoryRoot,
+      normalizedRoot,
+      "Content source root",
+    );
     await discoverSourceFiles(repositoryRoot, absoluteRoot, seenPaths, files);
   }
 
@@ -34,19 +38,6 @@ function requireNormalizedSourceRoot(sourceRoot: string): string {
     );
   }
   return normalized;
-}
-
-function assertResolvedPath(
-  repositoryRoot: string,
-  absolutePath: string,
-  expectedRelativePath: string,
-): void {
-  const relativePath = toPosixPath(relative(repositoryRoot, absolutePath));
-  if (relativePath !== expectedRelativePath) {
-    throw new TypeError(
-      `Content source root must stay inside repository root: ${JSON.stringify(expectedRelativePath)}`,
-    );
-  }
 }
 
 async function discoverSourceFiles(
