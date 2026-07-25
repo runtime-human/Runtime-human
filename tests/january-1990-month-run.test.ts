@@ -279,15 +279,18 @@ function readOutcomeField(
   const outcome = checkpoint.materializedOutcomes.find(
     (candidate) => candidate.outcomeId === outcomeId,
   );
-  if (
-    outcome === undefined ||
-    typeof outcome.payload !== "object" ||
-    outcome.payload === null ||
-    Array.isArray(outcome.payload)
-  ) {
+  if (!isRecord(outcome?.payload)) {
     throw new Error(`Outcome ${outcomeId} is missing or malformed`);
   }
-  return (outcome.payload as Readonly<Record<string, unknown>>)[field];
+  return outcome.payload[field];
+}
+
+function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function compareText(left: string, right: string): number {
+  return left < right ? -1 : left > right ? 1 : 0;
 }
 
 describe("January 1990 deterministic MonthRun", () => {
@@ -373,13 +376,20 @@ describe("January 1990 deterministic MonthRun", () => {
   });
 
   it("covers both bounded syntax and logic defect branches", () => {
-    const defectIds = new Set(
-      Array.from({ length: 32 }, (_, index) =>
-        readOutcomeField(runCompleted(BigInt(index + 1)), "january-1990/defect", "eventId"),
-      ),
-    );
+    const defectIds = new Set<string>();
+    for (let index = 0; index < 32; index += 1) {
+      const eventId = readOutcomeField(
+        runCompleted(BigInt(index + 1)),
+        "january-1990/defect",
+        "eventId",
+      );
+      if (typeof eventId !== "string") throw new Error("January defect event ID must be a string");
+      defectIds.add(eventId);
+    }
 
-    expect([...defectIds].toSorted()).toEqual([C.logicErrorEvent, C.syntaxErrorEvent].toSorted());
+    expect([...defectIds].toSorted(compareText)).toEqual(
+      [C.logicErrorEvent, C.syntaxErrorEvent].toSorted(compareText),
+    );
   });
 
   it("produces visible trade-offs for the three defect responses", () => {
