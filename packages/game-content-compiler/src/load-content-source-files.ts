@@ -1,3 +1,4 @@
+import type { Stats } from "node:fs";
 import { lstat, readdir, readFile } from "node:fs/promises";
 import { relative, resolve } from "node:path";
 
@@ -51,35 +52,59 @@ async function discoverSourceFiles(
   while (pending.length > 0) {
     const current = pending.pop();
     if (current === undefined) break;
-
-    const metadata = await lstat(current);
-    if (metadata.isSymbolicLink()) {
-      throw new TypeError(
-        `Symbolic links are not allowed in content source roots: ${JSON.stringify(
-          toRepositoryPath(repositoryRoot, current),
-        )}`,
-      );
-    }
-
-    if (metadata.isDirectory()) {
-      const children = (await readdir(current)).toSorted(compareText);
-      for (let index = children.length - 1; index >= 0; index -= 1) {
-        const child = children[index];
-        if (child !== undefined) pending.push(resolve(current, child));
-      }
-      continue;
-    }
-
-    if (!metadata.isFile() || !current.endsWith(".jsonc")) continue;
-
-    const path = toRepositoryPath(repositoryRoot, current);
-    if (seenPaths.has(path)) {
-      throw new TypeError(`Duplicate content source path ${path}`);
-    }
-
-    seenPaths.add(path);
-    files.push({ path, text: await readFile(current, "utf8") });
+    await processSourceEntry(repositoryRoot, current, pending, seenPaths, files);
   }
+}
+
+async function processSourceEntry(
+  repositoryRoot: string,
+  current: string,
+  pending: string[],
+  seenPaths: Set<string>,
+  files: ContentSourceFile[],
+): Promise<void> {
+  const metadata = await lstat(current);
+  rejectSymbolicLink(repositoryRoot, current, metadata);
+
+  if (metadata.isDirectory()) {
+    await enqueueDirectoryChildren(current, pending);
+    return;
+  }
+  if (!metadata.isFile() || !current.endsWith(".jsonc")) return;
+
+  await addSourceFile(repositoryRoot, current, seenPaths, files);
+}
+
+function rejectSymbolicLink(repositoryRoot: string, current: string, metadata: Stats): void {
+  if (!metadata.isSymbolicLink()) return;
+  throw new TypeError(
+    `Symbolic links are not allowed in content source roots: ${JSON.stringify(
+      toRepositoryPath(repositoryRoot, current),
+    )}`,
+  );
+}
+
+async function enqueueDirectoryChildren(current: string, pending: string[]): Promise<void> {
+  const children = (await readdir(current)).toSorted(compareText);
+  for (let index = children.length - 1; index >= 0; index -= 1) {
+    const child = children[index];
+    if (child !== undefined) pending.push(resolve(current, child));
+  }
+}
+
+async function addSourceFile(
+  repositoryRoot: string,
+  current: string,
+  seenPaths: Set<string>,
+  files: ContentSourceFile[],
+): Promise<void> {
+  const path = toRepositoryPath(repositoryRoot, current);
+  if (seenPaths.has(path)) {
+    throw new TypeError(`Duplicate content source path ${path}`);
+  }
+
+  seenPaths.add(path);
+  files.push({ path, text: await readFile(current, "utf8") });
 }
 
 function toRepositoryPath(repositoryRoot: string, absolutePath: string): string {
