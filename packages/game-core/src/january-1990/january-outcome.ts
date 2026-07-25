@@ -30,17 +30,41 @@ export type January1990ResultV1 = Readonly<{
   programmingOutcome: JanuaryProgrammingOutcomeV1;
 }>;
 
-export function createJanuaryProgrammingOutcome(
-  context: January1990ContentContext,
+export function materializeJanuaryProgrammingState(
   state: JanuaryProvisionalStateV1,
   outcomeRoll: number,
-): JanuaryProgrammingOutcomeV1 {
+): Readonly<{
+  qualityScores: JanuaryQualityScoresV1;
+  evidence: readonly JanuaryEvidenceV1[];
+}> {
   requireOutcomeRoll(outcomeRoll);
+  const accessRoute = requireValue(state.accessRoute, "access route");
+  const learningPractice = requireValue(state.learningPractice, "learning practice");
+  const defectResponse = requireValue(state.defectResponse, "defect response");
+  return Object.freeze({
+    qualityScores: createQualityScores(
+      accessRoute,
+      learningPractice,
+      defectResponse,
+      outcomeRoll,
+    ),
+    evidence: createEvidence(accessRoute, learningPractice, defectResponse),
+  });
+}
+
+export function createJanuaryProgrammingOutcomeFromState(
+  context: January1990ContentContext,
+  state: JanuaryProvisionalStateV1,
+): JanuaryProgrammingOutcomeV1 {
   const accessRoute = requireValue(state.accessRoute, "access route");
   const learningPractice = requireValue(state.learningPractice, "learning practice");
   const workPackageId = requireValue(state.workPackageId, "work package");
   const defectEventId = requireValue(state.defectEventId, "defect event");
   const defectResponse = requireValue(state.defectResponse, "defect response");
+  const qualityScores = requireValue(state.qualityScores, "quality scores");
+  if (state.evidence.length === 0) {
+    throw new TypeError("January programming evidence is missing before finalization");
+  }
 
   requireContextId(context.project.id, JANUARY_1990_CONTENT_IDS.personalUtilityProject, "project");
   requireContextId(workPackageId, JANUARY_1990_CONTENT_IDS.inputOutputWorkPackage, "work package");
@@ -49,14 +73,6 @@ export function createJanuaryProgrammingOutcome(
     JANUARY_1990_CONTENT_IDS.programRunsEvent,
     "program-runs event",
   );
-
-  const qualityScores = createQualityScores(
-    accessRoute,
-    learningPractice,
-    defectResponse,
-    outcomeRoll,
-  );
-  const evidence = createEvidence(accessRoute, learningPractice, defectResponse);
 
   return freezeProgrammingOutcome({
     schemaVersion: "january-1990-programming-outcome-v1",
@@ -69,7 +85,7 @@ export function createJanuaryProgrammingOutcome(
     learningPractice,
     defectResponse,
     qualityScores,
-    evidence,
+    evidence: state.evidence,
   });
 }
 
