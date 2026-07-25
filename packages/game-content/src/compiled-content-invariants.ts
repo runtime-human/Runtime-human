@@ -82,10 +82,7 @@ export function requireSortedEntries(values: readonly CompiledContentEntryV1[]):
   }
 }
 
-export function requireSortedUniqueStrings(
-  value: unknown,
-  path: string,
-): readonly string[] {
+export function requireSortedUniqueStrings(value: unknown, path: string): readonly string[] {
   const values = requireArray(value, path).map((item, index) =>
     requireIdentifier(item, `${path}[${index}]`),
   );
