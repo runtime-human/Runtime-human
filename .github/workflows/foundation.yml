@@ -118,38 +118,3 @@ jobs:
         timeout-minutes: 12
         run: |
           cargo test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml -- --nocapture --test-threads=1
-
-  type-aware-lint-diagnostic:
-    needs: full-verification
-    if: failure()
-    runs-on: self-hosted
-    timeout-minutes: 8
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
-        with:
-          clean: true
-          persist-credentials: false
-          show-progress: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: "24"
-      - name: Activate pnpm
-        run: |
-          $ErrorActionPreference = "Stop"
-          corepack enable
-          corepack prepare pnpm@11.11.0 --activate
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Capture type-aware lint output
-        continue-on-error: true
-        run: |
-          $ErrorActionPreference = "Continue"
-          pnpm lint:type-aware *>&1 | Tee-Object -FilePath type-aware-lint.log
-          exit 0
-      - name: Upload type-aware lint output
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: type-aware-lint-output
-          path: type-aware-lint.log
-          if-no-files-found: error
-          retention-days: 1
