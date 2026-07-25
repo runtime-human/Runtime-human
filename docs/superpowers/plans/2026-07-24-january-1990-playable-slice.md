@@ -8,13 +8,13 @@ updated: 2026-07-24
 ---
 # January 1990 Playable Slice Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** execute this plan task-by-task. Each delivery must remain independently reviewable and follow RED → GREEN → REFACTOR.
 
 **Goal:** Deliver the first deterministic, suspendable, resumable and atomically committable January 1990 gameplay month using compiled-content v1.
 
-**Architecture:** Author JSONC remains build-time input owned by `@runtime-human/game-content-compiler`. A repository command discovers configured sources, compiles them, and atomically publishes immutable manifest/chunk artifacts. Runtime code in `@runtime-human/game-content` validates and loads only compiled JSON, while existing game-core, application orchestration, Xoshiro256 and SQLite MonthRun contracts remain authoritative.
+**Architecture:** Author JSONC is build-time input owned by `@runtime-human/game-content-compiler`. Repository tooling discovers configured sources, compiles them, and publishes immutable manifest/chunk artifacts. Runtime code in `@runtime-human/game-content` validates and loads only compiled JSON. Existing game-core, application orchestration, Xoshiro256 and SQLite MonthRun contracts remain authoritative.
 
-**Tech Stack:** TypeScript 7, Node.js 24, pnpm 11.11, Vitest 4, Oxfmt/Oxlint, React 19, Vite 8, Tauri 2, Rust 1.97, rusqlite/SQLite.
+**Tech Stack:** TypeScript 7, Node.js 24, pnpm 11.11, Vitest 4, Oxfmt/Oxlint, React 19, Vite 8, Tauri 2, Rust 1.97 and rusqlite/SQLite.
 
 ## Global Constraints
 
@@ -26,26 +26,35 @@ updated: 2026-07-24
 - Content is immutable data and cannot directly mutate progression, projects, money, equipment or relationships.
 - MVP Casual scope: five skills, one technology family and Tier A technology/version band, one platform/toolchain/ecosystem context, two access routes, one project archetype, two work packages, one authored professional situation variant, three visible qualities, one issue branch and 4–6 events.
 - No NPC memory/utility engine, city-wide simulation, runtime LLM, generic scripting, arbitrary mod ingestion or broad UI redesign.
-- Every task follows RED → GREEN → REFACTOR and ends with independently reviewable evidence.
+- Performance issue #24 may contribute measurement infrastructure and bounded OPT-00–03 work, but must not delay the playable January path or redesign persistence.
 
 ## Delivery Sequence
 
-1. `CONTENT-02A` — production compile/check pipeline.
-2. `CONTENT-02B` — minimal January registry and golden artifacts.
-3. `CONTENT-02C` — verified runtime loader and registry.
-4. `CONTENT-02D` — January projections, MonthRun and persistence compatibility.
-5. `CONTENT-02E` — thin UI, restart/balance evidence and status update.
+1. `CONTENT-02A` — deterministic source discovery, transactional publication and repository build/check API.
+2. `CONTENT-02B` — minimal January registry, production CLI/config, permanent `content:check` and golden artifacts.
+3. `CONTENT-02C` — verified runtime parser, chunk selection and immutable registry.
+4. `CONTENT-02D` — January projections, deterministic MonthRun and persisted compatibility.
+5. `CONTENT-02E` — thin UI, restart/balance evidence and source-of-truth closure.
+
+## Current Status
+
+- PR #21 is merged at `4355c0917ef7aa95f4a352bae70599dd38aba33f`.
+- PR #23 implements `CONTENT-02A` and remains draft until one unchanged head passes docs, foundation, Sonar and review gates.
+- The temporary write-enabled normalization workflow and incomplete CLI/`tsx` integration were removed from PR #23.
+- The January technology baseline is **GW-BASIC**, not QBasic. QBasic belongs to the DOS 5.0/1991 timeline.
 
 ---
+
+## CONTENT-02A — Close PR #23
 
 ### Task 1: Deterministic content source discovery
 
 **Files:**
-- Create: `packages/game-content-compiler/src/load-content-source-files.ts`
-- Modify: `packages/game-content-compiler/src/index.ts`
-- Test: `tests/content-source-loader.test.ts`
+- `packages/game-content-compiler/src/load-content-source-files.ts`
+- `packages/game-content-compiler/src/index.ts`
+- `tests/content-source-loader.test.ts`
 
-**Interfaces:**
+**Contract:**
 
 ```ts
 export type LoadContentSourceFilesOptions = Readonly<{
@@ -58,88 +67,21 @@ export function loadContentSourceFiles(
 ): Promise<readonly ContentSourceFile[]>;
 ```
 
-Returned paths are POSIX-style and relative to `repositoryRoot`.
+- [x] Accept normalized repository-relative roots only.
+- [x] Traverse iteratively and include regular `.jsonc` files only.
+- [x] Reject symlinks and Windows junctions.
+- [x] Return repository-relative POSIX paths in `compareText` order.
+- [x] Reject duplicate normalized source paths.
+- [x] Cover ordering, containment, duplicate-root and link boundaries with focused tests.
 
-- [x] **Step 1: Write a failing deterministic-order test**
-
-```ts
-it("loads configured JSONC roots in normalized code-point order", async () => {
-  const files = await loadContentSourceFiles({
-    repositoryRoot: fixtureRoot,
-    sourceRoots: ["content/1990s", "content/sources"],
-  });
-
-  expect(files.map((file) => file.path)).toEqual([
-    "content/1990s/a.jsonc",
-    "content/1990s/nested/β.jsonc",
-    "content/sources/z.jsonc",
-  ]);
-});
-```
-
-- [x] **Step 2: Write failing path and symlink boundary tests**
-
-```ts
-it.each(["../outside", "/absolute", "C:/absolute"])(
-  "rejects source root %s outside the repository",
-  async (sourceRoot) => {
-    await expect(
-      loadContentSourceFiles({ repositoryRoot: fixtureRoot, sourceRoots: [sourceRoot] }),
-    ).rejects.toThrow("Content source root must stay inside repository root");
-  },
-);
-```
-
-- [x] **Step 3: Verify RED**
-
-Run: `pnpm vitest run tests/content-source-loader.test.ts`
-
-Expected: FAIL because `loadContentSourceFiles` is not exported.
-
-- [x] **Step 4: Implement iterative discovery**
-
-Requirements:
-
-- resolve `repositoryRoot` once;
-- accept normalized relative source roots only;
-- use `lstat` and reject symbolic links;
-- recurse only into directories;
-- include only regular `.jsonc` files;
-- normalize separators to `/`;
-- sort with existing `compareText`;
-- reject duplicate normalized paths;
-- read UTF-8 only after validation.
-
-- [x] **Step 5: Verify GREEN**
-
-Run:
-
-```bash
-pnpm vitest run tests/content-source-loader.test.ts
-pnpm typecheck
-pnpm lint:type-aware
-```
-
-Expected: all commands exit 0.
-
-- [x] **Step 6: Commit**
-
-```bash
-git add packages/game-content-compiler/src/load-content-source-files.ts \
-  packages/game-content-compiler/src/index.ts tests/content-source-loader.test.ts
-git commit -m "feat: add deterministic content source discovery"
-```
-
----
-
-### Task 2: Atomic compiled artifact publication
+### Task 2: Transactional compiled artifact publication
 
 **Files:**
-- Create: `packages/game-content-compiler/src/write-content-artifacts.ts`
-- Modify: `packages/game-content-compiler/src/index.ts`
-- Test: `tests/content-artifact-writer.test.ts`
+- `packages/game-content-compiler/src/write-content-artifacts.ts`
+- `packages/game-content-compiler/src/index.ts`
+- `tests/content-artifact-writer.test.ts`
 
-**Interfaces:**
+**Contracts:**
 
 ```ts
 writeContentArtifacts(options: {
@@ -153,49 +95,66 @@ checkContentArtifacts(options: {
 }): Promise<Readonly<{ current: boolean; differences: readonly string[] }>>;
 ```
 
-- [x] Write failing exact-byte, stale-file and partial-failure tests.
-- [x] Validate each artifact path as normalized relative POSIX.
-- [x] Write under a sibling staging directory.
-- [x] Replace output only after all writes succeed.
-- [x] Report missing, changed and unexpected paths in `compareText` order.
-- [x] Run focused tests; full typecheck and type-aware lint are verified by the permanent gate.
-- [x] Commit `feat: add atomic compiled content publication`.
+- [x] Validate all artifact paths before touching output.
+- [x] Reject duplicate paths and file/parent conflicts.
+- [x] Write into a sibling staging directory.
+- [x] Swap existing output through a backup directory only after all writes succeed.
+- [x] Restore the previous output when publication fails.
+- [x] Remove stale artifacts through full directory replacement.
+- [x] Report `missing`, `changed` and `unexpected` paths in deterministic order.
 
----
-
-### Task 3: Repository content build/check command
+### Task 3: Repository build/check application API
 
 **Files:**
-- Create: `content/content.config.json`
-- Create: `scripts/build-game-content.mjs`
-- Create: `packages/game-content-compiler/src/format-content-diagnostics.ts`
-- Modify: `package.json`
-- Modify: `.github/workflows/foundation.yml`
-- Test: `tests/content-build-command.test.ts`
+- `packages/game-content-compiler/src/content-build-config.ts`
+- `packages/game-content-compiler/src/format-content-diagnostics.ts`
+- `packages/game-content-compiler/src/run-content-build.ts`
+- `packages/game-content-compiler/src/index.ts`
+- `tests/content-build-project.test.ts`
 
 **Contracts:**
 
-- `pnpm content:build` compiles and writes artifacts.
-- `pnpm content:check` compiles and exits non-zero if generated output differs.
-- Diagnostics are emitted as `path:line:column CODE message` in compiler order.
+```ts
+parseContentBuildConfig(value: unknown): ContentBuildConfig;
+formatContentDiagnostics(diagnostics): readonly string[];
+runContentBuild(options): Promise<ContentBuildResult>;
+```
 
-- [ ] Write failing CLI fixture tests.
-- [ ] Parse only `sourceRoots` and `outputRoot` from config.
-- [ ] Compile only through `compileContentSources`.
-- [ ] Add permanent `content:check` before renderer build.
-- [ ] Verify build/check idempotence and stale-artifact rejection.
-- [ ] Commit `feat: add production content build command`.
+- [x] Parse a closed config containing only `sourceRoots` and `outputRoot`.
+- [x] Compile only through the public `compileContentSources` facade.
+- [x] Return compiler diagnostics without publishing partial output.
+- [x] Format diagnostics as `path:line:column CODE message` in compiler order.
+- [x] Verify write → current and changed-source → outdated/no-mutation behavior.
+- [x] Keep this API independent of a new runtime dependency or executable runner.
+
+### Task 4: PR #23 closure gate
+
+- [x] Remove all temporary diagnostic/normalization workflows from the diff.
+- [x] Remove incomplete `tsx`/CLI wiring and restore frozen-lockfile consistency.
+- [ ] Run `pnpm install --frozen-lockfile` on the exact head.
+- [ ] Run focused source-loader, writer and build-project tests.
+- [ ] Run permanent docs, formatting, lint, TypeScript, boundaries, full Vitest, renderer, Storybook and Rust gates.
+- [ ] Confirm Sonar Security Rating A and no unresolved security hotspots.
+- [ ] Confirm zero unresolved review threads.
+- [ ] Update PR #23 body with exact final head and evidence.
+- [ ] Mark PR ready only after all unchanged-head gates pass.
+- [ ] Squash-merge with `expected_head_sha` equal to the verified head.
 
 ---
 
-### Task 4: Minimal January authored registry
+## CONTENT-02B — January Registry and Production Build Command
 
-**Files:**
-- Create JSONC under `content/sources/technology`, `content/1990s/programming`, and `content/1990s/ecosystem`.
-- Generate `apps/desktop/public/content/manifest.json`.
-- Generate `apps/desktop/public/content/chunks/1990s/programming.json`.
-- Generate `apps/desktop/public/content/chunks/1990s/ecosystem.json`.
-- Test: `tests/january-content-golden.test.ts`
+### Task 5: Define the exact January content registry
+
+**Authoring roots:**
+
+```text
+content/
+├── sources/technology/
+├── 1990s/programming/
+├── 1990s/ecosystem/
+└── localization/ru/
+```
 
 **Stable IDs:**
 
@@ -206,10 +165,10 @@ core.skill.program-writing
 core.skill.debugging
 core.skill.tool-use
 core.tech-family.basic
-core.technology.qbasic
-core.tech-band.qbasic-dos-1990
+core.technology.gw-basic
+core.tech-band.gw-basic-dos-1990
 core.platform.dos-pc
-core.toolchain.qbasic-editor
+core.toolchain.gw-basic-interpreter
 core.ecosystem-profile.offline-manuals
 core.local-tech-availability.shared-school-pc
 core.local-tech-availability.home-pc
@@ -227,139 +186,138 @@ core.event.program-runs
 ```
 
 - [ ] Add a failing golden test expecting exactly two January chunks.
-- [ ] Separate source-backed QBasic/DOS chronology from fictional local diffusion.
+- [ ] Separate source-backed GW-BASIC/DOS chronology from fictional local diffusion.
+- [ ] Cite provenance for every historically grounded definition.
+- [ ] Keep localization/display strings outside semantic identifiers.
 - [ ] Create an entry-point chain reaching every definition.
-- [ ] Add provenance to all historical and design definitions.
-- [ ] Run `content:build` and commit exact generated bytes.
-- [ ] Verify source order/comments/separators do not change output.
-- [ ] Commit `feat: add January 1990 compiled content`.
+- [ ] Avoid fields not consumed by the January runtime path.
+
+### Task 6: Production CLI, default config and permanent CI
+
+**Files:**
+- `content/content.config.json`
+- repository-owned executable build/check entry point
+- `package.json`
+- `.github/workflows/foundation.yml`
+- generated `apps/desktop/public/content/**`
+
+- [ ] Add the executable runner only after the real config and source tree exist.
+- [ ] Keep all config paths repository-relative and validated before filesystem access.
+- [ ] Add `content:build` and `content:check` package scripts with a frozen lockfile.
+- [ ] Ensure `content:check` never mutates the worktree.
+- [ ] Run permanent `content:check` before renderer build.
+- [ ] Generate and commit exact manifest/programming/ecosystem bytes.
+- [ ] Verify source order, comments and path separators do not change output.
+- [ ] Reject stale or unexpected generated files.
+- [ ] Pass Sonar Security Rating A without suppressing path or workflow security rules.
+
+**Output:**
+
+```text
+apps/desktop/public/content/
+├── manifest.json
+└── chunks/1990s/
+    ├── programming.json
+    └── ecosystem.json
+```
 
 ---
 
-### Task 5: Runtime compiled artifact parser
+## CONTENT-02C — Verified Runtime Loader
+
+### Task 7: Runtime compiled artifact parser
 
 **Files:**
-- Create: `packages/game-content/src/content-errors.ts`
-- Create: `packages/game-content/src/parse-compiled-content.ts`
-- Modify: `packages/game-content/src/index.ts`
-- Test: `tests/compiled-content-parser.test.ts`
+- `packages/game-content/src/content-errors.ts`
+- `packages/game-content/src/parse-compiled-content.ts`
+- `packages/game-content/src/index.ts`
+- `tests/compiled-content-parser.test.ts`
 
-**Interfaces:**
-
-```ts
-export type ContentLoadError =
-  | { code: "INVALID_JSON"; artifact: string }
-  | { code: "UNSUPPORTED_MANIFEST"; artifact: string }
-  | { code: "UNSUPPORTED_CHUNK"; artifact: string }
-  | { code: "INVALID_SHAPE"; artifact: string; path: string }
-  | { code: "DUPLICATE_ID"; artifact: string; contentId: string }
-  | { code: "FINGERPRINT_MISMATCH"; artifact: string };
-
-parseCompiledManifest(json: string): ContentParseResult<CompiledContentManifestV1>;
-parseCompiledChunk(json: string): ContentParseResult<CompiledContentChunkV1>;
-```
-
-- [ ] Write failing valid/invalid/version/duplicate tests.
 - [ ] Parse with native `JSON.parse` only.
-- [ ] Validate closed v1 shapes iteratively with node/depth limits.
-- [ ] Reject unknown keys and unsafe integers.
-- [ ] Recompute canonical fingerprints using game-core primitives.
-- [ ] Verify runtime has no Ajv/jsonc-parser dependency.
-- [ ] Commit `feat: add compiled content runtime parser`.
+- [ ] Validate closed v1 manifest/chunk shapes without Ajv or `jsonc-parser`.
+- [ ] Enforce bounded node/depth limits and safe numeric values.
+- [ ] Reject unknown keys, duplicate IDs and incompatible schema/compiler versions.
+- [ ] Recompute and verify chunk/content fingerprints using game-core primitives.
+- [ ] Return closed typed errors for invalid JSON, invalid shape and fingerprint mismatch.
 
----
-
-### Task 6: Required chunk selector and immutable registry
+### Task 8: Required chunk selector and immutable registry
 
 **Files:**
-- Create: `packages/game-content/src/select-required-chunks.ts`
-- Create: `packages/game-content/src/content-registry.ts`
-- Create: `packages/game-content/src/content-loader.ts`
-- Modify: `packages/game-content/src/index.ts`
-- Test: `tests/content-loader.test.ts`
+- `packages/game-content/src/select-required-chunks.ts`
+- `packages/game-content/src/content-registry.ts`
+- `packages/game-content/src/content-loader.ts`
+- `tests/content-loader.test.ts`
 
-**Interfaces:**
-
-```ts
-selectRequiredChunks(manifest, {
-  era: "1990s",
-  domains: ["ecosystem", "programming"],
-});
-createContentRegistry(manifest, chunks);
-loadCompiledContent({ loadText, era, domains });
-```
-
-- [ ] Test that only required January chunks are requested.
-- [ ] Test missing, extra, duplicate and wrong-fingerprint chunks.
-- [ ] Publish registry only after complete validation.
+- [ ] Request only `1990s/programming` and `1990s/ecosystem` for January.
+- [ ] Reject missing, extra, duplicate and wrong-fingerprint chunks.
+- [ ] Publish a registry only after complete validation.
 - [ ] Expose immutable `get`, `require` and `listByKind` lookups.
-- [ ] Commit `feat: add verified compiled content registry`.
+- [ ] Keep author source paths/comments out of runtime state.
 
 ---
 
-### Task 7: January technology and provider projections
+## CONTENT-02D — January Domain and MonthRun
+
+### Task 9: January provider-owned projections
 
 **Files:**
-- Create: `packages/game-core/src/january-1990/january-content-context.ts`
-- Create: `packages/game-core/src/january-1990/january-learning-provider.ts`
-- Create: `packages/game-core/src/january-1990/january-project-provider.ts`
-- Create: `packages/game-core/src/january-1990/january-event-provider.ts`
-- Modify: `packages/game-core/src/index.ts`
-- Test: `tests/january-content-context.test.ts`
+- `packages/game-core/src/january-1990/january-content-context.ts`
+- `packages/game-core/src/january-1990/january-learning-provider.ts`
+- `packages/game-core/src/january-1990/january-project-provider.ts`
+- `packages/game-core/src/january-1990/january-event-provider.ts`
 
-- [ ] Test global chronology, local availability and practical access as separate inputs.
-- [ ] Project a closed context with reason codes.
-- [ ] Map choices to typed provider proposals, never direct state mutation.
-- [ ] Commit `feat: add January content projections`.
+- [ ] Keep global chronology, fictional local availability and practical access as separate inputs.
+- [ ] Materialize exactly one professional situation variant at build time.
+- [ ] Map choices to typed proposals, never direct state mutation.
+- [ ] Preserve Progression, Project, Learning and Event ownership boundaries.
+- [ ] Expose stable reason codes for UI explanations.
 
----
+### Task 10: Deterministic January MonthRun plan
 
-### Task 8: Deterministic January MonthRun plan
-
-**Files:**
-- Create: `packages/game-core/src/january-1990/january-month-plan.ts`
-- Modify: `packages/game-core/src/index.ts`
-- Test: `tests/january-month-run.test.ts`
-
-- [ ] Define fixed steps for access, learning, work, issue, response and result.
+- [ ] Define fixed access, learning, work, issue, response and result steps.
+- [ ] Use scoped RNG forks `month/content`, `month/narrative` and `month/outcome`.
+- [ ] Document and test bounded RNG call counts per step.
+- [ ] Suspend only on meaningful player decisions.
 - [ ] Add fixed-seed boundary/checkpoint-hash golden tests.
-- [ ] Use scoped RNG forks `month/content`, `month/narrative`, `month/outcome` with bounded call counts.
-- [ ] Suspend only for meaningful choices.
-- [ ] Commit `feat: add deterministic January MonthRun`.
+- [ ] Reject object-order, wall-clock and runtime template-expansion dependencies.
 
----
+### Task 11: Persisted content compatibility and restart path
 
-### Task 9: Persisted content compatibility and restart path
-
-**Files:**
-- Create: `packages/game-application/src/january-1990/january-content-compatibility.ts`
-- Create: `packages/game-application/src/january-1990/january-persisted-run.ts`
-- Modify: `packages/game-application/src/index.ts`
-- Test: `tests/january-persisted-run.test.ts`
-
-- [ ] Reject content fingerprint/version mismatch before resume.
+- [ ] Include content schema/compiler/fingerprint in run compatibility context.
+- [ ] Reject content mismatch before resume.
 - [ ] Test process restart at every player boundary.
-- [ ] Test duplicate requests return equivalent receipts.
-- [ ] Test final commit advances save exactly once.
-- [ ] Commit `feat: persist January MonthRun compatibility`.
+- [ ] Test duplicate requests return equivalent durable receipts.
+- [ ] Preserve revision, payload SHA and checkpoint-hash CAS.
+- [ ] Verify final commit advances the save exactly once.
 
 ---
 
-### Task 10: Thin playable UI and evidence
+## CONTENT-02E — Thin Playable UI and Evidence
 
-**Files:**
-- Create January view components in `packages/game-ui/src/january-1990/`.
-- Add fixtures under `packages/game-ui-fixtures`.
-- Wire desktop through application contracts only.
-- Add balance/restart evidence tests.
-- Update execution-status documentation.
+### Task 12: Programmer-first interaction
 
-- [ ] Render access, learning, work, issue, response and result states.
-- [ ] Add keyboard, accessibility and Storybook tests.
-- [ ] Capture bounded-seed event frequency, RNG calls, transitions and soft-lock evidence.
-- [ ] Run `pnpm verify` and permanent docs/Sonar/review gates on one unchanged head.
-- [ ] Record January complete and NPC slice next.
-- [ ] Commit `feat: deliver January 1990 playable slice`.
+Required flow:
+
+1. obtain or negotiate computer/toolchain access;
+2. choose a learning/practice approach;
+3. complete a small GW-BASIC work package;
+4. encounter one defect or constraint;
+5. choose a response with visible trade-offs;
+6. receive a compact outcome explanation;
+7. persist, resume and commit the month.
+
+- [ ] Keep UI as thin adapters over application/core state.
+- [ ] Add keyboard, accessibility and Storybook coverage.
+- [ ] Avoid navigation or design-system redesign.
+
+### Task 13: Verification and source-of-truth closure
+
+- [ ] Capture bounded-seed event/choice frequency.
+- [ ] Capture RNG calls by scope and boundary/transition counts.
+- [ ] Detect soft locks and measure programmer-action share.
+- [ ] Run restart tests for every decision boundary.
+- [ ] Run `pnpm verify` plus permanent docs/Sonar/review gates on one unchanged head.
+- [ ] Record January as complete and the bounded guardian/mentor/peer NPC slice as next.
 
 ## Definition of Done
 
