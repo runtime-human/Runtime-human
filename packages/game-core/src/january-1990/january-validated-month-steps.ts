@@ -10,21 +10,19 @@ export function createJanuary1990ValidatedMonthSteps(
   context: January1990ContentContext,
 ): readonly MonthRunStep[] {
   const steps = createUncheckedJanuary1990MonthSteps(context);
-  const firstStep = steps[0];
-  if (firstStep === undefined || steps.length !== 9) {
+  if (steps.length !== 9 || steps.some((step) => typeof step !== "function")) {
     throw new TypeError("January 1990 requires the exact nine-step table");
   }
 
-  return Object.freeze([
-    (checkpoint: MonthRunCheckpointV1) => {
-      validateJanuaryStart(context, checkpoint);
-      return firstStep(checkpoint);
-    },
-    ...steps.slice(1),
-  ]);
+  return Object.freeze(
+    steps.map((step) => (checkpoint: MonthRunCheckpointV1) => {
+      validateJanuaryCheckpoint(context, checkpoint);
+      return step(checkpoint);
+    }),
+  );
 }
 
-function validateJanuaryStart(
+function validateJanuaryCheckpoint(
   context: January1990ContentContext,
   checkpoint: MonthRunCheckpointV1,
 ): void {
