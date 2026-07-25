@@ -1,0 +1,77 @@
+name: january-content-publish
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  publish:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/january-1990-content-registry'
+    runs-on: self-hosted
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: agent/january-1990-content-registry
+          clean: true
+          persist-credentials: true
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Update lockfile
+        run: pnpm install --lockfile-only
+      - name: Install frozen dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Format production content surface
+        run: |
+          pnpm oxfmt package.json tsconfig.json scripts/build-game-content.ts scripts/tsconfig.json content/content.config.json .github/workflows/foundation.yml tests/january-content-golden.test.ts
+      - name: Build compiled content
+        run: pnpm content:build
+      - name: Check compiled content
+        run: pnpm content:check
+      - name: Verify content project
+        run: |
+          pnpm typecheck
+          pnpm vitest run tests/january-content-golden.test.ts
+      - name: Remove one-shot workflow
+        run: Remove-Item .github/workflows/january-content-publish.yml
+      - name: Validate exact scope
+        run: |
+          $allowed = @(
+            '.github/workflows/foundation.yml',
+            '.github/workflows/january-content-publish.yml',
+            'content/content.config.json',
+            'package.json',
+            'pnpm-lock.yaml',
+            'scripts/build-game-content.ts',
+            'scripts/tsconfig.json',
+            'tests/january-content-golden.test.ts',
+            'tsconfig.json'
+          )
+          $changed = @(git status --short | ForEach-Object { $_.Substring(3).Replace('\\', '/') })
+          foreach ($path in $changed) {
+            if ($path -like 'apps/desktop/public/content/*') { continue }
+            if ($allowed -notcontains $path) { throw "Unexpected changed path: $path" }
+          }
+      - name: Commit production artifacts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json pnpm-lock.yaml tsconfig.json scripts/build-game-content.ts scripts/tsconfig.json content/content.config.json .github/workflows/foundation.yml .github/workflows/january-content-publish.yml tests/january-content-golden.test.ts apps/desktop/public/content
+          git commit -m "build: publish January compiled content"
+          git push origin HEAD:agent/january-1990-content-registry
