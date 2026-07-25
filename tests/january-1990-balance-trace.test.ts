@@ -24,11 +24,28 @@ describe("January 1990 bounded balance trace", () => {
       answerProfiles: 12,
       totalRuns: 768,
       decisionBoundariesPerRun: 3,
+      transitionsPerRun: 12,
       fixedStepsPerRun: 9,
+      materializedOutcomesPerRun: 4,
       rngCallBudget: { content: 0, narrative: 1, outcome: 1 },
       failures: 0,
       softLocks: 0,
       programmerActionShare: { programmerActions: 2, totalDecisions: 3 },
+      choiceFrequencies: {
+        accessRoute: { "home-pc": 384, "shared-school-pc": 384 },
+        learningPractice: { "read-and-run": 384, "edit-and-debug": 384 },
+        defectResponse: {
+          "inspect-listing": 256,
+          "change-input": 256,
+          "ask-for-guidance": 256,
+        },
+      },
+      outcomeFrequencies: {
+        access: 768,
+        work: 768,
+        defect: 768,
+        programmingOutcome: 768,
+      },
     });
     expect(trace.defectEvents.logicError + trace.defectEvents.syntaxError).toBe(trace.totalRuns);
     expect(trace.defectEvents.logicError).toBeGreaterThan(0);
