@@ -118,3 +118,29 @@ jobs:
         timeout-minutes: 12
         run: |
           cargo test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml -- --nocapture --test-threads=1
+
+  format-diagnostic:
+    needs: full-verification
+    if: failure()
+    runs-on: self-hosted
+    timeout-minutes: 5
+    steps:
+      - name: Emit exact formatting patch
+        run: |
+          $ErrorActionPreference = "Stop"
+          $paths = @(
+            "packages/game-content/src/compiled-content-invariants.ts",
+            "packages/game-content/src/compiled-content-runtime.ts",
+            "packages/game-content/src/compiled-content-shape.ts",
+            "packages/game-content/src/content-errors.ts",
+            "packages/game-content/src/content-loader.ts",
+            "packages/game-content/src/content-registry.ts",
+            "packages/game-content/src/index.ts",
+            "packages/game-content/src/select-required-chunks.ts",
+            "tests/compiled-content-runtime-loader.test.ts"
+          )
+          pnpm exec oxfmt @paths
+          git diff --no-ext-diff --text -- @paths
+          if (-not (git diff --quiet -- @paths)) {
+            exit 1
+          }
