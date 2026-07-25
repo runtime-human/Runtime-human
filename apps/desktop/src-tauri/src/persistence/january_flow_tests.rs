@@ -83,7 +83,7 @@ fn actual_january_flow_survives_file_backed_reopen_and_replays_commit() {
             assert_eq!(active.run_id, fixture.begin.run_id);
             assert_eq!(active.status, command.status);
             assert_eq!(active.run_revision, command.run_revision);
-            assert_eq!(active.checkpoint_hash, command.checkpoint_hash);
+            assert_eq!(active.checkpoint_hash, checkpoint_hash(&command.checkpoint.json));
             assert_eq!(
                 checkpoint_program_counter(&active.checkpoint.json),
                 fixture.expectations.boundary_program_counters[index]
@@ -92,7 +92,7 @@ fn actual_january_flow_survives_file_backed_reopen_and_replays_commit() {
     }
 
     assert_eq!(
-        fixture.boundaries[3].checkpoint_hash,
+        checkpoint_hash(&fixture.boundaries[3].checkpoint.json),
         fixture.expectations.completed_checkpoint_hash
     );
     let committed = handle
@@ -143,11 +143,22 @@ fn actual_january_flow_survives_file_backed_reopen_and_replays_commit() {
 }
 
 fn checkpoint_program_counter(json: &str) -> u64 {
-    serde_json::from_str::<serde_json::Value>(json)
-        .expect("checkpoint contains JSON")
+    checkpoint_value(json)
         .get("programCounter")
         .and_then(serde_json::Value::as_u64)
         .expect("checkpoint contains a safe programCounter")
+}
+
+fn checkpoint_hash(json: &str) -> String {
+    checkpoint_value(json)
+        .get("checkpointHash")
+        .and_then(serde_json::Value::as_str)
+        .expect("checkpoint contains checkpointHash")
+        .to_owned()
+}
+
+fn checkpoint_value(json: &str) -> serde_json::Value {
+    serde_json::from_str(json).expect("checkpoint contains JSON")
 }
 
 fn fixture() -> JanuaryPersistenceFlowFixture {
