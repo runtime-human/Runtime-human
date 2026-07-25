@@ -8,7 +8,11 @@ import {
   projectJanuary1990Content,
 } from "@runtime-human/game-application";
 import { canonicalizeAuthoritative, fingerprint } from "@runtime-human/game-core";
-import { createCompiledContentRuntime, type ContentRegistry } from "@runtime-human/game-content";
+import {
+  createCompiledContentRuntime,
+  type CompiledContentEntryV1,
+  type ContentRegistry,
+} from "@runtime-human/game-content";
 
 const CONTENT_ROOT = join(process.cwd(), "apps", "desktop", "public", "content");
 const CONTENT_RUNTIME = createCompiledContentRuntime({
@@ -24,7 +28,10 @@ async function loadRegistry(): Promise<ContentRegistry> {
   const chunks = await Promise.all(
     chunkIds.map(async (chunkId) =>
       CONTENT_RUNTIME.parseCompiledContentChunk(
-        await readFile(join(CONTENT_ROOT, "chunks", ...chunkId.split("/")).concat(".json"), "utf8"),
+        await readFile(
+          join(CONTENT_ROOT, "chunks", ...chunkId.split("/")).concat(".json"),
+          "utf8",
+        ),
       ),
     ),
   );
@@ -34,7 +41,7 @@ async function loadRegistry(): Promise<ContentRegistry> {
 function overrideEntry(
   registry: ContentRegistry,
   id: string,
-  transform: (entry: NonNullable<ReturnType<ContentRegistry["get"]>>) => unknown,
+  transform: (entry: CompiledContentEntryV1) => CompiledContentEntryV1,
 ) {
   return {
     contentFingerprint: registry.contentFingerprint,
@@ -182,30 +189,46 @@ describe("projectJanuary1990Content", () => {
   });
 
   it.each([
-    ["MISSING_CONTENT", (registry: ContentRegistry) => ({
-      contentFingerprint: registry.contentFingerprint,
-      get: (id: string) => id === "core.skill.debugging" ? undefined : registry.get(id),
-    })],
-    ["WRONG_KIND", (registry: ContentRegistry) => overrideEntry(
-      registry,
-      "core.skill.debugging",
-      (entry) => ({ ...entry, kind: "event" }),
-    )],
-    ["WRONG_CONTENT_TYPE", (registry: ContentRegistry) => overrideEntry(
-      registry,
-      "core.skill.debugging",
-      (entry) => ({ ...entry, payload: { ...entry.payload, contentType: "event" } }),
-    )],
-    ["INVALID_PAYLOAD", (registry: ContentRegistry) => overrideEntry(
-      registry,
-      "core.skill.debugging",
-      (entry) => ({ ...entry, payload: { ...entry.payload, extra: true } }),
-    )],
-    ["REFERENCE_MISMATCH", (registry: ContentRegistry) => overrideEntry(
-      registry,
-      "core.skill.debugging",
-      (entry) => ({ ...entry, references: ["core.event.program-runs"] }),
-    )],
+    [
+      "MISSING_CONTENT",
+      (registry: ContentRegistry) => ({
+        contentFingerprint: registry.contentFingerprint,
+        get: (id: string) =>
+          id === "core.skill.debugging" ? undefined : registry.get(id),
+      }),
+    ],
+    [
+      "WRONG_KIND",
+      (registry: ContentRegistry) =>
+        overrideEntry(registry, "core.skill.debugging", (entry) => ({
+          ...entry,
+          kind: "event",
+        })),
+    ],
+    [
+      "WRONG_CONTENT_TYPE",
+      (registry: ContentRegistry) =>
+        overrideEntry(registry, "core.skill.debugging", (entry) => ({
+          ...entry,
+          payload: { ...entry.payload, contentType: "event" },
+        })),
+    ],
+    [
+      "INVALID_PAYLOAD",
+      (registry: ContentRegistry) =>
+        overrideEntry(registry, "core.skill.debugging", (entry) => ({
+          ...entry,
+          payload: { ...entry.payload, extra: true },
+        })),
+    ],
+    [
+      "REFERENCE_MISMATCH",
+      (registry: ContentRegistry) =>
+        overrideEntry(registry, "core.skill.debugging", (entry) => ({
+          ...entry,
+          references: ["core.event.program-runs"],
+        })),
+    ],
   ] as const)("rejects %s deterministically", async (code, mutate) => {
     const registry = await loadRegistry();
 
