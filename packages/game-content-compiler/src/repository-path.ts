@@ -33,7 +33,9 @@ async function rejectSymbolicLinkComponents(
   }
 }
 
-async function lstatIfPresent(path: string): Promise<Awaited<ReturnType<typeof lstat>> | undefined> {
+async function lstatIfPresent(
+  path: string,
+): Promise<Awaited<ReturnType<typeof lstat>> | undefined> {
   try {
     return await lstat(path);
   } catch (error) {
