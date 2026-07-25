@@ -5,10 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import { canonicalizeAuthoritative, fingerprint } from "@runtime-human/game-core";
 
-import {
-  CompiledContentError,
-  createCompiledContentRuntime,
-} from "@runtime-human/game-content";
+import { CompiledContentError, createCompiledContentRuntime } from "@runtime-human/game-content";
 
 const CONTENT_ROOT = join(process.cwd(), "apps", "desktop", "public", "content");
 
@@ -97,9 +94,7 @@ describe("compiled content runtime loader", () => {
 
     const registry = createContentRegistry(futureManifest, chunks, chunkIds);
 
-    expect(registry.require("core.technology.gw-basic").id).toBe(
-      "core.technology.gw-basic",
-    );
+    expect(registry.require("core.technology.gw-basic").id).toBe("core.technology.gw-basic");
     expect(() => createContentRegistry(futureManifest, chunks)).toThrow(
       expect.objectContaining<Partial<CompiledContentError>>({ code: "MISSING_CHUNK" }),
     );
@@ -133,18 +128,12 @@ describe("compiled content runtime loader", () => {
 
     expect(() =>
       parseCompiledContentChunk(
-        chunkJson.replace(
-          '"eventType":"logic-error"',
-          '"eventType":9007199254740992',
-        ),
+        chunkJson.replace('"eventType":"logic-error"', '"eventType":9007199254740992'),
       ),
     ).toThrow(expect.objectContaining<Partial<CompiledContentError>>({ code: "INVALID_SHAPE" }));
     expect(() =>
       parseCompiledContentChunk(
-        chunkJson.replace(
-          '"chunkFingerprint"',
-          '"sourcePath":"authoring-only","chunkFingerprint"',
-        ),
+        chunkJson.replace('"chunkFingerprint"', '"sourcePath":"authoring-only","chunkFingerprint"'),
       ),
     ).toThrow(expect.objectContaining<Partial<CompiledContentError>>({ code: "INVALID_SHAPE" }));
     expect(() =>
@@ -177,10 +166,7 @@ describe("compiled content runtime loader", () => {
     const duplicateManifest = {
       schemaVersion: manifest.schemaVersion,
       ...duplicateManifestCore,
-      contentFingerprint: fingerprint(
-        "compiled-content-manifest-v1",
-        duplicateManifestCore,
-      ),
+      contentFingerprint: fingerprint("compiled-content-manifest-v1", duplicateManifestCore),
     };
     expect(() =>
       parseCompiledContentManifest(`${canonicalizeAuthoritative(duplicateManifest)}\n`),
@@ -204,20 +190,13 @@ describe("compiled content runtime loader", () => {
 
   it("rejects missing and unexpected chunks before registry publication", async () => {
     const manifest = parseCompiledContentManifest(await readArtifact("manifest.json"));
-    const ecosystem = parseCompiledContentChunk(
-      await readArtifact("chunks/1990s/ecosystem.json"),
-    );
+    const ecosystem = parseCompiledContentChunk(await readArtifact("chunks/1990s/ecosystem.json"));
 
     expect(() => createContentRegistry(manifest, [ecosystem])).toThrow(
       expect.objectContaining<Partial<CompiledContentError>>({ code: "MISSING_CHUNK" }),
     );
     expect(() =>
-      createContentRegistry(manifest, [
-        ecosystem,
-        { ...ecosystem, chunkId: "1990s/extra" },
-      ]),
-    ).toThrow(
-      expect.objectContaining<Partial<CompiledContentError>>({ code: "UNEXPECTED_CHUNK" }),
-    );
+      createContentRegistry(manifest, [ecosystem, { ...ecosystem, chunkId: "1990s/extra" }]),
+    ).toThrow(expect.objectContaining<Partial<CompiledContentError>>({ code: "UNEXPECTED_CHUNK" }));
   });
 });
