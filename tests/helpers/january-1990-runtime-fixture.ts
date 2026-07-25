@@ -29,15 +29,11 @@ const CONTENT_RUNTIME = createCompiledContentRuntime({
   fingerprint,
 });
 
-export const JANUARY_TEST_SAVE_SCHEMA_FINGERPRINT = fingerprint(
-  "january-1990-save-schema-test",
-  { version: 1 },
-);
+export const JANUARY_TEST_SAVE_SCHEMA_FINGERPRINT = fingerprint("january-1990-save-schema-test", {
+  version: 1,
+});
 
-export type JanuaryWaitingResult = Extract<
-  PersistedMonthRunResult,
-  { kind: "waiting-decision" }
->;
+export type JanuaryWaitingResult = Extract<PersistedMonthRunResult, { kind: "waiting-decision" }>;
 export type JanuaryCommittedResult = Extract<PersistedMonthRunResult, { kind: "committed" }>;
 
 export async function loadJanuaryTestRegistry(): Promise<ContentRegistry> {
@@ -65,8 +61,7 @@ export async function createHarnessedJanuaryRuntime(
 ) {
   const saveId = input.saveId ?? parseSaveId("save-january-1990-runtime");
   const runId = input.runId ?? parseMonthRunId("run-january-1990-runtime");
-  const saveSchemaFingerprint =
-    input.saveSchemaFingerprint ?? JANUARY_TEST_SAVE_SCHEMA_FINGERPRINT;
+  const saveSchemaFingerprint = input.saveSchemaFingerprint ?? JANUARY_TEST_SAVE_SCHEMA_FINGERPRINT;
   const harness = createInMemoryPersistenceHarness({
     saveId,
     saveSchemaFingerprint,

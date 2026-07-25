@@ -62,11 +62,7 @@ describe("January 1990 persisted exactly-once recovery", () => {
 
   it("recovers after commit-before-reply and never advances the save twice", async () => {
     const source = await createHarnessedJanuaryRuntime();
-    const defect = await reachJanuaryDefectBoundary(
-      source.runtime,
-      source.saveId,
-      source.runId,
-    );
+    const defect = await reachJanuaryDefectBoundary(source.runtime, source.saveId, source.runId);
     source.harness.loseNextAcknowledgement("commitMonthRun");
 
     const lost = await resumeJanuary(source.runtime, defect, {
