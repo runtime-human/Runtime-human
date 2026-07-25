@@ -6,14 +6,14 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
 
 defaults:
   run:
     shell: pwsh
 
 jobs:
-  materialize-and-cleanup:
+  diagnose:
     if: github.event.pull_request.head.ref == 'agent/january-1990-hardening-closure'
     runs-on: self-hosted
     timeout-minutes: 30
@@ -22,7 +22,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           clean: true
-          persist-credentials: true
+          persist-credentials: false
           show-progress: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
@@ -33,19 +33,35 @@ jobs:
           corepack prepare pnpm@11.11.0 --activate
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Generate bounded trace
-        run: pnpm exec tsx scripts/write-january-1990-balance-trace.mts
-      - name: Format E2 files
-        run: pnpm fmt
-      - name: Verify E2 RED to GREEN
+      - name: Capture E2 diagnostics
         run: |
-          pnpm typecheck
-          pnpm exec vitest run tests/january-1990-desktop-concurrency.test.ts tests/january-1990-balance-trace.test.ts
-      - name: Commit trace and remove workflow
+          pnpm exec tsx scripts/write-january-1990-balance-trace.mts *>&1 | Tee-Object balance-writer.log
+          $balanceExit = $LASTEXITCODE
+          pnpm exec tsx scripts/write-january-1990-persistence-flow.mts *>&1 | Tee-Object persistence-writer.log
+          $persistenceExit = $LASTEXITCODE
+          pnpm typecheck *>&1 | Tee-Object typecheck.log
+          $typecheckExit = $LASTEXITCODE
+          pnpm exec vitest run tests/january-1990-desktop-concurrency.test.ts tests/january-1990-balance-trace.test.ts tests/january-1990-persistence-flow.test.ts *>&1 | Tee-Object tests.log
+          $testsExit = $LASTEXITCODE
+          "BALANCE_EXIT=$balanceExit" | Set-Content exit-codes.txt
+          "PERSISTENCE_EXIT=$persistenceExit" | Add-Content exit-codes.txt
+          "TYPECHECK_EXIT=$typecheckExit" | Add-Content exit-codes.txt
+          "TESTS_EXIT=$testsExit" | Add-Content exit-codes.txt
+      - name: Upload E2 diagnostics and generated fixtures
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: january-e2-diagnostics
+          path: |
+            balance-writer.log
+            persistence-writer.log
+            typecheck.log
+            tests.log
+            exit-codes.txt
+            fixtures/balance/january-1990-bounded-trace-v1.json
+            fixtures/persistence/january-1990-persistence-flow-v1.json
+          if-no-files-found: warn
+          retention-days: 1
+      - name: Fail on captured diagnostics
         run: |
-          git config user.name "runtime-human-agent"
-          git config user.email "runtime-human-agent@users.noreply.github.com"
-          git rm .github/workflows/materialize-january-e2.yml
-          git add apps/desktop/src/january/january-session-controller.ts scripts tests fixtures/balance
-          git commit -m "test: materialize January hardening evidence"
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          Get-Content exit-codes.txt
+          if ((Get-Content exit-codes.txt) -match "=[1-9]") { exit 1 }
