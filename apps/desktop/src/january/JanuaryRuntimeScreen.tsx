@@ -15,6 +15,12 @@ const QUALITY_LABELS = {
   reliability: "Надёжность",
 } as const;
 
+const QUALITY_MAXIMUMS = {
+  clarity: 10,
+  correctness: 11,
+  reliability: 9,
+} as const;
+
 export function JanuaryRuntimeScreen({
   view,
   busy,
@@ -26,7 +32,12 @@ export function JanuaryRuntimeScreen({
 
   return (
     <main className="january-shell">
-      <section className="january-frame" aria-busy={busy}>
+      <section
+        className="january-frame"
+        aria-busy={busy}
+        aria-label="Игровой месяц"
+        role="region"
+      >
         <header className="january-header">
           <div>
             <p className="january-brand">RUNTIME HUMAN</p>
@@ -74,17 +85,30 @@ export function JanuaryRuntimeScreen({
 
             {model.qualityScores ? (
               <div className="january-quality" aria-label="Качество первой программы">
-                {Object.entries(model.qualityScores).map(([key, value]) => (
-                  <div className="january-quality-item" key={key}>
-                    <div>
-                      <span>{QUALITY_LABELS[key as keyof typeof QUALITY_LABELS]}</span>
-                      <strong>{value}</strong>
+                {Object.entries(model.qualityScores).map(([key, value]) => {
+                  const metric = key as keyof typeof QUALITY_LABELS;
+                  const label = QUALITY_LABELS[metric];
+                  const maximum = QUALITY_MAXIMUMS[metric];
+                  const width = Math.round((value / maximum) * 100);
+                  return (
+                    <div className="january-quality-item" key={key}>
+                      <div>
+                        <span>{label}</span>
+                        <strong>{value}</strong>
+                      </div>
+                      <div
+                        aria-label={label}
+                        aria-valuemax={maximum}
+                        aria-valuemin={0}
+                        aria-valuenow={value}
+                        className="january-quality-track"
+                        role="progressbar"
+                      >
+                        <span style={{ width: `${width}%` }} />
+                      </div>
                     </div>
-                    <div className="january-quality-track">
-                      <span style={{ width: `${value}%` }} />
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : null}
 
