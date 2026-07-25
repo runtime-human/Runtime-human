@@ -48,12 +48,17 @@ jobs:
         run: |
           pnpm typecheck
           pnpm vitest run tests/january-content-golden.test.ts
-      - name: Remove one-shot workflow
-        run: Remove-Item .github/workflows/january-content-publish.yml
+      - name: Remove temporary workflows
+        run: |
+          Remove-Item .github/workflows/january-content-publish.yml
+          if (Test-Path .github/workflows/january-content-build-diagnostic.yml) {
+            Remove-Item .github/workflows/january-content-build-diagnostic.yml
+          }
       - name: Validate exact scope
         run: |
           $allowed = @(
             '.github/workflows/foundation.yml',
+            '.github/workflows/january-content-build-diagnostic.yml',
             '.github/workflows/january-content-publish.yml',
             'content/content.config.json',
             'package.json',
@@ -63,7 +68,7 @@ jobs:
             'tests/january-content-golden.test.ts',
             'tsconfig.json'
           )
-          $changed = @(git status --short | ForEach-Object { $_.Substring(3).Replace('\\', '/') })
+          $changed = @(git status --short --untracked-files=all | ForEach-Object { $_.Substring(3).Replace('\\', '/') })
           foreach ($path in $changed) {
             if ($path -like 'apps/desktop/public/content/*') { continue }
             if ($allowed -notcontains $path) { throw "Unexpected changed path: $path" }
@@ -72,6 +77,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package.json pnpm-lock.yaml tsconfig.json scripts/build-game-content.ts scripts/tsconfig.json content/content.config.json .github/workflows/foundation.yml .github/workflows/january-content-publish.yml tests/january-content-golden.test.ts apps/desktop/public/content
+          git add package.json pnpm-lock.yaml tsconfig.json scripts/build-game-content.ts scripts/tsconfig.json content/content.config.json .github/workflows/foundation.yml .github/workflows/january-content-publish.yml .github/workflows/january-content-build-diagnostic.yml tests/january-content-golden.test.ts apps/desktop/public/content
           git commit -m "build: publish January compiled content"
           git push origin HEAD:agent/january-1990-content-registry
