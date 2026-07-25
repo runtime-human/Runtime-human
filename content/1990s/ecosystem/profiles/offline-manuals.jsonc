@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "content-source-v1",
+  "id": "core.ecosystem-profile.offline-manuals",
+  "kind": "reference",
+  "domain": "ecosystem",
+  "era": "1990s",
+  "availableFrom": "1981-08",
+  "entryPoint": false,
+  "references": ["core.platform.dos-pc"],
+  "provenance": [
+    {
+      "sourceId": "runtime-human.january-1990-context",
+      "title": "January 1990 offline documentation context",
+      "locator": "Runtime Human January 1990 design boundary"
+    }
+  ],
+  "payload": {
+    "contentType": "ecosystem-profile",
+    "documentationMode": "offline"
+  }
+}

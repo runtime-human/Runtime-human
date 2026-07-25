@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "content-source-v1",
+  "id": "core.technology.gw-basic",
+  "kind": "technology",
+  "domain": "programming",
+  "era": "1990s",
+  "availableFrom": "1983-01",
+  "entryPoint": false,
+  "references": ["core.tech-family.basic"],
+  "provenance": [
+    {
+      "sourceId": "microsoft.gw-basic.manual",
+      "title": "Microsoft GW-BASIC User's Guide and Reference",
+      "locator": "Microsoft GW-BASIC documentation for MS-DOS-compatible personal computers"
+    }
+  ],
+  "payload": {
+    "contentType": "technology",
+    "familyId": "core.tech-family.basic",
+    "technology": "gw-basic"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "content-source-v1",
+  "id": "core.tech-family.basic",
+  "kind": "technology",
+  "domain": "programming",
+  "era": "1990s",
+  "availableFrom": "1964-05",
+  "entryPoint": false,
+  "references": [],
+  "provenance": [
+    {
+      "sourceId": "dartmouth.basic.1964",
+      "title": "Dartmouth BASIC historical release",
+      "locator": "Dartmouth College BASIC history, 1964"
+    }
+  ],
+  "payload": {
+    "contentType": "technology-family",
+    "family": "basic"
+  }
+}
