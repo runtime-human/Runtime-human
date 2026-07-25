@@ -71,9 +71,8 @@ describe("January 1990 persisted restart and compatibility", () => {
     });
   });
 
-  it("blocks a persisted run when the save schema fingerprint changes", async () => {
+  it("blocks an idle save before begin when its schema fingerprint differs", async () => {
     const source = await createHarnessedJanuaryRuntime();
-    await startJanuary(source.runtime, source.saveId, source.runId);
     const reopened = reopenJanuaryRuntime(source, {
       saveSchemaFingerprint: fingerprint("different-save-schema", { version: 2 }),
     });
@@ -82,9 +81,15 @@ describe("January 1990 persisted restart and compatibility", () => {
 
     expect(result).toMatchObject({
       kind: "blocked",
-      reason: "incompatible-checkpoint",
+      reason: "incompatible-persistence",
+      save: { saveId: source.saveId },
+      run: null,
     });
-    expect(source.harness.getStats().commitMutations).toBe(0);
+    expect(source.harness.getStats()).toEqual({
+      beginMutations: 0,
+      boundaryMutations: 0,
+      commitMutations: 0,
+    });
   });
 
   it("rejects stale save and run revisions without mutation", async () => {
