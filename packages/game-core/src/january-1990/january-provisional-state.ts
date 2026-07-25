@@ -69,7 +69,7 @@ export function updateJanuaryProvisionalState(
   state: JanuaryProvisionalStateV1,
   changes: Partial<Omit<JanuaryProvisionalStateV1, "schemaVersion">>,
 ): JanuaryProvisionalStateV1 {
-  return freezeState({
+  return parseJanuaryProvisionalState({
     ...state,
     ...changes,
     schemaVersion: "january-1990-provisional-state-v1",
