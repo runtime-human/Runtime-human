@@ -23,6 +23,7 @@ export type January1990MonthPlanV1 = Readonly<{
 export function createJanuary1990MonthPlan(
   context: January1990ContentContext,
 ): January1990MonthPlanV1 {
+  requireJanuaryContext(context);
   return parseJanuary1990MonthPlan({
     schemaVersion: "january-1990-month-plan-v1",
     month: "1990-01",
@@ -58,12 +59,7 @@ export function parseJanuary1990MonthPlan(value: unknown): January1990MonthPlanV
   ) {
     throw new TypeError("January MonthPlan contentFingerprint must be lowercase SHA-256");
   }
-  if (
-    !Array.isArray(record.requiredChunkIds) ||
-    record.requiredChunkIds.length !== 2 ||
-    record.requiredChunkIds[0] !== "1990s/ecosystem" ||
-    record.requiredChunkIds[1] !== "1990s/programming"
-  ) {
+  if (!hasJanuaryChunks(record.requiredChunkIds)) {
     throw new TypeError("January MonthPlan requires the exact January content chunks");
   }
 
@@ -74,6 +70,26 @@ export function parseJanuary1990MonthPlan(value: unknown): January1990MonthPlanV
     contentFingerprint: record.contentFingerprint as Fingerprint,
     requiredChunkIds: JANUARY_1990_REQUIRED_CHUNK_IDS,
   });
+}
+
+function requireJanuaryContext(context: January1990ContentContext): void {
+  if (
+    context.schemaVersion !== "january-1990-content-context-v1" ||
+    context.month !== "1990-01" ||
+    !FINGERPRINT_PATTERN.test(context.contentFingerprint) ||
+    !hasJanuaryChunks(context.requiredChunkIds)
+  ) {
+    throw new TypeError("January MonthPlan requires the verified January 1990 content context");
+  }
+}
+
+function hasJanuaryChunks(value: unknown): boolean {
+  return (
+    Array.isArray(value) &&
+    value.length === 2 &&
+    value[0] === "1990s/ecosystem" &&
+    value[1] === "1990s/programming"
+  );
 }
 
 function sameStrings(left: readonly string[], right: readonly string[]): boolean {
