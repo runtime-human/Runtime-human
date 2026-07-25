@@ -38,28 +38,25 @@ export type January1990SaveSnapshotV1 = Readonly<{
   completedMonth: January1990CompletedMonthV1 | null;
 }>;
 
-export const JANUARY_1990_SAVE_SCHEMA_FINGERPRINT = fingerprint(
-  "january-1990-save-schema-v1",
-  {
-    snapshotSchema: "january-1990-save-snapshot-v1",
-    completedMonthSchema: "january-1990-completed-month-v1",
-    month: "1990-01",
-    topLevelFields: ["completedMonth", "schemaVersion"],
-    completedMonthFields: [
-      "baseSaveRevision",
-      "completedCheckpointHash",
-      "month",
-      "outcomes",
-      "runId",
-      "schemaVersion",
-      "terminalResult",
-    ],
-    outcomes: EXPECTED_OUTCOMES,
-    outcomeFields: ["outcomeId", "payload", "payloadHash", "scope"],
-    payloadHashNamespace: "month-run-materialized-outcome-v1",
-    terminalResultSchema: "january-1990-result-v1",
-  },
-);
+export const JANUARY_1990_SAVE_SCHEMA_FINGERPRINT = fingerprint("january-1990-save-schema-v1", {
+  snapshotSchema: "january-1990-save-snapshot-v1",
+  completedMonthSchema: "january-1990-completed-month-v1",
+  month: "1990-01",
+  topLevelFields: ["completedMonth", "schemaVersion"],
+  completedMonthFields: [
+    "baseSaveRevision",
+    "completedCheckpointHash",
+    "month",
+    "outcomes",
+    "runId",
+    "schemaVersion",
+    "terminalResult",
+  ],
+  outcomes: EXPECTED_OUTCOMES,
+  outcomeFields: ["outcomeId", "payload", "payloadHash", "scope"],
+  payloadHashNamespace: "month-run-materialized-outcome-v1",
+  terminalResultSchema: "january-1990-result-v1",
+});
 
 export function createJanuary1990InitialSaveSnapshot(): January1990SaveSnapshotV1 {
   return Object.freeze({
@@ -69,11 +66,7 @@ export function createJanuary1990InitialSaveSnapshot(): January1990SaveSnapshotV
 }
 
 export function parseJanuary1990SaveSnapshot(value: unknown): January1990SaveSnapshotV1 {
-  const record = requireRecord(
-    value,
-    ["completedMonth", "schemaVersion"],
-    "January save snapshot",
-  );
+  const record = requireRecord(value, ["completedMonth", "schemaVersion"], "January save snapshot");
   if (record.schemaVersion !== "january-1990-save-snapshot-v1") {
     throw new TypeError("January save snapshot schemaVersion is incompatible");
   }
@@ -98,10 +91,7 @@ function parseCompletedMonth(value: unknown): January1990CompletedMonthV1 {
     ],
     "January completed month",
   );
-  if (
-    record.schemaVersion !== "january-1990-completed-month-v1" ||
-    record.month !== "1990-01"
-  ) {
+  if (record.schemaVersion !== "january-1990-completed-month-v1" || record.month !== "1990-01") {
     throw new TypeError("January completed month schema or month is incompatible");
   }
   const terminalResult = parseTerminalResult(record.terminalResult);
