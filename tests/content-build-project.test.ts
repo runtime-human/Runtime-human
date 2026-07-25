@@ -102,7 +102,9 @@ describe("content build project", () => {
     expect(result.kind).toBe("content-invalid");
     if (result.kind !== "content-invalid") throw new Error("Expected invalid content result");
     expect(result.diagnostics).toEqual(
-      expect.arrayContaining([{ code: "JSONC_PARSE", path: "content/broken.jsonc" }]),
+      expect.arrayContaining([
+        expect.objectContaining({ code: "JSONC_PARSE", path: "content/broken.jsonc" }),
+      ]),
     );
     await expect(
       readFile(join(repositoryRoot, "generated", "content", "manifest.json")),
