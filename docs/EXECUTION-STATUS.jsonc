@@ -98,7 +98,26 @@
         "acknowledgementLossCovered": ["begin", "boundary", "commit"],
         "saveSchemaCompatibilityGuard": true,
         "contentCompatibilityGuard": true,
-        "exactlyOnceSaveRevision": 1
+        "exactlyOnceSaveRevision": 1,
+        "saveSnapshotSchema": "january-1990-save-snapshot-v1",
+        "initialAndCommittedSnapshotShareSchema": true,
+        "exactStoredOutcomes": [
+          "january-1990/access",
+          "january-1990/work",
+          "january-1990/defect",
+          "january-1990/programming-outcome"
+        ],
+        "storedOutcomePayloadHashesValidated": true,
+        "durableViewKinds": [
+          "idle",
+          "access-decision",
+          "learning-decision",
+          "defect-decision",
+          "committed",
+          "terminal",
+          "blocked",
+          "rejected"
+        ]
       }
     },
     {
@@ -122,7 +141,7 @@
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
     "qualityGate": "pending-pr-30-final-head",
-    "currentConstraint": "persisted-composition-implementation-complete-final-verification-and-review-pending",
+    "currentConstraint": "persisted-composition-and-canonical-save-contract-complete-final-verification-and-review-pending",
     "currentPullRequestMayMerge": false
   }
 }
