@@ -55,6 +55,31 @@ describe("January 1990 provisional state", () => {
     expect(Object.isFrozen(restored.qualityScores)).toBe(true);
   });
 
+  it("validates public updates instead of trusting compile-time types", () => {
+    const initial = parseJanuaryProvisionalState({});
+
+    expect(() =>
+      updateJanuaryProvisionalState(initial, {
+        qualityScores: {
+          clarity: 101,
+          correctness: 8,
+          reliability: 7,
+        },
+      }),
+    ).toThrow(TypeError);
+    expect(() =>
+      updateJanuaryProvisionalState(initial, {
+        evidence: [
+          {
+            skillId: JANUARY_1990_CONTENT_IDS.debuggingSkill,
+            amount: -1,
+            reasonCode: JANUARY_1990_REASON_CODES.validationFixProject,
+          },
+        ],
+      }),
+    ).toThrow(TypeError);
+  });
+
   it.each([
     {
       schemaVersion: "january-1990-provisional-state-v1",
