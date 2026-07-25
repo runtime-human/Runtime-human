@@ -42,12 +42,7 @@ const ENTRY_SCHEMA_VERSION = "compiled-content-entry-v1";
 const COMPILER_VERSION = "content-compiler-v1";
 const MAX_PROVENANCE_TITLE_LENGTH = 500;
 const MAX_PROVENANCE_LOCATOR_LENGTH = 1_000;
-const CONTENT_KINDS = new Set<ContentKindV1>([
-  "event",
-  "reference",
-  "storylet",
-  "technology",
-]);
+const CONTENT_KINDS = new Set<ContentKindV1>(["event", "reference", "storylet", "technology"]);
 
 export type CompiledContentRuntimePrimitives = Readonly<{
   canonicalize(value: unknown): string;
@@ -108,33 +103,20 @@ function validateManifest(
   const object = requireObject(value, "manifest");
   requireExactKeys(
     object,
-    [
-      "schemaVersion",
-      "compilerVersion",
-      "contentFingerprint",
-      "entryPointIds",
-      "chunks",
-    ],
+    ["schemaVersion", "compilerVersion", "contentFingerprint", "entryPointIds", "chunks"],
     "manifest",
   );
 
   const schemaVersion = requireString(object.schemaVersion, "manifest.schemaVersion");
   if (schemaVersion !== MANIFEST_SCHEMA_VERSION) {
-    throw incompatibleVersion(
-      "compiled content manifest",
-      schemaVersion,
-      MANIFEST_SCHEMA_VERSION,
-    );
+    throw incompatibleVersion("compiled content manifest", schemaVersion, MANIFEST_SCHEMA_VERSION);
   }
   const compilerVersion = requireString(object.compilerVersion, "manifest.compilerVersion");
   if (compilerVersion !== COMPILER_VERSION) {
     throw incompatibleVersion("content compiler", compilerVersion, COMPILER_VERSION);
   }
 
-  const entryPointIds = requireSortedUniqueStrings(
-    object.entryPointIds,
-    "manifest.entryPointIds",
-  );
+  const entryPointIds = requireSortedUniqueStrings(object.entryPointIds, "manifest.entryPointIds");
   const chunks = requireArray(object.chunks, "manifest.chunks").map((item, index) =>
     validateChunkDescriptor(item, index),
   );
@@ -199,10 +181,7 @@ function validateChunk(
     }
   }
 
-  const chunkFingerprint = requireFingerprint(
-    object.chunkFingerprint,
-    "chunk.chunkFingerprint",
-  );
+  const chunkFingerprint = requireFingerprint(object.chunkFingerprint, "chunk.chunkFingerprint");
   const core = {
     schemaVersion: CHUNK_SCHEMA_VERSION,
     chunkId,
@@ -215,17 +194,10 @@ function validateChunk(
   return deepFreeze({ ...core, chunkFingerprint });
 }
 
-function validateChunkDescriptor(
-  value: unknown,
-  index: number,
-): CompiledContentChunkDescriptorV1 {
+function validateChunkDescriptor(value: unknown, index: number): CompiledContentChunkDescriptorV1 {
   const path = `manifest.chunks[${index}]`;
   const object = requireObject(value, path);
-  requireExactKeys(
-    object,
-    ["chunkId", "era", "domain", "contentIds", "chunkFingerprint"],
-    path,
-  );
+  requireExactKeys(object, ["chunkId", "era", "domain", "contentIds", "chunkFingerprint"], path);
   const chunkId = requireChunkId(object.chunkId, `${path}.chunkId`);
   const era = requireChunkSegment(object.era, `${path}.era`);
   const domain = requireIdentifier(object.domain, `${path}.domain`);
@@ -237,10 +209,7 @@ function validateChunkDescriptor(
     era,
     domain,
     contentIds: requireSortedUniqueStrings(object.contentIds, `${path}.contentIds`),
-    chunkFingerprint: requireFingerprint(
-      object.chunkFingerprint,
-      `${path}.chunkFingerprint`,
-    ),
+    chunkFingerprint: requireFingerprint(object.chunkFingerprint, `${path}.chunkFingerprint`),
   });
 }
 
@@ -276,10 +245,7 @@ function validateEntry(value: unknown, index: number): CompiledContentEntryV1 {
 
   const provenanceValues = requireArray(object.provenance, `${path}.provenance`);
   if (provenanceValues.length === 0) {
-    throw invalidShape(
-      `${path}.provenance must contain at least one source`,
-      `${path}.provenance`,
-    );
+    throw invalidShape(`${path}.provenance must contain at least one source`, `${path}.provenance`);
   }
   const provenance = provenanceValues.map((item, provenanceIndex) =>
     validateProvenance(item, `${path}.provenance[${provenanceIndex}]`),
@@ -307,34 +273,21 @@ function validateEntry(value: unknown, index: number): CompiledContentEntryV1 {
   return deepFreeze({ ...base, availableTo });
 }
 
-function validateProvenance(
-  value: unknown,
-  path: string,
-): CompiledContentProvenanceV1 {
+function validateProvenance(value: unknown, path: string): CompiledContentProvenanceV1 {
   const object = requireObject(value, path);
   requireExactKeys(
     object,
-    object.locator === undefined
-      ? ["sourceId", "title"]
-      : ["sourceId", "title", "locator"],
+    object.locator === undefined ? ["sourceId", "title"] : ["sourceId", "title", "locator"],
     path,
   );
   const base = {
     sourceId: requireIdentifier(object.sourceId, `${path}.sourceId`),
-    title: requireBoundedString(
-      object.title,
-      `${path}.title`,
-      MAX_PROVENANCE_TITLE_LENGTH,
-    ),
+    title: requireBoundedString(object.title, `${path}.title`, MAX_PROVENANCE_TITLE_LENGTH),
   };
   if (object.locator === undefined) return deepFreeze(base);
   return deepFreeze({
     ...base,
-    locator: requireBoundedString(
-      object.locator,
-      `${path}.locator`,
-      MAX_PROVENANCE_LOCATOR_LENGTH,
-    ),
+    locator: requireBoundedString(object.locator, `${path}.locator`, MAX_PROVENANCE_LOCATOR_LENGTH),
   });
 }
 
