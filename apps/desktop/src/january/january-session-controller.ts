@@ -5,8 +5,10 @@ import {
 } from "@runtime-human/game-application";
 import { fingerprint } from "@runtime-human/game-core";
 import {
+  parseDecisionId,
   parseRequestId,
   type AuthoritativeJsonValue,
+  type DecisionId,
   type MonthRunId,
   type SaveId,
 } from "@runtime-human/game-schema";
@@ -70,11 +72,12 @@ export function createJanuarySessionController(
           rejectInvalidAction("Начать январь можно только из начального состояния"),
         );
       }
+      const current = view;
       return apply(() =>
         input.runtime.begin({
-          requestId: requestId("begin", input, view.saveRevision, null),
+          requestId: requestId("begin", input, current.saveRevision, null),
           saveId: input.saveId,
-          expectedSaveRevision: view.saveRevision,
+          expectedSaveRevision: current.saveRevision,
           runId: input.runId,
           seed: input.seed,
         }),
@@ -84,7 +87,8 @@ export function createJanuarySessionController(
       if (!isDecisionView(view)) {
         return Promise.resolve(rejectInvalidAction("Сейчас нет решения, ожидающего ответа"));
       }
-      const answer = answerFor(view.kind, choice);
+      const current = view;
+      const answer = answerFor(current.kind, choice);
       if (answer === null) {
         return Promise.resolve(
           rejectInvalidAction("Выбранный ответ не относится к текущему решению"),
@@ -92,11 +96,11 @@ export function createJanuarySessionController(
       }
       return apply(() =>
         input.runtime.resume({
-          requestId: requestId("resume", input, view.runRevision, choice),
+          requestId: requestId("resume", input, current.runRevision, choice),
           saveId: input.saveId,
           runId: input.runId,
-          expectedRunRevision: view.runRevision,
-          decisionId: decisionIdFor(view.kind),
+          expectedRunRevision: current.runRevision,
+          decisionId: decisionIdFor(current.kind),
           answer,
         }),
       );
@@ -130,14 +134,16 @@ function isDecisionView(
   );
 }
 
-function decisionIdFor(kind: "access-decision" | "learning-decision" | "defect-decision") {
+function decisionIdFor(
+  kind: "access-decision" | "learning-decision" | "defect-decision",
+): DecisionId {
   switch (kind) {
     case "access-decision":
-      return "january-1990/access" as const;
+      return parseDecisionId("january-1990/access");
     case "learning-decision":
-      return "january-1990/learning" as const;
+      return parseDecisionId("january-1990/learning");
     case "defect-decision":
-      return "january-1990/defect" as const;
+      return parseDecisionId("january-1990/defect");
   }
 }
 
