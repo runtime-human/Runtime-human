@@ -33,15 +33,10 @@ jobs:
           corepack prepare pnpm@11.11.0 --activate
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Capture balance writer
+      - name: Capture fixture materialization
         run: |
-          cmd /c "pnpm exec tsx scripts/write-january-1990-balance-trace.mts > balance-writer.log 2>&1"
-          "BALANCE_EXIT=$LASTEXITCODE" | Set-Content balance.exit
-          exit 0
-      - name: Capture persistence writer
-        run: |
-          cmd /c "pnpm exec tsx scripts/write-january-1990-persistence-flow.mts > persistence-writer.log 2>&1"
-          "PERSISTENCE_EXIT=$LASTEXITCODE" | Set-Content persistence.exit
+          cmd /c "node scripts/write-january-e2-fixtures.mjs > materialize.log 2>&1"
+          "MATERIALIZE_EXIT=$LASTEXITCODE" | Set-Content materialize.exit
           exit 0
       - name: Capture typecheck
         run: |
@@ -63,8 +58,7 @@ jobs:
         with:
           name: january-e2-diagnostics
           path: |
-            balance-writer.log
-            persistence-writer.log
+            materialize.log
             typecheck.log
             tests.log
             exit-codes.txt
