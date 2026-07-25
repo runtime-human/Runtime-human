@@ -19,7 +19,7 @@ defaults:
 jobs:
   materialize-and-cleanup:
     if: github.event.pull_request.head.ref == 'agent/january-1990-hardening-closure'
-    runs-on: windows-latest
+    runs-on: self-hosted
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
