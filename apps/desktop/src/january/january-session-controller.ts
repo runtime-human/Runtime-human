@@ -67,27 +67,28 @@ export function createJanuarySessionController(
       return apply(() => input.runtime.load(input.saveId));
     },
     start() {
-      if (view.kind !== "idle" || view.saveRevision === null) {
+      const current = view;
+      if (current.kind !== "idle" || current.saveRevision === null) {
         return Promise.resolve(
           rejectInvalidAction("Начать январь можно только из начального состояния"),
         );
       }
-      const current = view;
+      const saveRevision = current.saveRevision;
       return apply(() =>
         input.runtime.begin({
-          requestId: requestId("begin", input, current.saveRevision, null),
+          requestId: requestId("begin", input, saveRevision, null),
           saveId: input.saveId,
-          expectedSaveRevision: current.saveRevision,
+          expectedSaveRevision: saveRevision,
           runId: input.runId,
           seed: input.seed,
         }),
       );
     },
     choose(choice) {
-      if (!isDecisionView(view)) {
+      const current = view;
+      if (!isDecisionView(current)) {
         return Promise.resolve(rejectInvalidAction("Сейчас нет решения, ожидающего ответа"));
       }
-      const current = view;
       const answer = answerFor(current.kind, choice);
       if (answer === null) {
         return Promise.resolve(
