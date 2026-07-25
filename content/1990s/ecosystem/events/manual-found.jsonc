@@ -6,19 +6,16 @@
   "era": "1990s",
   "availableFrom": "1990-01",
   "entryPoint": false,
-  "references": [
-    "core.ecosystem-profile.offline-manuals",
-    "core.skill.program-reading"
-  ],
+  "references": ["core.ecosystem-profile.offline-manuals", "core.skill.program-reading"],
   "provenance": [
     {
       "sourceId": "runtime-human.january-1990-design",
       "title": "January offline manual event",
-      "locator": "Runtime Human January 1990 playable flow"
-    }
+      "locator": "Runtime Human January 1990 playable flow",
+    },
   ],
   "payload": {
     "contentType": "event",
-    "eventType": "manual-found"
-  }
+    "eventType": "manual-found",
+  },
 }

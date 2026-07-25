@@ -10,17 +10,17 @@
     "core.activity.first-listing",
     "core.event.manual-found",
     "core.local-tech-availability.home-pc",
-    "core.local-tech-availability.shared-school-pc"
+    "core.local-tech-availability.shared-school-pc",
   ],
   "provenance": [
     {
       "sourceId": "runtime-human.january-1990-design",
       "title": "January access-window event",
-      "locator": "Runtime Human January 1990 playable flow"
-    }
+      "locator": "Runtime Human January 1990 playable flow",
+    },
   ],
   "payload": {
     "contentType": "event",
-    "eventType": "access-window"
-  }
+    "eventType": "access-window",
+  },
 }

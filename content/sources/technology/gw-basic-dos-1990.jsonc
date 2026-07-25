@@ -11,12 +11,12 @@
     {
       "sourceId": "runtime-human.january-1990-band",
       "title": "January 1990 GW-BASIC compatibility band",
-      "locator": "Runtime Human January 1990 design boundary"
-    }
+      "locator": "Runtime Human January 1990 design boundary",
+    },
   ],
   "payload": {
     "contentType": "technology-band",
     "technologyId": "core.technology.gw-basic",
-    "tier": "A"
-  }
+    "tier": "A",
+  },
 }

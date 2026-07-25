@@ -11,12 +11,12 @@
     {
       "sourceId": "runtime-human.skill-model",
       "title": "Tool use skill definition",
-      "locator": "Runtime Human progression design"
-    }
+      "locator": "Runtime Human progression design",
+    },
   ],
   "payload": {
     "contentType": "skill",
     "quality": "reliability",
-    "skill": "tool-use"
-  }
+    "skill": "tool-use",
+  },
 }

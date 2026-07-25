@@ -6,19 +6,16 @@
   "era": "1990s",
   "availableFrom": "1990-01",
   "entryPoint": false,
-  "references": [
-    "core.event.logic-error",
-    "core.event.syntax-error"
-  ],
+  "references": ["core.event.logic-error", "core.event.syntax-error"],
   "provenance": [
     {
       "sourceId": "runtime-human.january-1990-design",
       "title": "First bug professional situation",
-      "locator": "Runtime Human January 1990 playable flow"
-    }
+      "locator": "Runtime Human January 1990 playable flow",
+    },
   ],
   "payload": {
     "contentType": "professional-situation",
-    "issueType": "first-bug"
-  }
+    "issueType": "first-bug",
+  },
 }

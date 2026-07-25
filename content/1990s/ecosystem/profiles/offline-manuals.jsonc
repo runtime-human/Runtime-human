@@ -11,11 +11,11 @@
     {
       "sourceId": "runtime-human.january-1990-context",
       "title": "January 1990 offline documentation context",
-      "locator": "Runtime Human January 1990 design boundary"
-    }
+      "locator": "Runtime Human January 1990 design boundary",
+    },
   ],
   "payload": {
     "contentType": "ecosystem-profile",
-    "documentationMode": "offline"
-  }
+    "documentationMode": "offline",
+  },
 }

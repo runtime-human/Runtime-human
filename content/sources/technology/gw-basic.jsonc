@@ -11,12 +11,12 @@
     {
       "sourceId": "microsoft.gw-basic.manual",
       "title": "Microsoft GW-BASIC User's Guide and Reference",
-      "locator": "Microsoft GW-BASIC documentation for MS-DOS-compatible personal computers"
-    }
+      "locator": "Microsoft GW-BASIC documentation for MS-DOS-compatible personal computers",
+    },
   ],
   "payload": {
     "contentType": "technology",
     "familyId": "core.tech-family.basic",
-    "technology": "gw-basic"
-  }
+    "technology": "gw-basic",
+  },
 }

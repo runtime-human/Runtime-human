@@ -11,11 +11,11 @@
     {
       "sourceId": "microsoft.ms-dos.sources",
       "title": "Microsoft MS-DOS historical source repository",
-      "locator": "microsoft/MS-DOS; versions 1.25, 2.0 and 4.0"
-    }
+      "locator": "microsoft/MS-DOS; versions 1.25, 2.0 and 4.0",
+    },
   ],
   "payload": {
     "contentType": "platform",
-    "platform": "dos-pc"
-  }
+    "platform": "dos-pc",
+  },
 }

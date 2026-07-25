@@ -11,12 +11,12 @@
     {
       "sourceId": "runtime-human.skill-model",
       "title": "Debugging skill definition",
-      "locator": "Runtime Human progression design"
-    }
+      "locator": "Runtime Human progression design",
+    },
   ],
   "payload": {
     "contentType": "skill",
     "quality": "correctness",
-    "skill": "debugging"
-  }
+    "skill": "debugging",
+  },
 }

@@ -12,18 +12,18 @@
     "core.skill.problem-decomposition",
     "core.skill.program-reading",
     "core.skill.program-writing",
-    "core.skill.tool-use"
+    "core.skill.tool-use",
   ],
   "provenance": [
     {
       "sourceId": "runtime-human.january-1990-design",
       "title": "First listing learning activity",
-      "locator": "Runtime Human January 1990 playable flow"
-    }
+      "locator": "Runtime Human January 1990 playable flow",
+    },
   ],
   "payload": {
     "activity": "first-listing",
     "contentType": "learning-activity",
-    "practiceMode": "read-and-run"
-  }
+    "practiceMode": "read-and-run",
+  },
 }

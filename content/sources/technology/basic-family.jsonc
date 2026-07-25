@@ -11,11 +11,11 @@
     {
       "sourceId": "dartmouth.basic.1964",
       "title": "Dartmouth BASIC historical release",
-      "locator": "Dartmouth College BASIC history, 1964"
-    }
+      "locator": "Dartmouth College BASIC history, 1964",
+    },
   ],
   "payload": {
     "contentType": "technology-family",
-    "family": "basic"
-  }
+    "family": "basic",
+  },
 }

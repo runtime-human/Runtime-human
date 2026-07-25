@@ -11,12 +11,12 @@
     {
       "sourceId": "runtime-human.skill-model",
       "title": "Program reading skill definition",
-      "locator": "Runtime Human progression design"
-    }
+      "locator": "Runtime Human progression design",
+    },
   ],
   "payload": {
     "contentType": "skill",
     "quality": "clarity",
-    "skill": "program-reading"
-  }
+    "skill": "program-reading",
+  },
 }

@@ -6,20 +6,17 @@
   "era": "1990s",
   "availableFrom": "1983-01",
   "entryPoint": false,
-  "references": [
-    "core.platform.dos-pc",
-    "core.tech-band.gw-basic-dos-1990"
-  ],
+  "references": ["core.platform.dos-pc", "core.tech-band.gw-basic-dos-1990"],
   "provenance": [
     {
       "sourceId": "microsoft.gw-basic.manual",
       "title": "Microsoft GW-BASIC User's Guide and Reference",
-      "locator": "Interpreter workflow and line-numbered BASIC environment"
-    }
+      "locator": "Interpreter workflow and line-numbered BASIC environment",
+    },
   ],
   "payload": {
     "contentType": "toolchain",
     "technologyId": "core.technology.gw-basic",
-    "toolchain": "gw-basic-interpreter"
-  }
+    "toolchain": "gw-basic-interpreter",
+  },
 }

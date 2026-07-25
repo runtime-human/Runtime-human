@@ -11,11 +11,11 @@
     {
       "sourceId": "runtime-human.january-1990-design",
       "title": "Program runs outcome event",
-      "locator": "Runtime Human January 1990 playable flow"
-    }
+      "locator": "Runtime Human January 1990 playable flow",
+    },
   ],
   "payload": {
     "contentType": "event",
-    "eventType": "program-runs"
-  }
+    "eventType": "program-runs",
+  },
 }

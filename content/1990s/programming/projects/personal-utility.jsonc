@@ -6,20 +6,17 @@
   "era": "1990s",
   "availableFrom": "1990-01",
   "entryPoint": false,
-  "references": [
-    "core.work-package.input-output",
-    "core.work-package.validation-fix"
-  ],
+  "references": ["core.work-package.input-output", "core.work-package.validation-fix"],
   "provenance": [
     {
       "sourceId": "runtime-human.january-1990-design",
       "title": "Personal utility project archetype",
-      "locator": "Runtime Human January 1990 playable flow"
-    }
+      "locator": "Runtime Human January 1990 playable flow",
+    },
   ],
   "payload": {
     "archetype": "personal-utility",
     "contentType": "project-archetype",
-    "qualities": ["clarity", "correctness", "reliability"]
-  }
+    "qualities": ["clarity", "correctness", "reliability"],
+  },
 }

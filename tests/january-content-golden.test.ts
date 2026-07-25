@@ -45,7 +45,9 @@ async function compileJanuaryContent() {
   });
   const result = compileContentSources(sources);
   if (result.kind === "failure") {
-    throw new Error(`Expected valid January content:\n${JSON.stringify(result.diagnostics, null, 2)}`);
+    throw new Error(
+      `Expected valid January content:\n${JSON.stringify(result.diagnostics, null, 2)}`,
+    );
   }
   return result.bundle;
 }

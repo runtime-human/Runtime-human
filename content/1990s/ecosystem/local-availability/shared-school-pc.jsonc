@@ -9,18 +9,18 @@
   "references": [
     "core.ecosystem-profile.offline-manuals",
     "core.platform.dos-pc",
-    "core.toolchain.gw-basic-interpreter"
+    "core.toolchain.gw-basic-interpreter",
   ],
   "provenance": [
     {
       "sourceId": "runtime-human.january-1990-fiction",
       "title": "Fictional shared school PC access route",
-      "locator": "Runtime Human January 1990 local diffusion model"
-    }
+      "locator": "Runtime Human January 1990 local diffusion model",
+    },
   ],
   "payload": {
     "accessRoute": "shared-school-pc",
     "constraint": "limited-schedule",
-    "contentType": "local-tech-availability"
-  }
+    "contentType": "local-tech-availability",
+  },
 }
