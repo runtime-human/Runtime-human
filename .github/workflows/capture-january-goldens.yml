@@ -1,4 +1,4 @@
-name: capture-january-goldens
+name: apply-january-goldens
 
 on:
   pull_request:
@@ -6,10 +6,10 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: capture-january-goldens-${{ github.event.pull_request.number }}
+  group: apply-january-goldens-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 defaults:
@@ -17,15 +17,16 @@ defaults:
     shell: pwsh
 
 jobs:
-  capture:
+  apply:
     if: github.event.pull_request.head.ref == 'agent/january-1990-deterministic-month-run'
     runs-on: self-hosted
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
+          ref: ${{ github.event.pull_request.head.ref }}
           clean: true
-          persist-credentials: false
+          persist-credentials: true
           show-progress: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
@@ -37,70 +38,106 @@ jobs:
           corepack prepare pnpm@11.11.0 --activate
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Capture fixed-seed vectors
+      - name: Append literal golden test
         run: |
           $ErrorActionPreference = "Stop"
-          @'
+          $path = "tests/january-1990-month-run.test.ts"
+          $source = Get-Content -Raw $path
+          if ($source.Contains('pins fixed-seed boundary hashes and RNG states')) {
+            throw "Golden test already exists"
+          }
+          $closing = "});`n"
+          $index = $source.LastIndexOf($closing)
+          if ($index -lt 0) { throw "Test suite closing marker not found" }
+          $golden = @'
 
-          it("captures fixed-seed golden vectors", () => {
-            const steps = createSteps();
-            const access = requireBoundary(
-              runUntilBoundary(createInitialCheckpoint(42n), steps),
-              "golden access boundary missing",
-            );
-            const learning = acceptAndRun(
-              access,
-              steps,
-              "golden-access",
-              JANUARY_1990_DECISION_IDS.access,
-              { schemaVersion: "january-access-answer-v1", route: "home-pc" },
-            );
-            const defect = acceptAndRun(
-              learning,
-              steps,
-              "golden-learning",
-              JANUARY_1990_DECISION_IDS.learning,
-              { schemaVersion: "january-learning-answer-v1", practice: "edit-and-debug" },
-            );
-            const completed = acceptAndRun(
-              defect,
-              steps,
-              "golden-defect",
-              JANUARY_1990_DECISION_IDS.defect,
-              { schemaVersion: "january-defect-answer-v1", response: "inspect-listing" },
-            );
-            const golden = {
-              rulesFingerprint: createJanuary1990RulesFingerprint(),
-              access: {
-                checkpointHash: access.checkpointHash,
-                rngState: access.rngState,
-                programCounter: access.programCounter,
-              },
-              learning: {
-                checkpointHash: learning.checkpointHash,
-                rngState: learning.rngState,
-                programCounter: learning.programCounter,
-              },
-              defect: {
-                checkpointHash: defect.checkpointHash,
-                rngState: defect.rngState,
-                programCounter: defect.programCounter,
-                eventId: readOutcomeField(defect, "january-1990/defect", "eventId"),
-              },
-              completed: {
-                checkpointHash: completed.checkpointHash,
-                rngState: completed.rngState,
-                programCounter: completed.programCounter,
-              },
-            };
-            console.log(`JANUARY_GOLDEN=${JSON.stringify(golden)}`);
-          });
-          '@ | Add-Content tests/january-1990-month-run.test.ts
-          pnpm vitest run tests/january-1990-month-run.test.ts --reporter=verbose *>&1 | Tee-Object january-goldens.txt
-      - name: Upload golden vectors
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: january-golden-vectors
-          path: january-goldens.txt
-          if-no-files-found: error
-          retention-days: 1
+            it("pins fixed-seed boundary hashes and RNG states", () => {
+              const steps = createSteps();
+              const access = requireBoundary(
+                runUntilBoundary(createInitialCheckpoint(42n), steps),
+                "golden access boundary missing",
+              );
+              const learning = acceptAndRun(
+                access,
+                steps,
+                "golden-access",
+                JANUARY_1990_DECISION_IDS.access,
+                { schemaVersion: "january-access-answer-v1", route: "home-pc" },
+              );
+              const defect = acceptAndRun(
+                learning,
+                steps,
+                "golden-learning",
+                JANUARY_1990_DECISION_IDS.learning,
+                { schemaVersion: "january-learning-answer-v1", practice: "edit-and-debug" },
+              );
+              const completed = acceptAndRun(
+                defect,
+                steps,
+                "golden-defect",
+                JANUARY_1990_DECISION_IDS.defect,
+                { schemaVersion: "january-defect-answer-v1", response: "inspect-listing" },
+              );
+
+              expect({
+                rulesFingerprint: createJanuary1990RulesFingerprint(),
+                access: {
+                  checkpointHash: access.checkpointHash,
+                  rngState: access.rngState,
+                  programCounter: access.programCounter,
+                },
+                learning: {
+                  checkpointHash: learning.checkpointHash,
+                  rngState: learning.rngState,
+                  programCounter: learning.programCounter,
+                },
+                defect: {
+                  checkpointHash: defect.checkpointHash,
+                  rngState: defect.rngState,
+                  programCounter: defect.programCounter,
+                  eventId: readOutcomeField(defect, "january-1990/defect", "eventId"),
+                },
+                completed: {
+                  checkpointHash: completed.checkpointHash,
+                  rngState: completed.rngState,
+                  programCounter: completed.programCounter,
+                },
+              }).toEqual({
+                rulesFingerprint: "dbc8a2753735120daa5ff111995907e928ce0eb3c6cf84e26f409b1097296869",
+                access: {
+                  checkpointHash: "f6d0c8aa6995f84b9ae0af393a718aba291711cf2b294bf37e8e1600180d9b71",
+                  rngState: "956eeb2f2632d7bd03f166b233e3ef28529f0f135767524794e34a0effe11c58",
+                  programCounter: 2,
+                },
+                learning: {
+                  checkpointHash: "1ebbe332f96a265f3fc2b2522ba46190acbe73dcfa97e6e4bbdd558bf3dbe8a5",
+                  rngState: "956eeb2f2632d7bd03f166b233e3ef28529f0f135767524794e34a0effe11c58",
+                  programCounter: 4,
+                },
+                defect: {
+                  checkpointHash: "a8f89b470e6ca637b3f023f84f66933cc9fd375367b097b1425c45c9f7f35358",
+                  rngState: "f11336902952880dbabde489eaef65aaf57e46702fe4080884c640ea7ac72110",
+                  programCounter: 7,
+                  eventId: C.logicErrorEvent,
+                },
+                completed: {
+                  checkpointHash: "09fb5a72c270570cb71c6b1918ede862f9e02dc312d0732918a95948a1cbd490",
+                  rngState: "511feebc0cbc4e4fdfa673bd7310bcb6c7e6614ff09696edc072c38b51b2b099",
+                  programCounter: 9,
+                },
+              });
+            });
+          '@
+          $updated = $source.Insert($index, $golden)
+          Set-Content -NoNewline -Encoding utf8 $path $updated
+          pnpm fmt
+          pnpm vitest run tests/january-1990-month-run.test.ts
+      - name: Commit golden test and remove workflow
+        run: |
+          $ErrorActionPreference = "Stop"
+          git rm .github/workflows/capture-january-goldens.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/january-1990-month-run.test.ts
+          git commit -m "test: pin January MonthRun golden vectors"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
