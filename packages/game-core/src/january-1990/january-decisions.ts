@@ -1,4 +1,4 @@
-import { parseDecisionId, type DecisionId } from "@runtime-human/game-schema";
+import { parseDecisionId } from "@runtime-human/game-schema";
 
 export const JANUARY_1990_DECISION_IDS = Object.freeze({
   access: parseDecisionId("january-1990/access"),
@@ -8,6 +8,3 @@ export const JANUARY_1990_DECISION_IDS = Object.freeze({
 
 export type January1990DecisionId =
   (typeof JANUARY_1990_DECISION_IDS)[keyof typeof JANUARY_1990_DECISION_IDS];
-
-const _decisionIdCompatibility: DecisionId = JANUARY_1990_DECISION_IDS.access;
-void _decisionIdCompatibility;
