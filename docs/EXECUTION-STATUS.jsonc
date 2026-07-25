@@ -99,7 +99,7 @@
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
     "qualityGate": "pending-pr-29-final-head",
-    "currentConstraint": "month-run-implementation-complete-final-verification-and-review-pending",
+    "currentConstraint": "month-run-implementation-and-runtime-invariant-review-complete-final-verification-and-review-pending",
     "currentPullRequestMayMerge": false
   }
 }
