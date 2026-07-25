@@ -59,13 +59,20 @@ describe("validateWorkspace", () => {
     ]);
     addPackage(root, "packages", "game-persistence-contracts", ["shared-kernel", "game-schema"]);
     addPackage(root, "packages", "game-platform-contracts", ["shared-kernel", "game-schema"]);
-    addPackage(root, "packages", "game-application", [
-      "shared-kernel",
-      "game-schema",
-      "game-core",
-      "game-persistence-contracts",
-      "game-platform-contracts",
-    ]);
+    addPackage(
+      root,
+      "packages",
+      "game-application",
+      [
+        "shared-kernel",
+        "game-schema",
+        "game-core",
+        "game-content",
+        "game-persistence-contracts",
+        "game-platform-contracts",
+      ],
+      'import type { ContentRegistry } from "@runtime-human/game-content";\nexport type ApplicationContentRegistry = ContentRegistry;\n',
+    );
     addPackage(root, "packages", "game-ui", ["game-application"]);
     addPackage(root, "packages", "game-ui-fixtures", [
       "game-schema",
@@ -77,6 +84,16 @@ describe("validateWorkspace", () => {
     addPackage(root, "apps", "desktop", ["game-ui", "game-ui-fixtures"]);
 
     expect(validateWorkspace(root)).toEqual([]);
+  });
+
+  it("rejects game-core depending on game-content", () => {
+    const root = createRoot();
+    addPackage(root, "packages", "game-content");
+    addPackage(root, "packages", "game-core", ["game-content"]);
+
+    expect(validateWorkspace(root)).toContainEqual(
+      expect.stringContaining("game-core cannot depend on game-content"),
+    );
   });
 
   it("rejects game-ui depending on game-core", () => {
