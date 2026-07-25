@@ -1,5 +1,6 @@
 export * from "./compiled-content";
-export * from "./compiled-content-runtime";
+export type { CompiledContentRuntimePrimitives } from "./compiled-content-runtime";
 export * from "./content-errors";
-export * from "./content-loader";
+export { createCompiledContentRuntime } from "./content-loader";
+export type { CompiledContentRuntime } from "./content-loader";
 export type { ContentRegistry } from "./content-registry";
