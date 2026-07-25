@@ -1,17 +1,23 @@
-import type { January1990ContentId } from "./january-content-ids";
-import { JANUARY_1990_CONTENT_IDS } from "./january-content-ids";
-import type { January1990ReasonCode } from "./january-reason-codes";
-import { JANUARY_1990_REASON_CODES } from "./january-reason-codes";
 import type {
   JanuaryAccessAnswerV1,
   JanuaryDefectAnswerV1,
   JanuaryLearningAnswerV1,
 } from "./january-answers";
+import type { January1990ContentId } from "./january-content-ids";
+import { JANUARY_1990_CONTENT_IDS } from "./january-content-ids";
+import type { January1990ReasonCode } from "./january-reason-codes";
+import { JANUARY_1990_REASON_CODES } from "./january-reason-codes";
 
 export type JanuaryEvidenceV1 = Readonly<{
   skillId: January1990ContentId;
   amount: number;
   reasonCode: January1990ReasonCode;
+}>;
+
+export type JanuaryQualityScoresV1 = Readonly<{
+  clarity: number;
+  correctness: number;
+  reliability: number;
 }>;
 
 export type JanuaryProvisionalStateV1 = Readonly<{
@@ -22,6 +28,7 @@ export type JanuaryProvisionalStateV1 = Readonly<{
   defectEventId: January1990ContentId | null;
   defectResponse: JanuaryDefectAnswerV1["response"] | null;
   evidence: readonly JanuaryEvidenceV1[];
+  qualityScores: JanuaryQualityScoresV1 | null;
 }>;
 
 const STATE_KEYS = [
@@ -30,6 +37,7 @@ const STATE_KEYS = [
   "defectResponse",
   "evidence",
   "learningPractice",
+  "qualityScores",
   "schemaVersion",
   "workPackageId",
 ] as const;
@@ -53,6 +61,7 @@ export function createJanuaryInitialProvisionalState(): JanuaryProvisionalStateV
     defectEventId: null,
     defectResponse: null,
     evidence: [],
+    qualityScores: null,
   });
 }
 
@@ -74,39 +83,33 @@ export function parseJanuaryProvisionalState(value: unknown): JanuaryProvisional
     throw new TypeError("January provisional state has an incompatible schemaVersion");
   }
 
-  const accessRoute = parseNullableLiteral(
-    record.accessRoute,
-    ["home-pc", "shared-school-pc"] as const,
-    "accessRoute",
-  );
-  const learningPractice = parseNullableLiteral(
-    record.learningPractice,
-    ["read-and-run", "edit-and-debug"] as const,
-    "learningPractice",
-  );
-  const defectResponse = parseNullableLiteral(
-    record.defectResponse,
-    ["inspect-listing", "change-input", "ask-for-guidance"] as const,
-    "defectResponse",
-  );
-  const workPackageId = parseNullableContentId(record.workPackageId, [
-    JANUARY_1990_CONTENT_IDS.inputOutputWorkPackage,
-    JANUARY_1990_CONTENT_IDS.validationFixWorkPackage,
-  ]);
-  const defectEventId = parseNullableContentId(record.defectEventId, [
-    JANUARY_1990_CONTENT_IDS.logicErrorEvent,
-    JANUARY_1990_CONTENT_IDS.syntaxErrorEvent,
-  ]);
-  const evidence = parseEvidence(record.evidence);
-
   return freezeState({
     schemaVersion: "january-1990-provisional-state-v1",
-    accessRoute,
-    learningPractice,
-    workPackageId,
-    defectEventId,
-    defectResponse,
-    evidence,
+    accessRoute: parseNullableLiteral(
+      record.accessRoute,
+      ["home-pc", "shared-school-pc"] as const,
+      "accessRoute",
+    ),
+    learningPractice: parseNullableLiteral(
+      record.learningPractice,
+      ["read-and-run", "edit-and-debug"] as const,
+      "learningPractice",
+    ),
+    workPackageId: parseNullableContentId(record.workPackageId, [
+      JANUARY_1990_CONTENT_IDS.inputOutputWorkPackage,
+      JANUARY_1990_CONTENT_IDS.validationFixWorkPackage,
+    ]),
+    defectEventId: parseNullableContentId(record.defectEventId, [
+      JANUARY_1990_CONTENT_IDS.logicErrorEvent,
+      JANUARY_1990_CONTENT_IDS.syntaxErrorEvent,
+    ]),
+    defectResponse: parseNullableLiteral(
+      record.defectResponse,
+      ["inspect-listing", "change-input", "ask-for-guidance"] as const,
+      "defectResponse",
+    ),
+    evidence: parseEvidence(record.evidence),
+    qualityScores: parseQualityScores(record.qualityScores),
   });
 }
 
@@ -136,6 +139,26 @@ function parseEvidence(value: unknown): readonly JanuaryEvidenceV1[] {
   );
 }
 
+function parseQualityScores(value: unknown): JanuaryQualityScoresV1 | null {
+  if (value === null) return null;
+  const record = requireRecord(
+    value,
+    ["clarity", "correctness", "reliability"],
+    "quality scores",
+  );
+  const clarity = parseScore(record.clarity, "clarity");
+  const correctness = parseScore(record.correctness, "correctness");
+  const reliability = parseScore(record.reliability, "reliability");
+  return Object.freeze({ clarity, correctness, reliability });
+}
+
+function parseScore(value: unknown, field: string): number {
+  if (!Number.isSafeInteger(value) || (value as number) < 0 || (value as number) > 100) {
+    throw new TypeError(`January ${field} score must be a safe integer between 0 and 100`);
+  }
+  return value as number;
+}
+
 function parseNullableContentId(
   value: unknown,
   allowed: readonly January1990ContentId[],
@@ -153,7 +176,7 @@ function parseNullableLiteral<const T extends readonly string[]>(
   field: string,
 ): T[number] | null {
   if (value === null) return null;
-  if (typeof value !== "string" || !allowed.includes(value)) {
+  if (typeof value !== "string" || !allowed.some((candidate) => candidate === value)) {
     throw new TypeError(`January provisional ${field} has an invalid value`);
   }
   return value as T[number];
@@ -161,7 +184,9 @@ function parseNullableLiteral<const T extends readonly string[]>(
 
 function freezeState(state: JanuaryProvisionalStateV1): JanuaryProvisionalStateV1 {
   const evidence = Object.freeze(state.evidence.map((item) => Object.freeze({ ...item })));
-  return Object.freeze({ ...state, evidence });
+  const qualityScores =
+    state.qualityScores === null ? null : Object.freeze({ ...state.qualityScores });
+  return Object.freeze({ ...state, evidence, qualityScores });
 }
 
 function isEmptyRecord(value: unknown): boolean {
