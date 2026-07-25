@@ -4,7 +4,7 @@ import {
   type January1990ContentContext,
   type January1990MonthPlanV1,
 } from "@runtime-human/game-core";
-import type { Fingerprint, MonthRunCompatibilityV1, SaveId } from "@runtime-human/game-schema";
+import type { MonthRunCompatibilityV1, SaveId } from "@runtime-human/game-schema";
 
 import { createPersistedMonthRunOrchestrator } from "../persisted-month-run-orchestrator";
 import type { PersistedMonthRunResult } from "../persisted-month-run-types";
@@ -23,7 +23,6 @@ import { projectJanuary1990Content } from "./project-january-content";
 export type CreateJanuary1990RuntimeInput = Readonly<{
   persistence: PersistenceService;
   contentRegistry: JanuaryContentRegistryPort;
-  saveSchemaFingerprint: Fingerprint;
 }>;
 
 export type January1990Runtime = Readonly<{
@@ -41,7 +40,6 @@ export function createJanuary1990Runtime(input: CreateJanuary1990RuntimeInput): 
   const plan = createJanuary1990MonthPlan(contentContext);
   const compatibility = createJanuary1990Compatibility({
     contentFingerprint: contentContext.contentFingerprint,
-    saveSchemaFingerprint: input.saveSchemaFingerprint,
   });
   const orchestrator = createPersistedMonthRunOrchestrator({
     persistence: input.persistence,
