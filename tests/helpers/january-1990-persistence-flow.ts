@@ -3,6 +3,7 @@ import {
   createJanuary1990InitialSaveSnapshot,
   createJanuary1990Runtime,
   JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
+  type PersistedMonthRunResult,
   type PersistenceService,
 } from "@runtime-human/game-application";
 import { fingerprint } from "@runtime-human/game-core";
@@ -19,6 +20,7 @@ import {
   parseSaveId,
   parseSaveRevision,
   type AuthoritativeJsonValue,
+  type DecisionId,
 } from "@runtime-human/game-schema";
 
 import { createInMemoryPersistenceHarness } from "./in-memory-persistence-service";
@@ -73,19 +75,28 @@ export async function generateJanuary1990PersistenceFlowFixture(): Promise<Janua
     }),
   );
   const learning = requireWaiting(
-    await resume(runtime, access.checkpoint.runRevision, access.checkpoint.pendingDecision?.decisionId, {
-      schemaVersion: "january-access-answer-v1",
-      route: "home-pc",
-    }, "january-production-flow-access"),
+    await resume(
+      access.checkpoint.runRevision,
+      access.checkpoint.pendingDecision?.decisionId,
+      {
+        schemaVersion: "january-access-answer-v1",
+        route: "home-pc",
+      },
+      "january-production-flow-access",
+    ),
   );
   const defect = requireWaiting(
-    await resume(runtime, learning.checkpoint.runRevision, learning.checkpoint.pendingDecision?.decisionId, {
-      schemaVersion: "january-learning-answer-v1",
-      practice: "edit-and-debug",
-    }, "january-production-flow-learning"),
+    await resume(
+      learning.checkpoint.runRevision,
+      learning.checkpoint.pendingDecision?.decisionId,
+      {
+        schemaVersion: "january-learning-answer-v1",
+        practice: "edit-and-debug",
+      },
+      "january-production-flow-learning",
+    ),
   );
   const committed = await resume(
-    runtime,
     defect.checkpoint.runRevision,
     defect.checkpoint.pendingDecision?.decisionId,
     {
@@ -138,20 +149,19 @@ export async function generateJanuary1990PersistenceFlowFixture(): Promise<Janua
       committedProgramCounter: 9,
       finalSaveRevision: 1,
       finalRunStatus: "committed",
-      completedCheckpointHash: boundaryCommands[3]?.checkpointHash ?? "",
+      completedCheckpointHash: readCheckpointHash(boundaryCommands[3]?.checkpoint.json ?? ""),
       committedCheckpointHash: readCheckpointHash(commit.committedCheckpoint.json),
     }),
   });
 
-  async function resume(
-    januaryRuntime: typeof runtime,
+  function resume(
     runRevision: number,
-    decisionId: string | undefined,
+    decisionId: DecisionId | undefined,
     answer: AuthoritativeJsonValue,
     requestId: string,
-  ) {
+  ): Promise<PersistedMonthRunResult> {
     if (decisionId === undefined) throw new Error(`January decision is missing for ${requestId}`);
-    return januaryRuntime.resume({
+    return runtime.resume({
       requestId: parseRequestId(requestId),
       saveId,
       runId,
@@ -185,9 +195,7 @@ function recordPersistence(
   };
 }
 
-function requireWaiting(
-  result: Awaited<ReturnType<ReturnType<typeof createJanuary1990Runtime>["begin"]>>,
-) {
+function requireWaiting(result: PersistedMonthRunResult) {
   if (result.kind !== "waiting-decision") {
     throw new Error(`Expected January decision boundary, received ${result.kind}`);
   }
