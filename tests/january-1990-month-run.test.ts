@@ -1,7 +1,24 @@
 import { describe, expect, it } from "vitest";
 
-import * as gameCore from "@runtime-human/game-core";
-import type { January1990ContentContext } from "@runtime-human/game-core";
+import {
+  createJanuary1990MonthPlan,
+  createJanuary1990MonthSteps,
+  createJanuary1990RulesFingerprint,
+  createMonthRunCheckpoint,
+  fingerprint,
+  JANUARY_1990_CONTENT_IDS as C,
+  JANUARY_1990_DECISION_IDS,
+  JANUARY_1990_REASON_CODES as R,
+  JANUARY_1990_REQUIRED_CHUNK_IDS,
+  JANUARY_1990_RNG_CALL_BUDGET,
+  JANUARY_1990_RNG_SCOPES,
+  runUntilBoundary,
+  transitionMonthRun,
+  Xoshiro256StarStar,
+  type January1990ContentContext,
+  type MonthRunRunResult,
+  type MonthRunStep,
+} from "@runtime-human/game-core";
 import {
   DETERMINISM_MANIFEST_V1,
   parseDecisionId,
@@ -9,56 +26,21 @@ import {
   parseRequestId,
   parseSaveId,
   parseSaveRevision,
-  type Fingerprint,
   type MonthRunCheckpointV1,
 } from "@runtime-human/game-schema";
 
-type JanuaryRuntimeApi = Readonly<{
-  JANUARY_1990_DECISION_IDS?: Readonly<{
-    access: string;
-    learning: string;
-    defect: string;
-  }>;
-  JANUARY_1990_RNG_SCOPES?: Readonly<{
-    content: "month/content";
-    narrative: "month/narrative";
-    outcome: "month/outcome";
-  }>;
-  JANUARY_1990_RNG_CALL_BUDGET?: Readonly<{
-    content: 0;
-    narrative: 1;
-    outcome: 1;
-  }>;
-  createJanuary1990MonthPlan?: (context: January1990ContentContext) => unknown;
-  createJanuary1990MonthSteps?: (
-    context: January1990ContentContext,
-  ) => readonly gameCore.MonthRunStep[];
-  createJanuary1990RulesFingerprint?: () => Fingerprint;
-}>;
-
 type DefectResponse = "inspect-listing" | "change-input" | "ask-for-guidance";
 
-const api = gameCore as typeof gameCore & JanuaryRuntimeApi;
-const C = gameCore.JANUARY_1990_CONTENT_IDS;
-const R = gameCore.JANUARY_1990_REASON_CODES;
-const contentFingerprint = gameCore.fingerprint("january-1990-month-run-test", {
+const contentFingerprint = fingerprint("january-1990-month-run-test", {
   fixture: "content",
 });
-
-function requireFunction<T extends (...args: never[]) => unknown>(
-  value: T | undefined,
-  name: string,
-): T {
-  expect(value, `${name} must be exported from game-core`).toBeTypeOf("function");
-  return value as T;
-}
 
 function createContext(): January1990ContentContext {
   return Object.freeze({
     schemaVersion: "january-1990-content-context-v1",
     month: "1990-01",
     contentFingerprint,
-    requiredChunkIds: gameCore.JANUARY_1990_REQUIRED_CHUNK_IDS,
+    requiredChunkIds: JANUARY_1990_REQUIRED_CHUNK_IDS,
     technology: {
       familyId: C.basicTechnologyFamily,
       family: "basic",
@@ -180,46 +162,30 @@ function createContext(): January1990ContentContext {
 }
 
 function createInitialCheckpoint(seed: bigint): MonthRunCheckpointV1 {
-  const createPlan = requireFunction(api.createJanuary1990MonthPlan, "createJanuary1990MonthPlan");
-  const createRulesFingerprint = requireFunction(
-    api.createJanuary1990RulesFingerprint,
-    "createJanuary1990RulesFingerprint",
-  );
-  return gameCore.createMonthRunCheckpoint({
+  return createMonthRunCheckpoint({
     runId: parseMonthRunId(`january-run-${seed}`),
     saveId: parseSaveId("january-save"),
     baseSaveRevision: parseSaveRevision(0),
-    plan: createPlan(createContext()) as never,
+    plan: createJanuary1990MonthPlan(createContext()),
     compatibility: {
       checkpointSchema: "month-run-checkpoint-v1",
-      rulesFingerprint: createRulesFingerprint(),
+      rulesFingerprint: createJanuary1990RulesFingerprint(),
       contentFingerprint,
-      saveSchemaFingerprint: gameCore.fingerprint("january-save-schema-test", { version: 1 }),
+      saveSchemaFingerprint: fingerprint("january-save-schema-test", { version: 1 }),
       determinismManifest: DETERMINISM_MANIFEST_V1,
     },
-    rngState: gameCore.Xoshiro256StarStar.fromSeed(seed).exportState(),
+    rngState: Xoshiro256StarStar.fromSeed(seed).exportState(),
   });
 }
 
-function createSteps(): readonly gameCore.MonthRunStep[] {
-  const createMonthSteps = requireFunction(
-    api.createJanuary1990MonthSteps,
-    "createJanuary1990MonthSteps",
-  );
-  const steps = createMonthSteps(createContext());
+function createSteps(): readonly MonthRunStep[] {
+  const steps = createJanuary1990MonthSteps(createContext());
   expect(steps).toHaveLength(9);
   return steps;
 }
 
-function requireDecisionIds(): NonNullable<JanuaryRuntimeApi["JANUARY_1990_DECISION_IDS"]> {
-  const decisionIds = api.JANUARY_1990_DECISION_IDS;
-  expect(decisionIds).toBeDefined();
-  if (decisionIds === undefined) throw new Error("January decision IDs are missing");
-  return decisionIds;
-}
-
 function requireBoundary(
-  result: gameCore.MonthRunRunResult,
+  result: MonthRunRunResult,
   message: string,
 ): MonthRunCheckpointV1 {
   expect(result.kind).toBe("boundary");
@@ -233,7 +199,7 @@ function acceptDecision(
   decisionId: string,
   answer: Record<string, string>,
 ): MonthRunCheckpointV1 {
-  const accepted = gameCore.transitionMonthRun(checkpoint, {
+  const accepted = transitionMonthRun(checkpoint, {
     type: "accept-decision",
     requestId: parseRequestId(requestId),
     decisionId: parseDecisionId(decisionId),
@@ -246,13 +212,13 @@ function acceptDecision(
 
 function acceptAndRun(
   checkpoint: MonthRunCheckpointV1,
-  steps: readonly gameCore.MonthRunStep[],
+  steps: readonly MonthRunStep[],
   requestId: string,
   decisionId: string,
   answer: Record<string, string>,
 ): MonthRunCheckpointV1 {
   return requireBoundary(
-    gameCore.runUntilBoundary(acceptDecision(checkpoint, requestId, decisionId, answer), steps),
+    runUntilBoundary(acceptDecision(checkpoint, requestId, decisionId, answer), steps),
     "January MonthRun did not reach a boundary",
   );
 }
@@ -262,36 +228,53 @@ function runCompleted(
   response: DefectResponse = "inspect-listing",
 ): MonthRunCheckpointV1 {
   const steps = createSteps();
-  const decisionIds = requireDecisionIds();
 
   const first = requireBoundary(
-    gameCore.runUntilBoundary(createInitialCheckpoint(seed), steps),
+    runUntilBoundary(createInitialCheckpoint(seed), steps),
     "January MonthRun did not start",
   );
   expect(first.status).toBe("suspended");
   expect(first.programCounter).toBe(2);
-  expect(first.pendingDecision?.decisionId).toBe(decisionIds.access);
+  expect(first.pendingDecision?.decisionId).toBe(JANUARY_1990_DECISION_IDS.access);
 
-  const learning = acceptAndRun(first, steps, "request-access", decisionIds.access, {
-    schemaVersion: "january-access-answer-v1",
-    route: "home-pc",
-  });
+  const learning = acceptAndRun(
+    first,
+    steps,
+    "request-access",
+    JANUARY_1990_DECISION_IDS.access,
+    {
+      schemaVersion: "january-access-answer-v1",
+      route: "home-pc",
+    },
+  );
   expect(learning.status).toBe("suspended");
   expect(learning.programCounter).toBe(4);
-  expect(learning.pendingDecision?.decisionId).toBe(decisionIds.learning);
+  expect(learning.pendingDecision?.decisionId).toBe(JANUARY_1990_DECISION_IDS.learning);
 
-  const defect = acceptAndRun(learning, steps, "request-learning", decisionIds.learning, {
-    schemaVersion: "january-learning-answer-v1",
-    practice: "edit-and-debug",
-  });
+  const defect = acceptAndRun(
+    learning,
+    steps,
+    "request-learning",
+    JANUARY_1990_DECISION_IDS.learning,
+    {
+      schemaVersion: "january-learning-answer-v1",
+      practice: "edit-and-debug",
+    },
+  );
   expect(defect.status).toBe("suspended");
   expect(defect.programCounter).toBe(7);
-  expect(defect.pendingDecision?.decisionId).toBe(decisionIds.defect);
+  expect(defect.pendingDecision?.decisionId).toBe(JANUARY_1990_DECISION_IDS.defect);
 
-  const completed = acceptAndRun(defect, steps, "request-defect", decisionIds.defect, {
-    schemaVersion: "january-defect-answer-v1",
-    response,
-  });
+  const completed = acceptAndRun(
+    defect,
+    steps,
+    "request-defect",
+    JANUARY_1990_DECISION_IDS.defect,
+    {
+      schemaVersion: "january-defect-answer-v1",
+      response,
+    },
+  );
   expect(completed.status).toBe("completed");
   expect(completed.programCounter).toBe(9);
   return completed;
@@ -318,18 +301,18 @@ function readOutcomeField(
 
 describe("January 1990 deterministic MonthRun", () => {
   it("publishes the exact closed RNG scopes and call budget", () => {
-    expect(api.JANUARY_1990_RNG_SCOPES).toEqual({
+    expect(JANUARY_1990_RNG_SCOPES).toEqual({
       content: "month/content",
       narrative: "month/narrative",
       outcome: "month/outcome",
     });
-    expect(api.JANUARY_1990_RNG_CALL_BUDGET).toEqual({
+    expect(JANUARY_1990_RNG_CALL_BUDGET).toEqual({
       content: 0,
       narrative: 1,
       outcome: 1,
     });
-    expect(Object.isFrozen(api.JANUARY_1990_RNG_SCOPES)).toBe(true);
-    expect(Object.isFrozen(api.JANUARY_1990_RNG_CALL_BUDGET)).toBe(true);
+    expect(Object.isFrozen(JANUARY_1990_RNG_SCOPES)).toBe(true);
+    expect(Object.isFrozen(JANUARY_1990_RNG_CALL_BUDGET)).toBe(true);
   });
 
   it("reaches three decisions and one programming result in nine fixed steps", () => {
@@ -365,31 +348,30 @@ describe("January 1990 deterministic MonthRun", () => {
 
   it("replays an identical pre-defect checkpoint without extra RNG work", () => {
     const steps = createSteps();
-    const decisionIds = requireDecisionIds();
     const accessBoundary = requireBoundary(
-      gameCore.runUntilBoundary(createInitialCheckpoint(19n), steps),
+      runUntilBoundary(createInitialCheckpoint(19n), steps),
       "January access boundary was not reached",
     );
     const learningBoundary = acceptAndRun(
       accessBoundary,
       steps,
       "replay-access",
-      decisionIds.access,
+      JANUARY_1990_DECISION_IDS.access,
       { schemaVersion: "january-access-answer-v1", route: "home-pc" },
     );
     const acceptedLearning = acceptDecision(
       learningBoundary,
       "replay-learning",
-      decisionIds.learning,
+      JANUARY_1990_DECISION_IDS.learning,
       { schemaVersion: "january-learning-answer-v1", practice: "edit-and-debug" },
     );
 
     const first = requireBoundary(
-      gameCore.runUntilBoundary(acceptedLearning, steps),
+      runUntilBoundary(acceptedLearning, steps),
       "First replay did not reach the defect boundary",
     );
     const second = requireBoundary(
-      gameCore.runUntilBoundary(acceptedLearning, steps),
+      runUntilBoundary(acceptedLearning, steps),
       "Second replay did not reach the defect boundary",
     );
 
@@ -444,7 +426,7 @@ describe("January 1990 deterministic MonthRun", () => {
       },
     } as unknown as MonthRunCheckpointV1;
 
-    const result = gameCore.runUntilBoundary(incompatible, createSteps());
+    const result = runUntilBoundary(incompatible, createSteps());
 
     expect(result.kind).toBe("rejected");
     if (result.kind !== "rejected") throw new Error("Incompatible MonthPlan was accepted");
@@ -453,13 +435,8 @@ describe("January 1990 deterministic MonthRun", () => {
   });
 
   it("keeps the rules fingerprint stable and separate from content", () => {
-    const createRulesFingerprint = requireFunction(
-      api.createJanuary1990RulesFingerprint,
-      "createJanuary1990RulesFingerprint",
-    );
-
-    const first = createRulesFingerprint();
-    const second = createRulesFingerprint();
+    const first = createJanuary1990RulesFingerprint();
+    const second = createJanuary1990RulesFingerprint();
 
     expect(first).toBe(second);
     expect(first).not.toBe(contentFingerprint);
