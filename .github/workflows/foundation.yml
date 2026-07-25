@@ -14,6 +14,7 @@ on:
       - "packages/**"
       - "tests/**"
       - "fixtures/**"
+      - "content/**"
       - "docs/**"
       - "scripts/**"
       - "rust-toolchain.toml"
@@ -33,6 +34,7 @@ on:
       - "packages/**"
       - "tests/**"
       - "fixtures/**"
+      - "content/**"
       - "docs/**"
       - "scripts/**"
       - "rust-toolchain.toml"
@@ -96,6 +98,8 @@ jobs:
         run: pnpm lint
       - name: Run typecheck
         run: pnpm typecheck
+      - name: Check compiled content
+        run: pnpm content:check
       - name: Check package boundaries
         run: pnpm boundaries:check
       - name: Run focused test suite
