@@ -1,0 +1,182 @@
+name: finalize-opt-00b-docs
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: finalize-opt-00b-docs-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  finalize:
+    if: github.event.pull_request.head.ref == 'agent/perf-opt-00b-sqlite-baseline'
+    runs-on: self-hosted
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          clean: true
+          persist-credentials: true
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm and install dependencies
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+          pnpm install --frozen-lockfile --reporter=silent
+      - name: Install Rust 1.97.0
+        run: |
+          rustup toolchain install 1.97.0 --profile minimal --component rustfmt
+          rustup default 1.97.0
+      - name: Update execution source of truth
+        run: |
+          @'
+          import fs from "node:fs";
+
+          const path = "docs/EXECUTION-STATUS.jsonc";
+          const status = JSON.parse(fs.readFileSync(path, "utf8"));
+          status.mainHeadAtCurrentSliceStart = "1b6de211e6bd61ca7f1cf5b77878c7ba0e9f0745";
+          status.currentPhase = "performance-sqlite-baseline";
+
+          const opt00a = status.milestones.find((milestone) => milestone.id === "performance-baseline");
+          if (!opt00a) throw new Error("performance-baseline milestone is missing");
+          opt00a.status = "complete";
+          opt00a.commit = "1b6de211e6bd61ca7f1cf5b77878c7ba0e9f0745";
+          delete opt00a.branch;
+
+          let opt00b = status.milestones.find(
+            (milestone) => milestone.id === "performance-sqlite-baseline",
+          );
+          if (!opt00b) {
+            opt00b = {
+              id: "performance-sqlite-baseline",
+              status: "implementation-complete",
+              issue: 24,
+              pullRequest: 35,
+              branch: "agent/perf-opt-00b-sqlite-baseline",
+              scope: [
+                "new-and-clean-existing-worker-start",
+                "create-and-load-save",
+                "month-begin",
+                "durable-boundaries-pc-2-4-7-9",
+                "atomic-commit",
+                "duplicate-receipt-replay",
+                "active-run-load-after-reopen",
+                "controlled-shutdown",
+              ],
+              exclusions: [
+                "tauri-ipc-latency",
+                "webview2-startup",
+                "first-meaningful-paint",
+                "windows-idle-resources",
+                "compiler-and-ci-optimization",
+                "persistence-optimization",
+              ],
+              evidence: {
+                schemaVersion: "runtime-human-sqlite-performance-baseline-v1",
+                repositoryCommand: "pnpm perf:january:sqlite",
+                scenarioCount: 13,
+                defaultWarmupsPerScenario: 2,
+                defaultSamplesPerScenario: 20,
+                smokeWarmupsPerScenario: 0,
+                smokeSamplesPerScenario: 1,
+                budgetEnforcement: "warning-only",
+                unit: "microseconds",
+                fileBacked: true,
+                freshTemporaryDatabasePerSample: true,
+                productionPersistenceHandle: true,
+                productionJanuaryCommandFixture: true,
+                shellFreeLauncher: true,
+                durabilityPreserved: [
+                  "WAL",
+                  "synchronous-FULL",
+                  "BEGIN-IMMEDIATE",
+                  "single-dedicated-worker",
+                  "dual-CAS",
+                  "durable-receipts",
+                ],
+              },
+            };
+            const npcIndex = status.milestones.findIndex(
+              (milestone) => milestone.id === "npc-foundation",
+            );
+            status.milestones.splice(npcIndex < 0 ? status.milestones.length : npcIndex, 0, opt00b);
+          } else {
+            Object.assign(opt00b, {
+              status: "implementation-complete",
+              pullRequest: 35,
+              branch: "agent/perf-opt-00b-sqlite-baseline",
+            });
+          }
+
+          const npc = status.milestones.find((milestone) => milestone.id === "npc-foundation");
+          if (npc) npc.status = "planned-after-performance-baselines";
+
+          if (!status.supersededPullRequests.some((item) => item.pullRequest === 33)) {
+            status.supersededPullRequests.push({
+              pullRequest: 33,
+              reason:
+                "Superseded by merged PR #34 canonical OPT-00A baseline; unique User Timing instrumentation deferred to a narrow desktop observability slice",
+            });
+          }
+
+          Object.assign(status.verification, {
+            qualityGate: "pending-pr-35-final-head",
+            currentConstraint: "opt-00b-implementation-complete-final-gates-and-review-pending",
+            currentPullRequestMayMerge: false,
+          });
+          fs.writeFileSync(path, `${JSON.stringify(status, null, 2)}\n`, "utf8");
+
+          const planPath = "docs/superpowers/plans/2026-07-26-sqlite-performance-baseline.md";
+          const plan = fs.readFileSync(planPath, "utf8");
+          fs.writeFileSync(
+            planPath,
+            plan.replace("status: active", "status: implementation-complete"),
+            "utf8",
+          );
+          '@ | node --input-type=module
+      - name: Regenerate and format
+        run: |
+          node scripts/build-toc.mjs
+          pnpm fmt
+          cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all
+      - name: Verify docs, TypeScript and focused Rust baseline
+        run: |
+          pnpm docs:check
+          pnpm fmt:check
+          pnpm lint
+          pnpm typecheck
+          cargo test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml sqlite_performance_summary -- --nocapture --test-threads=1
+          pnpm perf:january:sqlite -- --warmups=0 --samples=1 --commit=${{ github.event.pull_request.head.sha }}
+      - name: Validate warning-only report
+        run: |
+          $report = Get-Content artifacts/performance/january-sqlite-baseline.json -Raw | ConvertFrom-Json
+          if ($report.schemaVersion -ne "runtime-human-sqlite-performance-baseline-v1") {
+            throw "Unexpected SQLite baseline schema"
+          }
+          if ($report.scenarios.Count -ne 13) {
+            throw "Expected 13 SQLite baseline scenarios"
+          }
+          if ($report.configuration.budgetEnforcement -ne "warning-only") {
+            throw "SQLite baseline must remain warning-only"
+          }
+      - name: Commit source of truth and remove workflow
+        run: |
+          git config user.name "runtime-human-agent"
+          git config user.email "runtime-human-agent@users.noreply.github.com"
+          git rm .github/workflows/finalize-opt-00b-docs.yml
+          git add -A
+          git commit -m "perf: finalize OPT-00B SQLite baseline evidence"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
