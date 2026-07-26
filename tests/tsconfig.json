@@ -13,6 +13,7 @@
     "./**/*.tsx",
     "../apps/desktop/src/january/**/*.ts",
     "../apps/desktop/src/january/**/*.tsx",
+    "../scripts/performance/**/*.ts",
     "../vitest.config.ts"
   ],
   "exclude": ["../apps/desktop/src/january/**/*.stories.tsx"],
