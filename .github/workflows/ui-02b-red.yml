@@ -1,9 +1,10 @@
-name: ui-02b-red
+name: ui-02b-focused
 
 on:
   pull_request:
     paths:
       - ".github/workflows/ui-02b-red.yml"
+      - "apps/desktop/src/routing/**"
       - "tests/desktop-route.test.ts"
       - "tests/use-desktop-route.test.tsx"
       - "tests/tsconfig.json"
@@ -16,7 +17,7 @@ defaults:
     shell: pwsh
 
 jobs:
-  focused-red:
+  focused:
     runs-on: self-hosted
     timeout-minutes: 10
     steps:
@@ -33,5 +34,5 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
           corepack pnpm install --frozen-lockfile --reporter=silent
-      - name: Confirm route contracts are red
+      - name: Verify route contracts
         run: corepack pnpm exec vitest run tests/desktop-route.test.ts tests/use-desktop-route.test.tsx
