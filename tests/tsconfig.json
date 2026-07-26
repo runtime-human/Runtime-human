@@ -14,10 +14,15 @@
     "../apps/desktop/src/january/**/*.ts",
     "../apps/desktop/src/january/**/*.tsx",
     "../apps/desktop/src/performance/**/*.ts",
+    "../apps/desktop/src/shell/**/*.ts",
+    "../apps/desktop/src/shell/**/*.tsx",
     "../scripts/performance/**/*.ts",
     "../vitest.config.ts"
   ],
-  "exclude": ["../apps/desktop/src/january/**/*.stories.tsx"],
+  "exclude": [
+    "../apps/desktop/src/january/**/*.stories.tsx",
+    "../apps/desktop/src/shell/**/*.stories.tsx"
+  ],
   "references": [
     { "path": "../packages/game-schema" },
     { "path": "../packages/game-core" },
