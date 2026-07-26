@@ -1,9 +1,7 @@
 name: close-ui-02a-status
 
 on:
-  push:
-    branches:
-      - agent/close-ui-02a-status
+  pull_request:
     paths:
       - ".github/workflows/close-ui-02a-status.yml"
 
@@ -16,6 +14,7 @@ defaults:
 
 jobs:
   close:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'agent/close-ui-02a-status'
     runs-on: self-hosted
     timeout-minutes: 10
     steps:
