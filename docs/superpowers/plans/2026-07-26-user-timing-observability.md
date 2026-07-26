@@ -1,7 +1,7 @@
 ---
 title: "OPT-00C Browser User Timing Observability Plan"
 type: plan
-status: active
+status: implementation-complete
 canon: true
 updated: 2026-07-26
 ---
@@ -26,11 +26,11 @@ updated: 2026-07-26
 
 **Excluded:** persistence aggregation, Tauri IPC timing, WebView2 first meaningful paint, OS telemetry, performance gates and optimization.
 
-## Tasks
+## Completed tasks
 
-1. Add recorder contracts and browser/no-op implementations.
-2. Prove value/error transparency and failure isolation.
-3. Inject recorder into content loader, desktop bootstrap and session controller.
-4. Prove exact measure names, concurrent-operation coalescing and unchanged gameplay results.
-5. Update profiling documentation and execution status.
-6. Run focused tests, permanent gates, Sonar and review before merge.
+- [x] Add recorder contracts and browser/no-op implementations.
+- [x] Prove value/error transparency and failure isolation.
+- [x] Inject recorder into content loader, desktop bootstrap and session controller.
+- [x] Prove exact measure names, concurrent-operation coalescing and unchanged gameplay results.
+- [x] Update profiling documentation and execution status.
+- [ ] Run permanent gates, Sonar and external review on one unchanged head before merge.
