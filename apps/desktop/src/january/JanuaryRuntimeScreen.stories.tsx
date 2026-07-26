@@ -8,6 +8,7 @@ import {
   parseSaveRevision,
 } from "@runtime-human/game-schema";
 
+import { DesktopShell, type DesktopNavigationItem } from "../shell/DesktopShell";
 import { JanuaryRuntimeScreen } from "./JanuaryRuntimeScreen";
 import "../design/runtime-human-tokens.css";
 import "../shell/desktop-shell.css";
@@ -16,6 +17,27 @@ import "./january-runtime.css";
 const saveId = parseSaveId("storybook-january-save");
 const runId = parseMonthRunId("storybook-january-run");
 const checkpointHash = fingerprint("storybook-january-checkpoint", { version: 1 });
+const navigation = Object.freeze<readonly DesktopNavigationItem[]>([
+  Object.freeze({
+    kind: "route",
+    id: "overview",
+    index: "01",
+    label: "Обзор карьеры",
+    detail: "Текущая история",
+    href: "/",
+    current: false,
+  }),
+  Object.freeze({
+    kind: "route",
+    id: "current-month",
+    index: "02",
+    label: "Текущий месяц",
+    detail: "Январь 1990",
+    href: "/month/current",
+    current: true,
+  }),
+  Object.freeze({ kind: "planned", id: "skills", index: "03", label: "Навыки" }),
+]);
 
 const meta = {
   title: "Runtime Human/January 1990",
@@ -23,6 +45,24 @@ const meta = {
   parameters: {
     layout: "fullscreen",
   },
+  decorators: [
+    (Story) => (
+      <DesktopShell
+        breadcrumb="Январь 1990"
+        era="Персональные компьютеры"
+        navigation={navigation}
+        profile="Локальная карьера"
+        status={
+          <>
+            <span>Локальное сохранение и восстановление сеанса</span>
+            <strong>Состояние сохранено</strong>
+          </>
+        }
+      >
+        <Story />
+      </DesktopShell>
+    ),
+  ],
   args: {
     busy: false,
     onStart: () => undefined,
