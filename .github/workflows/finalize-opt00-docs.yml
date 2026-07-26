@@ -1,0 +1,52 @@
+name: finalize-opt00-docs
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: finalize-opt00-docs-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  finalize:
+    if: github.event.pull_request.head.ref == 'agent/performance-baseline-foundation'
+    runs-on: self-hosted
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          clean: true
+          persist-credentials: true
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Finalize status and documentation indexes
+        run: |
+          node scripts/finalize-opt00-docs.mjs
+          node scripts/build-toc.mjs
+          pnpm fmt
+      - name: Commit derived documentation and remove finalizer
+        run: |
+          git config user.name "runtime-human-agent"
+          git config user.email "runtime-human-agent@users.noreply.github.com"
+          git rm .github/workflows/finalize-opt00-docs.yml scripts/finalize-opt00-docs.mjs
+          git add -A
+          git commit -m "docs: finalize performance baseline foundation metadata"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
