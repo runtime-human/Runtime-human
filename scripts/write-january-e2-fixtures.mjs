@@ -1,20 +1,23 @@
 #!/usr/bin/env node
 
-import { spawnSync } from "node:child_process";
+import { startVitest } from "vitest/node";
 
-const isWindows = process.platform === "win32";
-const command = isWindows ? (process.env.ComSpec ?? "cmd.exe") : "pnpm";
-const args = isWindows
-  ? ["/d", "/s", "/c", "pnpm exec vitest run tests/materialize-january-e2-fixtures.test.ts"]
-  : ["exec", "vitest", "run", "tests/materialize-january-e2-fixtures.test.ts"];
-const result = spawnSync(command, args, {
-  cwd: process.cwd(),
-  env: {
-    ...process.env,
-    RUNTIME_HUMAN_MATERIALIZE_JANUARY_E2: "1",
+process.env.RUNTIME_HUMAN_MATERIALIZE_JANUARY_E2 = "1";
+
+const vitest = await startVitest(
+  "test",
+  ["tests/materialize-january-e2-fixtures.test.ts"],
+  {
+    run: true,
+    watch: false,
   },
-  stdio: "inherit",
-});
+);
 
-if (result.error) throw result.error;
-process.exit(result.status ?? 1);
+if (vitest === undefined) {
+  throw new Error("Vitest could not start the January E2 evidence materializer");
+}
+
+const failedModules = [...vitest.state.getTestModules()].filter((module) => !module.ok());
+if (failedModules.length > 0) {
+  process.exitCode = 1;
+}
