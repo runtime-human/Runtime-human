@@ -31,7 +31,7 @@ Every shared result must include:
 - warmup and measured sample counts;
 - foreground/background processes that materially affect the run.
 
-The January baseline command records OS, CPU, memory, Node, runner and sample configuration automatically.
+The January baseline commands record OS, CPU, memory, Node, runner and sample configuration automatically.
 
 ## January application baseline
 
@@ -76,6 +76,55 @@ pnpm perf:january:baseline -- --output=artifacts/performance/pr-34-run-1.json
 
 The MonthRun scenarios use the repository in-memory persistence harness. They are not evidence for SQLite, Tauri IPC or power-loss durability latency.
 
+## January file-backed SQLite baseline
+
+### Default run
+
+```powershell
+pnpm perf:january:sqlite -- --commit=$(git rev-parse HEAD)
+```
+
+Default configuration:
+
+- 2 warmups per scenario;
+- 20 measured samples per scenario;
+- independent temporary SQLite directory per sample;
+- output: `artifacts/performance/january-sqlite-baseline.json`;
+- integer-microsecond nearest-rank p50/p95/p99;
+- warning-only target classification.
+
+### Fast smoke run
+
+```powershell
+pnpm perf:january:sqlite -- --warmups=0 --samples=1 --commit=$(git rev-parse HEAD)
+```
+
+### Custom artifact path
+
+```powershell
+pnpm perf:january:sqlite -- --output=artifacts/performance/pr-35-run-1.json
+```
+
+### Scenarios
+
+| Scenario | What is timed | Setup excluded from timing |
+|---|---|---|
+| `db.start.new_file` | production worker startup and new file open/configure/migrate | temporary directory creation |
+| `db.start.clean_existing` | production worker startup over a controlled clean database | initial create/open/shutdown |
+| `save.create` | canonical save mutation and durable receipt | worker startup |
+| `save.load` | point lookup and record verification | save creation |
+| `month.begin` | persisted MonthRun begin mutation | worker startup and save creation |
+| `month.boundary.pc2` | first suspended boundary mutation | save/begin preparation |
+| `month.boundary.pc4` | learning boundary mutation | all earlier commands |
+| `month.boundary.pc7` | defect boundary mutation | all earlier commands |
+| `month.boundary.pc9` | completed boundary mutation | all earlier commands |
+| `month.commit` | atomic save/run/result/receipt commit | completed MonthRun preparation |
+| `month.commit.duplicate_receipt` | replay of the already committed request receipt | original commit |
+| `month.load_active.after_clean_reopen` | active MonthRun point lookup after controlled reopen | PC7 state and worker reopen |
+| `db.shutdown.clean` | controlled worker join and database close | worker startup and save preparation |
+
+The launcher executes Cargo directly with `shell: false`. The Rust measurement module uses the committed production January command fixture and the real `PersistenceHandle`; it does not use `:memory:` or bypass the worker.
+
 ## Reproducible comparison procedure
 
 1. Use a clean checkout at the exact commit being measured.
@@ -91,26 +140,11 @@ The MonthRun scenarios use the repository in-memory persistence harness. They ar
 
 ## Cold and warm definitions
 
-- **Warm process:** same process and loaded code; repeated operation samples. The current January baseline uses this model for published content loading.
+- **Warm process:** same process and loaded code; repeated operation samples. The January application baseline uses this model for published content loading.
 - **Warm OS cache:** new process, filesystem pages likely cached by Windows.
 - **Cold application:** new process with no initialized Runtime Human state; OS cache may still be warm.
 - **Cold OS cache:** requires controlled system-level preparation and must never be inferred from a first iteration alone.
 - **First meaningful paint:** the first frame showing the actionable January screen, not merely WebView creation or HTML load.
-
-## File-backed SQLite follow-up
-
-The next OPT-00 slice must add a dedicated Rust measurement command for:
-
-- clean database open;
-- unclean/recovery database open;
-- create/load save;
-- begin MonthRun;
-- PC2/PC4/PC7/PC9 durable boundaries;
-- final commit;
-- duplicate receipt replay;
-- controlled shutdown and reopen.
-
-It must use a real temporary database file and preserve WAL + `synchronous=FULL`. It must not switch to `:memory:`, disable fsync or change transaction semantics to obtain better numbers.
 
 ## Tauri and WebView2 follow-up
 
@@ -146,13 +180,14 @@ The wrapper must record the exact command, duration, source revision and output 
 - Use p50 to detect broad shifts and p95/p99 to identify tail regressions.
 - Inspect raw sample count and host profile before drawing conclusions.
 - A faster application/in-memory result cannot justify changing SQLite durability settings.
+- A fast one-sample smoke proves execution/report wiring, not stable performance.
 - A CI duration improvement is not a product runtime improvement.
 - Bundle size, startup, persistence latency and idle resource use require separate evidence.
 
 ## Follow-up order
 
-1. Rust file-backed persistence baseline.
-2. Tauri IPC and WebView2 first meaningful paint.
-3. Windows idle CPU, wakeups, handles, threads and memory.
-4. Content compiler and CI duration baselines.
+1. Tauri IPC and WebView2 first meaningful paint.
+2. Windows idle CPU, wakeups, handles, threads and memory.
+3. Content compiler and CI duration baselines.
+4. Three repeated full application/SQLite baselines to quantify variance.
 5. Only then implement the highest-value measured optimization.

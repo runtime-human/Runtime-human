@@ -9,8 +9,12 @@ mod error;
 mod failpoint;
 mod hash;
 #[cfg(test)]
+mod january_flow_fixture;
+#[cfg(test)]
 mod january_flow_tests;
 mod migrations;
+#[cfg(test)]
+mod performance_baseline_tests;
 mod records;
 mod recovery;
 mod recovery_save;
@@ -18,6 +22,8 @@ mod recovery_save;
 mod schema_preflight_tests;
 #[cfg(test)]
 mod shutdown_tests;
+#[cfg(test)]
+mod sqlite_performance;
 mod store;
 #[cfg(test)]
 mod terminal_recovery_tests;

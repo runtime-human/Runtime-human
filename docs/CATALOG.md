@@ -11,7 +11,7 @@ updated: 2026-07-26
 > Сгенерировано `node scripts/build-toc.mjs` из metadata документов. Не редактировать вручную.
 > Канонический навигационный вход и порядок источников истины: [INDEX.md](INDEX.md).
 
-Всего документов: **188**.
+Всего документов: **189**.
 
 ## Навигация
 
@@ -181,6 +181,7 @@ updated: 2026-07-26
 - [January 1990 playable slice implementation plan](superpowers/plans/2026-07-24-january-1990-playable-slice.md) — `active`, `non-canon`
 - [MonthRun Protocol Implementation Plan](superpowers/plans/2026-07-20-month-run-protocol.md) — `active`, `non-canon`
 - [OPT-00 Performance Baseline Implementation Plan](superpowers/plans/2026-07-26-performance-baseline.md) — `completed`, `canon`
+- [OPT-00B File-backed SQLite Baseline Plan](superpowers/plans/2026-07-26-sqlite-performance-baseline.md) — `implementation-complete`, `canon`
 - [Phase 0 entry criteria](plans/PHASE-0-ENTRY-CRITERIA.md) — `draft`, `canon`
 - [Plans](plans/README.md) — `draft`, `canon`
 - [Professional Challenge Engine — Implementation Plan](plans/PROFESSIONAL-CHALLENGE-IMPLEMENTATION-PLAN.md) — `draft`, `canon`

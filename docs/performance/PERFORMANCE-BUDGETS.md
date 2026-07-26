@@ -50,7 +50,7 @@ These values come from PERF-01 and remain provisional until OPT-00/OPT-09 eviden
 | Incremental content build, one source | orientation ≤ 150 ms after warm cache | `content-compiler` |
 | Full compiler fixture, 10k entries | orientation ≤ 2 s on the CI runner | `content-compiler` |
 
-## OPT-00 January application targets
+## OPT-00A January application targets
 
 The first repository command measures only the application/in-memory path. It applies the broad `ordinary interactive operation` target to individual begin/resume operations and intentionally leaves content loading and the full four-operation month cycle unbudgeted.
 
@@ -64,6 +64,28 @@ The first repository command measures only the application/in-memory path. It ap
 | `month.full_cycle.in_memory` | none yet | unbudgeted |
 
 These measurements are useful for regression direction and application overhead. They must not be cited as SQLite, Tauri, first-paint or cold-start latency.
+
+## OPT-00B file-backed SQLite targets
+
+The second repository command measures one production `PersistenceHandle` operation at a time against a fresh temporary SQLite file. Preparation of the required January state is excluded from the timed interval.
+
+| Scenario | p95 target | Enforcement |
+|---|---:|---|
+| `db.start.new_file` | none yet | unbudgeted |
+| `db.start.clean_existing` | none yet | unbudgeted |
+| `save.create` | 30 ms | warning-only |
+| `save.load` | 25 ms | warning-only |
+| `month.begin` | 30 ms | warning-only |
+| `month.boundary.pc2` | 30 ms | warning-only |
+| `month.boundary.pc4` | 30 ms | warning-only |
+| `month.boundary.pc7` | 30 ms | warning-only |
+| `month.boundary.pc9` | 30 ms | warning-only |
+| `month.commit` | 30 ms | warning-only |
+| `month.commit.duplicate_receipt` | 25 ms | warning-only |
+| `month.load_active.after_clean_reopen` | 25 ms | warning-only |
+| `db.shutdown.clean` | none yet | unbudgeted |
+
+The command preserves WAL, `synchronous=FULL`, `BEGIN IMMEDIATE`, the single worker, CAS and durable receipts. A warning cannot change its exit status and is not permission to weaken durability.
 
 ## Promotion to an enforced gate
 

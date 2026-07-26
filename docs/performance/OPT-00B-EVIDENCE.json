@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "runtime-human-opt-00b-evidence-v1",
+  "baseCommit": "1b6de211e6bd61ca7f1cf5b77878c7ba0e9f0745",
+  "issue": 24,
+  "pullRequest": 35,
+  "repositoryCommand": "pnpm perf:january:sqlite",
+  "reportSchemaVersion": "runtime-human-sqlite-performance-baseline-v1",
+  "scenarioCount": 13,
+  "defaultConfiguration": {
+    "warmupsPerScenario": 2,
+    "samplesPerScenario": 20,
+    "unit": "microseconds",
+    "budgetEnforcement": "warning-only"
+  },
+  "verifiedSmokeConfiguration": {
+    "warmupsPerScenario": 0,
+    "samplesPerScenario": 1,
+    "result": "passed"
+  },
+  "measuredScope": "rust-file-backed-sqlite",
+  "durability": {
+    "engine": "rusqlite-0.40.1",
+    "journalMode": "WAL",
+    "synchronous": "FULL",
+    "writeTransaction": "BEGIN IMMEDIATE",
+    "workerModel": "single-dedicated-thread",
+    "queueCapacity": 64
+  },
+  "verification": {
+    "freshTemporaryDatabasePerSample": true,
+    "productionPersistenceHandle": true,
+    "productionJanuaryCommandFixture": true,
+    "scenarioPreparationExcludedFromTiming": true,
+    "summaryContractsPassed": true,
+    "allScenariosExecuted": true,
+    "reportSchemaValidated": true,
+    "shellFreeLauncher": true,
+    "sharedBaselineCliParser": true,
+    "sharedJanuaryPersistenceFixture": true,
+    "applicationBaselineRegressionChecked": true,
+    "actualJanuaryReplayRegressionChecked": true,
+    "fastLintPassedAfterDeduplication": true,
+    "temporaryWorkflowRemoved": true,
+    "generatedArtifactsIgnored": true
+  },
+  "notMeasured": [
+    "tauri-ipc",
+    "webview2-startup",
+    "first-meaningful-paint",
+    "windows-idle-resources",
+    "content-compiler",
+    "ci-duration"
+  ]
+}
