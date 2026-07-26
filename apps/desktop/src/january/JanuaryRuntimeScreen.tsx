@@ -21,6 +21,13 @@ const QUALITY_MAXIMUMS = {
   reliability: 9,
 } as const;
 
+const FUTURE_SECTIONS = Object.freeze([
+  Object.freeze({ index: "02", label: "Навыки" }),
+  Object.freeze({ index: "03", label: "Связи" }),
+  Object.freeze({ index: "04", label: "Хронология" }),
+  Object.freeze({ index: "05", label: "Архив" }),
+]);
+
 export function JanuaryRuntimeScreen({
   view,
   busy,
@@ -31,119 +38,253 @@ export function JanuaryRuntimeScreen({
   const model = buildJanuaryScreenModel(view);
 
   return (
-    <main className="january-shell">
-      <section className="january-frame" aria-busy={busy} aria-label="Игровой месяц" role="region">
-        <header className="january-header">
-          <div>
-            <p className="january-brand">RUNTIME HUMAN</p>
-            <p className="january-era">Карьера программиста · 1990-е</p>
+    <main className="runtime-shell">
+      <aside className="runtime-sidebar">
+        <a className="runtime-wordmark" href="#current-month" aria-label="Runtime Human — текущий месяц">
+          <span aria-hidden="true" className="runtime-wordmark-mark">
+            RH
+          </span>
+          <span className="runtime-wordmark-copy">
+            <strong>Runtime Human</strong>
+            <small>Карьера программиста</small>
+          </span>
+        </a>
+
+        <nav aria-label="Разделы карьеры" className="runtime-navigation">
+          <a
+            aria-current="page"
+            className="runtime-nav-item runtime-nav-item--active"
+            href="#current-month"
+          >
+            <span aria-hidden="true" className="runtime-nav-index">
+              01
+            </span>
+            <span className="runtime-nav-copy">
+              <strong>Текущий месяц</strong>
+              <small>Январь 1990</small>
+            </span>
+          </a>
+          {FUTURE_SECTIONS.map((item) => (
+            <span className="runtime-nav-item runtime-nav-item--disabled" key={item.label}>
+              <span aria-hidden="true" className="runtime-nav-index">
+                {item.index}
+              </span>
+              <span aria-disabled="true" className="runtime-nav-label">
+                {item.label}
+              </span>
+              <small className="runtime-nav-soon">Позже</small>
+            </span>
+          ))}
+        </nav>
+
+        <div className="runtime-sidebar-meta">
+          <span className="runtime-status-dot" />
+          <span>
+            <small>Профиль</small>
+            <strong>Локальная карьера</strong>
+          </span>
+        </div>
+      </aside>
+
+      <section className="runtime-stage">
+        <header className="runtime-topbar">
+          <div className="runtime-breadcrumbs" aria-label="Положение в карьере">
+            <span>Карьера</span>
+            <span aria-hidden="true">/</span>
+            <strong>Январь 1990</strong>
           </div>
-          <div className="january-local-badge" aria-label="Локальное детерминированное сохранение">
-            <span className="january-local-dot" />
-            Локально · детерминированно
+          <div className="runtime-era-meta">
+            <span>Эпоха</span>
+            <strong>Персональные компьютеры</strong>
           </div>
         </header>
 
-        <div className="january-progress" aria-label={`Прогресс месяца ${model.progress}%`}>
-          <span style={{ width: `${model.progress}%` }} />
-        </div>
-
-        <div className="january-layout">
-          <article className={`january-card january-card--${model.tone}`}>
-            <p className="january-eyebrow">{model.eyebrow}</p>
-            <h1>{model.title}</h1>
-            <p className="january-summary">{model.summary}</p>
-            {model.detail ? <p className="january-detail">{model.detail}</p> : null}
-
-            {model.choices.length > 0 ? (
-              <div className="january-choices" role="group" aria-label="Варианты решения">
-                {model.choices.map((choice, index) => (
-                  <button
-                    className="january-choice"
-                    disabled={busy}
-                    key={choice.value}
-                    onClick={() => onChoose(choice.value)}
-                    type="button"
-                  >
-                    <span className="january-choice-index">0{index + 1}</span>
-                    <span>
-                      <strong>{choice.label}</strong>
-                      <small>{choice.description}</small>
-                    </span>
-                    <span aria-hidden="true" className="january-choice-arrow">
-                      →
-                    </span>
-                  </button>
-                ))}
-              </div>
-            ) : null}
-
-            {model.qualityScores ? (
-              <div className="january-quality" aria-label="Качество первой программы">
-                {Object.entries(model.qualityScores).map(([key, value]) => {
-                  const metric = key as keyof typeof QUALITY_LABELS;
-                  const label = QUALITY_LABELS[metric];
-                  const maximum = QUALITY_MAXIMUMS[metric];
-                  const width = Math.round((value / maximum) * 100);
-                  return (
-                    <div className="january-quality-item" key={key}>
-                      <div>
-                        <span>{label}</span>
-                        <strong>{value}</strong>
-                      </div>
-                      <div
-                        aria-label={label}
-                        aria-valuemax={maximum}
-                        aria-valuemin={0}
-                        aria-valuenow={value}
-                        className="january-quality-track"
-                        role="progressbar"
-                      >
-                        <span style={{ width: `${width}%` }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : null}
-
-            {model.primaryAction ? (
-              <button
-                className="january-primary"
-                disabled={busy}
-                onClick={model.primaryAction.kind === "start" ? onStart : onRetry}
-                type="button"
-              >
-                {busy ? "Сохраняем…" : model.primaryAction.label}
-                <span aria-hidden="true">↗</span>
-              </button>
-            ) : null}
-          </article>
-
-          <aside className="january-terminal" aria-label="Контекст первой программы">
-            <div className="january-terminal-bar">
-              <span>GW-BASIC · DOS</span>
-              <span>JAN 1990</span>
+        <section
+          aria-busy={busy}
+          aria-label="Игровой месяц"
+          className="january-frame"
+          id="current-month"
+          role="region"
+        >
+          <header className="january-header">
+            <div>
+              <p className="january-brand">Карьера программиста</p>
+              <p className="january-era">1990 · Первый месяц</p>
             </div>
-            <pre>
-              <code>{terminalListing(view.kind)}</code>
-            </pre>
-            <div className="january-terminal-meta">
-              <span>PROJECT</span>
-              <strong>PERSONAL_UTILITY.BAS</strong>
-              <span>STATE</span>
-              <strong>{terminalState(view.kind)}</strong>
+            <div
+              aria-label="Локальное детерминированное сохранение"
+              className="january-local-badge"
+            >
+              <span className="january-local-dot" />
+              Локально · детерминированно
             </div>
-          </aside>
-        </div>
+          </header>
 
-        <footer className="january-footer">
-          <span>Автосохранение на каждой границе решения</span>
-          <span>{busy ? "Операция выполняется" : "Состояние сохранено"}</span>
-        </footer>
+          <div className="january-progress-block">
+            <div className="january-progress-copy">
+              <span>Прогресс месяца</span>
+              <strong>{model.progress}%</strong>
+            </div>
+            <div
+              aria-label={`Прогресс месяца ${model.progress}%`}
+              aria-valuemax={100}
+              aria-valuemin={0}
+              aria-valuenow={model.progress}
+              className="january-progress"
+              role="progressbar"
+            >
+              <span style={{ width: `${model.progress}%` }} />
+            </div>
+          </div>
+
+          <div className="january-layout">
+            <article className={`january-card january-card--${model.tone}`}>
+              <div className="january-card-heading">
+                <p className="january-eyebrow">{model.eyebrow}</p>
+                <span className={`january-tone january-tone--${model.tone}`}>
+                  {toneLabel(model.tone)}
+                </span>
+              </div>
+
+              <h1>{model.title}</h1>
+              <p className="january-summary">{model.summary}</p>
+              {model.detail ? <p className="january-detail">{model.detail}</p> : null}
+
+              {model.choices.length > 0 ? (
+                <div aria-label="Варианты решения" className="january-choices" role="group">
+                  {model.choices.map((choice, index) => (
+                    <button
+                      className="january-choice"
+                      disabled={busy}
+                      key={choice.value}
+                      onClick={() => onChoose(choice.value)}
+                      type="button"
+                    >
+                      <kbd aria-hidden="true" className="january-choice-index">
+                        {String(index + 1).padStart(2, "0")}
+                      </kbd>
+                      <span className="january-choice-copy">
+                        <strong>{choice.label}</strong>
+                        <small>{choice.description}</small>
+                      </span>
+                      <span aria-hidden="true" className="january-choice-arrow">
+                        →
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+
+              {model.qualityScores ? (
+                <div aria-label="Качество первой программы" className="january-quality">
+                  {Object.entries(model.qualityScores).map(([key, value]) => {
+                    const metric = key as keyof typeof QUALITY_LABELS;
+                    const label = QUALITY_LABELS[metric];
+                    const maximum = QUALITY_MAXIMUMS[metric];
+                    const width = Math.round((value / maximum) * 100);
+                    return (
+                      <div className="january-quality-item" key={key}>
+                        <div>
+                          <span>{label}</span>
+                          <strong>{value}</strong>
+                        </div>
+                        <div
+                          aria-label={label}
+                          aria-valuemax={maximum}
+                          aria-valuemin={0}
+                          aria-valuenow={value}
+                          className="january-quality-track"
+                          role="progressbar"
+                        >
+                          <span style={{ width: `${width}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null}
+
+              {model.primaryAction ? (
+                <button
+                  className="january-primary"
+                  disabled={busy}
+                  onClick={model.primaryAction.kind === "start" ? onStart : onRetry}
+                  type="button"
+                >
+                  {busy ? "Сохраняем…" : model.primaryAction.label}
+                  <span aria-hidden="true">↗</span>
+                </button>
+              ) : null}
+            </article>
+
+            <div className="january-context">
+              <aside aria-label="Контекст первой программы" className="january-terminal">
+                <div className="january-terminal-bar">
+                  <span>GW-BASIC · DOS</span>
+                  <span>JAN 1990</span>
+                </div>
+                <pre>
+                  <code>{terminalListing(view.kind)}</code>
+                </pre>
+                <div className="january-terminal-meta">
+                  <span>PROJECT</span>
+                  <strong>PERSONAL_UTILITY.BAS</strong>
+                  <span>STATE</span>
+                  <strong>{terminalState(view.kind)}</strong>
+                </div>
+              </aside>
+
+              <section aria-label="Параметры сессии" className="january-session-panel">
+                <div className="january-session-heading">
+                  <span>Сессия</span>
+                  <strong>01 / JAN</strong>
+                </div>
+                <dl>
+                  <div>
+                    <dt>Среда</dt>
+                    <dd>GW-BASIC / DOS</dd>
+                  </div>
+                  <div>
+                    <dt>Сохранение</dt>
+                    <dd>Автоматическое</dd>
+                  </div>
+                  <div>
+                    <dt>Состояние</dt>
+                    <dd>{terminalState(view.kind)}</dd>
+                  </div>
+                </dl>
+              </section>
+            </div>
+          </div>
+
+          <footer
+            aria-label="Состояние сохранения"
+            aria-live="polite"
+            className="january-footer"
+            role="status"
+          >
+            <span>Автосохранение на каждой границе решения</span>
+            <strong>{busy ? "Операция выполняется" : "Состояние сохранено"}</strong>
+          </footer>
+        </section>
       </section>
     </main>
   );
+}
+
+function toneLabel(tone: ReturnType<typeof buildJanuaryScreenModel>["tone"]): string {
+  switch (tone) {
+    case "neutral":
+      return "Сценарий";
+    case "decision":
+      return "Решение";
+    case "success":
+      return "Результат";
+    case "warning":
+      return "Проверка";
+    case "error":
+      return "Ошибка";
+  }
 }
 
 function terminalListing(kind: JanuarySessionView["kind"]): string {
