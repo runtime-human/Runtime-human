@@ -1,12 +1,12 @@
 {
   "_schemaVersion": 1,
-  "updated": "2026-07-26",
+  "updated": "2026-07-27",
   "implementationProfile": "MVP Casual",
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "mainHeadAtCurrentSliceStart": "5958f132376306246cf0895e97d04e4a9c9239d5",
-  "currentPhase": "performance-user-timing-observability",
+  "mainHeadAtCurrentSliceStart": "91903da02b1edd7988f64ef153c7cd045ea481a1",
+  "currentPhase": "desktop-design-foundation",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -309,10 +309,9 @@
     },
     {
       "id": "performance-user-timing-observability",
-      "status": "implementation-complete",
+      "status": "complete",
       "issue": 24,
       "pullRequest": 36,
-      "branch": "agent/perf-opt-00c-user-timing",
       "scope": [
         "failure-safe-performance-recorder",
         "browser-user-timing",
@@ -350,6 +349,39 @@
         "defaultDesktopCompositionInstrumented": true,
         "concurrentActionsProduceOneMeasure": true,
         "focusedTests": 7
+      },
+      "commit": "91903da02b1edd7988f64ef153c7cd045ea481a1"
+    },
+    {
+      "id": "desktop-design-foundation",
+      "status": "implementation-complete",
+      "issue": 37,
+      "pullRequest": 38,
+      "branch": "agent/ui-runtime-shell-foundation",
+      "scope": [
+        "semantic-design-tokens",
+        "career-desktop-shell",
+        "january-workspace-redesign",
+        "disabled-future-navigation",
+        "responsive-layout",
+        "accessible-live-save-status"
+      ],
+      "exclusions": [
+        "new-gameplay",
+        "npc-implementation",
+        "functional-future-routes",
+        "invented-metrics",
+        "component-framework-migration",
+        "persistence-or-determinism-changes"
+      ],
+      "evidence": {
+        "designDirection": "archival-workstation",
+        "openDesignPrinciplesApplied": true,
+        "rawPaletteCentralized": true,
+        "typedGameplayActionsPreserved": true,
+        "futureSectionsNonInteractive": true,
+        "focusedShellTests": 1,
+        "storybookStatesPreserved": 8
       }
     },
     {
@@ -380,8 +412,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "pending-pr-36-final-head",
-    "currentConstraint": "opt-00c-implementation-complete-permanent-gates-and-review-pending",
+    "qualityGate": "pending-pr-38-final-head",
+    "currentConstraint": "ui-01-implementation-complete-permanent-gates-and-review-pending",
     "currentPullRequestMayMerge": false
   }
 }
