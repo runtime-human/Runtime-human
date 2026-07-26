@@ -70,7 +70,9 @@ fn actual_january_flow_survives_file_backed_reopen_and_replays_commit() {
         assert!(matches!(stored, MutationOutcome::Accepted(_)));
 
         if index < 3 {
-            handle.shutdown().expect("close January worker at decision boundary");
+            handle
+                .shutdown()
+                .expect("close January worker at decision boundary");
             handle = PersistenceHandle::start(database_path.clone())
                 .expect("reopen January worker at decision boundary");
             let active = handle
@@ -83,7 +85,10 @@ fn actual_january_flow_survives_file_backed_reopen_and_replays_commit() {
             assert_eq!(active.run_id, fixture.begin.run_id);
             assert_eq!(active.status, command.status);
             assert_eq!(active.run_revision, command.run_revision);
-            assert_eq!(active.checkpoint_hash, checkpoint_hash(&command.checkpoint.json));
+            assert_eq!(
+                active.checkpoint_hash,
+                checkpoint_hash(&command.checkpoint.json)
+            );
             assert_eq!(
                 checkpoint_program_counter(&active.checkpoint.json),
                 fixture.expectations.boundary_program_counters[index]
@@ -101,7 +106,8 @@ fn actual_january_flow_survives_file_backed_reopen_and_replays_commit() {
     assert!(matches!(committed, MutationOutcome::Accepted(_)));
     handle.shutdown().expect("close committed January worker");
 
-    let reopened = PersistenceHandle::start(database_path).expect("reopen committed January worker");
+    let reopened =
+        PersistenceHandle::start(database_path).expect("reopen committed January worker");
     let save = reopened
         .load_save(LoadSaveQueryV1 {
             schema_version: "load-save-query-v1".to_owned(),
@@ -110,7 +116,10 @@ fn actual_january_flow_survives_file_backed_reopen_and_replays_commit() {
         .expect("load committed January save")
         .expect("committed January save exists");
     assert_eq!(save.revision, fixture.expectations.final_save_revision);
-    assert_eq!(save.last_committed_run_id.as_deref(), Some(fixture.begin.run_id.as_str()));
+    assert_eq!(
+        save.last_committed_run_id.as_deref(),
+        Some(fixture.begin.run_id.as_str())
+    );
 
     let run = reopened
         .load_month_run(LoadMonthRunQueryV1 {
@@ -120,8 +129,14 @@ fn actual_january_flow_survives_file_backed_reopen_and_replays_commit() {
         .expect("load committed January run")
         .expect("committed January run exists");
     assert_eq!(run.status, fixture.expectations.final_run_status);
-    assert_eq!(run.committed_save_revision, Some(fixture.expectations.final_save_revision));
-    assert_eq!(run.checkpoint_hash, fixture.expectations.committed_checkpoint_hash);
+    assert_eq!(
+        run.committed_save_revision,
+        Some(fixture.expectations.final_save_revision)
+    );
+    assert_eq!(
+        run.checkpoint_hash,
+        fixture.expectations.committed_checkpoint_hash
+    );
     assert_eq!(
         checkpoint_program_counter(&run.checkpoint.json),
         fixture.expectations.committed_program_counter
@@ -138,7 +153,10 @@ fn actual_january_flow_survives_file_backed_reopen_and_replays_commit() {
         })
         .expect("reload January save after duplicate commit")
         .expect("January save exists after duplicate commit");
-    assert_eq!(replayed_save.revision, fixture.expectations.final_save_revision);
+    assert_eq!(
+        replayed_save.revision,
+        fixture.expectations.final_save_revision
+    );
     reopened.shutdown().expect("shutdown final January worker");
 }
 

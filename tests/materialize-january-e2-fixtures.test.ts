@@ -15,12 +15,7 @@ materialize("materialize January E2 evidence", () => {
   it("writes the bounded balance trace and production persistence flow", async () => {
     const outputs = [
       {
-        path: join(
-          process.cwd(),
-          "fixtures",
-          "balance",
-          "january-1990-bounded-trace-v1.json",
-        ),
+        path: join(process.cwd(), "fixtures", "balance", "january-1990-bounded-trace-v1.json"),
         value: await generateJanuary1990BalanceTrace({ seedStart: 1, seedEnd: 64 }),
       },
       {

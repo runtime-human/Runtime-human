@@ -32,11 +32,7 @@ import { loadJanuaryTestRegistry } from "./january-1990-runtime-fixture";
 
 const ACCESS_ROUTES = ["home-pc", "shared-school-pc"] as const;
 const LEARNING_PRACTICES = ["read-and-run", "edit-and-debug"] as const;
-const DEFECT_RESPONSES = [
-  "inspect-listing",
-  "change-input",
-  "ask-for-guidance",
-] as const;
+const DEFECT_RESPONSES = ["inspect-listing", "change-input", "ask-for-guidance"] as const;
 
 type AccessRoute = (typeof ACCESS_ROUTES)[number];
 type LearningPractice = (typeof LEARNING_PRACTICES)[number];
@@ -113,19 +109,12 @@ export async function generateJanuary1990BalanceTrace(
             learningPractice,
             defectResponse,
           );
-          const defectEventId = requireOutcomeString(
-            completed,
-            "january-1990/defect",
-            "eventId",
-          );
+          const defectEventId = requireOutcomeString(completed, "january-1990/defect", "eventId");
           if (defectEventId === JANUARY_1990_CONTENT_IDS.logicErrorEvent) logicError += 1;
           else if (defectEventId === JANUARY_1990_CONTENT_IDS.syntaxErrorEvent) syntaxError += 1;
           else throw new Error(`Unexpected January defect event ${defectEventId}`);
 
-          const qualityScores = requireQualityScores(
-            completed,
-            "january-1990/programming-outcome",
-          );
+          const qualityScores = requireQualityScores(completed, "january-1990/programming-outcome");
           addQualityVector(vectorCounts, defectResponse, qualityScores);
         }
       }
@@ -133,8 +122,7 @@ export async function generateJanuary1990BalanceTrace(
   }
 
   const seedCount = input.seedEnd - input.seedStart + 1;
-  const answerProfiles =
-    ACCESS_ROUTES.length * LEARNING_PRACTICES.length * DEFECT_RESPONSES.length;
+  const answerProfiles = ACCESS_ROUTES.length * LEARNING_PRACTICES.length * DEFECT_RESPONSES.length;
   const totalRuns = seedCount * answerProfiles;
   const accessChoiceRuns = seedCount * LEARNING_PRACTICES.length * DEFECT_RESPONSES.length;
   const learningChoiceRuns = seedCount * ACCESS_ROUTES.length * DEFECT_RESPONSES.length;
@@ -292,10 +280,7 @@ function requireOutcomeString(
   return value;
 }
 
-function requireQualityScores(
-  checkpoint: MonthRunCheckpointV1,
-  outcomeId: string,
-): QualityScores {
+function requireQualityScores(checkpoint: MonthRunCheckpointV1, outcomeId: string): QualityScores {
   const value = requireOutcomeRecord(checkpoint, outcomeId).qualityScores;
   if (!isRecord(value)) throw new TypeError(`${outcomeId}.qualityScores must be an object`);
   return Object.freeze({
