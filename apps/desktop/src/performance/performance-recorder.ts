@@ -4,7 +4,11 @@ export type PerformanceTimingName =
   | "content.load_chunk"
   | "content.publish_registry"
   | "month.bootstrap_save"
-  | "month.load";
+  | "month.load"
+  | "month.begin"
+  | "month.resume"
+  | "month.commit"
+  | "month.retry";
 
 export type PerformanceSampleV1 = Readonly<{
   schemaVersion: "performance-sample-v1";
