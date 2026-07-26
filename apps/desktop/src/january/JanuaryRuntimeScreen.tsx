@@ -1,7 +1,4 @@
-import {
-  DesktopShell,
-  type DesktopNavigationItem,
-} from "../shell/DesktopShell";
+import { DesktopShell, type DesktopNavigationItem } from "../shell/DesktopShell";
 import { buildJanuaryScreenModel } from "./january-screen-model";
 import type { JanuarySessionChoice, JanuarySessionView } from "./january-session-controller";
 
@@ -75,10 +72,7 @@ export function JanuaryRuntimeScreen({
             <p className="january-brand">Карьера программиста</p>
             <p className="january-era">1990 · Первый месяц</p>
           </div>
-          <div
-            aria-label="Локальное детерминированное сохранение"
-            className="january-local-badge"
-          >
+          <div aria-label="Локальное детерминированное сохранение" className="january-local-badge">
             <span className="january-local-dot" />
             Локально · детерминированно
           </div>

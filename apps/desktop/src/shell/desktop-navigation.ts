@@ -15,6 +15,4 @@ export type DesktopPlannedNavigationItem = Readonly<{
   label: string;
 }>;
 
-export type DesktopNavigationItem =
-  | DesktopRouteNavigationItem
-  | DesktopPlannedNavigationItem;
+export type DesktopNavigationItem = DesktopRouteNavigationItem | DesktopPlannedNavigationItem;
