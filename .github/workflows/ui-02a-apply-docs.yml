@@ -1,0 +1,111 @@
+name: ui-02a-apply-docs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/ui-02a-apply-docs.yml"
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  apply:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'agent/ui-02a-extract-desktop-shell'
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: agent/ui-02a-extract-desktop-shell
+          clean: true
+          persist-credentials: true
+          show-progress: false
+          fetch-depth: 1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Generate exact documentation state
+        run: |
+          $ErrorActionPreference = "Stop"
+          @'
+          const fs = require("node:fs");
+          const path = "docs/EXECUTION-STATUS.jsonc";
+          const status = JSON.parse(fs.readFileSync(path, "utf8"));
+          status.updated = "2026-07-27";
+          status.mainHeadAtCurrentSliceStart = "b14ba066cd289e30a9a000739a4e75dbe16d03dd";
+          status.currentPhase = "desktop-shell-extraction";
+          const milestone = {
+            id: "desktop-shell-extraction",
+            status: "implementation-complete",
+            issue: 40,
+            pullRequest: 42,
+            branch: "agent/ui-02a-extract-desktop-shell",
+            scope: [
+              "typed-desktop-navigation",
+              "reusable-desktop-shell",
+              "shell-style-boundary",
+              "january-feature-composition",
+              "shell-storybook-and-accessibility-contract"
+            ],
+            exclusions: [
+              "routing",
+              "career-overview-projection",
+              "new-persistence-reads",
+              "new-gameplay",
+              "npc-implementation",
+              "performance-optimization"
+            ],
+            evidence: {
+              navigationKinds: ["route", "planned"],
+              shellImportsJanuaryDomain: false,
+              shellImportsGamePackages: false,
+              futureSectionsNonInteractive: true,
+              januaryPropsPreserved: true,
+              focusedShellTests: 1,
+              januaryInteractionTestsPreserved: 4,
+              standaloneShellStory: true
+            }
+          };
+          const existingIndex = status.milestones.findIndex((item) => item.id === milestone.id);
+          if (existingIndex >= 0) status.milestones[existingIndex] = milestone;
+          else {
+            const npcIndex = status.milestones.findIndex((item) => item.id === "npc-foundation");
+            if (npcIndex >= 0) status.milestones.splice(npcIndex, 0, milestone);
+            else status.milestones.push(milestone);
+          }
+          status.verification.qualityGate = "pending-pr-42-final-head";
+          status.verification.currentConstraint = "ui-02a-implementation-complete-permanent-gates-and-review-pending";
+          status.verification.currentPullRequestMayMerge = false;
+          fs.writeFileSync(path, `${JSON.stringify(status, null, 2)}\n`);
+          '@ | node
+          node scripts/build-toc.mjs
+          node scripts/build-toc.mjs --check
+      - name: Enforce documentation-only mutation
+        run: |
+          $ErrorActionPreference = "Stop"
+          $allowed = @("docs/EXECUTION-STATUS.jsonc", "docs/MANIFEST.jsonc")
+          $changed = @(git diff --name-only)
+          $unexpected = @($changed | Where-Object { $_ -notin $allowed })
+          if ($unexpected.Count -gt 0) {
+            throw "Unexpected changed paths: $($unexpected -join ', ')"
+          }
+          if ($changed.Count -ne 2) {
+            throw "Expected exactly two documentation changes, got: $($changed -join ', ')"
+          }
+          git add -- docs/EXECUTION-STATUS.jsonc docs/MANIFEST.jsonc
+          $staged = @(git diff --cached --name-only)
+          $unexpectedStaged = @($staged | Where-Object { $_ -notin $allowed })
+          if ($unexpectedStaged.Count -gt 0 -or $staged.Count -ne 2) {
+            throw "Invalid staged paths: $($staged -join ', ')"
+          }
+      - name: Commit documentation snapshot to UI-02A branch
+        run: |
+          $ErrorActionPreference = "Stop"
+          git config user.name "runtime-human-ci"
+          git config user.email "runtime-human-ci@users.noreply.github.com"
+          git commit -m "docs: record UI-02A shell extraction"
+          git push origin HEAD:agent/ui-02a-extract-desktop-shell
