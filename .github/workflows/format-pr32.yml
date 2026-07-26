@@ -1,0 +1,51 @@
+name: format-pr32
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: format-pr32-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  format-and-cleanup:
+    if: github.event.pull_request.head.ref == 'agent/january-1990-hardening-closure'
+    runs-on: self-hosted
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          clean: true
+          persist-credentials: true
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Apply repository formatters
+        run: |
+          pnpm fmt
+          cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all
+      - name: Commit formatting and remove workflow
+        run: |
+          git config user.name "runtime-human-agent"
+          git config user.email "runtime-human-agent@users.noreply.github.com"
+          git rm .github/workflows/format-pr32.yml
+          git add -A
+          git commit -m "style: apply repository formatting to January closure"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
