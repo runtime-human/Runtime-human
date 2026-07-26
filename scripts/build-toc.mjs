@@ -21,6 +21,7 @@ const TYPE_BY_DIR = {
   "game-design": "engine",
   simulation: "simulation",
   persistence: "engine",
+  performance: "engine",
   content: "content",
   ui: "ui",
   engineering: "engine",

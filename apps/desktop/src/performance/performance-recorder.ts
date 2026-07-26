@@ -40,10 +40,12 @@ export function createPerformanceRecorder(
   return Object.freeze({
     async measure<T>(name: PerformanceTimingName, operation: () => Promise<T>): Promise<T> {
       const startedAt = nowMilliseconds();
-      let outcome: Readonly<{ kind: "fulfilled"; value: T }> | Readonly<{
-        kind: "rejected";
-        error: unknown;
-      }>;
+      let outcome:
+        | Readonly<{ kind: "fulfilled"; value: T }>
+        | Readonly<{
+            kind: "rejected";
+            error: unknown;
+          }>;
       try {
         outcome = Object.freeze({ kind: "fulfilled", value: await operation() });
       } catch (error) {

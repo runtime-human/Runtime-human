@@ -83,10 +83,7 @@ describe("performance recorder", () => {
     const result = await recorder.measure("month.begin", async () => "begun");
 
     expect(result).toBe("begun");
-    expect(marks).toEqual([
-      "runtime-human:month.begin:0:start",
-      "runtime-human:month.begin:0:end",
-    ]);
+    expect(marks).toEqual(["runtime-human:month.begin:0:start", "runtime-human:month.begin:0:end"]);
     expect(measures).toEqual([
       [
         "runtime-human:month.begin:fulfilled",
