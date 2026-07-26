@@ -17,7 +17,9 @@ if (vitest === undefined) {
   throw new Error("Vitest could not start the January E2 evidence materializer");
 }
 
-const failedModules = [...vitest.state.getTestModules()].filter((module) => !module.ok());
+const failedModules = [...vitest.state.getTestModules()].filter(
+  (module) => !module.ok(),
+);
 if (failedModules.length > 0) {
   process.exitCode = 1;
 }
