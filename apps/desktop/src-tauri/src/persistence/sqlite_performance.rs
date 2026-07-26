@@ -6,17 +6,13 @@ use std::{
     time::{Instant, SystemTime, UNIX_EPOCH},
 };
 
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use tempfile::TempDir;
 
 use super::{
-    BeginPersistedMonthRunCommandV1, CommitPersistedMonthRunCommandV1, CreateSaveCommandV1,
     LoadActiveMonthRunQueryV1, LoadSaveQueryV1, MutationOutcome, PersistenceHandle,
-    StoreMonthRunBoundaryCommandV1,
+    january_flow_fixture::{JanuaryPersistenceFlowFixture, load_january_persistence_flow_fixture},
 };
-
-const FIXTURE_JSON: &str =
-    include_str!("../../../../../fixtures/persistence/january-1990-persistence-flow-v1.json");
 const DEFAULT_OUTPUT: &str = "artifacts/performance/january-sqlite-baseline.json";
 const DEFAULT_WARMUPS: usize = 2;
 const DEFAULT_SAMPLES: usize = 20;
@@ -36,29 +32,6 @@ pub(super) struct MicrosecondSummary {
     pub(super) p95_microseconds: u64,
     pub(super) p99_microseconds: u64,
     pub(super) max_microseconds: u64,
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-struct JanuaryPersistenceFlowFixture {
-    schema_version: String,
-    create_save: CreateSaveCommandV1,
-    begin: BeginPersistedMonthRunCommandV1,
-    boundaries: Vec<StoreMonthRunBoundaryCommandV1>,
-    commit: CommitPersistedMonthRunCommandV1,
-    expectations: JanuaryPersistenceExpectations,
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-struct JanuaryPersistenceExpectations {
-    boundary_program_counters: Vec<u64>,
-    boundary_statuses: Vec<super::DurableMonthRunStatus>,
-    committed_program_counter: u64,
-    final_save_revision: u64,
-    final_run_status: super::DurableMonthRunStatus,
-    completed_checkpoint_hash: String,
-    committed_checkpoint_hash: String,
 }
 
 #[derive(Clone, Copy)]
@@ -239,7 +212,7 @@ pub(super) fn summarize_microseconds(samples: &[u64]) -> Result<MicrosecondSumma
 }
 
 pub(super) fn run_january_sqlite_performance_baseline() -> BaselineResult<()> {
-    let fixture: JanuaryPersistenceFlowFixture = serde_json::from_str(FIXTURE_JSON)?;
+    let fixture = load_january_persistence_flow_fixture();
     validate_fixture(&fixture)?;
     let warmups = read_usize_environment("RUNTIME_HUMAN_SQLITE_PERF_WARMUPS", DEFAULT_WARMUPS, 0)?;
     let samples = read_usize_environment("RUNTIME_HUMAN_SQLITE_PERF_SAMPLES", DEFAULT_SAMPLES, 1)?;
