@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 import { spawnSync } from "node:child_process";
-import { arch, cpus, release, totalmem } from "node:os";
+import { cpus, release, totalmem } from "node:os";
 import { resolve } from "node:path";
 
 const options = parseArguments(process.argv.slice(2));
 const cpu = cpus()[0];
 const cargo = process.platform === "win32" ? "cargo.exe" : "cargo";
-const result = spawnSync(
+const cargoRun = spawnSync(
   cargo,
   [
     "test",
@@ -39,11 +39,11 @@ const result = spawnSync(
   },
 );
 
-if (result.error) throw result.error;
-process.exitCode = result.status ?? 1;
+if (cargoRun.error) throw cargoRun.error;
+process.exitCode = cargoRun.status ?? 1;
 
 function parseArguments(args) {
-  const result = {
+  const parsed = {
     warmups: 2,
     samples: 20,
     output: "artifacts/performance/january-sqlite-baseline.json",
@@ -53,24 +53,24 @@ function parseArguments(args) {
   for (const argument of args) {
     if (argument === "--") continue;
     if (argument.startsWith("--warmups=")) {
-      result.warmups = parseInteger(argument, "--warmups=", 0);
+      parsed.warmups = parseInteger(argument, "--warmups=", 0);
       continue;
     }
     if (argument.startsWith("--samples=")) {
-      result.samples = parseInteger(argument, "--samples=", 1);
+      parsed.samples = parseInteger(argument, "--samples=", 1);
       continue;
     }
     if (argument.startsWith("--output=")) {
-      result.output = requireValue(argument, "--output=");
+      parsed.output = requireValue(argument, "--output=");
       continue;
     }
     if (argument.startsWith("--commit=")) {
-      result.commit = requireValue(argument, "--commit=");
+      parsed.commit = requireValue(argument, "--commit=");
       continue;
     }
     throw new Error(`Unknown January SQLite baseline option: ${argument}`);
   }
-  return result;
+  return parsed;
 }
 
 function parseInteger(argument, prefix, minimum) {
