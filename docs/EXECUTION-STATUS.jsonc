@@ -5,8 +5,8 @@
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "mainHeadAtCurrentSliceStart": "5d90caaedfcb02ec09b7058b3a229b230af94fc5",
-  "currentPhase": "product-facing-performance-and-career-overview",
+  "mainHeadAtCurrentSliceStart": "b14ba066cd289e30a9a000739a4e75dbe16d03dd",
+  "currentPhase": "desktop-shell-extraction",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -385,6 +385,41 @@
       "commit": "5d90caaedfcb02ec09b7058b3a229b230af94fc5"
     },
     {
+      "id": "desktop-shell-extraction",
+      "status": "implementation-complete",
+      "issue": 40,
+      "pullRequest": 42,
+      "branch": "agent/ui-02a-extract-desktop-shell",
+      "scope": [
+        "typed-desktop-navigation",
+        "reusable-desktop-shell",
+        "shell-style-boundary",
+        "january-feature-composition",
+        "shell-storybook-and-accessibility-contract"
+      ],
+      "exclusions": [
+        "routing",
+        "career-overview-projection",
+        "new-persistence-reads",
+        "new-gameplay",
+        "npc-implementation",
+        "performance-optimization"
+      ],
+      "evidence": {
+        "navigationKinds": [
+          "route",
+          "planned"
+        ],
+        "shellImportsJanuaryDomain": false,
+        "shellImportsGamePackages": false,
+        "futureSectionsNonInteractive": true,
+        "januaryPropsPreserved": true,
+        "focusedShellTests": 1,
+        "januaryInteractionTestsPreserved": 4,
+        "standaloneShellStory": true
+      }
+    },
+    {
       "id": "npc-foundation",
       "status": "planned-after-product-facing-performance-baselines",
       "scope": [
@@ -412,8 +447,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "complete-pr-38",
-    "currentConstraint": "next-delivery-issues-39-and-40-planned",
+    "qualityGate": "pending-pr-42-final-head",
+    "currentConstraint": "ui-02a-implementation-complete-permanent-gates-and-review-pending",
     "currentPullRequestMayMerge": false
   }
 }
