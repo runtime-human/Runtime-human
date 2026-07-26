@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { fingerprint } from "@runtime-human/game-core";
@@ -111,7 +111,7 @@ describe("January 1990 runtime screen", () => {
     );
   });
 
-  it("presents January inside the career desktop shell", () => {
+  it("renders the January workspace without owning application navigation", () => {
     render(
       <JanuaryRuntimeScreen
         {...handlers}
@@ -125,15 +125,9 @@ describe("January 1990 runtime screen", () => {
       />,
     );
 
-    const navigation = screen.getByRole("navigation", { name: "Разделы карьеры" });
-    expect(within(navigation).getByRole("link", { name: /Текущий месяц/u })).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
-    expect(within(navigation).getByText("Навыки")).toHaveAttribute("aria-disabled", "true");
-    expect(screen.getByRole("status", { name: "Состояние сохранения" })).toHaveTextContent(
-      "Состояние сохранено",
-    );
+    expect(screen.getByRole("region", { name: "Игровой месяц" })).toBeInTheDocument();
     expect(screen.getByText("GW-BASIC · DOS")).toBeInTheDocument();
+    expect(screen.queryByRole("navigation", { name: "Разделы карьеры" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("status", { name: "Состояние сохранения" })).not.toBeInTheDocument();
   });
 });
