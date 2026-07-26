@@ -8,6 +8,8 @@ mod database;
 mod error;
 mod failpoint;
 mod hash;
+#[cfg(test)]
+mod january_flow_tests;
 mod migrations;
 mod records;
 mod recovery;

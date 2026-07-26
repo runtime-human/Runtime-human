@@ -1,0 +1,250 @@
+{
+  "schemaVersion": "january-1990-balance-trace-v1",
+  "seedRange": {
+    "start": 1,
+    "end": 64,
+    "count": 64
+  },
+  "answerProfiles": 12,
+  "totalRuns": 768,
+  "decisionBoundariesPerRun": 3,
+  "transitionsPerRun": 12,
+  "fixedStepsPerRun": 9,
+  "materializedOutcomesPerRun": 4,
+  "rngCallBudget": {
+    "content": 0,
+    "narrative": 1,
+    "outcome": 1
+  },
+  "failures": 0,
+  "softLocks": 0,
+  "programmerActionShare": {
+    "programmerActions": 2,
+    "totalDecisions": 3
+  },
+  "choiceFrequencies": {
+    "accessRoute": {
+      "home-pc": 384,
+      "shared-school-pc": 384
+    },
+    "learningPractice": {
+      "read-and-run": 384,
+      "edit-and-debug": 384
+    },
+    "defectResponse": {
+      "inspect-listing": 256,
+      "change-input": 256,
+      "ask-for-guidance": 256
+    }
+  },
+  "outcomeFrequencies": {
+    "access": 768,
+    "work": 768,
+    "defect": 768,
+    "programmingOutcome": 768
+  },
+  "defectEvents": {
+    "logicError": 396,
+    "syntaxError": 372
+  },
+  "responseQualityProfiles": [
+    {
+      "response": "inspect-listing",
+      "runs": 256,
+      "vectors": [
+        {
+          "clarity": 7,
+          "correctness": 8,
+          "reliability": 5,
+          "count": 29
+        },
+        {
+          "clarity": 7,
+          "correctness": 8,
+          "reliability": 6,
+          "count": 29
+        },
+        {
+          "clarity": 8,
+          "correctness": 9,
+          "reliability": 5,
+          "count": 29
+        },
+        {
+          "clarity": 8,
+          "correctness": 9,
+          "reliability": 6,
+          "count": 51
+        },
+        {
+          "clarity": 8,
+          "correctness": 9,
+          "reliability": 7,
+          "count": 22
+        },
+        {
+          "clarity": 9,
+          "correctness": 10,
+          "reliability": 6,
+          "count": 22
+        },
+        {
+          "clarity": 9,
+          "correctness": 10,
+          "reliability": 7,
+          "count": 35
+        },
+        {
+          "clarity": 9,
+          "correctness": 10,
+          "reliability": 8,
+          "count": 13
+        },
+        {
+          "clarity": 10,
+          "correctness": 11,
+          "reliability": 7,
+          "count": 13
+        },
+        {
+          "clarity": 10,
+          "correctness": 11,
+          "reliability": 8,
+          "count": 13
+        }
+      ]
+    },
+    {
+      "response": "change-input",
+      "runs": 256,
+      "vectors": [
+        {
+          "clarity": 6,
+          "correctness": 7,
+          "reliability": 6,
+          "count": 29
+        },
+        {
+          "clarity": 6,
+          "correctness": 7,
+          "reliability": 7,
+          "count": 29
+        },
+        {
+          "clarity": 7,
+          "correctness": 8,
+          "reliability": 6,
+          "count": 29
+        },
+        {
+          "clarity": 7,
+          "correctness": 8,
+          "reliability": 7,
+          "count": 51
+        },
+        {
+          "clarity": 7,
+          "correctness": 8,
+          "reliability": 8,
+          "count": 22
+        },
+        {
+          "clarity": 8,
+          "correctness": 9,
+          "reliability": 7,
+          "count": 22
+        },
+        {
+          "clarity": 8,
+          "correctness": 9,
+          "reliability": 8,
+          "count": 35
+        },
+        {
+          "clarity": 8,
+          "correctness": 9,
+          "reliability": 9,
+          "count": 13
+        },
+        {
+          "clarity": 9,
+          "correctness": 10,
+          "reliability": 8,
+          "count": 13
+        },
+        {
+          "clarity": 9,
+          "correctness": 10,
+          "reliability": 9,
+          "count": 13
+        }
+      ]
+    },
+    {
+      "response": "ask-for-guidance",
+      "runs": 256,
+      "vectors": [
+        {
+          "clarity": 6,
+          "correctness": 6,
+          "reliability": 5,
+          "count": 29
+        },
+        {
+          "clarity": 6,
+          "correctness": 6,
+          "reliability": 6,
+          "count": 29
+        },
+        {
+          "clarity": 7,
+          "correctness": 7,
+          "reliability": 5,
+          "count": 29
+        },
+        {
+          "clarity": 7,
+          "correctness": 7,
+          "reliability": 6,
+          "count": 51
+        },
+        {
+          "clarity": 7,
+          "correctness": 7,
+          "reliability": 7,
+          "count": 22
+        },
+        {
+          "clarity": 8,
+          "correctness": 8,
+          "reliability": 6,
+          "count": 22
+        },
+        {
+          "clarity": 8,
+          "correctness": 8,
+          "reliability": 7,
+          "count": 35
+        },
+        {
+          "clarity": 8,
+          "correctness": 8,
+          "reliability": 8,
+          "count": 13
+        },
+        {
+          "clarity": 9,
+          "correctness": 9,
+          "reliability": 7,
+          "count": 13
+        },
+        {
+          "clarity": 9,
+          "correctness": 9,
+          "reliability": 8,
+          "count": 13
+        }
+      ]
+    }
+  ]
+}
