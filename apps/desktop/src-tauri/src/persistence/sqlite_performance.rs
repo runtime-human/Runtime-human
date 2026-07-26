@@ -1,8 +1,7 @@
 use std::{
     env,
     error::Error,
-    fs,
-    io,
+    fs, io,
     path::{Path, PathBuf},
     time::{Instant, SystemTime, UNIX_EPOCH},
 };
@@ -210,9 +209,7 @@ const SCENARIOS: [ScenarioDefinition; 13] = [
     },
 ];
 
-pub(super) fn summarize_microseconds(
-    samples: &[u64],
-) -> Result<MicrosecondSummary, &'static str> {
+pub(super) fn summarize_microseconds(samples: &[u64]) -> Result<MicrosecondSummary, &'static str> {
     if samples.is_empty() {
         return Err("performance samples must not be empty");
     }
@@ -244,16 +241,8 @@ pub(super) fn summarize_microseconds(
 pub(super) fn run_january_sqlite_performance_baseline() -> BaselineResult<()> {
     let fixture: JanuaryPersistenceFlowFixture = serde_json::from_str(FIXTURE_JSON)?;
     validate_fixture(&fixture)?;
-    let warmups = read_usize_environment(
-        "RUNTIME_HUMAN_SQLITE_PERF_WARMUPS",
-        DEFAULT_WARMUPS,
-        0,
-    )?;
-    let samples = read_usize_environment(
-        "RUNTIME_HUMAN_SQLITE_PERF_SAMPLES",
-        DEFAULT_SAMPLES,
-        1,
-    )?;
+    let warmups = read_usize_environment("RUNTIME_HUMAN_SQLITE_PERF_WARMUPS", DEFAULT_WARMUPS, 0)?;
+    let samples = read_usize_environment("RUNTIME_HUMAN_SQLITE_PERF_SAMPLES", DEFAULT_SAMPLES, 1)?;
     let output_path = PathBuf::from(
         env::var("RUNTIME_HUMAN_SQLITE_PERF_OUTPUT").unwrap_or_else(|_| DEFAULT_OUTPUT.to_owned()),
     );
@@ -292,9 +281,7 @@ pub(super) fn run_january_sqlite_performance_baseline() -> BaselineResult<()> {
             architecture: env::consts::ARCH,
             os_release: environment_value("RUNTIME_HUMAN_PERF_OS_RELEASE"),
             cpu_model: environment_value("RUNTIME_HUMAN_PERF_CPU_MODEL"),
-            logical_cores: parse_optional_u64_environment(
-                "RUNTIME_HUMAN_PERF_LOGICAL_CORES",
-            )?,
+            logical_cores: parse_optional_u64_environment("RUNTIME_HUMAN_PERF_LOGICAL_CORES")?,
             total_memory_mib: parse_optional_u64_environment(
                 "RUNTIME_HUMAN_PERF_TOTAL_MEMORY_MIB",
             )?,
@@ -336,10 +323,14 @@ fn validate_fixture(fixture: &JanuaryPersistenceFlowFixture) -> BaselineResult<(
         return Err(io::Error::other("unexpected January persistence fixture schema").into());
     }
     if fixture.boundaries.len() != 4 {
-        return Err(io::Error::other("January persistence fixture must contain four boundaries").into());
+        return Err(
+            io::Error::other("January persistence fixture must contain four boundaries").into(),
+        );
     }
     if fixture.expectations.boundary_program_counters != [2, 4, 7, 9] {
-        return Err(io::Error::other("January persistence fixture program counters changed").into());
+        return Err(
+            io::Error::other("January persistence fixture program counters changed").into(),
+        );
     }
     if fixture.expectations.boundary_statuses.len() != 4
         || fixture.expectations.committed_program_counter != 9
@@ -349,7 +340,7 @@ fn validate_fixture(fixture: &JanuaryPersistenceFlowFixture) -> BaselineResult<(
     {
         return Err(io::Error::other("January persistence fixture expectations changed").into());
     }
-    let _final_status = fixture.expectations.final_run_status;
+    let _final_status = &fixture.expectations.final_run_status;
     Ok(())
 }
 
@@ -414,9 +405,8 @@ fn sample_start_clean_existing(_fixture: &JanuaryPersistenceFlowFixture) -> Base
 
 fn sample_create_save(fixture: &JanuaryPersistenceFlowFixture) -> BaselineResult<u64> {
     let database = start_database()?;
-    let (outcome, duration) = time_operation(|| {
-        Ok(database.handle.create_save(fixture.create_save.clone())?)
-    })?;
+    let (outcome, duration) =
+        time_operation(|| Ok(database.handle.create_save(fixture.create_save.clone())?))?;
     expect_accepted(outcome, "create save")?;
     database.handle.shutdown()?;
     Ok(duration)
@@ -438,9 +428,8 @@ fn sample_load_save(fixture: &JanuaryPersistenceFlowFixture) -> BaselineResult<u
 
 fn sample_begin_month(fixture: &JanuaryPersistenceFlowFixture) -> BaselineResult<u64> {
     let database = prepare_save(fixture)?;
-    let (outcome, duration) = time_operation(|| {
-        Ok(database.handle.begin_month_run(fixture.begin.clone())?)
-    })?;
+    let (outcome, duration) =
+        time_operation(|| Ok(database.handle.begin_month_run(fixture.begin.clone())?))?;
     expect_accepted(outcome, "begin month")?;
     database.handle.shutdown()?;
     Ok(duration)
@@ -480,9 +469,8 @@ fn sample_boundary(
 
 fn sample_commit_month(fixture: &JanuaryPersistenceFlowFixture) -> BaselineResult<u64> {
     let database = prepare_boundaries(fixture, fixture.boundaries.len())?;
-    let (outcome, duration) = time_operation(|| {
-        Ok(database.handle.commit_month_run(fixture.commit.clone())?)
-    })?;
+    let (outcome, duration) =
+        time_operation(|| Ok(database.handle.commit_month_run(fixture.commit.clone())?))?;
     expect_accepted(outcome, "commit month")?;
     database.handle.shutdown()?;
     Ok(duration)
@@ -490,17 +478,14 @@ fn sample_commit_month(fixture: &JanuaryPersistenceFlowFixture) -> BaselineResul
 
 fn sample_duplicate_commit(fixture: &JanuaryPersistenceFlowFixture) -> BaselineResult<u64> {
     let database = prepare_committed(fixture)?;
-    let (outcome, duration) = time_operation(|| {
-        Ok(database.handle.commit_month_run(fixture.commit.clone())?)
-    })?;
+    let (outcome, duration) =
+        time_operation(|| Ok(database.handle.commit_month_run(fixture.commit.clone())?))?;
     expect_duplicate(outcome, "duplicate commit")?;
     database.handle.shutdown()?;
     Ok(duration)
 }
 
-fn sample_load_active_after_reopen(
-    fixture: &JanuaryPersistenceFlowFixture,
-) -> BaselineResult<u64> {
+fn sample_load_active_after_reopen(fixture: &JanuaryPersistenceFlowFixture) -> BaselineResult<u64> {
     let mut database = prepare_boundaries(fixture, 3)?;
     database.handle.shutdown()?;
     database.handle = PersistenceHandle::start(database.path.clone())?;
@@ -508,7 +493,8 @@ fn sample_load_active_after_reopen(
         schema_version: "load-active-month-run-query-v1".to_owned(),
         save_id: fixture.create_save.save_id.clone(),
     };
-    let (record, duration) = time_operation(|| Ok(database.handle.load_active_month_run(query)?))?;
+    let (record, duration) =
+        time_operation(|| Ok(database.handle.load_active_month_run(query)?))?;
     if record.is_none() {
         return Err(io::Error::other("active January run was not found after reopen").into());
     }
@@ -552,17 +538,12 @@ fn prepare_boundaries(
         "prepare begin",
     )?;
     for command in fixture.boundaries.iter().take(boundary_count).cloned() {
-        expect_accepted(
-            database.handle.store_boundary(command)?,
-            "prepare boundary",
-        )?;
+        expect_accepted(database.handle.store_boundary(command)?, "prepare boundary")?;
     }
     Ok(database)
 }
 
-fn prepare_committed(
-    fixture: &JanuaryPersistenceFlowFixture,
-) -> BaselineResult<PreparedDatabase> {
+fn prepare_committed(fixture: &JanuaryPersistenceFlowFixture) -> BaselineResult<PreparedDatabase> {
     let database = prepare_boundaries(fixture, fixture.boundaries.len())?;
     expect_accepted(
         database.handle.commit_month_run(fixture.commit.clone())?,
@@ -648,5 +629,8 @@ fn print_report(path: &Path, report: &SqlitePerformanceReport) {
         );
     }
     println!("[perf] wrote {}", path.display());
-    println!("[perf] warning-only target exceedances: {}", report.warnings);
+    println!(
+        "[perf] warning-only target exceedances: {}",
+        report.warnings
+    );
 }
