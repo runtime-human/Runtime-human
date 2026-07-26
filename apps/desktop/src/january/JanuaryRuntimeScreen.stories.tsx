@@ -39,7 +39,7 @@ const navigation = Object.freeze<readonly DesktopNavigationItem[]>([
   Object.freeze({ kind: "planned", id: "skills", index: "03", label: "Навыки" }),
 ]);
 
-const meta = {
+const meta: Meta<typeof JanuaryRuntimeScreen> = {
   title: "Runtime Human/January 1990",
   component: JanuaryRuntimeScreen,
   parameters: {
@@ -69,7 +69,7 @@ const meta = {
     onChoose: () => undefined,
     onRetry: () => undefined,
   },
-} satisfies Meta<typeof JanuaryRuntimeScreen>;
+};
 
 export default meta;
 type Story = StoryObj<typeof meta>;
