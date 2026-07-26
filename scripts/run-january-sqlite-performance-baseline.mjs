@@ -4,7 +4,17 @@ import { spawnSync } from "node:child_process";
 import { cpus, release, totalmem } from "node:os";
 import { resolve } from "node:path";
 
-const options = parseArguments(process.argv.slice(2));
+import { parseBaselineArguments } from "./performance/baseline-cli.mjs";
+
+const options = parseBaselineArguments(
+  process.argv.slice(2),
+  {
+    warmups: 2,
+    samples: 20,
+    output: "artifacts/performance/january-sqlite-baseline.json",
+  },
+  "January SQLite baseline",
+);
 const cpu = cpus()[0];
 const cargo = process.platform === "win32" ? "cargo.exe" : "cargo";
 const cargoRun = spawnSync(
@@ -41,48 +51,3 @@ const cargoRun = spawnSync(
 
 if (cargoRun.error) throw cargoRun.error;
 process.exitCode = cargoRun.status ?? 1;
-
-function parseArguments(args) {
-  const parsed = {
-    warmups: 2,
-    samples: 20,
-    output: "artifacts/performance/january-sqlite-baseline.json",
-    commit: null,
-  };
-
-  for (const argument of args) {
-    if (argument === "--") continue;
-    if (argument.startsWith("--warmups=")) {
-      parsed.warmups = parseInteger(argument, "--warmups=", 0);
-      continue;
-    }
-    if (argument.startsWith("--samples=")) {
-      parsed.samples = parseInteger(argument, "--samples=", 1);
-      continue;
-    }
-    if (argument.startsWith("--output=")) {
-      parsed.output = requireValue(argument, "--output=");
-      continue;
-    }
-    if (argument.startsWith("--commit=")) {
-      parsed.commit = requireValue(argument, "--commit=");
-      continue;
-    }
-    throw new Error(`Unknown January SQLite baseline option: ${argument}`);
-  }
-  return parsed;
-}
-
-function parseInteger(argument, prefix, minimum) {
-  const value = Number(requireValue(argument, prefix));
-  if (!Number.isSafeInteger(value) || value < minimum) {
-    throw new RangeError(`${prefix.slice(0, -1)} must be an integer >= ${minimum}`);
-  }
-  return value;
-}
-
-function requireValue(argument, prefix) {
-  const value = argument.slice(prefix.length);
-  if (value.length === 0) throw new Error(`${prefix.slice(0, -1)} requires a value`);
-  return value;
-}
