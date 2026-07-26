@@ -6,11 +6,5 @@ export function App() {
   const session = useJanuarySession();
   const routing = useDesktopRoute();
 
-  return (
-    <RuntimeDesktop
-      navigate={routing.navigate}
-      route={routing.route}
-      session={session}
-    />
-  );
+  return <RuntimeDesktop navigate={routing.navigate} route={routing.route} session={session} />;
 }
