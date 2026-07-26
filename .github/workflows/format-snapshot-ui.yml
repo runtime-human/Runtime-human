@@ -1,9 +1,7 @@
 name: format-snapshot-ui
 
 on:
-  push:
-    branches:
-      - agent/ui-runtime-shell-foundation
+  pull_request:
     paths:
       - ".github/workflows/format-snapshot-ui.yml"
 
