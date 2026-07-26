@@ -1,0 +1,45 @@
+name: format-snapshot-ui
+
+on:
+  push:
+    branches:
+      - agent/ui-runtime-shell-foundation
+    paths:
+      - ".github/workflows/format-snapshot-ui.yml"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  snapshot:
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - name: Format current UI workspace and emit compressed snapshot
+        run: |
+          $ErrorActionPreference = "Stop"
+          corepack enable *> $null
+          corepack prepare pnpm@11.11.0 --activate *> $null
+          if (-not (Test-Path "node_modules/.bin/oxfmt")) {
+            pnpm install --frozen-lockfile --reporter=silent *> $null
+          }
+          pnpm fmt *> $null
+          @'
+          const fs = require("node:fs");
+          const zlib = require("node:zlib");
+          const paths = [
+            "apps/desktop/src/design/runtime-human-tokens.css",
+            "apps/desktop/src/january/JanuaryRuntimeScreen.stories.tsx",
+            "apps/desktop/src/january/JanuaryRuntimeScreen.tsx",
+            "apps/desktop/src/january/january-runtime.css",
+            "apps/desktop/src/main.tsx",
+            "tests/january-1990-runtime-screen.test.tsx"
+          ];
+          const files = Object.fromEntries(paths.map((path) => [path, fs.readFileSync(path, "utf8")]));
+          const encoded = zlib.gzipSync(JSON.stringify(files)).toString("base64");
+          console.log(`FORMAT_SNAPSHOT_BASE64=${encoded}`);
+          '@ | node
