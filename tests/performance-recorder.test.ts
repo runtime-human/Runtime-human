@@ -66,15 +66,14 @@ describe("performance recorder", () => {
 
   it("publishes fulfilled operations through local browser User Timing", async () => {
     const marks: string[] = [];
-    const measures: readonly string[][] = [];
-    const mutableMeasures = measures as string[][];
+    const measures: string[][] = [];
     const cleared: string[] = [];
     const recorder = createUserTimingPerformanceRecorder({
       mark(name) {
         marks.push(name);
       },
       measure(name, startMark, endMark) {
-        mutableMeasures.push([name, startMark, endMark]);
+        measures.push([name, startMark, endMark]);
       },
       clearMarks(name) {
         if (name !== undefined) cleared.push(name);
