@@ -1,6 +1,6 @@
 {
   "_schemaVersion": 1,
-  "updated": "2026-07-25",
+  "updated": "2026-07-26",
   "implementationProfile": "MVP Casual",
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
@@ -192,6 +192,9 @@
           "committedCheckpointHash": "1e6b2c5069714d23795f5108290a83ad1b818b27c8900487d938f99d717e7a28"
         },
         "repositoryEvidenceCommand": "pnpm evidence:january:e2",
+        "generatedEvidenceCommitted": true,
+        "temporaryWorkflowsRemoved": true,
+        "shellFreeEvidenceRunner": true,
         "issue22AcceptanceAudit": "implementation-satisfied-final-gates-pending"
       }
     },
