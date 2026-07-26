@@ -1,0 +1,43 @@
+LINT_EXIT=%0%  
+$ oxlint --no-error-on-unmatched-pattern scripts/build-game-content.ts scripts/write-january-e2-fixtures.mjs scripts/run-january-performance-baseline.mjs scripts/run-january-sqlite-performance-baseline.mjs scripts/performance scripts/check-boundaries.mjs scripts/check-build-only-dependencies.mjs tests apps packages
+::warning file=scripts/check-build-only-dependencies.mjs,line=50,endLine=50,col=22,endColumn=26,title=unicorn(no-array-sort)::Use `Array#toSorted()` instead of `Array#sort()`.
+::warning file=scripts/check-boundaries.mjs,line=59,endLine=59,col=6,endColumn=10,title=unicorn(no-array-sort)::Use `Array#toSorted()` instead of `Array#sort()`.
+::warning file=scripts/check-boundaries.mjs,line=78,endLine=78,col=6,endColumn=10,title=unicorn(no-array-sort)::Use `Array#toSorted()` instead of `Array#sort()`.
+::warning file=scripts/check-boundaries.mjs,line=90,endLine=90,col=6,endColumn=10,title=unicorn(no-array-sort)::Use `Array#toSorted()` instead of `Array#sort()`.
+::warning file=scripts/check-boundaries.mjs,line=229,endLine=229,col=22,endColumn=26,title=unicorn(no-array-sort)::Use `Array#toSorted()` instead of `Array#sort()`.
+::warning file=tests/january-1990-application-baseline.perf.test.ts,line=187,endLine=187,col=25,endColumn=30,title=eslint(no-await-in-loop)::Unexpected `await` inside a loop.
+::warning file=tests/january-1990-application-baseline.perf.test.ts,line=262,endLine=262,col=23,endColumn=28,title=eslint(no-await-in-loop)::Unexpected `await` inside a loop.
+::warning file=tests/january-1990-application-baseline.perf.test.ts,line=263,endLine=263,col=5,endColumn=10,title=eslint(no-await-in-loop)::Unexpected `await` inside a loop.
+::warning file=tests/january-1990-application-baseline.perf.test.ts,line=268,endLine=268,col=23,endColumn=28,title=eslint(no-await-in-loop)::Unexpected `await` inside a loop.
+::warning file=tests/january-1990-application-baseline.perf.test.ts,line=270,endLine=270,col=5,endColumn=10,title=eslint(no-await-in-loop)::Unexpected `await` inside a loop.
+::warning file=scripts/run-january-sqlite-performance-baseline.mjs,line=46,endLine=46,col=9,endColumn=15,title=eslint(no-shadow)::'result' is already declared in the upper scope.
+::error file=scripts/run-january-sqlite-performance-baseline.mjs,line=4,endLine=4,col=10,endColumn=14,title=eslint(no-unused-vars)::Identifier 'arch' is imported but never used.
+::warning file=packages/game-platform-contracts/src/index.ts,line=1,endLine=1,col=8,endColumn=10,title=unicorn(require-module-specifiers)::Empty export specifier is not allowed
+::warning file=packages/game-content-compiler/src/write-content-artifacts.ts,line=109,endLine=109,col=5,endColumn=10,title=eslint(no-await-in-loop)::Unexpected `await` inside a loop.
+::warning file=packages/game-content-compiler/src/write-content-artifacts.ts,line=110,endLine=110,col=5,endColumn=10,title=eslint(no-await-in-loop)::Unexpected `await` inside a loop.
+::warning file=packages/game-content-compiler/src/write-content-artifacts.ts,line=156,endLine=156,col=5,endColumn=10,title=eslint(no-await-in-loop)::Unexpected `await` inside a loop.
+::warning file=tests/persistence-service.test.ts,line=93,endLine=93,col=27,endColumn=37,title=eslint(no-underscore-dangle)::Unexpected dangling '_' in '`arguments_`'.
+::warning file=tests/persistence-service.test.ts,line=94,endLine=94,col=27,endColumn=37,title=eslint(no-underscore-dangle)::Unexpected dangling '_' in '`arguments_`'.
+::warning file=packages/game-persistence-contracts/src/parsers.ts,line=336,endLine=336,col=44,endColumn=48,title=unicorn(no-array-sort)::Use `Array#toSorted()` instead of `Array#sort()`.
+::warning file=packages/game-persistence-contracts/src/parsers.ts,line=337,endLine=337,col=46,endColumn=50,title=unicorn(no-array-sort)::Use `Array#toSorted()` instead of `Array#sort()`.
+::warning file=packages/game-application/src/january-1990/january-commit-materializer.ts,line=52,endLine=54,col=5,endColumn=7,title=eslint(preserve-caught-error)::There is no cause error attached to this new thrown error.
+::warning file=packages/game-content-compiler/src/repository-path.ts,line=28,endLine=28,col=22,endColumn=27,title=eslint(no-await-in-loop)::Unexpected `await` inside a loop.
+::warning file=tests/helpers/in-memory-persistence-service.ts,line=282,endLine=282,col=27,endColumn=32,title=eslint(no-shadow)::'input' is already declared in the upper scope.
+::warning file=tests/persistence-application.test.ts,line=95,endLine=95,col=11,endColumn=17,title=unicorn(consistent-function-scoping)::Function `invoke` does not capture any variables from its parent scope
+::warning file=packages/game-content-compiler/src/load-content-source-files.ts,line=23,endLine=23,col=26,endColumn=31,title=eslint(no-await-in-loop)::Unexpected `await` inside a loop.
+::warning file=packages/game-content-compiler/src/load-content-source-files.ts,line=28,endLine=28,col=5,endColumn=10,title=eslint(no-await-in-loop)::Unexpected `await` inside a loop.
+::warning file=packages/game-content-compiler/src/load-content-source-files.ts,line=55,endLine=55,col=5,endColumn=10,title=eslint(no-await-in-loop)::Unexpected `await` inside a loop.
+::warning file=tests/materialize-january-e2-fixtures.test.ts,line=33,endLine=33,col=7,endColumn=12,title=eslint(no-await-in-loop)::Unexpected `await` inside a loop.
+::warning file=tests/materialize-january-e2-fixtures.test.ts,line=34,endLine=34,col=7,endColumn=12,title=eslint(no-await-in-loop)::Unexpected `await` inside a loop.
+::warning file=packages/shared-kernel/src/index.ts,line=1,endLine=1,col=8,endColumn=10,title=unicorn(require-module-specifiers)::Empty export specifier is not allowed
+::warning file=tests/january-content-golden.test.ts,line=86,endLine=86,col=49,endColumn=56,title=unicorn(no-array-reverse)::Use `Array#toReversed()` instead of `Array#reverse()`.
+::warning file=tests/january-content-golden.test.ts,line=88,endLine=88,col=15,endColumn=18,title=oxc(no-map-spread)::Spreading to modify object properties in `map` calls is inefficient
+::warning file=tests/january-content-golden.test.ts,line=102,endLine=102,col=7,endColumn=12,title=eslint(no-await-in-loop)::Unexpected `await` inside a loop.
+::warning file=tests/content-compiler-golden.test.ts,line=40,endLine=40,col=77,endColumn=84,title=unicorn(no-array-reverse)::Use `Array#toReversed()` instead of `Array#reverse()`.
+::warning file=tests/content-compiler.test.ts,line=97,endLine=97,col=55,endColumn=62,title=unicorn(no-array-reverse)::Use `Array#toReversed()` instead of `Array#reverse()`.
+::warning file=packages/game-content-compiler/src/build-content-bundle.ts,line=88,endLine=88,col=6,endColumn=9,title=oxc(no-map-spread)::Spreading to modify object properties in `map` calls is inefficient
+::warning file=tests/january-1990-desktop-bootstrap.test.ts,line=42,endLine=42,col=10,endColumn=31,title=unicorn(consistent-function-scoping)::Function `unsupported` does not capture any variables from its parent scope
+
+Found 36 warnings and 1 error.
+Finished in 98ms on 156 files with 132 rules using 8 threads.
+[ELIFECYCLE] Command failed with exit code 1.
