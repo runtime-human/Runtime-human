@@ -5,8 +5,8 @@
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "mainHeadAtCurrentSliceStart": "b14ba066cd289e30a9a000739a4e75dbe16d03dd",
-  "currentPhase": "desktop-shell-extraction",
+  "mainHeadAtCurrentSliceStart": "2fc70bdd0dcda9d73eda3d8aa9ed7fdd1e0136ce",
+  "currentPhase": "career-routing",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -386,10 +386,9 @@
     },
     {
       "id": "desktop-shell-extraction",
-      "status": "implementation-complete",
+      "status": "complete",
       "issue": 40,
       "pullRequest": 42,
-      "branch": "agent/ui-02a-extract-desktop-shell",
       "scope": [
         "typed-desktop-navigation",
         "reusable-desktop-shell",
@@ -417,7 +416,8 @@
         "focusedShellTests": 1,
         "januaryInteractionTestsPreserved": 4,
         "standaloneShellStory": true
-      }
+      },
+      "commit": "2fc70bdd0dcda9d73eda3d8aa9ed7fdd1e0136ce"
     },
     {
       "id": "npc-foundation",
@@ -447,8 +447,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "pending-pr-42-final-head",
-    "currentConstraint": "ui-02a-implementation-complete-permanent-gates-and-review-pending",
+    "qualityGate": "complete-pr-42",
+    "currentConstraint": "next-delivery-ui-02b-routing-then-ui-02c-career-overview",
     "currentPullRequestMayMerge": false
   }
 }
