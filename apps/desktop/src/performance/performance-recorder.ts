@@ -26,6 +26,12 @@ export type CreatePerformanceRecorderInput = Readonly<{
   onSample: (sample: PerformanceSampleV1) => void;
 }>;
 
+export type UserTimingPerformancePort = Readonly<{
+  mark(name: string): void;
+  measure(name: string, startMark: string, endMark: string): void;
+  clearMarks(name?: string): void;
+}>;
+
 export function createPerformanceRecorder(
   input: CreatePerformanceRecorderInput,
 ): PerformanceRecorder {
@@ -34,15 +40,19 @@ export function createPerformanceRecorder(
   return Object.freeze({
     async measure<T>(name: PerformanceTimingName, operation: () => Promise<T>): Promise<T> {
       const startedAt = nowMilliseconds();
+      let outcome: Readonly<{ kind: "fulfilled"; value: T }> | Readonly<{
+        kind: "rejected";
+        error: unknown;
+      }>;
       try {
-        const value = await operation();
-        publish(name, "fulfilled", startedAt, nowMilliseconds());
-        return value;
+        outcome = Object.freeze({ kind: "fulfilled", value: await operation() });
       } catch (error) {
-        const finishedAt = nowMilliseconds();
-        if (finishedAt >= startedAt) publish(name, "rejected", startedAt, finishedAt);
-        throw error;
+        outcome = Object.freeze({ kind: "rejected", error });
       }
+      const finishedAt = nowMilliseconds();
+      publish(name, outcome.kind, startedAt, finishedAt);
+      if (outcome.kind === "rejected") throw outcome.error;
+      return outcome.value;
     },
   });
 
@@ -64,6 +74,48 @@ export function createPerformanceRecorder(
         status,
       }),
     );
+  }
+}
+
+export function createUserTimingPerformanceRecorder(
+  userTiming: UserTimingPerformancePort = globalThis.performance,
+): PerformanceRecorder {
+  let sequence = 0;
+  return Object.freeze({
+    async measure<T>(name: PerformanceTimingName, operation: () => Promise<T>): Promise<T> {
+      const measurementId = sequence;
+      sequence += 1;
+      const prefix = `runtime-human:${name}:${measurementId}`;
+      const startMark = `${prefix}:start`;
+      const endMark = `${prefix}:end`;
+      safeUserTiming(() => userTiming.mark(startMark));
+      try {
+        const value = await operation();
+        publishUserTiming("fulfilled");
+        return value;
+      } catch (error) {
+        publishUserTiming("rejected");
+        throw error;
+      } finally {
+        safeUserTiming(() => userTiming.clearMarks(startMark));
+        safeUserTiming(() => userTiming.clearMarks(endMark));
+      }
+
+      function publishUserTiming(status: PerformanceSampleV1["status"]): void {
+        safeUserTiming(() => userTiming.mark(endMark));
+        safeUserTiming(() =>
+          userTiming.measure(`runtime-human:${name}:${status}`, startMark, endMark),
+        );
+      }
+    },
+  });
+}
+
+function safeUserTiming(operation: () => void): void {
+  try {
+    operation();
+  } catch {
+    // Observational browser timings must never alter authoritative behavior.
   }
 }
 
