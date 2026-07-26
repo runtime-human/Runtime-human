@@ -1,0 +1,43 @@
+name: diagnose-opt-00b-lint
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: diagnose-opt-00b-lint-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  diagnose:
+    if: github.event.pull_request.head.ref == 'agent/perf-opt-00b-sqlite-baseline'
+    runs-on: self-hosted
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          clean: true
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Run exact fast lint with concise diagnostics
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+          pnpm install --frozen-lockfile --reporter=silent
+          $ErrorActionPreference = "Continue"
+          pnpm lint *> lint.log
+          $exitCode = $LASTEXITCODE
+          Write-Host "=== LINT EXIT: $exitCode ==="
+          Get-Content lint.log
+          exit $exitCode
