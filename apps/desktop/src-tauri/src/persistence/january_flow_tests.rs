@@ -1,41 +1,14 @@
-use serde::Deserialize;
 use tempfile::TempDir;
 
 use super::{
-    BeginPersistedMonthRunCommandV1, CommitPersistedMonthRunCommandV1, CreateSaveCommandV1,
-    DurableMonthRunStatus, LoadActiveMonthRunQueryV1, LoadMonthRunQueryV1, LoadSaveQueryV1,
-    MutationOutcome, PersistenceHandle, StoreMonthRunBoundaryCommandV1,
+    january_flow_fixture::load_january_persistence_flow_fixture, DurableMonthRunStatus,
+    LoadActiveMonthRunQueryV1, LoadMonthRunQueryV1, LoadSaveQueryV1, MutationOutcome,
+    PersistenceHandle,
 };
-
-const FIXTURE_JSON: &str =
-    include_str!("../../../../../fixtures/persistence/january-1990-persistence-flow-v1.json");
-
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-struct JanuaryPersistenceFlowFixture {
-    schema_version: String,
-    create_save: CreateSaveCommandV1,
-    begin: BeginPersistedMonthRunCommandV1,
-    boundaries: Vec<StoreMonthRunBoundaryCommandV1>,
-    commit: CommitPersistedMonthRunCommandV1,
-    expectations: JanuaryPersistenceExpectations,
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-struct JanuaryPersistenceExpectations {
-    boundary_program_counters: Vec<u64>,
-    boundary_statuses: Vec<DurableMonthRunStatus>,
-    committed_program_counter: u64,
-    final_save_revision: u64,
-    final_run_status: DurableMonthRunStatus,
-    completed_checkpoint_hash: String,
-    committed_checkpoint_hash: String,
-}
 
 #[test]
 fn actual_january_flow_survives_file_backed_reopen_and_replays_commit() {
-    let fixture = fixture();
+    let fixture = load_january_persistence_flow_fixture();
     assert_eq!(fixture.schema_version, "january-1990-persistence-flow-v1");
     assert_eq!(fixture.boundaries.len(), 4);
     assert_eq!(fixture.expectations.boundary_program_counters, [2, 4, 7, 9]);
@@ -177,8 +150,4 @@ fn checkpoint_hash(json: &str) -> String {
 
 fn checkpoint_value(json: &str) -> serde_json::Value {
     serde_json::from_str(json).expect("checkpoint contains JSON")
-}
-
-fn fixture() -> JanuaryPersistenceFlowFixture {
-    serde_json::from_str(FIXTURE_JSON).expect("January persistence flow fixture parses")
 }
