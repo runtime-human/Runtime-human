@@ -40,7 +40,11 @@ export function JanuaryRuntimeScreen({
   return (
     <main className="runtime-shell">
       <aside className="runtime-sidebar">
-        <a className="runtime-wordmark" href="#current-month" aria-label="Runtime Human — текущий месяц">
+        <a
+          className="runtime-wordmark"
+          href="#current-month"
+          aria-label="Runtime Human — текущий месяц"
+        >
           <span aria-hidden="true" className="runtime-wordmark-mark">
             RH
           </span>
