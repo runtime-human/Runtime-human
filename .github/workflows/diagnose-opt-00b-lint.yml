@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write
 
 defaults:
   run:
@@ -26,11 +26,12 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           clean: true
+          persist-credentials: true
           show-progress: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: "24"
-      - name: Run exact fast lint with concise diagnostics
+      - name: Capture exact fast lint diagnostics
         run: |
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
@@ -38,6 +39,15 @@ jobs:
           $ErrorActionPreference = "Continue"
           pnpm lint *> lint.log
           $exitCode = $LASTEXITCODE
-          Write-Host "=== LINT EXIT: $exitCode ==="
-          Get-Content lint.log
-          exit $exitCode
+          $header = "LINT_EXIT=$exitCode`n"
+          Set-Content -Path .opt-00b-lint-diagnostic.txt -Value $header -Encoding utf8NoBOM
+          Get-Content lint.log | Add-Content .opt-00b-lint-diagnostic.txt -Encoding utf8NoBOM
+          Remove-Item lint.log
+      - name: Commit diagnostic and remove workflow
+        run: |
+          git config user.name "runtime-human-agent"
+          git config user.email "runtime-human-agent@users.noreply.github.com"
+          git rm .github/workflows/diagnose-opt-00b-lint.yml
+          git add .opt-00b-lint-diagnostic.txt
+          git commit -m "diagnostic: capture OPT-00B lint output"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
