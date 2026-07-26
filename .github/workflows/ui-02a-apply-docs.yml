@@ -87,19 +87,19 @@ jobs:
       - name: Enforce documentation-only mutation
         run: |
           $ErrorActionPreference = "Stop"
-          $allowed = @("docs/EXECUTION-STATUS.jsonc", "docs/MANIFEST.jsonc")
+          $allowed = @("docs/EXECUTION-STATUS.jsonc", "docs/MANIFEST.jsonc", "docs/CATALOG.md")
           $changed = @(git diff --name-only)
           $unexpected = @($changed | Where-Object { $_ -notin $allowed })
           if ($unexpected.Count -gt 0) {
             throw "Unexpected changed paths: $($unexpected -join ', ')"
           }
-          if ($changed.Count -ne 2) {
-            throw "Expected exactly two documentation changes, got: $($changed -join ', ')"
+          if ($changed.Count -ne 3) {
+            throw "Expected exactly three documentation changes, got: $($changed -join ', ')"
           }
-          git add -- docs/EXECUTION-STATUS.jsonc docs/MANIFEST.jsonc
+          git add -- docs/EXECUTION-STATUS.jsonc docs/MANIFEST.jsonc docs/CATALOG.md
           $staged = @(git diff --cached --name-only)
           $unexpectedStaged = @($staged | Where-Object { $_ -notin $allowed })
-          if ($unexpectedStaged.Count -gt 0 -or $staged.Count -ne 2) {
+          if ($unexpectedStaged.Count -gt 0 -or $staged.Count -ne 3) {
             throw "Invalid staged paths: $($staged -join ', ')"
           }
       - name: Commit documentation snapshot to UI-02A branch
