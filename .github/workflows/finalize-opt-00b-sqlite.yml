@@ -1,0 +1,77 @@
+name: finalize-opt-00b-sqlite
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: finalize-opt-00b-sqlite-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  focused-rust-baseline:
+    if: github.event.pull_request.head.ref == 'agent/perf-opt-00b-sqlite-baseline'
+    runs-on: self-hosted
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          clean: true
+          persist-credentials: true
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Install Rust 1.97.0
+        run: |
+          rustup toolchain install 1.97.0 --profile minimal --component rustfmt
+          rustup default 1.97.0
+      - name: Apply focused source correction and format
+        run: |
+          $path = "apps/desktop/src-tauri/src/persistence/sqlite_performance.rs"
+          $source = Get-Content $path -Raw
+          $before = "let _final_status = fixture.expectations.final_run_status;"
+          $after = "let _final_status = &fixture.expectations.final_run_status;"
+          if (-not $source.Contains($before)) {
+            throw "Expected SQLite baseline borrow marker was not found"
+          }
+          Set-Content -Path $path -Value ($source.Replace($before, $after)) -Encoding utf8NoBOM
+          cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all
+      - name: Verify summary contracts
+        run: >-
+          cargo test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
+          sqlite_performance_summary -- --nocapture --test-threads=1
+      - name: Run file-backed SQLite smoke
+        run: >-
+          node scripts/run-january-sqlite-performance-baseline.mjs
+          --warmups=0 --samples=1 --commit=${{ github.event.pull_request.head.sha }}
+      - name: Validate generated report
+        run: |
+          $path = "artifacts/performance/january-sqlite-baseline.json"
+          $report = Get-Content $path -Raw | ConvertFrom-Json
+          if ($report.schemaVersion -ne "runtime-human-sqlite-performance-baseline-v1") {
+            throw "Unexpected SQLite performance report schema"
+          }
+          if ($report.scenarios.Count -ne 13) {
+            throw "Expected 13 SQLite performance scenarios"
+          }
+          if ($report.configuration.budgetEnforcement -ne "warning-only") {
+            throw "SQLite performance report must remain warning-only"
+          }
+      - name: Commit formatted implementation and remove workflow
+        run: |
+          git config user.name "runtime-human-agent"
+          git config user.email "runtime-human-agent@users.noreply.github.com"
+          git rm .github/workflows/finalize-opt-00b-sqlite.yml
+          git add apps/desktop/src-tauri/src/persistence
+          git commit -m "perf: finalize SQLite baseline implementation"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
