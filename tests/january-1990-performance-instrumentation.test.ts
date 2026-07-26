@@ -25,7 +25,7 @@ const fetchPublishedContent: JanuaryContentFetchPort = async (url) => {
 };
 
 describe("January 1990 performance instrumentation", () => {
-  it("observes the playable bootstrap without changing its durable view", async () => {
+  it("observes a complete playable month without changing its durable result", async () => {
     const source = await createHarnessedJanuaryRuntime();
     const samples: PerformanceSampleV1[] = [];
     let clock = 0;
@@ -45,15 +45,23 @@ describe("January 1990 performance instrumentation", () => {
       seed: 42n,
       performance,
     });
+    await session.start();
+    await session.choose("home-pc");
+    await session.choose("edit-and-debug");
+    await session.choose("inspect-listing");
 
-    expect(session.view).toMatchObject({ kind: "idle", saveRevision: 0 });
+    expect(session.view).toMatchObject({ kind: "committed", saveRevision: 1 });
     expect(sampleCounts(samples)).toEqual({
       "app.session_bootstrap": 1,
       "content.load_chunk": 2,
       "content.load_manifest": 1,
       "content.publish_registry": 1,
+      "month.begin": 1,
       "month.bootstrap_save": 1,
+      "month.commit": 1,
       "month.load": 1,
+      "month.resume": 2,
+      "month.retry": 0,
     });
     expect(samples.every((sample) => sample.durationMicroseconds > 0)).toBe(true);
   });
@@ -65,8 +73,12 @@ function sampleCounts(samples: readonly PerformanceSampleV1[]): Record<Performan
     "content.load_chunk": 0,
     "content.load_manifest": 0,
     "content.publish_registry": 0,
+    "month.begin": 0,
     "month.bootstrap_save": 0,
+    "month.commit": 0,
     "month.load": 0,
+    "month.resume": 0,
+    "month.retry": 0,
   };
   for (const sample of samples) counts[sample.name] += 1;
   return counts;
