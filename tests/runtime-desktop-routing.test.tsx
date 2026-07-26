@@ -35,13 +35,16 @@ describe("RuntimeDesktop routing composition", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Обзор карьеры" })).toBeInTheDocument();
+    expect(screen.getByText("Готов к началу")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Начать январь" })).not.toBeInTheDocument();
+
     const navigation = screen.getByRole("navigation", { name: "Разделы карьеры" });
     expect(within(navigation).getByRole("link", { name: /Обзор карьеры/u })).toHaveAttribute(
       "aria-current",
       "page",
     );
 
-    fireEvent.click(within(navigation).getByRole("link", { name: /Текущий месяц/u }));
+    fireEvent.click(screen.getByRole("button", { name: /Открыть текущий месяц/u }));
 
     expect(navigate).toHaveBeenCalledOnce();
     expect(navigate).toHaveBeenCalledWith("current-month");
