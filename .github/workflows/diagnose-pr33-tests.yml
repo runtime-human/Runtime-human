@@ -20,7 +20,7 @@ jobs:
   diagnose:
     if: github.event.pull_request.head.ref == 'agent/performance-baseline-foundation'
     runs-on: self-hosted
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
@@ -57,13 +57,22 @@ jobs:
           tests/january-1990-desktop-session.test.ts
           tests/january-1990-desktop-bootstrap.test.ts
           tests/january-1990-desktop-concurrency.test.ts
-      - name: Fail if focused set is not green
+      - name: Capture full Vitest corpus
+        id: full
         if: always()
+        continue-on-error: true
         run: >-
           pnpm exec vitest run
-          tests/performance-recorder.test.ts
-          tests/january-1990-performance-instrumentation.test.ts
-          tests/january-1990-performance-baseline.test.ts
-          tests/january-1990-desktop-session.test.ts
-          tests/january-1990-desktop-bootstrap.test.ts
-          tests/january-1990-desktop-concurrency.test.ts
+          --reporter=json
+          --outputFile=artifacts/diagnostics/pr33-full-vitest.json
+      - name: Upload full-suite diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr33-full-vitest-diagnostics
+          path: artifacts/diagnostics/pr33-full-vitest.json
+          if-no-files-found: error
+          retention-days: 1
+      - name: Preserve full-suite failure status
+        if: always() && steps.full.outcome != 'success'
+        run: exit 1
