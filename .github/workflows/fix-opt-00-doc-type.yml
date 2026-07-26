@@ -1,0 +1,71 @@
+name: fix-opt-00-doc-type
+
+on:
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: fix-opt-00-doc-type-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  fix-and-verify:
+    if: github.event.pull_request.head.ref == 'agent/perf-opt-00-baseline'
+    runs-on: self-hosted
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          clean: true
+          persist-credentials: true
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          $ErrorActionPreference = "Stop"
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Register performance documentation type
+        run: |
+          @'
+          import fs from "node:fs";
+          const path = "scripts/build-toc.mjs";
+          const source = fs.readFileSync(path, "utf8");
+          const marker = '  engineering: "engine",\n';
+          if (source.split(marker).length !== 2) {
+            throw new Error("Expected exactly one engineering type-map marker");
+          }
+          fs.writeFileSync(path, source.replace(marker, `${marker}  performance: "engine",\n`), "utf8");
+          '@ | node --input-type=module
+          node scripts/build-toc.mjs
+          pnpm fmt
+      - name: Verify corrected documentation and tooling
+        run: |
+          pnpm docs:check
+          pnpm fmt:check
+          pnpm typecheck
+          pnpm exec vitest run tests/performance-summary.test.ts
+          pnpm perf:january:baseline -- --warmups=1 --samples=2 --commit=${{ github.event.pull_request.head.sha }}
+      - name: Commit fix and remove workflow
+        run: |
+          git config user.name "runtime-human-agent"
+          git config user.email "runtime-human-agent@users.noreply.github.com"
+          git rm .github/workflows/fix-opt-00-doc-type.yml
+          git add -A
+          git commit -m "docs: register performance documentation type"
+          git fetch origin ${{ github.event.pull_request.head.ref }}
+          git rebase origin/${{ github.event.pull_request.head.ref }}
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
