@@ -1,0 +1,88 @@
+:root {
+  color-scheme: dark;
+
+  --bg: #0b0e0c;
+  --surface: #111511;
+  --surface-raised: #171c17;
+  --surface-subtle: #1c221c;
+  --surface-paper: #eeece3;
+  --surface-paper-raised: #f7f5ed;
+  --surface-terminal: #09100b;
+
+  --fg: #f2f3ed;
+  --fg-2: #c8cec7;
+  --muted: #8d978e;
+  --meta: #69736b;
+  --ink: #141813;
+  --ink-2: #465048;
+  --ink-muted: #6c756e;
+  --terminal-fg: #b8f3a7;
+  --terminal-muted: #78927c;
+
+  --border: #2a312b;
+  --border-soft: #202620;
+  --border-paper: #d5d8cf;
+  --border-terminal: #26372a;
+
+  --accent: #d8ff63;
+  --accent-on: #10140d;
+  --accent-hover: #e3ff86;
+  --accent-active: #c7ed4d;
+  --accent-soft: #27331a;
+
+  --success: #8bcf7c;
+  --success-soft: #dfeeda;
+  --warn: #dcae63;
+  --warn-soft: #f1e4d2;
+  --danger: #dc7866;
+  --danger-soft: #f1ddd7;
+
+  --font-display: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --font-body:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "Cascadia Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+
+  --text-xs: 0.6875rem;
+  --text-sm: 0.8125rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+  --text-3xl: 3rem;
+  --text-4xl: 4.5rem;
+
+  --leading-body: 1.55;
+  --leading-tight: 1.02;
+  --tracking-display: -0.045em;
+  --tracking-label: 0.12em;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.125rem;
+  --radius-pill: 9999px;
+
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 18px 50px color-mix(in oklab, var(--bg), transparent 30%);
+  --focus-ring: 0 0 0 3px color-mix(in oklab, var(--accent), transparent 70%);
+
+  --motion-fast: 140ms;
+  --motion-base: 200ms;
+  --ease-standard: cubic-bezier(0.23, 1, 0.32, 1);
+
+  --sidebar-width: 15rem;
+  --context-width: 23rem;
+  --content-max: 96rem;
+  --stage-gutter: clamp(1rem, 2.4vw, 2.5rem);
+}

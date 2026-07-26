@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import { App } from "./App.js";
+import "./design/runtime-human-tokens.css";
 import "./january/january-runtime.css";
 
 const rootElement = document.getElementById("root");

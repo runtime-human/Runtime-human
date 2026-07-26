@@ -9,6 +9,7 @@ import {
 } from "@runtime-human/game-schema";
 
 import { JanuaryRuntimeScreen } from "./JanuaryRuntimeScreen";
+import "../design/runtime-human-tokens.css";
 import "./january-runtime.css";
 
 const saveId = parseSaveId("storybook-january-save");
