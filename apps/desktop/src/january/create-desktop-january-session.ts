@@ -7,6 +7,7 @@ import {
 } from "@runtime-human/game-schema";
 
 import {
+  createUserTimingPerformanceRecorder,
   NOOP_PERFORMANCE_RECORDER,
   type PerformanceRecorder,
 } from "../performance/performance-recorder";
@@ -65,6 +66,7 @@ export function getDesktopJanuarySession(): Promise<JanuarySessionController> {
   defaultSession ??= createDesktopJanuarySession({
     persistence: createTauriPersistenceService(),
     fetchContent: (input, init) => fetch(input, init),
+    performance: createUserTimingPerformanceRecorder(),
   });
   return defaultSession;
 }
