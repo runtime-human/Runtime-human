@@ -1,0 +1,36 @@
+name: ui-02a-red
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/ui-02a-red.yml"
+      - "tests/desktop-shell.test.tsx"
+      - "tests/tsconfig.json"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  focused-red:
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          clean: true
+          persist-credentials: false
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Install dependencies
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+          corepack pnpm install --frozen-lockfile --reporter=silent
+      - name: Confirm shell contract is red
+        run: corepack pnpm exec vitest run tests/desktop-shell.test.tsx
