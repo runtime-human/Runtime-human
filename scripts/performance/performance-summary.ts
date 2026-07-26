@@ -27,12 +27,12 @@ export function summarizeDurations(samples: readonly number[]): DurationSummary 
   const mean = sorted.reduce((sum, sample) => sum + sample, 0) / sorted.length;
   return Object.freeze({
     sampleCount: sorted.length,
-    minMs: roundMilliseconds(sorted[0]),
+    minMs: roundMilliseconds(requireSample(sorted, 0)),
     meanMs: roundMilliseconds(mean),
     p50Ms: roundMilliseconds(nearestRank(sorted, 0.5)),
     p95Ms: roundMilliseconds(nearestRank(sorted, 0.95)),
     p99Ms: roundMilliseconds(nearestRank(sorted, 0.99)),
-    maxMs: roundMilliseconds(sorted.at(-1)!),
+    maxMs: roundMilliseconds(requireSample(sorted, sorted.length - 1)),
   });
 }
 
@@ -63,7 +63,15 @@ export function classifyWarningOnlyBudget(
 
 function nearestRank(sorted: readonly number[], percentile: number): number {
   const index = Math.max(0, Math.ceil(percentile * sorted.length) - 1);
-  return sorted[index];
+  return requireSample(sorted, index);
+}
+
+function requireSample(sorted: readonly number[], index: number): number {
+  const value = sorted[index];
+  if (value === undefined) {
+    throw new RangeError(`Performance sample index ${index} is outside the collected range`);
+  }
+  return value;
 }
 
 function roundMilliseconds(value: number): number {
