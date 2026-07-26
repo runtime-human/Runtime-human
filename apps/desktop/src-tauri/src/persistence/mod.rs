@@ -9,6 +9,8 @@ mod error;
 mod failpoint;
 mod hash;
 #[cfg(test)]
+mod january_flow_fixture;
+#[cfg(test)]
 mod january_flow_tests;
 mod migrations;
 #[cfg(test)]
