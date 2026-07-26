@@ -35,6 +35,11 @@
     "allScenariosExecuted": true,
     "reportSchemaValidated": true,
     "shellFreeLauncher": true,
+    "sharedBaselineCliParser": true,
+    "sharedJanuaryPersistenceFixture": true,
+    "applicationBaselineRegressionChecked": true,
+    "actualJanuaryReplayRegressionChecked": true,
+    "fastLintPassedAfterDeduplication": true,
     "temporaryWorkflowRemoved": true,
     "generatedArtifactsIgnored": true
   },
