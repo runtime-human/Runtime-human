@@ -36,12 +36,7 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
           pnpm install --frozen-lockfile --reporter=silent
-          $ErrorActionPreference = "Continue"
-          pnpm lint *> lint.log
-          $exitCode = $LASTEXITCODE
-          $header = "LINT_EXIT=$exitCode`n"
-          Set-Content -Path .opt-00b-lint-diagnostic.txt -Value $header -Encoding utf8NoBOM
-          Get-Content lint.log | Add-Content .opt-00b-lint-diagnostic.txt -Encoding utf8NoBOM
+          cmd.exe /d /s /c "pnpm lint > lint.log 2>&1 & echo LINT_EXIT=%%ERRORLEVEL%% > .opt-00b-lint-diagnostic.txt & type lint.log >> .opt-00b-lint-diagnostic.txt & exit /b 0"
           Remove-Item lint.log
       - name: Commit diagnostic and remove workflow
         run: |
