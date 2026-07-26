@@ -1,0 +1,52 @@
+{
+  "_schemaVersion": 1,
+  "workItem": "PERF-01 / OPT-00C",
+  "pullRequest": 36,
+  "baseCommit": "5958f132376306246cf0895e97d04e4a9c9239d5",
+  "scope": "browser-user-timing-observability",
+  "measureNames": [
+    "app.session_bootstrap",
+    "content.manifest",
+    "content.chunk",
+    "content.registry",
+    "month.load",
+    "month.begin",
+    "month.resume",
+    "month.commit",
+    "month.retry"
+  ],
+  "implementation": {
+    "injectedRecorder": true,
+    "browserRecorder": true,
+    "transparentNoopRecorder": true,
+    "uniqueStartMarks": true,
+    "marksCleared": true,
+    "recorderFailuresIsolated": true,
+    "operationValuesPreserved": true,
+    "operationErrorsPreserved": true,
+    "defaultDesktopSessionInstrumented": true,
+    "contentLoaderInstrumented": true,
+    "sessionControllerInstrumented": true,
+    "concurrentActionsCoalescedBeforeMeasurement": true
+  },
+  "authoritativeStateExclusions": [
+    "save-snapshot",
+    "month-run-checkpoint",
+    "persistence-receipts",
+    "determinism-manifest"
+  ],
+  "notMeasured": [
+    "tauri-invoke-serialization",
+    "rust-command-dispatch",
+    "webview2-initialization",
+    "react-first-meaningful-paint",
+    "windows-idle-resources"
+  ],
+  "verification": {
+    "focusedRecorderTests": 4,
+    "focusedDesktopInstrumentationTests": 3,
+    "permanentGates": "pending-unchanged-head",
+    "sonar": "pending-final-head",
+    "externalReview": "pending-ready-for-review"
+  }
+}
