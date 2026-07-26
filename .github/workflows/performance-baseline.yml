@@ -72,23 +72,15 @@ jobs:
       - name: Capture Windows profile and first baseline batch
         run: |
           pnpm perf:windows:profile
-          Copy-Item \
-            artifacts/performance/january-1990-performance-baseline-v1.json \
-            artifacts/performance/january-1990-performance-baseline-run1.json
+          Copy-Item artifacts/performance/january-1990-performance-baseline-v1.json artifacts/performance/january-1990-performance-baseline-run1.json
       - name: Capture second baseline batch
         run: |
           pnpm perf:january:baseline
-          Copy-Item \
-            artifacts/performance/january-1990-performance-baseline-v1.json \
-            artifacts/performance/january-1990-performance-baseline-run2.json
+          Copy-Item artifacts/performance/january-1990-performance-baseline-v1.json artifacts/performance/january-1990-performance-baseline-run2.json
       - name: Verify comparable artifact shapes
         run: |
-          $first = Get-Content \
-            artifacts/performance/january-1990-performance-baseline-run1.json \
-            -Raw | ConvertFrom-Json
-          $second = Get-Content \
-            artifacts/performance/january-1990-performance-baseline-run2.json \
-            -Raw | ConvertFrom-Json
+          $first = Get-Content artifacts/performance/january-1990-performance-baseline-run1.json -Raw | ConvertFrom-Json
+          $second = Get-Content artifacts/performance/january-1990-performance-baseline-run2.json -Raw | ConvertFrom-Json
           if ($first.schemaVersion -ne $second.schemaVersion) {
             throw "Baseline schema changed between repeated runs"
           }
@@ -105,9 +97,7 @@ jobs:
       - name: Write warning-only summary
         run: |
           $profile = Get-Content artifacts/performance/windows-profile-v1.json -Raw | ConvertFrom-Json
-          $baseline = Get-Content \
-            artifacts/performance/january-1990-performance-baseline-run2.json \
-            -Raw | ConvertFrom-Json
+          $baseline = Get-Content artifacts/performance/january-1990-performance-baseline-run2.json -Raw | ConvertFrom-Json
           Add-Content $env:GITHUB_STEP_SUMMARY "## January 1990 performance baseline"
           Add-Content $env:GITHUB_STEP_SUMMARY ""
           Add-Content $env:GITHUB_STEP_SUMMARY "Commit: ``$($profile.repositoryCommit)``"
