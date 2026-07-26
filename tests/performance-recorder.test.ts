@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   createPerformanceRecorder,
+  createUserTimingPerformanceRecorder,
   type PerformanceSampleV1,
 } from "../apps/desktop/src/performance/performance-recorder";
 
@@ -52,7 +53,7 @@ describe("performance recorder", () => {
     ]);
   });
 
-  it("rejects a clock that moves backwards", async () => {
+  it("rejects a clock that moves backwards after exactly two clock reads", async () => {
     const recorder = createPerformanceRecorder({
       nowMilliseconds: sequence([2, 1]),
       onSample: () => undefined,
@@ -60,6 +61,58 @@ describe("performance recorder", () => {
 
     await expect(recorder.measure("app.session_bootstrap", async () => undefined)).rejects.toThrow(
       "Performance clock moved backwards",
+    );
+  });
+
+  it("publishes fulfilled operations through local browser User Timing", async () => {
+    const marks: string[] = [];
+    const measures: readonly string[][] = [];
+    const mutableMeasures = measures as string[][];
+    const cleared: string[] = [];
+    const recorder = createUserTimingPerformanceRecorder({
+      mark(name) {
+        marks.push(name);
+      },
+      measure(name, startMark, endMark) {
+        mutableMeasures.push([name, startMark, endMark]);
+      },
+      clearMarks(name) {
+        if (name !== undefined) cleared.push(name);
+      },
+    });
+
+    const result = await recorder.measure("month.begin", async () => "begun");
+
+    expect(result).toBe("begun");
+    expect(marks).toEqual([
+      "runtime-human:month.begin:0:start",
+      "runtime-human:month.begin:0:end",
+    ]);
+    expect(measures).toEqual([
+      [
+        "runtime-human:month.begin:fulfilled",
+        "runtime-human:month.begin:0:start",
+        "runtime-human:month.begin:0:end",
+      ],
+    ]);
+    expect(cleared).toEqual(marks);
+  });
+
+  it("never lets User Timing failures alter an authoritative operation", async () => {
+    const recorder = createUserTimingPerformanceRecorder({
+      mark() {
+        throw new Error("User Timing unavailable");
+      },
+      measure() {
+        throw new Error("User Timing unavailable");
+      },
+      clearMarks() {
+        throw new Error("User Timing unavailable");
+      },
+    });
+
+    await expect(recorder.measure("month.commit", async () => "committed")).resolves.toBe(
+      "committed",
     );
   });
 });
