@@ -1,10 +1,13 @@
-name: ui-02a-red
+name: ui-02a-focused
 
 on:
   pull_request:
     paths:
       - ".github/workflows/ui-02a-red.yml"
+      - "apps/desktop/src/january/**"
+      - "apps/desktop/src/shell/**"
       - "tests/desktop-shell.test.tsx"
+      - "tests/january-1990-runtime-screen.test.tsx"
       - "tests/tsconfig.json"
 
 permissions:
@@ -15,7 +18,7 @@ defaults:
     shell: pwsh
 
 jobs:
-  focused-red:
+  focused:
     runs-on: self-hosted
     timeout-minutes: 10
     steps:
@@ -32,5 +35,5 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
           corepack pnpm install --frozen-lockfile --reporter=silent
-      - name: Confirm shell contract is red
-        run: corepack pnpm exec vitest run tests/desktop-shell.test.tsx
+      - name: Verify shell and January contracts
+        run: corepack pnpm exec vitest run tests/desktop-shell.test.tsx tests/january-1990-runtime-screen.test.tsx
