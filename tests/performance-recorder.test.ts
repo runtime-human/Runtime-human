@@ -66,8 +66,8 @@ describe("browser performance recorder", () => {
   });
 
   it("provides a transparent no-op recorder", async () => {
-    await expect(NOOP_PERFORMANCE_RECORDER.measure("content.registry", async () => 7)).resolves.toBe(
-      7,
-    );
+    await expect(
+      NOOP_PERFORMANCE_RECORDER.measure("content.registry", async () => 7),
+    ).resolves.toBe(7);
   });
 });
