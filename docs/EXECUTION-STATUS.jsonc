@@ -5,8 +5,8 @@
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "mainHeadAtCurrentSliceStart": "7b71cb19d1a7e6f8724d29c83b85cb0a84ef9a47",
-  "currentPhase": "january-1990-hardening-and-closure",
+  "mainHeadAtCurrentSliceStart": "12c25f7cde70a10fedcf3ecac6361a12ef63c0e8",
+  "currentPhase": "performance-baseline",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -152,9 +152,10 @@
     },
     {
       "id": "january-1990-hardening-and-closure",
-      "status": "implementation-complete",
+      "status": "complete",
       "pullRequest": 32,
-      "branch": "agent/january-1990-hardening-closure",
+      "commit": "12c25f7cde70a10fedcf3ecac6361a12ef63c0e8",
+      "issue": 22,
       "evidence": {
         "concurrentDesktopActionsCoalesced": ["start", "decision"],
         "balanceTrace": {
@@ -195,12 +196,49 @@
         "generatedEvidenceCommitted": true,
         "temporaryWorkflowsRemoved": true,
         "shellFreeEvidenceRunner": true,
-        "issue22AcceptanceAudit": "implementation-satisfied-final-gates-pending"
+        "issue22AcceptanceAudit": "complete"
+      }
+    },
+    {
+      "id": "performance-baseline",
+      "status": "implementation-complete",
+      "issue": 24,
+      "pullRequest": 34,
+      "branch": "agent/perf-opt-00-baseline",
+      "scope": [
+        "performance-budgets",
+        "profiling-runbook",
+        "published-content-load-baseline",
+        "january-application-in-memory-baseline",
+        "host-profile",
+        "warning-only-targets"
+      ],
+      "exclusions": [
+        "sqlite-latency",
+        "tauri-ipc-latency",
+        "webview2-startup",
+        "first-meaningful-paint",
+        "windows-idle-resources",
+        "compiler-and-ci-optimization"
+      ],
+      "evidence": {
+        "schemaVersion": "runtime-human-performance-baseline-v1",
+        "repositoryCommand": "pnpm perf:january:baseline",
+        "scenarioCount": 6,
+        "defaultWarmupsPerScenario": 5,
+        "defaultSamplesPerScenario": 30,
+        "smokeWarmupsPerScenario": 1,
+        "smokeSamplesPerScenario": 2,
+        "budgetEnforcement": "warning-only",
+        "shellFreeLauncher": true,
+        "hostProfileRecorded": true,
+        "generatedArtifactsIgnored": true,
+        "scopeSeparationDocumented": true
       }
     },
     {
       "id": "npc-foundation",
-      "status": "planned-after-content-02-closure",
+      "status": "planned-after-performance-baseline",
       "scope": [
         "guardian-mentor-peer",
         "directed-relationships",
@@ -222,8 +260,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "pending-pr-32-final-head",
-    "currentConstraint": "january-hardening-implementation-complete-generated-evidence-final-verification-and-review-pending",
+    "qualityGate": "pending-pr-34-final-head",
+    "currentConstraint": "opt-00-implementation-complete-final-gates-and-review-pending",
     "currentPullRequestMayMerge": false
   }
 }

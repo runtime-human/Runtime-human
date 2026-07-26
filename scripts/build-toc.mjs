@@ -24,6 +24,7 @@ const TYPE_BY_DIR = {
   content: "content",
   ui: "ui",
   engineering: "engine",
+  performance: "engine",
   events: "events",
   research: "research",
   plans: "plan",

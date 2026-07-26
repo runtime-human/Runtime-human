@@ -7,6 +7,6 @@
     "lib": ["ES2024"],
     "types": ["node"]
   },
-  "include": ["./build-game-content.ts"],
+  "include": ["./build-game-content.ts", "./performance/**/*.ts"],
   "references": [{ "path": "../packages/game-content-compiler" }]
 }
