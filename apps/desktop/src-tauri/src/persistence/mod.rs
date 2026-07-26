@@ -16,6 +16,7 @@ mod performance_baseline_tests;
 mod records;
 mod recovery;
 mod recovery_save;
+#[cfg(test)]
 mod schema_preflight_tests;
 #[cfg(test)]
 mod shutdown_tests;
