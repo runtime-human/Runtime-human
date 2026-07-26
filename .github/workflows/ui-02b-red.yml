@@ -5,7 +5,9 @@ on:
     paths:
       - ".github/workflows/ui-02b-red.yml"
       - "apps/desktop/src/routing/**"
+      - "apps/desktop/src/shell/DesktopShell.tsx"
       - "tests/desktop-route.test.ts"
+      - "tests/desktop-shell.test.tsx"
       - "tests/use-desktop-route.test.tsx"
       - "tests/tsconfig.json"
 
@@ -34,5 +36,5 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
           corepack pnpm install --frozen-lockfile --reporter=silent
-      - name: Verify route contracts
-        run: corepack pnpm exec vitest run tests/desktop-route.test.ts tests/use-desktop-route.test.tsx
+      - name: Verify routing and shell contracts
+        run: corepack pnpm exec vitest run tests/desktop-route.test.ts tests/use-desktop-route.test.tsx tests/desktop-shell.test.tsx
