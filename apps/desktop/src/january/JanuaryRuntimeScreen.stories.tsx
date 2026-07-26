@@ -10,6 +10,7 @@ import {
 
 import { JanuaryRuntimeScreen } from "./JanuaryRuntimeScreen";
 import "../design/runtime-human-tokens.css";
+import "../shell/desktop-shell.css";
 import "./january-runtime.css";
 
 const saveId = parseSaveId("storybook-january-save");

@@ -3,7 +3,7 @@ title: "Runtime Human — полный каталог документации"
 type: index
 status: draft
 canon: false
-updated: 2026-07-26
+updated: 2026-07-27
 ---
 
 # Runtime Human — полный каталог документации
@@ -11,7 +11,7 @@ updated: 2026-07-26
 > Сгенерировано `node scripts/build-toc.mjs` из metadata документов. Не редактировать вручную.
 > Канонический навигационный вход и порядок источников истины: [INDEX.md](INDEX.md).
 
-Всего документов: **189**.
+Всего документов: **190**.
 
 ## Навигация
 
@@ -202,6 +202,7 @@ updated: 2026-07-26
 - [SQLite Durable Store final design addendum](superpowers/specs/2026-07-22-month-run-sqlite-durable-store-final-addendum.md) — `active`, `canon`
 - [SQLite Durable Store implementation plan](superpowers/plans/2026-07-21-month-run-sqlite-durable-store.md) — `active`, `non-canon`
 - [Technology & Ecosystem Engine — Implementation Plan](plans/TECHNOLOGY-ECOSYSTEM-IMPLEMENTATION-PLAN.md) — `draft`, `canon`
+- [UI-02A Desktop Shell Extraction Implementation Plan](superpowers/plans/2026-07-27-ui-02a-desktop-shell-extraction.md) — `completed`, `canon`
 - [Vertical Slice Plan](plans/VERTICAL-SLICE-PLAN.md) — `draft`, `canon`
 
 ## Исследования
