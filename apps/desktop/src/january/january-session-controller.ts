@@ -13,6 +13,12 @@ import {
   type SaveId,
 } from "@runtime-human/game-schema";
 
+import {
+  NOOP_PERFORMANCE_RECORDER,
+  type PerformanceRecorder,
+  type PerformanceTimingName,
+} from "../performance/performance-recorder";
+
 export type JanuarySessionChoice =
   | "home-pc"
   | "shared-school-pc"
@@ -29,6 +35,7 @@ export type CreateJanuarySessionControllerInput = Readonly<{
   saveId: SaveId;
   runId: MonthRunId;
   seed: bigint;
+  performance?: PerformanceRecorder;
 }>;
 
 export type JanuarySessionController = Readonly<{
@@ -44,10 +51,14 @@ export function createJanuarySessionController(
 ): JanuarySessionController {
   let view: JanuarySessionView = Object.freeze({ kind: "loading" });
   let inFlight: Promise<JanuarySessionView> | null = null;
+  const performance = input.performance ?? NOOP_PERFORMANCE_RECORDER;
 
-  async function apply(operation: () => ReturnType<typeof input.runtime.load>) {
+  async function apply(
+    timingName: PerformanceTimingName,
+    operation: () => ReturnType<typeof input.runtime.load>,
+  ) {
     try {
-      const result = await operation();
+      const result = await performance.measure(timingName, operation);
       view = projectJanuary1990RuntimeView(result);
     } catch (error) {
       view = Object.freeze({
@@ -61,10 +72,11 @@ export function createJanuarySessionController(
   }
 
   function runExclusive(
+    timingName: PerformanceTimingName,
     operation: () => ReturnType<typeof input.runtime.load>,
   ): Promise<JanuarySessionView> {
     if (inFlight !== null) return inFlight;
-    const current = apply(operation).finally(() => {
+    const current = apply(timingName, operation).finally(() => {
       if (inFlight === current) inFlight = null;
     });
     inFlight = current;
@@ -76,7 +88,7 @@ export function createJanuarySessionController(
       return view;
     },
     load() {
-      return runExclusive(() => input.runtime.load(input.saveId));
+      return runExclusive("month.load", () => input.runtime.load(input.saveId));
     },
     start() {
       const current = view;
@@ -86,7 +98,7 @@ export function createJanuarySessionController(
         );
       }
       const saveRevision = current.saveRevision;
-      return runExclusive(() =>
+      return runExclusive("month.begin", () =>
         input.runtime.begin({
           requestId: requestId("begin", input, saveRevision, null),
           saveId: input.saveId,
@@ -107,7 +119,8 @@ export function createJanuarySessionController(
           rejectInvalidAction("Выбранный ответ не относится к текущему решению"),
         );
       }
-      return runExclusive(() =>
+      const timingName = current.kind === "defect-decision" ? "month.commit" : "month.resume";
+      return runExclusive(timingName, () =>
         input.runtime.resume({
           requestId: requestId("resume", input, current.runRevision, choice),
           saveId: input.saveId,
@@ -119,7 +132,7 @@ export function createJanuarySessionController(
       );
     },
     retry() {
-      return runExclusive(() => input.runtime.retry());
+      return runExclusive("month.retry", () => input.runtime.retry());
     },
   });
 
