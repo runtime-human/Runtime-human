@@ -5,8 +5,8 @@
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "mainHeadAtCurrentSliceStart": "1b6de211e6bd61ca7f1cf5b77878c7ba0e9f0745",
-  "currentPhase": "performance-sqlite-baseline",
+  "mainHeadAtCurrentSliceStart": "5958f132376306246cf0895e97d04e4a9c9239d5",
+  "currentPhase": "performance-user-timing-observability",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -260,10 +260,9 @@
     },
     {
       "id": "performance-sqlite-baseline",
-      "status": "implementation-complete",
+      "status": "complete",
       "issue": 24,
       "pullRequest": 35,
-      "branch": "agent/perf-opt-00b-sqlite-baseline",
       "scope": [
         "new-and-clean-existing-worker-start",
         "create-and-load-save",
@@ -305,11 +304,57 @@
           "dual-CAS",
           "durable-receipts"
         ]
+      },
+      "commit": "5958f132376306246cf0895e97d04e4a9c9239d5"
+    },
+    {
+      "id": "performance-user-timing-observability",
+      "status": "implementation-complete",
+      "issue": 24,
+      "pullRequest": 36,
+      "branch": "agent/perf-opt-00c-user-timing",
+      "scope": [
+        "failure-safe-performance-recorder",
+        "browser-user-timing",
+        "january-session-bootstrap",
+        "compiled-content-manifest-chunks-registry",
+        "month-load-begin-resume-commit-retry",
+        "concurrent-action-coalescing"
+      ],
+      "exclusions": [
+        "authoritative-state",
+        "tauri-ipc-latency",
+        "webview2-initialization",
+        "first-meaningful-paint",
+        "windows-idle-resources",
+        "performance-gates",
+        "optimization"
+      ],
+      "evidence": {
+        "schemaVersion": "performance-sample-v1-user-timing",
+        "measureNames": [
+          "app.session_bootstrap",
+          "content.manifest",
+          "content.chunk",
+          "content.registry",
+          "month.load",
+          "month.begin",
+          "month.resume",
+          "month.commit",
+          "month.retry"
+        ],
+        "uniqueStartMarks": true,
+        "marksCleared": true,
+        "recorderFailuresIsolated": true,
+        "operationValuesAndErrorsPreserved": true,
+        "defaultDesktopCompositionInstrumented": true,
+        "concurrentActionsProduceOneMeasure": true,
+        "focusedTests": 7
       }
     },
     {
       "id": "npc-foundation",
-      "status": "planned-after-performance-baselines",
+      "status": "planned-after-product-facing-performance-baselines",
       "scope": [
         "guardian-mentor-peer",
         "directed-relationships",
@@ -335,8 +380,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "pending-pr-35-final-head",
-    "currentConstraint": "opt-00b-implementation-complete-final-gates-and-review-pending",
+    "qualityGate": "pending-pr-36-final-head",
+    "currentConstraint": "opt-00c-implementation-complete-permanent-gates-and-review-pending",
     "currentPullRequestMayMerge": false
   }
 }
