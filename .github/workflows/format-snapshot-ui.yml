@@ -23,9 +23,9 @@ jobs:
           corepack enable *> $null
           corepack prepare pnpm@11.11.0 --activate *> $null
           if (-not (Test-Path "node_modules/.bin/oxfmt")) {
-            pnpm install --frozen-lockfile --reporter=silent *> $null
+            corepack pnpm install --frozen-lockfile --reporter=silent *> $null
           }
-          pnpm fmt *> $null
+          corepack pnpm fmt *> $null
           @'
           const fs = require("node:fs");
           const zlib = require("node:zlib");
