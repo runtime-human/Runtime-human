@@ -20,8 +20,7 @@ import {
   startJanuary,
 } from "./helpers/january-1990-runtime-fixture";
 
-const baselineDescribe =
-  process.env.RUNTIME_HUMAN_PERF_BASELINE === "1" ? describe : describe.skip;
+const baselineDescribe = process.env.RUNTIME_HUMAN_PERF_BASELINE === "1" ? describe : describe.skip;
 const INTERACTIVE_OPERATION_P95_BUDGET_MS = 200;
 
 type ScenarioScope = "published-compiled-content" | "application-in-memory-persistence";
