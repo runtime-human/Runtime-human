@@ -14,6 +14,7 @@ Runbook описывает воспроизводимый сбор performance e
 
 - быстрый TypeScript January harness;
 - redacted Windows machine profile;
+- production browser User Timing;
 - будущие Tauri/WebView2 startup captures;
 - будущие file-backed SQLite measurements.
 
@@ -97,6 +98,36 @@ Windows profile включает:
 - process command lines;
 - save data.
 
+## Browser User Timing
+
+Обычный desktop session публикует best-effort User Timing entries локально в WebView:
+
+```text
+runtime-human:app.session_bootstrap:fulfilled
+runtime-human:content.load_manifest:fulfilled
+runtime-human:content.load_chunk:fulfilled
+runtime-human:content.publish_registry:fulfilled
+runtime-human:month.bootstrap_save:fulfilled
+runtime-human:month.load:fulfilled
+runtime-human:month.begin:fulfilled
+runtime-human:month.resume:fulfilled
+runtime-human:month.commit:fulfilled
+runtime-human:month.retry:fulfilled
+```
+
+При отклонённой операции suffix меняется на `rejected`. Временные marks имеют уникальный sequence suffix и очищаются после `measure`, поэтому не создают неограниченный список marks.
+
+Проверить entries в WebView DevTools:
+
+```javascript
+performance
+  .getEntriesByType("measure")
+  .filter((entry) => entry.name.startsWith("runtime-human:"))
+  .map(({ name, duration }) => ({ name, duration }));
+```
+
+User Timing является только наблюдением. Ошибка или отсутствие браузерного Performance API не может изменить результат `load`, `begin`, `resume`, `retry` или `commit`.
+
 ## Cold и warm сценарии
 
 ### January harness
@@ -174,11 +205,11 @@ Get-Content artifacts/performance/windows-profile-v1.json
 
 ## Ограничения текущего OPT-00A
 
-Текущий baseline измеряет application/desktop orchestration и published-content processing в Node/Vitest. Он не доказывает скорость:
+Текущий baseline измеряет application/desktop orchestration и published-content processing в Node/Vitest. Browser User Timing измеряет эти же logical operations внутри реального WebView, но сам по себе не доказывает скорость:
 
 - WebView2 initialization;
 - React first meaningful paint;
-- Tauri IPC;
+- отдельной Tauri IPC serialization/queue wait части;
 - SQLite queue wait;
 - WAL/fsync boundary;
 - clean/unclean DB open;
