@@ -17,7 +17,9 @@ describe("January 1990 performance baseline", () => {
         measuredRuns: 2,
       },
     });
-    expect(Object.fromEntries(baseline.timings.map((timing) => [timing.name, timing.count]))).toEqual({
+    expect(
+      Object.fromEntries(baseline.timings.map((timing) => [timing.name, timing.count])),
+    ).toEqual({
       "app.session_bootstrap": 2,
       "content.load_chunk": 4,
       "content.load_manifest": 2,

@@ -5,8 +5,8 @@
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "mainHeadAtCurrentSliceStart": "7b71cb19d1a7e6f8724d29c83b85cb0a84ef9a47",
-  "currentPhase": "january-1990-hardening-and-closure",
+  "mainHeadAtCurrentSliceStart": "12c25f7cde70a10fedcf3ecac6361a12ef63c0e8",
+  "currentPhase": "performance-baseline-foundation",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -88,14 +88,26 @@
       "pullRequest": 30,
       "commit": "445634282dbd6c8984440cdfcb938dea77ffdc52",
       "evidence": {
-        "decisionBoundaries": [2, 4, 7],
+        "decisionBoundaries": [
+          2,
+          4,
+          7
+        ],
         "boundaryMutations": 4,
         "commitMutations": 1,
-        "restartBoundariesCovered": [2, 4, 7],
+        "restartBoundariesCovered": [
+          2,
+          4,
+          7
+        ],
         "duplicateReceiptsCovered": true,
         "requestPayloadConflictCovered": true,
         "saveAndRunRevisionConflictsCovered": true,
-        "acknowledgementLossCovered": ["begin", "boundary", "commit"],
+        "acknowledgementLossCovered": [
+          "begin",
+          "boundary",
+          "commit"
+        ],
         "saveSchemaCompatibilityGuard": true,
         "contentCompatibilityGuard": true,
         "exactlyOnceSaveRevision": 1,
@@ -152,14 +164,19 @@
     },
     {
       "id": "january-1990-hardening-and-closure",
-      "status": "implementation-complete",
+      "status": "complete",
       "pullRequest": 32,
-      "branch": "agent/january-1990-hardening-closure",
       "evidence": {
-        "concurrentDesktopActionsCoalesced": ["start", "decision"],
+        "concurrentDesktopActionsCoalesced": [
+          "start",
+          "decision"
+        ],
         "balanceTrace": {
           "schemaVersion": "january-1990-balance-trace-v1",
-          "seedRange": [1, 64],
+          "seedRange": [
+            1,
+            64
+          ],
           "answerProfiles": 12,
           "totalRuns": 768,
           "decisionBoundariesPerRun": 3,
@@ -184,7 +201,11 @@
         },
         "actualJanuarySQLiteReplay": {
           "fileBacked": true,
-          "reopenProgramCounters": [2, 4, 7],
+          "reopenProgramCounters": [
+            2,
+            4,
+            7
+          ],
           "completedProgramCounter": 9,
           "finalSaveRevision": 1,
           "duplicateCommitReceipt": true,
@@ -195,12 +216,55 @@
         "generatedEvidenceCommitted": true,
         "temporaryWorkflowsRemoved": true,
         "shellFreeEvidenceRunner": true,
-        "issue22AcceptanceAudit": "implementation-satisfied-final-gates-pending"
+        "issue22AcceptanceAudit": "complete",
+        "permanentFoundationRun": 1228,
+        "sonarQualityGate": "passed",
+        "codeRabbitWalkthrough": "complete",
+        "unresolvedReviewThreads": 0
+      },
+      "commit": "12c25f7cde70a10fedcf3ecac6361a12ef63c0e8"
+    },
+    {
+      "id": "performance-baseline-foundation",
+      "status": "implementation-in-progress",
+      "pullRequest": 33,
+      "branch": "agent/performance-baseline-foundation",
+      "baseCommit": "12c25f7cde70a10fedcf3ecac6361a12ef63c0e8",
+      "scope": [
+        "desktop-observational-timings",
+        "published-january-baseline",
+        "redacted-windows-profile",
+        "warning-only-budgets",
+        "profiling-runbook"
+      ],
+      "evidence": {
+        "deterministicGameCoreUnchanged": true,
+        "persistenceProtocolUnchanged": true,
+        "machineSpecificArtifactsCommitted": false,
+        "measuredSurface": [
+          "content-manifest",
+          "content-chunks",
+          "content-registry",
+          "save-bootstrap",
+          "month-load",
+          "month-begin",
+          "month-resume",
+          "month-commit",
+          "session-bootstrap"
+        ],
+        "deferredSurface": [
+          "webview-first-meaningful-paint",
+          "tauri-ipc",
+          "sqlite-queue-wait",
+          "file-backed-fsync",
+          "idle-cpu",
+          "working-set"
+        ]
       }
     },
     {
       "id": "npc-foundation",
-      "status": "planned-after-content-02-closure",
+      "status": "planned-after-performance-baseline",
       "scope": [
         "guardian-mentor-peer",
         "directed-relationships",
@@ -222,8 +286,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "pending-pr-32-final-head",
-    "currentConstraint": "january-hardening-implementation-complete-generated-evidence-final-verification-and-review-pending",
+    "qualityGate": "pending-pr-33-final-head",
+    "currentConstraint": "opt-00a-implementation-in-progress-baseline-artifact-and-final-verification-pending",
     "currentPullRequestMayMerge": false
   }
 }

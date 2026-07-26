@@ -17,8 +17,6 @@ if (vitest === undefined) {
   throw new Error("Vitest could not start the January performance baseline");
 }
 
-const failedModules = [...vitest.state.getTestModules()].filter(
-  (module) => !module.ok(),
-);
+const failedModules = [...vitest.state.getTestModules()].filter((module) => !module.ok());
 await vitest.close();
 if (failedModules.length > 0) process.exitCode = 1;

@@ -67,7 +67,9 @@ describe("January 1990 performance instrumentation", () => {
   });
 });
 
-function sampleCounts(samples: readonly PerformanceSampleV1[]): Record<PerformanceTimingName, number> {
+function sampleCounts(
+  samples: readonly PerformanceSampleV1[],
+): Record<PerformanceTimingName, number> {
   const counts: Record<PerformanceTimingName, number> = {
     "app.session_bootstrap": 0,
     "content.load_chunk": 0,

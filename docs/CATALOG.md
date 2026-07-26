@@ -3,7 +3,7 @@ title: "Runtime Human — полный каталог документации"
 type: index
 status: draft
 canon: false
-updated: 2026-07-24
+updated: 2026-07-26
 ---
 
 # Runtime Human — полный каталог документации
@@ -11,7 +11,7 @@ updated: 2026-07-24
 > Сгенерировано `node scripts/build-toc.mjs` из metadata документов. Не редактировать вручную.
 > Канонический навигационный вход и порядок источников истины: [INDEX.md](INDEX.md).
 
-Всего документов: **185**.
+Всего документов: **188**.
 
 ## Навигация
 
@@ -102,6 +102,8 @@ updated: 2026-07-24
 - [Programmer-First Design](game-design/PROGRAMMER-FIRST-DESIGN.md) — `draft`, `canon`
 - [Project & Technical Work Package Engine](game-design/PROJECT-WORK-PACKAGE-ENGINE.md) — `draft`, `canon`
 - [Release и updater](engineering/RELEASE-AND-UPDATER.md) — `draft`, `canon`
+- [Runtime Human — performance budgets](performance/PERFORMANCE-BUDGETS.md) — `draft`, `canon`
+- [Runtime Human — profiling runbook](performance/PROFILING-RUNBOOK.md) — `draft`, `canon`
 - [Rust boundary](engineering/RUST-BOUNDARY.md) — `draft`, `canon`
 - [Safe Mode](persistence/SAFE-MODE.md) — `draft`, `canon`
 - [Security architecture](engineering/SECURITY.md) — `draft`, `canon`
@@ -178,6 +180,7 @@ updated: 2026-07-24
 - [Documentation review checklist](plans/DOCUMENTATION-REVIEW-CHECKLIST.md) — `draft`, `canon`
 - [January 1990 playable slice implementation plan](superpowers/plans/2026-07-24-january-1990-playable-slice.md) — `active`, `non-canon`
 - [MonthRun Protocol Implementation Plan](superpowers/plans/2026-07-20-month-run-protocol.md) — `active`, `non-canon`
+- [Performance Baseline Foundation Implementation Plan](superpowers/plans/2026-07-26-performance-baseline-foundation.md) — `completed`, `canon`
 - [Phase 0 entry criteria](plans/PHASE-0-ENTRY-CRITERIA.md) — `draft`, `canon`
 - [Plans](plans/README.md) — `draft`, `canon`
 - [Professional Challenge Engine — Implementation Plan](plans/PROFESSIONAL-CHALLENGE-IMPLEMENTATION-PLAN.md) — `draft`, `canon`

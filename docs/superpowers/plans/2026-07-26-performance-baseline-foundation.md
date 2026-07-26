@@ -1,3 +1,11 @@
+---
+title: "Performance Baseline Foundation Implementation Plan"
+type: plan
+status: completed
+canon: true
+updated: 2026-07-26
+---
+
 # Performance Baseline Foundation Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
