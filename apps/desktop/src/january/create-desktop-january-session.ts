@@ -52,8 +52,9 @@ export async function createDesktopJanuarySession(
       saveId,
       runId,
       seed: input.seed ?? DESKTOP_JANUARY_SEED,
+      performance,
     });
-    await performance.measure("month.load", async () => controller.load());
+    await controller.load();
     return controller;
   });
 }
