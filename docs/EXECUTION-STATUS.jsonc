@@ -5,8 +5,8 @@
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "mainHeadAtCurrentSliceStart": "12c25f7cde70a10fedcf3ecac6361a12ef63c0e8",
-  "currentPhase": "performance-baseline",
+  "mainHeadAtCurrentSliceStart": "1b6de211e6bd61ca7f1cf5b77878c7ba0e9f0745",
+  "currentPhase": "performance-sqlite-baseline",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -88,14 +88,26 @@
       "pullRequest": 30,
       "commit": "445634282dbd6c8984440cdfcb938dea77ffdc52",
       "evidence": {
-        "decisionBoundaries": [2, 4, 7],
+        "decisionBoundaries": [
+          2,
+          4,
+          7
+        ],
         "boundaryMutations": 4,
         "commitMutations": 1,
-        "restartBoundariesCovered": [2, 4, 7],
+        "restartBoundariesCovered": [
+          2,
+          4,
+          7
+        ],
         "duplicateReceiptsCovered": true,
         "requestPayloadConflictCovered": true,
         "saveAndRunRevisionConflictsCovered": true,
-        "acknowledgementLossCovered": ["begin", "boundary", "commit"],
+        "acknowledgementLossCovered": [
+          "begin",
+          "boundary",
+          "commit"
+        ],
         "saveSchemaCompatibilityGuard": true,
         "contentCompatibilityGuard": true,
         "exactlyOnceSaveRevision": 1,
@@ -157,10 +169,16 @@
       "commit": "12c25f7cde70a10fedcf3ecac6361a12ef63c0e8",
       "issue": 22,
       "evidence": {
-        "concurrentDesktopActionsCoalesced": ["start", "decision"],
+        "concurrentDesktopActionsCoalesced": [
+          "start",
+          "decision"
+        ],
         "balanceTrace": {
           "schemaVersion": "january-1990-balance-trace-v1",
-          "seedRange": [1, 64],
+          "seedRange": [
+            1,
+            64
+          ],
           "answerProfiles": 12,
           "totalRuns": 768,
           "decisionBoundariesPerRun": 3,
@@ -185,7 +203,11 @@
         },
         "actualJanuarySQLiteReplay": {
           "fileBacked": true,
-          "reopenProgramCounters": [2, 4, 7],
+          "reopenProgramCounters": [
+            2,
+            4,
+            7
+          ],
           "completedProgramCounter": 9,
           "finalSaveRevision": 1,
           "duplicateCommitReceipt": true,
@@ -201,10 +223,9 @@
     },
     {
       "id": "performance-baseline",
-      "status": "implementation-complete",
+      "status": "complete",
       "issue": 24,
       "pullRequest": 34,
-      "branch": "agent/perf-opt-00-baseline",
       "scope": [
         "performance-budgets",
         "profiling-runbook",
@@ -234,11 +255,61 @@
         "hostProfileRecorded": true,
         "generatedArtifactsIgnored": true,
         "scopeSeparationDocumented": true
+      },
+      "commit": "1b6de211e6bd61ca7f1cf5b77878c7ba0e9f0745"
+    },
+    {
+      "id": "performance-sqlite-baseline",
+      "status": "implementation-complete",
+      "issue": 24,
+      "pullRequest": 35,
+      "branch": "agent/perf-opt-00b-sqlite-baseline",
+      "scope": [
+        "new-and-clean-existing-worker-start",
+        "create-and-load-save",
+        "month-begin",
+        "durable-boundaries-pc-2-4-7-9",
+        "atomic-commit",
+        "duplicate-receipt-replay",
+        "active-run-load-after-reopen",
+        "controlled-shutdown"
+      ],
+      "exclusions": [
+        "tauri-ipc-latency",
+        "webview2-startup",
+        "first-meaningful-paint",
+        "windows-idle-resources",
+        "compiler-and-ci-optimization",
+        "persistence-optimization"
+      ],
+      "evidence": {
+        "schemaVersion": "runtime-human-sqlite-performance-baseline-v1",
+        "repositoryCommand": "pnpm perf:january:sqlite",
+        "scenarioCount": 13,
+        "defaultWarmupsPerScenario": 2,
+        "defaultSamplesPerScenario": 20,
+        "smokeWarmupsPerScenario": 0,
+        "smokeSamplesPerScenario": 1,
+        "budgetEnforcement": "warning-only",
+        "unit": "microseconds",
+        "fileBacked": true,
+        "freshTemporaryDatabasePerSample": true,
+        "productionPersistenceHandle": true,
+        "productionJanuaryCommandFixture": true,
+        "shellFreeLauncher": true,
+        "durabilityPreserved": [
+          "WAL",
+          "synchronous-FULL",
+          "BEGIN-IMMEDIATE",
+          "single-dedicated-worker",
+          "dual-CAS",
+          "durable-receipts"
+        ]
       }
     },
     {
       "id": "npc-foundation",
-      "status": "planned-after-performance-baseline",
+      "status": "planned-after-performance-baselines",
       "scope": [
         "guardian-mentor-peer",
         "directed-relationships",
@@ -253,6 +324,10 @@
     {
       "pullRequest": 27,
       "reason": "Replaced by PR #28 structural registry port without package or lockfile coupling"
+    },
+    {
+      "pullRequest": 33,
+      "reason": "Superseded by merged PR #34 canonical OPT-00A baseline; unique User Timing instrumentation deferred to a narrow desktop observability slice"
     }
   ],
   "verification": {
@@ -260,8 +335,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "pending-pr-34-final-head",
-    "currentConstraint": "opt-00-implementation-complete-final-gates-and-review-pending",
+    "qualityGate": "pending-pr-35-final-head",
+    "currentConstraint": "opt-00b-implementation-complete-final-gates-and-review-pending",
     "currentPullRequestMayMerge": false
   }
 }

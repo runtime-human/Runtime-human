@@ -27,14 +27,11 @@ const result = spawnSync(
       RUNTIME_HUMAN_SQLITE_PERF_WARMUPS: String(options.warmups),
       RUNTIME_HUMAN_SQLITE_PERF_SAMPLES: String(options.samples),
       RUNTIME_HUMAN_SQLITE_PERF_OUTPUT: resolve(options.output),
-      RUNTIME_HUMAN_PERF_COMMIT:
-        options.commit ?? process.env.GITHUB_SHA ?? "unrecorded",
+      RUNTIME_HUMAN_PERF_COMMIT: options.commit ?? process.env.GITHUB_SHA ?? "unrecorded",
       RUNTIME_HUMAN_PERF_OS_RELEASE: release(),
       RUNTIME_HUMAN_PERF_CPU_MODEL: cpu?.model ?? "unknown",
       RUNTIME_HUMAN_PERF_LOGICAL_CORES: String(cpus().length),
-      RUNTIME_HUMAN_PERF_TOTAL_MEMORY_MIB: String(
-        Math.round(totalmem() / 1024 / 1024),
-      ),
+      RUNTIME_HUMAN_PERF_TOTAL_MEMORY_MIB: String(Math.round(totalmem() / 1024 / 1024)),
       RUNTIME_HUMAN_PERF_NODE_VERSION: process.version,
     },
     stdio: "inherit",
