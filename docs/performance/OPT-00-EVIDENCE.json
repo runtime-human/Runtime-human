@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "runtime-human-opt-00-evidence-v1",
+  "implementationHead": "a47d851a47dce85b54c6b0d3059c7d64bb9c4396",
+  "issue": 24,
+  "pullRequest": 34,
+  "repositoryCommand": "pnpm perf:january:baseline",
+  "baselineSchemaVersion": "runtime-human-performance-baseline-v1",
+  "scenarioCount": 6,
+  "defaultConfiguration": {
+    "warmupsPerScenario": 5,
+    "samplesPerScenario": 30,
+    "budgetEnforcement": "warning-only"
+  },
+  "verifiedSmokeConfiguration": {
+    "warmupsPerScenario": 1,
+    "samplesPerScenario": 2,
+    "result": "passed"
+  },
+  "verification": {
+    "documentationRegenerated": true,
+    "documentationTypeMapRegistered": true,
+    "formattingApplied": true,
+    "typecheckPassed": true,
+    "performanceSummaryTestsPassed": true,
+    "shellFreeLauncher": true,
+    "generatedArtifactsIgnored": true,
+    "temporaryWorkflowsRemoved": true
+  },
+  "scope": {
+    "measured": [
+      "published-compiled-content",
+      "application-in-memory-persistence"
+    ],
+    "notMeasured": [
+      "rust-file-backed-sqlite",
+      "tauri-ipc",
+      "webview2-startup",
+      "first-meaningful-paint",
+      "windows-idle-resources",
+      "content-compiler",
+      "ci-duration"
+    ]
+  }
+}
