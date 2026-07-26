@@ -1,16 +1,16 @@
-import { JanuaryRuntimeScreen } from "./january/JanuaryRuntimeScreen";
+import { RuntimeDesktop } from "./RuntimeDesktop";
 import { useJanuarySession } from "./january/use-january-session";
+import { useDesktopRoute } from "./routing/use-desktop-route";
 
 export function App() {
   const session = useJanuarySession();
+  const routing = useDesktopRoute();
 
   return (
-    <JanuaryRuntimeScreen
-      busy={session.busy}
-      onChoose={(choice) => void session.choose(choice)}
-      onRetry={() => void session.retry()}
-      onStart={() => void session.start()}
-      view={session.view}
+    <RuntimeDesktop
+      navigate={routing.navigate}
+      route={routing.route}
+      session={session}
     />
   );
 }
