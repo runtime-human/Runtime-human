@@ -1,0 +1,134 @@
+name: performance-baseline
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "apps/desktop/**"
+      - "packages/game-application/**"
+      - "packages/game-core/**"
+      - "packages/game-content/**"
+      - "tests/**/*performance*"
+      - "scripts/performance/**"
+      - "scripts/write-january-performance-baseline.mjs"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/performance-baseline.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/desktop/**"
+      - "packages/game-application/**"
+      - "packages/game-core/**"
+      - "packages/game-content/**"
+      - "tests/**/*performance*"
+      - "scripts/performance/**"
+      - "scripts/write-january-performance-baseline.mjs"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/performance-baseline.yml"
+
+concurrency:
+  group: performance-baseline-${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  january-baseline:
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: self-hosted
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          clean: true
+          persist-credentials: false
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Install Rust 1.97.0
+        run: |
+          rustup toolchain install 1.97.0 --profile minimal
+          rustup default 1.97.0
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Capture Windows profile and first baseline batch
+        run: |
+          pnpm perf:windows:profile
+          Copy-Item \
+            artifacts/performance/january-1990-performance-baseline-v1.json \
+            artifacts/performance/january-1990-performance-baseline-run1.json
+      - name: Capture second baseline batch
+        run: |
+          pnpm perf:january:baseline
+          Copy-Item \
+            artifacts/performance/january-1990-performance-baseline-v1.json \
+            artifacts/performance/january-1990-performance-baseline-run2.json
+      - name: Verify comparable artifact shapes
+        run: |
+          $first = Get-Content \
+            artifacts/performance/january-1990-performance-baseline-run1.json \
+            -Raw | ConvertFrom-Json
+          $second = Get-Content \
+            artifacts/performance/january-1990-performance-baseline-run2.json \
+            -Raw | ConvertFrom-Json
+          if ($first.schemaVersion -ne $second.schemaVersion) {
+            throw "Baseline schema changed between repeated runs"
+          }
+          $firstScenario = $first.scenario | ConvertTo-Json -Depth 8 -Compress
+          $secondScenario = $second.scenario | ConvertTo-Json -Depth 8 -Compress
+          if ($firstScenario -ne $secondScenario) {
+            throw "Baseline scenario changed between repeated runs"
+          }
+          $firstNames = ($first.timings.name -join ",")
+          $secondNames = ($second.timings.name -join ",")
+          if ($firstNames -ne $secondNames) {
+            throw "Baseline timing-name set changed between repeated runs"
+          }
+      - name: Write warning-only summary
+        run: |
+          $profile = Get-Content artifacts/performance/windows-profile-v1.json -Raw | ConvertFrom-Json
+          $baseline = Get-Content \
+            artifacts/performance/january-1990-performance-baseline-run2.json \
+            -Raw | ConvertFrom-Json
+          Add-Content $env:GITHUB_STEP_SUMMARY "## January 1990 performance baseline"
+          Add-Content $env:GITHUB_STEP_SUMMARY ""
+          Add-Content $env:GITHUB_STEP_SUMMARY "Commit: ``$($profile.repositoryCommit)``"
+          Add-Content $env:GITHUB_STEP_SUMMARY "Runner: $($profile.processor.name), $($profile.processor.logicalProcessors) logical processors"
+          Add-Content $env:GITHUB_STEP_SUMMARY "Runs: $($baseline.scenario.warmupRuns) warmup + $($baseline.scenario.measuredRuns) measured"
+          Add-Content $env:GITHUB_STEP_SUMMARY ""
+          Add-Content $env:GITHUB_STEP_SUMMARY "| Timing | Count | p50 µs | p95 µs | p99 µs | Max µs |"
+          Add-Content $env:GITHUB_STEP_SUMMARY "|---|---:|---:|---:|---:|---:|"
+          foreach ($timing in $baseline.timings) {
+            Add-Content $env:GITHUB_STEP_SUMMARY "| ``$($timing.name)`` | $($timing.count) | $($timing.p50Microseconds) | $($timing.p95Microseconds) | $($timing.p99Microseconds) | $($timing.maxMicroseconds) |"
+          }
+          Add-Content $env:GITHUB_STEP_SUMMARY ""
+          Add-Content $env:GITHUB_STEP_SUMMARY "> Warning-only evidence. No performance threshold blocks merge in OPT-00A."
+      - name: Upload performance evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: january-performance-baseline-${{ github.run_id }}
+          path: |
+            artifacts/performance/windows-profile-v1.json
+            artifacts/performance/january-1990-performance-baseline-v1.json
+            artifacts/performance/january-1990-performance-baseline-run1.json
+            artifacts/performance/january-1990-performance-baseline-run2.json
+          if-no-files-found: error
+          retention-days: 14
