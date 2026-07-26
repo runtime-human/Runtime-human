@@ -1,0 +1,93 @@
+name: ui-02a-docs-snapshot
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/ui-02a-docs-snapshot.yml"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  snapshot:
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          clean: true
+          persist-credentials: false
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Materialize execution status and docs manifest
+        run: |
+          $ErrorActionPreference = "Stop"
+          @'
+          const fs = require("node:fs");
+          const path = "docs/EXECUTION-STATUS.jsonc";
+          const status = JSON.parse(fs.readFileSync(path, "utf8"));
+          status.updated = "2026-07-27";
+          status.mainHeadAtCurrentSliceStart = "b14ba066cd289e30a9a000739a4e75dbe16d03dd";
+          status.currentPhase = "desktop-shell-extraction";
+          const milestone = {
+            id: "desktop-shell-extraction",
+            status: "implementation-complete",
+            issue: 40,
+            pullRequest: 42,
+            branch: "agent/ui-02a-extract-desktop-shell",
+            scope: [
+              "typed-desktop-navigation",
+              "reusable-desktop-shell",
+              "shell-style-boundary",
+              "january-feature-composition",
+              "shell-storybook-and-accessibility-contract"
+            ],
+            exclusions: [
+              "routing",
+              "career-overview-projection",
+              "new-persistence-reads",
+              "new-gameplay",
+              "npc-implementation",
+              "performance-optimization"
+            ],
+            evidence: {
+              navigationKinds: ["route", "planned"],
+              shellImportsJanuaryDomain: false,
+              shellImportsGamePackages: false,
+              futureSectionsNonInteractive: true,
+              januaryPropsPreserved: true,
+              focusedShellTests: 1,
+              januaryInteractionTestsPreserved: 4,
+              standaloneShellStory: true
+            }
+          };
+          const existingIndex = status.milestones.findIndex((item) => item.id === milestone.id);
+          if (existingIndex >= 0) status.milestones[existingIndex] = milestone;
+          else {
+            const npcIndex = status.milestones.findIndex((item) => item.id === "npc-foundation");
+            if (npcIndex >= 0) status.milestones.splice(npcIndex, 0, milestone);
+            else status.milestones.push(milestone);
+          }
+          status.verification.qualityGate = "pending-pr-42-final-head";
+          status.verification.currentConstraint = "ui-02a-implementation-complete-permanent-gates-and-review-pending";
+          status.verification.currentPullRequestMayMerge = false;
+          fs.writeFileSync(path, `${JSON.stringify(status, null, 2)}\n`);
+          '@ | node
+          node scripts/build-toc.mjs
+          node scripts/build-toc.mjs --check
+          New-Item -ItemType Directory -Force -Path artifacts/ui-02a-docs | Out-Null
+          Copy-Item docs/EXECUTION-STATUS.jsonc artifacts/ui-02a-docs/EXECUTION-STATUS.jsonc
+          Copy-Item docs/MANIFEST.jsonc artifacts/ui-02a-docs/MANIFEST.jsonc
+      - name: Upload documentation snapshot
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ui-02a-docs
+          path: artifacts/ui-02a-docs
+          if-no-files-found: error
+          retention-days: 1
