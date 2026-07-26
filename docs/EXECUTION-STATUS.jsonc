@@ -201,7 +201,7 @@
     },
     {
       "id": "performance-baseline",
-      "status": "in-progress",
+      "status": "implementation-complete",
       "issue": 24,
       "pullRequest": 34,
       "branch": "agent/perf-opt-00-baseline",
@@ -220,7 +220,21 @@
         "first-meaningful-paint",
         "windows-idle-resources",
         "compiler-and-ci-optimization"
-      ]
+      ],
+      "evidence": {
+        "schemaVersion": "runtime-human-performance-baseline-v1",
+        "repositoryCommand": "pnpm perf:january:baseline",
+        "scenarioCount": 6,
+        "defaultWarmupsPerScenario": 5,
+        "defaultSamplesPerScenario": 30,
+        "smokeWarmupsPerScenario": 1,
+        "smokeSamplesPerScenario": 2,
+        "budgetEnforcement": "warning-only",
+        "shellFreeLauncher": true,
+        "hostProfileRecorded": true,
+        "generatedArtifactsIgnored": true,
+        "scopeSeparationDocumented": true
+      }
     },
     {
       "id": "npc-foundation",
@@ -247,7 +261,7 @@
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
     "qualityGate": "pending-pr-34-final-head",
-    "currentConstraint": "opt-00-application-baseline-implementation-and-reproducible-evidence-pending",
+    "currentConstraint": "opt-00-implementation-complete-final-gates-and-review-pending",
     "currentPullRequestMayMerge": false
   }
 }
