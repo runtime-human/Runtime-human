@@ -41,11 +41,11 @@ jobs:
           node scripts/build-toc.mjs --check
           corepack pnpm fmt:check
       - name: Capture changed paths
-        run: git diff --name-only | Set-Content -Encoding utf8 .runtime-ui-02c-changed-paths.txt
+        run: git diff --name-only | Set-Content -Encoding utf8 runtime-ui-02c-changed-paths.txt
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: ui-02c-refinalize-paths
-          path: .runtime-ui-02c-changed-paths.txt
+          path: runtime-ui-02c-changed-paths.txt
           if-no-files-found: error
           retention-days: 1
       - name: Enforce derived UI-02C mutation only
