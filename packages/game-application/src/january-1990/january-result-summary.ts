@@ -25,8 +25,21 @@ const RESULT_FIELDS = Object.freeze([
   "schemaVersion",
 ] as const);
 
-const PROGRAMMING_OUTCOME_FIELDS = Object.freeze(["qualityScores", "schemaVersion"] as const);
+const PROGRAMMING_OUTCOME_FIELDS = Object.freeze([
+  "accessRoute",
+  "defectEventId",
+  "defectResponse",
+  "evidence",
+  "learningPractice",
+  "month",
+  "outcomeEventId",
+  "projectId",
+  "qualityScores",
+  "schemaVersion",
+  "workPackageId",
+] as const);
 const QUALITY_SCORE_FIELDS = Object.freeze(["clarity", "correctness", "reliability"] as const);
+const EVIDENCE_FIELDS = Object.freeze(["amount", "reasonCode", "skillId"] as const);
 
 export function parseJanuary1990ResultSummary(value: unknown): January1990ResultSummary {
   const result = requireRecord(value, RESULT_FIELDS, "January result");
@@ -34,14 +47,40 @@ export function parseJanuary1990ResultSummary(value: unknown): January1990Result
     throw new TypeError("January result schema or month is incompatible");
   }
 
+  const projectId = requireNonEmptyString(result.projectId, "January projectId");
+  const outcomeEventId = requireNonEmptyString(result.outcomeEventId, "January outcomeEventId");
   const programmingOutcome = requireRecord(
     result.programmingOutcome,
     PROGRAMMING_OUTCOME_FIELDS,
     "January programming outcome",
   );
-  if (programmingOutcome.schemaVersion !== "january-1990-programming-outcome-v1") {
-    throw new TypeError("January programming outcome schema is incompatible");
+  if (
+    programmingOutcome.schemaVersion !== "january-1990-programming-outcome-v1" ||
+    programmingOutcome.month !== "1990-01"
+  ) {
+    throw new TypeError("January programming outcome schema or month is incompatible");
   }
+  if (
+    programmingOutcome.projectId !== projectId ||
+    programmingOutcome.outcomeEventId !== outcomeEventId
+  ) {
+    throw new TypeError("January result identity does not match its programming outcome");
+  }
+
+  requireNonEmptyString(programmingOutcome.workPackageId, "January workPackageId");
+  requireNonEmptyString(programmingOutcome.defectEventId, "January defectEventId");
+  requireOneOf(programmingOutcome.accessRoute, ["home-pc", "shared-school-pc"], "accessRoute");
+  requireOneOf(
+    programmingOutcome.learningPractice,
+    ["read-and-run", "edit-and-debug"],
+    "learningPractice",
+  );
+  requireOneOf(
+    programmingOutcome.defectResponse,
+    ["inspect-listing", "change-input", "ask-for-guidance"],
+    "defectResponse",
+  );
+  requireEvidence(programmingOutcome.evidence);
 
   const qualityScores = requireRecord(
     programmingOutcome.qualityScores,
@@ -68,8 +107,8 @@ export function parseJanuary1990ResultSummary(value: unknown): January1990Result
 
   return Object.freeze({
     month: "1990-01",
-    projectId: requireNonEmptyString(result.projectId, "January projectId"),
-    outcomeEventId: requireNonEmptyString(result.outcomeEventId, "January outcomeEventId"),
+    projectId,
+    outcomeEventId,
     qualityScores: scores,
   });
 }
@@ -100,11 +139,31 @@ function requireRecord(
   return record;
 }
 
+function requireEvidence(value: unknown): void {
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new TypeError("January programming evidence must be a non-empty array");
+  }
+  for (const item of value) {
+    const evidence = requireRecord(item, EVIDENCE_FIELDS, "January evidence item");
+    requireNonEmptyString(evidence.skillId, "January evidence skillId");
+    requireNonEmptyString(evidence.reasonCode, "January evidence reasonCode");
+    if (!Number.isSafeInteger(evidence.amount) || (evidence.amount as number) <= 0) {
+      throw new TypeError("January evidence amount must be a positive safe integer");
+    }
+  }
+}
+
 function requireNonEmptyString(value: unknown, label: string): string {
   if (typeof value !== "string" || value.length === 0) {
     throw new TypeError(`${label} must be a non-empty string`);
   }
   return value;
+}
+
+function requireOneOf(value: unknown, allowed: readonly string[], label: string): void {
+  if (typeof value !== "string" || !allowed.includes(value)) {
+    throw new TypeError(`January ${label} is not supported`);
+  }
 }
 
 function requireScore(value: unknown, maximum: number, label: string): number {
