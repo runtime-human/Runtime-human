@@ -1,0 +1,37 @@
+name: ui-02c-sync-main
+
+on:
+  push:
+    branches:
+      - agent/ui-02c-career-overview
+    paths:
+      - ".github/workflows/ui-02c-sync-main.yml"
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  sync:
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: agent/ui-02c-career-overview
+          clean: true
+          persist-credentials: true
+          show-progress: false
+          fetch-depth: 0
+      - name: Merge current main without conflict resolution
+        run: |
+          $ErrorActionPreference = "Stop"
+          git config user.name "runtime-human-ci"
+          git config user.email "runtime-human-ci@users.noreply.github.com"
+          git fetch origin main
+          git merge --no-edit origin/main
+          if (git status --porcelain) { throw "Merge left uncommitted changes" }
+          git push origin HEAD:agent/ui-02c-career-overview
