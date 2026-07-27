@@ -1,6 +1,7 @@
 import { JanuaryRuntimeScreen } from "./january/JanuaryRuntimeScreen";
 import type { JanuarySessionState } from "./january/use-january-session";
-import { CareerOverviewPlaceholder } from "./overview/CareerOverviewPlaceholder";
+import { projectCareerOverviewView } from "./overview/career-overview-model";
+import { CareerOverviewScreen } from "./overview/CareerOverviewScreen";
 import {
   hrefForDesktopRoute,
   type DesktopRoute,
@@ -50,9 +51,10 @@ export function RuntimeDesktop({ route, navigate, session }: RuntimeDesktopProps
           view={session.view}
         />
       ) : (
-        <CareerOverviewPlaceholder
+        <CareerOverviewScreen
           onOpenCurrentMonth={() => navigate("current-month")}
-          view={session.view}
+          onRetry={() => void session.retry()}
+          view={projectCareerOverviewView(session.view)}
         />
       )}
     </DesktopShell>
