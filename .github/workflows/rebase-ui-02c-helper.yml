@@ -1,0 +1,36 @@
+name: rebase-ui-02c-helper
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/rebase-ui-02c-helper.yml"
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  rebase:
+    runs-on: self-hosted
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: agent/ui-02c-career-overview
+          clean: true
+          persist-credentials: true
+          show-progress: false
+          fetch-depth: 0
+      - name: Rebase UI-02C commits onto current main
+        run: |
+          $ErrorActionPreference = "Stop"
+          git config user.name "runtime-human-ci"
+          git config user.email "runtime-human-ci@users.noreply.github.com"
+          git fetch origin main agent/ui-02c-career-overview
+          git checkout -B agent/ui-02c-career-overview origin/agent/ui-02c-career-overview
+          git rebase --onto origin/main 7a513a6770705d42c4e6a3d3e39a86a583112bd4
+          if (git status --porcelain) { throw "Rebase left uncommitted changes" }
+          git push --force-with-lease origin HEAD:agent/ui-02c-career-overview
