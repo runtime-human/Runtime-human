@@ -5,8 +5,8 @@
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "mainHeadAtCurrentSliceStart": "2fc70bdd0dcda9d73eda3d8aa9ed7fdd1e0136ce",
-  "currentPhase": "career-routing",
+  "mainHeadAtCurrentSliceStart": "e1f225063fc9c097cf8c4f65463b521a029acbac",
+  "currentPhase": "career-overview-projection",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -420,6 +420,43 @@
       "commit": "2fc70bdd0dcda9d73eda3d8aa9ed7fdd1e0136ce"
     },
     {
+      "id": "desktop-routing",
+      "status": "complete",
+      "issue": 44,
+      "pullRequest": 45,
+      "scope": [
+        "typed-desktop-routes",
+        "history-api-navigation",
+        "safe-overview-fallback",
+        "single-january-controller-lifecycle",
+        "route-aware-desktop-composition",
+        "honest-overview-placeholder"
+      ],
+      "exclusions": [
+        "career-overview-authoritative-projection",
+        "new-persistence-reads",
+        "new-gameplay",
+        "npc-implementation",
+        "performance-optimization"
+      ],
+      "evidence": {
+        "routes": [
+          "/",
+          "/month/current"
+        ],
+        "unknownPathFallback": "overview",
+        "browserBackForward": true,
+        "duplicateHistorySuppressed": true,
+        "modifiedClicksPreserveNativeSemantics": true,
+        "januaryControllerFactoryCallsAcrossTransitions": 1,
+        "januaryFeatureOwnsGlobalNavigation": false,
+        "overviewInventedMetrics": false,
+        "standaloneRouteStories": 2,
+        "temporaryWorkflowsRemoved": true
+      },
+      "commit": "e1f225063fc9c097cf8c4f65463b521a029acbac"
+    },
+    {
       "id": "npc-foundation",
       "status": "planned-after-product-facing-performance-baselines",
       "scope": [
@@ -447,8 +484,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "complete-pr-42",
-    "currentConstraint": "next-delivery-ui-02b-routing-then-ui-02c-career-overview",
+    "qualityGate": "complete-pr-45",
+    "currentConstraint": "next-delivery-ui-02c-issue-46-career-overview-projection",
     "currentPullRequestMayMerge": false
   }
 }
