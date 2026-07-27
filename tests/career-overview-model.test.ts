@@ -14,6 +14,38 @@ const saveId = parseSaveId("career-overview-save");
 const runId = parseMonthRunId("career-overview-run");
 const checkpointHash = fingerprint("career-overview-checkpoint", { version: 1 });
 
+function committedResult() {
+  return {
+    schemaVersion: "january-1990-result-v1",
+    month: "1990-01",
+    projectId: "personal-utility",
+    outcomeEventId: "january-1990/first-program",
+    programmingOutcome: {
+      schemaVersion: "january-1990-programming-outcome-v1",
+      month: "1990-01",
+      projectId: "personal-utility",
+      workPackageId: "input-output-work-package",
+      defectEventId: "january-1990/defect",
+      outcomeEventId: "january-1990/first-program",
+      accessRoute: "home-pc",
+      learningPractice: "edit-and-debug",
+      defectResponse: "inspect-listing",
+      qualityScores: {
+        clarity: 8,
+        correctness: 10,
+        reliability: 7,
+      },
+      evidence: [
+        {
+          skillId: "program-writing",
+          amount: 2,
+          reasonCode: "input-output-project",
+        },
+      ],
+    },
+  };
+}
+
 describe("Career Overview projection", () => {
   it("projects loading and idle January sessions", () => {
     expect(projectCareerOverviewView({ kind: "loading" })).toEqual({ kind: "loading" });
@@ -62,20 +94,7 @@ describe("Career Overview projection", () => {
         runId,
         saveRevision: parseSaveRevision(1),
         checkpointHash,
-        result: {
-          schemaVersion: "january-1990-result-v1",
-          month: "1990-01",
-          projectId: "personal-utility",
-          outcomeEventId: "january-1990/first-program",
-          programmingOutcome: {
-            schemaVersion: "january-1990-programming-outcome-v1",
-            qualityScores: {
-              clarity: 8,
-              correctness: 10,
-              reliability: 7,
-            },
-          },
-        },
+        result: committedResult(),
       }),
     ).toEqual({
       kind: "completed-month",
