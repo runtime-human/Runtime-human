@@ -141,6 +141,8 @@ export const Committed: Story = {
       result: {
         schemaVersion: "january-1990-result-v1",
         month: "1990-01",
+        projectId: "personal-utility",
+        outcomeEventId: "january-1990/first-program",
         programmingOutcome: {
           schemaVersion: "january-1990-programming-outcome-v1",
           qualityScores: {
