@@ -1,4 +1,7 @@
-import type { January1990QualityScores } from "@runtime-human/game-application";
+import {
+  parseJanuary1990ResultSummary,
+  type January1990QualityScores,
+} from "@runtime-human/game-application";
 import type {
   MonthRunId,
   MonthRunRevision,
@@ -52,12 +55,77 @@ export type CareerOverviewView =
     }>;
 
 export function projectCareerOverviewView(view: JanuarySessionView): CareerOverviewView {
-  if (view.kind === "idle") {
-    return Object.freeze({
-      kind: "new-career",
-      saveId: view.saveId,
-    });
+  switch (view.kind) {
+    case "loading":
+      return Object.freeze({ kind: "loading" });
+    case "idle":
+      return Object.freeze({
+        kind: "new-career",
+        saveId: view.saveId,
+      });
+    case "access-decision":
+      return activeMonth(view, "access", 28);
+    case "learning-decision":
+      return activeMonth(view, "learning", 52);
+    case "defect-decision":
+      return activeMonth(view, "defect", 76);
+    case "committed": {
+      try {
+        const summary = parseJanuary1990ResultSummary(view.result);
+        return Object.freeze({
+          kind: "completed-month",
+          month: summary.month,
+          saveId: view.saveId,
+          runId: view.runId,
+          saveRevision: view.saveRevision,
+          qualityScores: summary.qualityScores,
+        });
+      } catch {
+        return Object.freeze({
+          kind: "blocked",
+          reason: "invalid-result",
+          message: "Сохранённый результат января не соответствует поддерживаемому формату.",
+        });
+      }
+    }
+    case "terminal":
+      return Object.freeze({
+        kind: "terminal",
+        status: view.status,
+        saveId: view.saveId,
+        runId: view.runId,
+      });
+    case "blocked":
+      return Object.freeze({
+        kind: "blocked",
+        reason: view.reason,
+        message: view.message,
+      });
+    case "rejected":
+      return Object.freeze({
+        kind: "rejected",
+        code: view.code,
+        message: view.message,
+        retryable: view.retryable,
+      });
   }
+}
 
-  throw new TypeError(`Unsupported Career Overview session state: ${view.kind}`);
+function activeMonth(
+  view: Extract<
+    JanuarySessionView,
+    { kind: "access-decision" | "learning-decision" | "defect-decision" }
+  >,
+  stage: "access" | "learning" | "defect",
+  progress: 28 | 52 | 76,
+): Extract<CareerOverviewView, { kind: "active-month" }> {
+  return Object.freeze({
+    kind: "active-month",
+    month: "1990-01",
+    stage,
+    progress,
+    saveId: view.saveId,
+    runId: view.runId,
+    runRevision: view.runRevision,
+  });
 }
