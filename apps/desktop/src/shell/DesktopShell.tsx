@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { MouseEvent, ReactNode } from "react";
 
 import type { DesktopNavigationItem } from "./desktop-navigation";
 
@@ -11,6 +11,7 @@ export type DesktopShellProps = Readonly<{
   profile: string;
   status: ReactNode;
   children: ReactNode;
+  onNavigate?(id: string): void;
 }>;
 
 export function DesktopShell({
@@ -20,6 +21,7 @@ export function DesktopShell({
   profile,
   status,
   children,
+  onNavigate,
 }: DesktopShellProps) {
   const currentRoute = navigation.find(
     (item): item is Extract<DesktopNavigationItem, { kind: "route" }> =>
@@ -51,6 +53,7 @@ export function DesktopShell({
                 className={`runtime-nav-item${item.current ? " runtime-nav-item--active" : ""}`}
                 href={item.href}
                 key={item.id}
+                onClick={(event) => handleRouteClick(event, item.id, onNavigate)}
               >
                 <span aria-hidden="true" className="runtime-nav-index">
                   {item.index}
@@ -109,4 +112,25 @@ export function DesktopShell({
       </section>
     </main>
   );
+}
+
+function handleRouteClick(
+  event: MouseEvent<HTMLAnchorElement>,
+  id: string,
+  onNavigate: DesktopShellProps["onNavigate"],
+): void {
+  if (
+    onNavigate === undefined ||
+    event.defaultPrevented ||
+    event.button !== 0 ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey
+  ) {
+    return;
+  }
+
+  event.preventDefault();
+  onNavigate(id);
 }
