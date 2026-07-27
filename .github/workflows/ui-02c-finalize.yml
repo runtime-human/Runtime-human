@@ -1,0 +1,133 @@
+name: ui-02c-finalize
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/ui-02c-finalize.yml"
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  finalize:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'agent/ui-02c-career-overview'
+    runs-on: self-hosted
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: agent/ui-02c-career-overview
+          clean: true
+          persist-credentials: true
+          show-progress: false
+          fetch-depth: 1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Install repository tools
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+          corepack pnpm install --frozen-lockfile --reporter=silent
+      - name: Record UI-02C implementation state
+        run: |
+          $ErrorActionPreference = "Stop"
+          @'
+          const fs = require("node:fs");
+          const path = "docs/EXECUTION-STATUS.jsonc";
+          const status = JSON.parse(fs.readFileSync(path, "utf8"));
+          status.updated = "2026-07-27";
+          status.mainHeadAtCurrentSliceStart = "332bbe0597129aa28725095a22875250daedd657";
+          status.currentPhase = "career-overview-projection";
+          if (status.milestones.some((item) => item.id === "career-overview-projection")) {
+            throw new Error("career-overview-projection milestone already exists");
+          }
+          const milestone = {
+            id: "career-overview-projection",
+            status: "implementation-complete",
+            issue: 46,
+            pullRequest: 48,
+            branch: "agent/ui-02c-career-overview",
+            scope: [
+              "strict-january-result-summary",
+              "shared-result-parser",
+              "pure-career-overview-projection",
+              "authoritative-overview-screen",
+              "state-specific-overview-storybook"
+            ],
+            exclusions: [
+              "new-persistence-reads",
+              "second-january-controller",
+              "salary-xp-streak-productivity",
+              "multi-month-chronology",
+              "npc-implementation",
+              "performance-optimization"
+            ],
+            evidence: {
+              additionalPersistenceReads: 0,
+              overviewReadsRawAuthoritativeJson: false,
+              januarySessionKindsMapped: 9,
+              activeProgressValues: [28, 52, 76],
+              qualityScoreMaximums: {
+                clarity: 10,
+                correctness: 11,
+                reliability: 9
+              },
+              overviewStoryStates: 9,
+              januaryControllerLifecycles: 1,
+              placeholderRemoved: true
+            }
+          };
+          const npcIndex = status.milestones.findIndex((item) => item.id === "npc-foundation");
+          if (npcIndex < 0) status.milestones.push(milestone);
+          else status.milestones.splice(npcIndex, 0, milestone);
+          status.verification.qualityGate = "pending-pr-48-final-head";
+          status.verification.currentConstraint = "ui-02c-implementation-complete-permanent-gates-and-review-pending";
+          status.verification.currentPullRequestMayMerge = false;
+          fs.writeFileSync(path, `${JSON.stringify(status, null, 2)}\n`);
+          '@ | node
+      - name: Generate documentation and canonical formatting
+        run: |
+          $ErrorActionPreference = "Stop"
+          node scripts/build-toc.mjs
+          corepack pnpm fmt
+          node scripts/build-toc.mjs --check
+          corepack pnpm fmt:check
+      - name: Enforce UI-02C-only mutation
+        run: |
+          $ErrorActionPreference = "Stop"
+          $allowed = @(
+            "apps/desktop/src/RuntimeDesktop.stories.tsx",
+            "apps/desktop/src/RuntimeDesktop.tsx",
+            "apps/desktop/src/january/JanuaryRuntimeScreen.stories.tsx",
+            "apps/desktop/src/january/january-screen-model.ts",
+            "apps/desktop/src/overview/CareerOverviewScreen.tsx",
+            "apps/desktop/src/overview/career-overview-model.ts",
+            "apps/desktop/src/overview/career-overview.css",
+            "docs/CATALOG.md",
+            "docs/EXECUTION-STATUS.jsonc",
+            "docs/MANIFEST.jsonc",
+            "packages/game-application/src/index.ts",
+            "packages/game-application/src/january-1990/index.ts",
+            "packages/game-application/src/january-1990/january-result-summary.ts",
+            "tests/career-overview-model.test.ts",
+            "tests/career-overview-screen.test.tsx",
+            "tests/january-1990-result-summary.test.ts",
+            "tests/january-1990-runtime-screen.test.tsx"
+          )
+          $changed = @(git diff --name-only)
+          $unexpected = @($changed | Where-Object { $_ -notin $allowed })
+          if ($unexpected.Count -gt 0) { throw "Unexpected changed paths: $($unexpected -join ', ')" }
+          if ($changed.Count -lt 1) { throw "Finalization produced no changes" }
+          git add -- $changed
+      - name: Commit canonical UI-02C state
+        run: |
+          $ErrorActionPreference = "Stop"
+          git config user.name "runtime-human-ci"
+          git config user.email "runtime-human-ci@users.noreply.github.com"
+          git commit -m "chore: finalize UI-02C canonical state"
+          git push origin HEAD:agent/ui-02c-career-overview
