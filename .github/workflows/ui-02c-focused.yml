@@ -19,7 +19,7 @@ defaults:
 
 jobs:
   focused:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
@@ -35,5 +35,5 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
           corepack pnpm install --frozen-lockfile --reporter=silent
-      - name: Verify initial UI-02C result contract
-        run: corepack pnpm exec vitest run tests/january-1990-result-summary.test.ts
+      - name: Verify UI-02C projection contracts
+        run: corepack pnpm exec vitest run tests/january-1990-result-summary.test.ts tests/career-overview-model.test.ts
