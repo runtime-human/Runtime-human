@@ -1,0 +1,40 @@
+name: ui-02c-docs-diagnostic
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/ui-02c-docs-diagnostic.yml"
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  diagnose:
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: agent/ui-02c-docs-diagnostic
+          clean: true
+          persist-credentials: true
+          show-progress: false
+          fetch-depth: 1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Capture documentation diagnostics
+        run: |
+          $ErrorActionPreference = "Continue"
+          node scripts/build-toc.mjs --check *> ui-02c-docs-diagnostic.txt
+          $result = $LASTEXITCODE
+          Add-Content ui-02c-docs-diagnostic.txt "EXIT_CODE=$result"
+          git config user.name "runtime-human-ci"
+          git config user.email "runtime-human-ci@users.noreply.github.com"
+          git add -- ui-02c-docs-diagnostic.txt
+          git commit -m "ci: record UI-02C docs diagnostics"
+          git push origin HEAD:agent/ui-02c-docs-diagnostic
