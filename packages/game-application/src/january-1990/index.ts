@@ -15,6 +15,14 @@ export type {
   JanuaryContentRegistryPort,
 } from "./january-content-registry-port";
 export {
+  JANUARY_1990_QUALITY_SCORE_MAXIMUMS,
+  parseJanuary1990ResultSummary,
+} from "./january-result-summary";
+export type {
+  January1990QualityScores,
+  January1990ResultSummary,
+} from "./january-result-summary";
+export {
   createJanuary1990InitialSaveSnapshot,
   JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
   parseJanuary1990SaveSnapshot,
