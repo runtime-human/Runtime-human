@@ -6,7 +6,9 @@ on:
       - ".github/workflows/ui-02c-focused.yml"
       - "packages/game-application/src/january-1990/**"
       - "packages/game-application/src/index.ts"
-      - "apps/desktop/src/january/january-screen-model.ts"
+      - "apps/desktop/src/RuntimeDesktop.tsx"
+      - "apps/desktop/src/RuntimeDesktop.stories.tsx"
+      - "apps/desktop/src/january/**"
       - "apps/desktop/src/overview/**"
       - "tests/january-1990-result-summary.test.ts"
       - "tests/january-1990-runtime-screen.test.tsx"
@@ -23,7 +25,7 @@ defaults:
 jobs:
   focused:
     runs-on: self-hosted
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
@@ -40,3 +42,9 @@ jobs:
           corepack pnpm install --frozen-lockfile --reporter=silent
       - name: Verify UI-02C contracts
         run: corepack pnpm exec vitest run tests/january-1990-result-summary.test.ts tests/career-overview-model.test.ts tests/career-overview-screen.test.tsx tests/january-1990-runtime-screen.test.tsx
+      - name: Verify TypeScript graph
+        run: corepack pnpm typecheck
+      - name: Build desktop renderer
+        run: corepack pnpm --filter @runtime-human/desktop build
+      - name: Build Storybook states
+        run: corepack pnpm storybook:build
