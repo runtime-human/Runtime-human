@@ -119,7 +119,22 @@ export const OverviewCompleted: Story = {
         outcomeEventId: "january-1990/first-program",
         programmingOutcome: {
           schemaVersion: "january-1990-programming-outcome-v1",
+          month: "1990-01",
+          projectId: "personal-utility",
+          workPackageId: "input-output-work-package",
+          defectEventId: "january-1990/defect",
+          outcomeEventId: "january-1990/first-program",
+          accessRoute: "home-pc",
+          learningPractice: "edit-and-debug",
+          defectResponse: "inspect-listing",
           qualityScores: { clarity: 8, correctness: 10, reliability: 7 },
+          evidence: [
+            {
+              skillId: "program-writing",
+              amount: 2,
+              reasonCode: "input-output-project",
+            },
+          ],
         },
       },
     }),
