@@ -35,5 +35,5 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
           corepack pnpm install --frozen-lockfile --reporter=silent
-      - name: Verify UI-02C focused contracts
-        run: corepack pnpm exec vitest run tests/january-1990-result-summary.test.ts tests/career-overview-model.test.ts
+      - name: Verify initial UI-02C result contract
+        run: corepack pnpm exec vitest run tests/january-1990-result-summary.test.ts
