@@ -33,19 +33,21 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
           corepack pnpm install --frozen-lockfile --reporter=silent
-      - name: Regenerate docs and canonical formatting
+      - name: Regenerate derived repository state
         run: |
           $ErrorActionPreference = "Stop"
+          corepack pnpm content:build
           node scripts/build-toc.mjs
           corepack pnpm fmt
+          corepack pnpm content:check
           node scripts/build-toc.mjs --check
           corepack pnpm fmt:check
       - name: Publish derived preview branch
         run: |
           $ErrorActionPreference = "Stop"
-          if (-not (git status --porcelain)) { throw "Refinalization produced no changes" }
+          if (-not (git status --porcelain)) { throw "Derived regeneration produced no changes" }
           git config user.name "runtime-human-ci"
           git config user.email "runtime-human-ci@users.noreply.github.com"
           git add -A
-          git commit -m "chore: preview UI-02C canonical state"
+          git commit -m "chore: preview UI-02C derived repository state"
           git push --force origin HEAD:agent/ui-02c-derived-preview
