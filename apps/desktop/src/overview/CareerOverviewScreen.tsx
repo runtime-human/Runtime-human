@@ -31,8 +31,8 @@ export function CareerOverviewScreen({
         <span>Источник данных</span>
         <strong>Persisted January projection</strong>
         <p>
-          Обзор использует уже загруженное состояние January MonthRun. Он не создаёт второй сеанс и не
-          выполняет дополнительный запрос к хранилищу.
+          Обзор использует уже загруженное состояние January MonthRun. Он не создаёт второй сеанс и
+          не выполняет дополнительный запрос к хранилищу.
         </p>
       </aside>
     </section>
@@ -56,7 +56,10 @@ function renderState(
       return (
         <div className="career-overview-state">
           <h2>Карьера готова к началу</h2>
-          <p>Первый подтверждённый период ещё не начат. Все решения января будут сохраняться локально.</p>
+          <p>
+            Первый подтверждённый период ещё не начат. Все решения января будут сохраняться
+            локально.
+          </p>
           <div className="career-overview-facts" aria-label="Состояние новой карьеры">
             <Fact label="Период" value="Январь 1990" />
             <Fact label="Состояние" value="Готов к началу" />
@@ -96,7 +99,9 @@ function renderState(
       return (
         <div className="career-overview-state">
           <h2>Январь завершён</h2>
-          <p>Результат месяца атомарно записан в сохранение и доступен без повторного выполнения.</p>
+          <p>
+            Результат месяца атомарно записан в сохранение и доступен без повторного выполнения.
+          </p>
           <div className="career-overview-facts" aria-label="Состояние завершённого месяца">
             <Fact label="Период" value="Январь 1990" />
             <Fact label="Сохранение" value={`Ревизия сохранения ${view.saveRevision}`} />
@@ -134,7 +139,9 @@ function renderState(
       return (
         <div className="career-overview-state career-overview-state--warning">
           <h2>Сеанс остановлен</h2>
-          <p>MonthRun завершён без коммита. Сохранение не изображается как новая или пустая карьера.</p>
+          <p>
+            MonthRun завершён без коммита. Сохранение не изображается как новая или пустая карьера.
+          </p>
           <div className="career-overview-facts" aria-label="Терминальное состояние месяца">
             <Fact label="Период" value="Январь 1990" />
             <Fact label="Статус" value={terminalStatusLabel(view.status)} />
@@ -160,7 +167,10 @@ function renderState(
           <p>{view.message}</p>
           <div className="career-overview-facts" aria-label="Отклонённая операция">
             <Fact label="Код" value={view.code} />
-            <Fact label="Повтор" value={view.retryable ? "Безопасный повтор доступен" : "Недоступен"} />
+            <Fact
+              label="Повтор"
+              value={view.retryable ? "Безопасный повтор доступен" : "Недоступен"}
+            />
           </div>
           {view.retryable ? <PrimaryAction label="Повторить безопасно" onClick={onRetry} /> : null}
         </div>

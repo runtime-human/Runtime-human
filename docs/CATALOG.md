@@ -11,7 +11,7 @@ updated: 2026-07-27
 > Сгенерировано `node scripts/build-toc.mjs` из metadata документов. Не редактировать вручную.
 > Канонический навигационный вход и порядок источников истины: [INDEX.md](INDEX.md).
 
-Всего документов: **191**.
+Всего документов: **192**.
 
 ## Навигация
 
@@ -204,6 +204,7 @@ updated: 2026-07-27
 - [Technology & Ecosystem Engine — Implementation Plan](plans/TECHNOLOGY-ECOSYSTEM-IMPLEMENTATION-PLAN.md) — `draft`, `canon`
 - [UI-02A Desktop Shell Extraction Implementation Plan](superpowers/plans/2026-07-27-ui-02a-desktop-shell-extraction.md) — `completed`, `canon`
 - [UI-02B Desktop Routing Implementation Plan](superpowers/plans/2026-07-27-ui-02b-desktop-routing.md) — `completed`, `canon`
+- [UI-02C Career Overview Implementation Plan](superpowers/plans/2026-07-27-ui-02c-career-overview.md) — `active`, `canon`
 - [Vertical Slice Plan](plans/VERTICAL-SLICE-PLAN.md) — `draft`, `canon`
 
 ## Исследования
