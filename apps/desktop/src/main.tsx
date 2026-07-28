@@ -6,12 +6,14 @@ import "./design/runtime-human-tokens.css";
 import "./shell/desktop-shell.css";
 import "./overview/career-overview.css";
 import "./january/january-runtime.css";
+import { RUNTIME_RENDERER_MILESTONES } from "./performance/renderer-milestones.js";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("Runtime Human root element was not found");
 
+RUNTIME_RENDERER_MILESTONES.mark("app.renderer_bootstrap");
 createRoot(rootElement).render(
   <StrictMode>
-    <App />
+    <App rendererMilestones={RUNTIME_RENDERER_MILESTONES} />
   </StrictMode>,
 );

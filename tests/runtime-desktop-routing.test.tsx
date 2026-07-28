@@ -6,8 +6,8 @@ import { describe, expect, it, vi } from "vitest";
 import { parseSaveId, parseSaveRevision } from "@runtime-human/game-schema";
 
 import { RuntimeDesktop } from "../apps/desktop/src/RuntimeDesktop";
-import { resolveDesktopRoute } from "../apps/desktop/src/routing/desktop-route";
 import type { JanuarySessionState } from "../apps/desktop/src/january/use-january-session";
+import { resolveDesktopRoute } from "../apps/desktop/src/routing/desktop-route";
 
 function createSession(): JanuarySessionState {
   return {
@@ -17,6 +17,7 @@ function createSession(): JanuarySessionState {
       saveRevision: parseSaveRevision(0),
     },
     busy: false,
+    ready: true,
     start: vi.fn(async () => undefined),
     choose: vi.fn(async () => undefined),
     retry: vi.fn(async () => undefined),

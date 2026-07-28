@@ -10,6 +10,7 @@ import type {
 export type JanuarySessionState = Readonly<{
   view: JanuarySessionView;
   busy: boolean;
+  ready: boolean;
   start(): Promise<void>;
   choose(choice: JanuarySessionChoice): Promise<void>;
   retry(): Promise<void>;
@@ -19,6 +20,7 @@ export function useJanuarySession(): JanuarySessionState {
   const [controller, setController] = useState<JanuarySessionController | null>(null);
   const [view, setView] = useState<JanuarySessionView>({ kind: "loading" });
   const [busy, setBusy] = useState(true);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -28,6 +30,7 @@ export function useJanuarySession(): JanuarySessionState {
         setController(session);
         setView(session.view);
         setBusy(false);
+        setReady(true);
       })
       .catch((error: unknown) => {
         if (!active) return;
@@ -38,6 +41,7 @@ export function useJanuarySession(): JanuarySessionState {
           retryable: false,
         });
         setBusy(false);
+        setReady(false);
       });
     return () => {
       active = false;
@@ -58,6 +62,7 @@ export function useJanuarySession(): JanuarySessionState {
   return {
     view,
     busy,
+    ready,
     start: () => execute((session) => session.start()),
     choose: (choice) => execute((session) => session.choose(choice)),
     retry: () => execute((session) => session.retry()),

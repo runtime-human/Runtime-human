@@ -22,10 +22,11 @@ const saveId = parseSaveId("storybook-routing-save");
 const runId = parseMonthRunId("storybook-routing-run");
 const checkpointHash = fingerprint("storybook-routing-checkpoint", { version: 1 });
 
-function createSession(view: JanuarySessionView, busy = false): JanuarySessionState {
+function createSession(view: JanuarySessionView, busy = false, ready = true): JanuarySessionState {
   return Object.freeze({
     view: Object.freeze(view),
     busy,
+    ready,
     start: async () => undefined,
     choose: async () => undefined,
     retry: async () => undefined,
@@ -56,7 +57,7 @@ type Story = StoryObj<typeof meta>;
 
 export const OverviewLoading: Story = {
   args: {
-    session: createSession({ kind: "loading" }, true),
+    session: createSession({ kind: "loading" }, true, false),
   },
 };
 
