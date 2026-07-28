@@ -1,12 +1,12 @@
 {
   "_schemaVersion": 1,
-  "updated": "2026-07-28",
+  "updated": "2026-07-29",
   "implementationProfile": "MVP Casual",
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "mainHeadAtCurrentSliceStart": "0fd57232f16a7a903b11dcc56f83559ec2f8e5bb",
-  "currentPhase": "documentation-governance",
+  "mainHeadAtCurrentSliceStart": "961a74a658b2a38a68cfd45eba63c265fee13312",
+  "currentPhase": "performance-renderer-observability",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -507,6 +507,79 @@
         "storylets",
         "narrative-director-integration"
       ]
+    },
+    {
+      "id": "performance-desktop-recorder",
+      "status": "complete",
+      "issue": 51,
+      "pullRequest": 59,
+      "commit": "1b79dd01600a91a26a29230df766148d4951a871",
+      "scope": [
+        "bounded-rust-recorder",
+        "closed-desktop-performance-schema",
+        "startup-milestones",
+        "dropped-event-accounting"
+      ]
+    },
+    {
+      "id": "performance-read-only-snapshot",
+      "status": "complete",
+      "issue": 51,
+      "pullRequest": 60,
+      "commit": "057c2fd9146f373f45524ef2c823e4a86d2c69ba",
+      "scope": [
+        "typed-read-only-tauri-command",
+        "bounded-non-destructive-snapshot"
+      ]
+    },
+    {
+      "id": "performance-persistence-queue-spans",
+      "status": "complete",
+      "issue": 51,
+      "pullRequest": 61,
+      "commit": "e2b008bcae110c6aaf7251877199e15bf24f35ee",
+      "scope": [
+        "queue-depth",
+        "queue-wait-duration",
+        "sqlite-operation-duration",
+        "failure-safe-telemetry"
+      ]
+    },
+    {
+      "id": "performance-tauri-command-linkage",
+      "status": "complete",
+      "issue": 51,
+      "pullRequest": 62,
+      "commit": "08d35ff2a63755359f85b21d3e03029dfb1bb58b",
+      "scope": [
+        "tauri-dispatch-duration",
+        "shared-operation-context",
+        "command-queue-sqlite-correlation"
+      ]
+    },
+    {
+      "id": "rust-production-logging",
+      "status": "complete",
+      "issue": 57,
+      "pullRequest": 63,
+      "commit": "961a74a658b2a38a68cfd45eba63c265fee13312",
+      "scope": [
+        "bounded-lossy-jsonl-sink",
+        "daily-rotation-and-retention",
+        "closed-redacted-error-codes",
+        "lifecycle-flush",
+        "read-only-dropped-line-status"
+      ],
+      "evidence": {
+        "schemaVersion": "runtime-human-logging-status-v1",
+        "bufferedLinesLimit": 1024,
+        "retainedLogFiles": 8,
+        "releaseFilter": "runtime_human_desktop=info",
+        "thirdPartyDebugTargetsRejected": true,
+        "temporaryWorkflowsRemoved": true,
+        "foundationRun": 1583,
+        "docsRun": 1187
+      }
     }
   ],
   "supersededPullRequests": [
@@ -524,8 +597,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "complete-pr-48",
-    "currentConstraint": "docs-01-source-of-truth-governance-then-perf-02a",
+    "qualityGate": "complete-pr-63",
+    "currentConstraint": "perf-02a-renderer-fmp-then-windows-evidence",
     "currentPullRequestMayMerge": false
   }
 }
