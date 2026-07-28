@@ -199,7 +199,7 @@ updated: 2026-07-29
 - [Runtime Human execution status and next gates](superpowers/plans/2026-07-22-runtime-human-execution-status.md) — `superseded`, `non-canon`
 - [Runtime Human integrated implementation roadmap](superpowers/plans/2026-07-22-runtime-human-integrated-roadmap.md) — `superseded`, `non-canon`
 - [Runtime Human source adaptation register](superpowers/plans/2026-07-22-runtime-human-source-adaptation-register.md) — `completed`, `non-canon`
-- [RUST-01B Production Logging Implementation Plan](plans/RUST-01B-PRODUCTION-LOGGING-IMPLEMENTATION-PLAN.md) — `draft`, `canon`
+- [RUST-01B Production Logging Implementation Plan](plans/RUST-01B-PRODUCTION-LOGGING-IMPLEMENTATION-PLAN.md) — `completed`, `canon`
 - [SQLite Durable Store design](superpowers/specs/2026-07-21-month-run-sqlite-durable-store-design.md) — `accepted`, `canon`
 - [SQLite Durable Store final design addendum](superpowers/specs/2026-07-22-month-run-sqlite-durable-store-final-addendum.md) — `accepted`, `canon`
 - [SQLite Durable Store implementation plan](superpowers/plans/2026-07-21-month-run-sqlite-durable-store.md) — `completed`, `non-canon`
