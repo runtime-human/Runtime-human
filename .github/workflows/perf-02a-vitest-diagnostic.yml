@@ -1,0 +1,53 @@
+name: perf-02a-vitest-diagnostic
+
+on:
+  push:
+    branches:
+      - agent/perf-02a-tauri-command-linkage
+    paths:
+      - ".github/workflows/perf-02a-vitest-diagnostic.yml"
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  diagnose:
+    runs-on: self-hosted
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          clean: true
+          persist-credentials: true
+          ref: agent/perf-02a-tauri-command-linkage
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          $ErrorActionPreference = "Stop"
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Capture focused test failure
+        run: |
+          $ErrorActionPreference = "Continue"
+          New-Item -ItemType Directory -Force diagnostics | Out-Null
+          pnpm test *>&1 | Tee-Object -FilePath diagnostics/perf-02a-vitest-full.txt
+          $exitCode = $LASTEXITCODE
+          Get-Content diagnostics/perf-02a-vitest-full.txt -Tail 300 |
+            Set-Content diagnostics/perf-02a-vitest-tail.txt -Encoding utf8
+          Remove-Item diagnostics/perf-02a-vitest-full.txt
+          "exitCode=$exitCode" | Add-Content diagnostics/perf-02a-vitest-tail.txt
+          git add diagnostics/perf-02a-vitest-tail.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: capture Vitest diagnostic output"
+          git push origin HEAD:agent/perf-02a-tauri-command-linkage
+          exit 0
