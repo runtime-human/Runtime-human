@@ -8,6 +8,8 @@ use tracing_appender::{
 };
 use tracing_subscriber::{EnvFilter, layer::SubscriberExt};
 
+use crate::desktop_performance::DesktopPerformanceOperationCategory;
+
 const LOGGING_STATUS_SCHEMA_VERSION: &str = "runtime-human-logging-status-v1";
 const DEFAULT_FILTER_DIRECTIVE: &str = "runtime_human_desktop=info";
 const LOG_BUFFERED_LINES_LIMIT: usize = 1_024;
@@ -119,12 +121,39 @@ pub(crate) fn desktop_get_logging_status_v1(
     diagnostics.status()
 }
 
-pub(crate) fn log_tauri_setup_started() {
-    tracing::info!(event_name = "tauri_setup_started", "runtime lifecycle");
+pub(crate) fn log_tauri_setup_logging_ready() {
+    tracing::info!(
+        event_name = "tauri_setup_logging_ready",
+        "runtime lifecycle"
+    );
+}
+
+pub(crate) fn log_tauri_setup_complete() {
+    tracing::info!(event_name = "tauri_setup_complete", "runtime lifecycle");
 }
 
 pub(crate) fn log_persistence_worker_ready() {
     tracing::info!(event_name = "persistence_worker_ready", "runtime lifecycle");
+}
+
+pub(crate) fn log_persistence_start_failed(error_code: &'static str) {
+    tracing::error!(
+        event_name = "persistence_start_failed",
+        error_code,
+        "runtime lifecycle"
+    );
+}
+
+pub(crate) fn log_persistence_operation_failed(
+    category: DesktopPerformanceOperationCategory,
+    error_code: &'static str,
+) {
+    tracing::warn!(
+        event_name = "persistence_operation_failed",
+        operation_category = operation_category_name(category),
+        error_code,
+        "runtime lifecycle"
+    );
 }
 
 pub(crate) fn log_main_window_available() {
@@ -169,6 +198,16 @@ fn filter_directive<'a>(debug_build: bool, rust_log: Option<&'a str>) -> &'a str
     }
 }
 
+fn operation_category_name(category: DesktopPerformanceOperationCategory) -> &'static str {
+    match category {
+        DesktopPerformanceOperationCategory::Query => "query",
+        DesktopPerformanceOperationCategory::Mutation => "mutation",
+        DesktopPerformanceOperationCategory::Backup => "backup",
+        DesktopPerformanceOperationCategory::Recovery => "recovery",
+        DesktopPerformanceOperationCategory::Shutdown => "shutdown",
+    }
+}
+
 fn logging_status(active: bool, dropped_lines: u64) -> RuntimeLoggingStatusV1 {
     RuntimeLoggingStatusV1 {
         schema_version: LOGGING_STATUS_SCHEMA_VERSION,
@@ -179,7 +218,11 @@ fn logging_status(active: bool, dropped_lines: u64) -> RuntimeLoggingStatusV1 {
 
 #[cfg(test)]
 mod tests {
-    use super::{DEFAULT_FILTER_DIRECTIVE, filter_directive, logging_status};
+    use crate::desktop_performance::DesktopPerformanceOperationCategory;
+
+    use super::{
+        DEFAULT_FILTER_DIRECTIVE, filter_directive, logging_status, operation_category_name,
+    };
 
     #[test]
     fn release_filter_ignores_rust_log() {
@@ -196,6 +239,30 @@ mod tests {
             "runtime_human_desktop=debug",
         );
         assert_eq!(filter_directive(true, None), DEFAULT_FILTER_DIRECTIVE);
+    }
+
+    #[test]
+    fn operation_categories_are_closed_redacted_values() {
+        assert_eq!(
+            operation_category_name(DesktopPerformanceOperationCategory::Query),
+            "query"
+        );
+        assert_eq!(
+            operation_category_name(DesktopPerformanceOperationCategory::Mutation),
+            "mutation"
+        );
+        assert_eq!(
+            operation_category_name(DesktopPerformanceOperationCategory::Backup),
+            "backup"
+        );
+        assert_eq!(
+            operation_category_name(DesktopPerformanceOperationCategory::Recovery),
+            "recovery"
+        );
+        assert_eq!(
+            operation_category_name(DesktopPerformanceOperationCategory::Shutdown),
+            "shutdown"
+        );
     }
 
     #[test]
