@@ -53,12 +53,11 @@ jobs:
           pnpm typecheck
       - name: Run E1 tests
         run: pnpm exec vitest run tests/desktop-performance-evidence.test.ts tests/desktop-performance-evidence-cli.test.ts
-      - name: Remove temporary workflows and commit
+      - name: Remove temporary workflow and commit
         run: |
           $ErrorActionPreference = "Stop"
           Remove-Item .github/workflows/perf-02a-e1-materialize.yml
-          Remove-Item .github/workflows/perf-02a-e1-red.yml -ErrorAction SilentlyContinue
-          git add package.json scripts tests docs .github/workflows/perf-02a-e1-materialize.yml .github/workflows/perf-02a-e1-red.yml
+          git add -A
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "build: materialize PERF-02A E1 evidence contract"
