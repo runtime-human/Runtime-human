@@ -37,7 +37,9 @@ export type { January1990MonthPlanV1 } from "./january-month-plan";
 export {
   createJanuary1990Result,
   createJanuaryProgrammingOutcomeFromState,
+  JANUARY_1990_QUALITY_SCORE_MAXIMUMS,
   materializeJanuaryProgrammingState,
+  parseJanuary1990Result,
 } from "./january-outcome";
 export type { January1990ResultV1, JanuaryProgrammingOutcomeV1 } from "./january-outcome";
 export {

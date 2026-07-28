@@ -44,7 +44,7 @@ describe("RuntimeDesktop routing composition", () => {
       "page",
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /Открыть текущий месяц/u }));
+    fireEvent.click(screen.getByRole("button", { name: "Открыть январь" }));
 
     expect(navigate).toHaveBeenCalledOnce();
     expect(navigate).toHaveBeenCalledWith("current-month");

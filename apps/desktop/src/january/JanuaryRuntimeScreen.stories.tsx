@@ -10,6 +10,7 @@ import {
 
 import { DesktopShell, type DesktopNavigationItem } from "../shell/DesktopShell";
 import { JanuaryRuntimeScreen } from "./JanuaryRuntimeScreen";
+import { createJanuary1990ResultFixture } from "./january-result.fixture";
 import "../design/runtime-human-tokens.css";
 import "../shell/desktop-shell.css";
 import "./january-runtime.css";
@@ -138,18 +139,7 @@ export const Committed: Story = {
       runId,
       saveRevision: parseSaveRevision(1),
       checkpointHash,
-      result: {
-        schemaVersion: "january-1990-result-v1",
-        month: "1990-01",
-        programmingOutcome: {
-          schemaVersion: "january-1990-programming-outcome-v1",
-          qualityScores: {
-            clarity: 8,
-            correctness: 10,
-            reliability: 7,
-          },
-        },
-      },
+      result: createJanuary1990ResultFixture(),
     },
   },
 };

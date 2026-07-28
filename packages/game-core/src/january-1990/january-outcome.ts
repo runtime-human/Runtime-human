@@ -1,12 +1,19 @@
 import type { January1990ContentContext } from "./january-content-context";
 import type { January1990ContentId } from "./january-content-ids";
 import { JANUARY_1990_CONTENT_IDS } from "./january-content-ids";
-import type {
-  JanuaryEvidenceV1,
-  JanuaryProvisionalStateV1,
-  JanuaryQualityScoresV1,
+import {
+  parseJanuaryProvisionalState,
+  type JanuaryEvidenceV1,
+  type JanuaryProvisionalStateV1,
+  type JanuaryQualityScoresV1,
 } from "./january-provisional-state";
 import { JANUARY_1990_REASON_CODES } from "./january-reason-codes";
+
+export const JANUARY_1990_QUALITY_SCORE_MAXIMUMS = Object.freeze({
+  clarity: 10,
+  correctness: 11,
+  reliability: 9,
+} as const);
 
 export type JanuaryProgrammingOutcomeV1 = Readonly<{
   schemaVersion: "january-1990-programming-outcome-v1";
@@ -29,6 +36,66 @@ export type January1990ResultV1 = Readonly<{
   outcomeEventId: January1990ContentId;
   programmingOutcome: JanuaryProgrammingOutcomeV1;
 }>;
+
+const RESULT_KEYS = Object.freeze([
+  "month",
+  "outcomeEventId",
+  "programmingOutcome",
+  "projectId",
+  "schemaVersion",
+] as const);
+
+const PROGRAMMING_OUTCOME_KEYS = Object.freeze([
+  "accessRoute",
+  "defectEventId",
+  "defectResponse",
+  "evidence",
+  "learningPractice",
+  "month",
+  "outcomeEventId",
+  "projectId",
+  "qualityScores",
+  "schemaVersion",
+  "workPackageId",
+] as const);
+
+export function parseJanuary1990Result(value: unknown): January1990ResultV1 {
+  const result = requireRecord(value, RESULT_KEYS, "result");
+  if (result.schemaVersion !== "january-1990-result-v1" || result.month !== "1990-01") {
+    throw new TypeError("January result schema or month is incompatible");
+  }
+
+  const projectId = requireExactContentId(
+    result.projectId,
+    JANUARY_1990_CONTENT_IDS.personalUtilityProject,
+    "result projectId",
+  );
+  const outcomeEventId = requireExactContentId(
+    result.outcomeEventId,
+    JANUARY_1990_CONTENT_IDS.programRunsEvent,
+    "result outcomeEventId",
+  );
+  const programmingOutcomeRecord = requireRecord(
+    result.programmingOutcome,
+    PROGRAMMING_OUTCOME_KEYS,
+    "programming outcome",
+  );
+  if (
+    programmingOutcomeRecord.projectId !== projectId ||
+    programmingOutcomeRecord.outcomeEventId !== outcomeEventId
+  ) {
+    throw new TypeError("January result identity does not match its programming outcome");
+  }
+
+  const programmingOutcome = parseJanuaryProgrammingOutcome(programmingOutcomeRecord);
+  return Object.freeze({
+    schemaVersion: "january-1990-result-v1",
+    month: "1990-01",
+    projectId,
+    outcomeEventId,
+    programmingOutcome,
+  });
+}
 
 export function materializeJanuaryProgrammingState(
   state: JanuaryProvisionalStateV1,
@@ -87,13 +154,123 @@ export function createJanuaryProgrammingOutcomeFromState(
 export function createJanuary1990Result(
   programmingOutcome: JanuaryProgrammingOutcomeV1,
 ): January1990ResultV1 {
-  return Object.freeze({
+  return parseJanuary1990Result({
     schemaVersion: "january-1990-result-v1",
     month: "1990-01",
     projectId: programmingOutcome.projectId,
     outcomeEventId: programmingOutcome.outcomeEventId,
     programmingOutcome,
   });
+}
+
+function parseJanuaryProgrammingOutcome(
+  record: Readonly<Record<string, unknown>>,
+): JanuaryProgrammingOutcomeV1 {
+  if (
+    record.schemaVersion !== "january-1990-programming-outcome-v1" ||
+    record.month !== "1990-01"
+  ) {
+    throw new TypeError("January programming outcome schema or month is incompatible");
+  }
+
+  const state = parseJanuaryProvisionalState({
+    schemaVersion: "january-1990-provisional-state-v1",
+    accessRoute: record.accessRoute,
+    learningPractice: record.learningPractice,
+    workPackageId: record.workPackageId,
+    defectEventId: record.defectEventId,
+    defectResponse: record.defectResponse,
+    evidence: record.evidence,
+    qualityScores: record.qualityScores,
+  });
+  const accessRoute = requireValue(state.accessRoute, "access route");
+  const learningPractice = requireValue(state.learningPractice, "learning practice");
+  const workPackageId = requireValue(state.workPackageId, "work package");
+  const defectEventId = requireValue(state.defectEventId, "defect event");
+  const defectResponse = requireValue(state.defectResponse, "defect response");
+  const qualityScores = requireValue(state.qualityScores, "quality scores");
+
+  requireContextId(workPackageId, JANUARY_1990_CONTENT_IDS.inputOutputWorkPackage, "work package");
+  if (
+    defectEventId !== JANUARY_1990_CONTENT_IDS.logicErrorEvent &&
+    defectEventId !== JANUARY_1990_CONTENT_IDS.syntaxErrorEvent
+  ) {
+    throw new TypeError("January defectEventId is not part of the completed-month contract");
+  }
+  if (state.evidence.length === 0) {
+    throw new TypeError("January programming evidence must be a non-empty array");
+  }
+  requireQualityScoreMaximums(qualityScores);
+
+  return freezeProgrammingOutcome({
+    schemaVersion: "january-1990-programming-outcome-v1",
+    month: "1990-01",
+    projectId: JANUARY_1990_CONTENT_IDS.personalUtilityProject,
+    workPackageId,
+    defectEventId,
+    outcomeEventId: JANUARY_1990_CONTENT_IDS.programRunsEvent,
+    accessRoute,
+    learningPractice,
+    defectResponse,
+    qualityScores,
+    evidence: state.evidence,
+  });
+}
+
+function requireQualityScoreMaximums(scores: JanuaryQualityScoresV1): void {
+  requireScoreMaximum(scores.clarity, JANUARY_1990_QUALITY_SCORE_MAXIMUMS.clarity, "clarity");
+  requireScoreMaximum(
+    scores.correctness,
+    JANUARY_1990_QUALITY_SCORE_MAXIMUMS.correctness,
+    "correctness",
+  );
+  requireScoreMaximum(
+    scores.reliability,
+    JANUARY_1990_QUALITY_SCORE_MAXIMUMS.reliability,
+    "reliability",
+  );
+}
+
+function requireScoreMaximum(value: number, maximum: number, field: string): void {
+  if (value > maximum) {
+    throw new TypeError(`January ${field} score must be a safe integer between 0 and ${maximum}`);
+  }
+}
+
+function requireExactContentId(
+  value: unknown,
+  expected: January1990ContentId,
+  label: string,
+): January1990ContentId {
+  if (value !== expected) {
+    throw new TypeError(`January ${label} does not match the approved context`);
+  }
+  return expected;
+}
+
+function requireRecord(
+  value: unknown,
+  expectedKeys: readonly string[],
+  label: string,
+): Readonly<Record<string, unknown>> {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    Array.isArray(value) ||
+    Object.getPrototypeOf(value) !== Object.prototype
+  ) {
+    throw new TypeError(`January ${label} must be a plain JSON object`);
+  }
+  const record = value as Readonly<Record<string, unknown>>;
+  const actualKeys = Object.keys(record).toSorted(compareText);
+  const approvedKeys = [...expectedKeys].toSorted(compareText);
+  if (
+    actualKeys.length !== approvedKeys.length ||
+    !actualKeys.every((key, index) => key === approvedKeys[index])
+  ) {
+    throw new TypeError(`January ${label} field set does not match the closed contract`);
+  }
+  return record;
 }
 
 function createQualityScores(
@@ -167,6 +344,11 @@ function requireContextId(
   expected: January1990ContentId,
   label: string,
 ): void {
-  if (actual !== expected)
+  if (actual !== expected) {
     throw new TypeError(`January ${label} does not match the approved context`);
+  }
+}
+
+function compareText(left: string, right: string): number {
+  return left < right ? -1 : left > right ? 1 : 0;
 }
