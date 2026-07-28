@@ -1,6 +1,6 @@
 import { access, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import {
@@ -13,6 +13,7 @@ import { captureBrowserEntries, waitForFirstMeaningfulPaint } from "./capture-br
 import { captureWindowsHostProfile } from "./capture-host.js";
 import { parseStartupCaptureArguments } from "./capture-options.js";
 import { captureRustPerformanceSnapshot } from "./capture-rust.js";
+import type { EvidenceBrowser } from "./wdio-types.js";
 import { writeValidatedCapture } from "./write-capture.js";
 
 const REPOSITORY_ROOT = resolve(import.meta.dirname, "../../..");
@@ -27,9 +28,7 @@ export async function captureStartupShellFmp(
     join(tmpdir(), "runtime-human-desktop-evidence-"),
   );
   const capabilities = createTauriCapabilities(options.binaryPath, {
-    appArgs: [
-      `--runtime-human-evidence-data-dir=${isolatedDataDirectory}`,
-    ],
+    appArgs: [`--runtime-human-evidence-data-dir=${isolatedDataDirectory}`],
     autoInstallTauriDriver: true,
     driverProvider: "external",
     logLevel: "warn",
@@ -42,7 +41,7 @@ export async function captureStartupShellFmp(
     captureFrontendLogs: false,
   };
 
-  let browser: WebdriverIO.Browser | undefined;
+  let browser: EvidenceBrowser | undefined;
   try {
     browser = await startWdioSession(capabilities, {
       rootDir: REPOSITORY_ROOT,
