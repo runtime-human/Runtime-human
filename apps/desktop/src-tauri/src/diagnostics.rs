@@ -240,7 +240,8 @@ mod tests {
     use crate::desktop_performance::DesktopPerformanceOperationCategory;
 
     use super::{
-        DEFAULT_FILTER_DIRECTIVE, filter_directive, logging_status, operation_category_name,
+        DEFAULT_FILTER_DIRECTIVE, LoggingInitializationState, RuntimeDiagnostics, filter_directive,
+        logging_status, operation_category_name,
     };
 
     #[test]
@@ -270,6 +271,26 @@ mod tests {
             DEFAULT_FILTER_DIRECTIVE,
         );
         assert_eq!(filter_directive(true, None), DEFAULT_FILTER_DIRECTIVE);
+    }
+
+    #[test]
+    fn every_initialization_failure_is_inactive_and_empty() {
+        for initialization in [
+            LoggingInitializationState::LogDirectoryUnavailable,
+            LoggingInitializationState::AppenderUnavailable,
+            LoggingInitializationState::SubscriberUnavailable,
+        ] {
+            let diagnostics = RuntimeDiagnostics::inactive(initialization);
+            assert_eq!(
+                serde_json::to_value(diagnostics.status())
+                    .expect("serialize inactive diagnostics status"),
+                serde_json::json!({
+                    "schemaVersion": "runtime-human-logging-status-v1",
+                    "active": false,
+                    "droppedLines": 0,
+                }),
+            );
+        }
     }
 
     #[test]
