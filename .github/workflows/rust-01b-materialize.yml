@@ -1,11 +1,12 @@
 name: rust-01b-materialize
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/rust-01b-production-logging
+      - main
     paths:
       - ".github/workflows/rust-01b-materialize.yml"
+  workflow_dispatch:
 
 permissions:
   contents: write
