@@ -11,6 +11,8 @@ use tracing_subscriber::{EnvFilter, layer::SubscriberExt};
 use crate::desktop_performance::DesktopPerformanceOperationCategory;
 
 const LOGGING_STATUS_SCHEMA_VERSION: &str = "runtime-human-logging-status-v1";
+const LOG_TARGET: &str = "runtime_human_desktop";
+const DEFAULT_LOG_LEVEL: &str = "info";
 const DEFAULT_FILTER_DIRECTIVE: &str = "runtime_human_desktop=info";
 const LOG_BUFFERED_LINES_LIMIT: usize = 1_024;
 const LOG_FILE_RETENTION_LIMIT: usize = 8;
@@ -190,11 +192,26 @@ fn build_filter(debug_build: bool, rust_log: Option<&str>) -> EnvFilter {
     EnvFilter::try_new(directive).unwrap_or_else(|_| EnvFilter::new(DEFAULT_FILTER_DIRECTIVE))
 }
 
-fn filter_directive<'a>(debug_build: bool, rust_log: Option<&'a str>) -> &'a str {
-    if debug_build {
-        rust_log.unwrap_or(DEFAULT_FILTER_DIRECTIVE)
+fn filter_directive(debug_build: bool, rust_log: Option<&str>) -> String {
+    let level = if debug_build {
+        rust_log
+            .and_then(debug_log_level)
+            .unwrap_or(DEFAULT_LOG_LEVEL)
     } else {
-        DEFAULT_FILTER_DIRECTIVE
+        DEFAULT_LOG_LEVEL
+    };
+    format!("{LOG_TARGET}={level}")
+}
+
+fn debug_log_level(value: &str) -> Option<&'static str> {
+    let candidate = value.strip_prefix("runtime_human_desktop=").unwrap_or(value);
+    match candidate {
+        "error" => Some("error"),
+        "warn" => Some("warn"),
+        "info" => Some("info"),
+        "debug" => Some("debug"),
+        "trace" => Some("trace"),
+        _ => None,
     }
 }
 
@@ -227,16 +244,28 @@ mod tests {
     #[test]
     fn release_filter_ignores_rust_log() {
         assert_eq!(
-            filter_directive(false, Some("runtime_human_desktop=trace,tauri=trace")),
+            filter_directive(false, Some("runtime_human_desktop=trace")),
             DEFAULT_FILTER_DIRECTIVE,
         );
     }
 
     #[test]
-    fn debug_filter_accepts_explicit_rust_log() {
+    fn debug_filter_accepts_only_closed_crate_levels() {
         assert_eq!(
             filter_directive(true, Some("runtime_human_desktop=debug")),
             "runtime_human_desktop=debug",
+        );
+        assert_eq!(
+            filter_directive(true, Some("trace")),
+            "runtime_human_desktop=trace",
+        );
+        assert_eq!(
+            filter_directive(true, Some("runtime_human_desktop=trace,tauri=trace")),
+            DEFAULT_FILTER_DIRECTIVE,
+        );
+        assert_eq!(
+            filter_directive(true, Some("tauri=trace")),
+            DEFAULT_FILTER_DIRECTIVE,
         );
         assert_eq!(filter_directive(true, None), DEFAULT_FILTER_DIRECTIVE);
     }
