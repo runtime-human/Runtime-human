@@ -36,6 +36,7 @@ fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            desktop_performance::desktop_get_performance_snapshot_v1,
             persistence::commands::persistence_create_save_v1,
             persistence::commands::persistence_load_save_v1,
             persistence::commands::persistence_begin_month_run_v1,

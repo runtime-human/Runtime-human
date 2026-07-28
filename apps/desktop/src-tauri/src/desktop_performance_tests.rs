@@ -3,6 +3,7 @@ use serde_json::json;
 use super::desktop_performance::{
     DESKTOP_PERFORMANCE_SNAPSHOT_SCHEMA_VERSION, DesktopPerformanceEventName,
     DesktopPerformanceOperationCategory, DesktopPerformanceRecorder,
+    read_desktop_performance_snapshot,
 };
 
 #[test]
@@ -71,6 +72,20 @@ fn telemetry_failure_never_changes_operation_result() {
 
     assert_eq!(result, Err(SentinelError));
     assert_eq!(recorder.snapshot().dropped_events, 1);
+}
+
+#[test]
+fn read_surface_is_complete_repeatable_and_non_destructive() {
+    let recorder = DesktopPerformanceRecorder::with_capacity(2);
+    assert!(recorder.record_once(DesktopPerformanceEventName::ProcessEntry));
+    assert!(recorder.record_once(DesktopPerformanceEventName::TauriSetupStart));
+
+    let first = read_desktop_performance_snapshot(&recorder);
+    let second = read_desktop_performance_snapshot(&recorder);
+
+    assert_eq!(first, second);
+    assert_eq!(first.events.len(), 2);
+    assert_eq!(recorder.snapshot(), first);
 }
 
 #[test]
