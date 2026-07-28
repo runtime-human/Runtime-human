@@ -2,6 +2,8 @@ mod backup;
 mod backup_receipt;
 mod checkpoint_integrity;
 pub(crate) mod commands;
+#[cfg(test)]
+mod commands_tests;
 mod commit_contract;
 mod contracts;
 mod database;

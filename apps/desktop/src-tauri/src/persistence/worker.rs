@@ -98,6 +98,11 @@ struct QueuedDatabaseCommand {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct PersistenceOperationContext {
+    operation_id: u64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum WorkerMode {
     Normal,
     RecoveryReadOnly,
@@ -234,12 +239,41 @@ impl PersistenceHandle {
         }
     }
 
+    pub(crate) fn begin_operation(&self) -> PersistenceOperationContext {
+        PersistenceOperationContext {
+            operation_id: self.inner.performance.next_operation_id(),
+        }
+    }
+
+    pub(crate) fn record_tauri_command_dispatch(
+        &self,
+        operation: PersistenceOperationContext,
+        category: DesktopPerformanceOperationCategory,
+        duration: Duration,
+    ) {
+        let _recorded = self.inner.performance.record_duration(
+            DesktopPerformanceEventName::TauriCommandDispatch,
+            duration,
+            Some(category),
+            Some(operation.operation_id),
+            None,
+        );
+    }
+
     pub(crate) fn create_save(
         &self,
         command: CreateSaveCommandV1,
     ) -> Result<MutationOutcome<CreateSaveAcceptedV1>, PersistenceError> {
+        self.create_save_with_operation(command, self.begin_operation())
+    }
+
+    pub(crate) fn create_save_with_operation(
+        &self,
+        command: CreateSaveCommandV1,
+        operation: PersistenceOperationContext,
+    ) -> Result<MutationOutcome<CreateSaveAcceptedV1>, PersistenceError> {
         let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::CreateSave { command, response })?;
+        self.send(DatabaseCommand::CreateSave { command, response }, operation)?;
         receive(receiver)
     }
 
@@ -247,8 +281,16 @@ impl PersistenceHandle {
         &self,
         query: LoadSaveQueryV1,
     ) -> Result<Option<SaveRecordV1>, PersistenceError> {
+        self.load_save_with_operation(query, self.begin_operation())
+    }
+
+    pub(crate) fn load_save_with_operation(
+        &self,
+        query: LoadSaveQueryV1,
+        operation: PersistenceOperationContext,
+    ) -> Result<Option<SaveRecordV1>, PersistenceError> {
         let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::LoadSave { query, response })?;
+        self.send(DatabaseCommand::LoadSave { query, response }, operation)?;
         receive(receiver)
     }
 
@@ -256,8 +298,19 @@ impl PersistenceHandle {
         &self,
         command: BeginPersistedMonthRunCommandV1,
     ) -> Result<MutationOutcome<BeginPersistedMonthRunAcceptedV1>, PersistenceError> {
+        self.begin_month_run_with_operation(command, self.begin_operation())
+    }
+
+    pub(crate) fn begin_month_run_with_operation(
+        &self,
+        command: BeginPersistedMonthRunCommandV1,
+        operation: PersistenceOperationContext,
+    ) -> Result<MutationOutcome<BeginPersistedMonthRunAcceptedV1>, PersistenceError> {
         let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::BeginMonthRun { command, response })?;
+        self.send(
+            DatabaseCommand::BeginMonthRun { command, response },
+            operation,
+        )?;
         receive(receiver)
     }
 
@@ -265,8 +318,16 @@ impl PersistenceHandle {
         &self,
         query: LoadMonthRunQueryV1,
     ) -> Result<Option<MonthRunRecordV1>, PersistenceError> {
+        self.load_month_run_with_operation(query, self.begin_operation())
+    }
+
+    pub(crate) fn load_month_run_with_operation(
+        &self,
+        query: LoadMonthRunQueryV1,
+        operation: PersistenceOperationContext,
+    ) -> Result<Option<MonthRunRecordV1>, PersistenceError> {
         let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::LoadMonthRun { query, response })?;
+        self.send(DatabaseCommand::LoadMonthRun { query, response }, operation)?;
         receive(receiver)
     }
 
@@ -274,8 +335,19 @@ impl PersistenceHandle {
         &self,
         query: LoadActiveMonthRunQueryV1,
     ) -> Result<Option<MonthRunRecordV1>, PersistenceError> {
+        self.load_active_month_run_with_operation(query, self.begin_operation())
+    }
+
+    pub(crate) fn load_active_month_run_with_operation(
+        &self,
+        query: LoadActiveMonthRunQueryV1,
+        operation: PersistenceOperationContext,
+    ) -> Result<Option<MonthRunRecordV1>, PersistenceError> {
         let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::LoadActiveMonthRun { query, response })?;
+        self.send(
+            DatabaseCommand::LoadActiveMonthRun { query, response },
+            operation,
+        )?;
         receive(receiver)
     }
 
@@ -283,8 +355,19 @@ impl PersistenceHandle {
         &self,
         command: StoreMonthRunBoundaryCommandV1,
     ) -> Result<MutationOutcome<StoreMonthRunBoundaryAcceptedV1>, PersistenceError> {
+        self.store_boundary_with_operation(command, self.begin_operation())
+    }
+
+    pub(crate) fn store_boundary_with_operation(
+        &self,
+        command: StoreMonthRunBoundaryCommandV1,
+        operation: PersistenceOperationContext,
+    ) -> Result<MutationOutcome<StoreMonthRunBoundaryAcceptedV1>, PersistenceError> {
         let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::StoreBoundary { command, response })?;
+        self.send(
+            DatabaseCommand::StoreBoundary { command, response },
+            operation,
+        )?;
         receive(receiver)
     }
 
@@ -292,8 +375,19 @@ impl PersistenceHandle {
         &self,
         command: CommitPersistedMonthRunCommandV1,
     ) -> Result<MutationOutcome<CommitPersistedMonthRunAcceptedV1>, PersistenceError> {
+        self.commit_month_run_with_operation(command, self.begin_operation())
+    }
+
+    pub(crate) fn commit_month_run_with_operation(
+        &self,
+        command: CommitPersistedMonthRunCommandV1,
+        operation: PersistenceOperationContext,
+    ) -> Result<MutationOutcome<CommitPersistedMonthRunAcceptedV1>, PersistenceError> {
         let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::CommitMonthRun { command, response })?;
+        self.send(
+            DatabaseCommand::CommitMonthRun { command, response },
+            operation,
+        )?;
         receive(receiver)
     }
 
@@ -301,14 +395,32 @@ impl PersistenceHandle {
         &self,
         command: CreateBackupCommandV1,
     ) -> Result<MutationOutcome<BackupMetadataV1>, PersistenceError> {
+        self.create_backup_with_operation(command, self.begin_operation())
+    }
+
+    pub(crate) fn create_backup_with_operation(
+        &self,
+        command: CreateBackupCommandV1,
+        operation: PersistenceOperationContext,
+    ) -> Result<MutationOutcome<BackupMetadataV1>, PersistenceError> {
         let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::CreateBackup { command, response })?;
+        self.send(
+            DatabaseCommand::CreateBackup { command, response },
+            operation,
+        )?;
         receive(receiver)
     }
 
     pub(crate) fn recovery_status(&self) -> Result<RecoveryStatusV1, PersistenceError> {
+        self.recovery_status_with_operation(self.begin_operation())
+    }
+
+    pub(crate) fn recovery_status_with_operation(
+        &self,
+        operation: PersistenceOperationContext,
+    ) -> Result<RecoveryStatusV1, PersistenceError> {
         let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::RecoveryStatus { response })?;
+        self.send(DatabaseCommand::RecoveryStatus { response }, operation)?;
         receive(receiver)
     }
 
@@ -317,19 +429,22 @@ impl PersistenceHandle {
         join_worker(&self.inner.worker)
     }
 
-    fn send(&self, command: DatabaseCommand) -> Result<(), PersistenceError> {
+    fn send(
+        &self,
+        command: DatabaseCommand,
+        operation: PersistenceOperationContext,
+    ) -> Result<(), PersistenceError> {
         if self.inner.shutdown_requested.load(Ordering::Acquire) {
             return Err(PersistenceError::Unavailable);
         }
 
         let category = command.category();
-        let operation_id = self.inner.performance.next_operation_id();
         let enqueued_at = Instant::now();
         let depth_at_enqueue =
             reserve_queue_depth(&self.inner.queue_depth).min(COMMAND_QUEUE_CAPACITY as u32);
         let queued = QueuedDatabaseCommand {
             command,
-            operation_id,
+            operation_id: operation.operation_id,
             category,
             enqueued_at,
             depth_at_enqueue,
