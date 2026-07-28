@@ -50,17 +50,21 @@ const EXTERNAL_METRIC_NAMES = new Set([
 
 export function parseDesktopEvidenceCapture(value, label = "capture") {
   const capture = requireRecord(value, label);
-  requireExactKeys(capture, [
-    "schemaVersion",
-    "commit",
-    "host",
-    "scenario",
-    "classification",
-    "sampleIndex",
-    "externalDurationsMicros",
-    "rustSnapshot",
-    "browserEntries",
-  ], label);
+  requireExactKeys(
+    capture,
+    [
+      "schemaVersion",
+      "commit",
+      "host",
+      "scenario",
+      "classification",
+      "sampleIndex",
+      "externalDurationsMicros",
+      "rustSnapshot",
+      "browserEntries",
+    ],
+    label,
+  );
   if (capture.schemaVersion !== CAPTURE_SCHEMA) {
     throw new TypeError(`${label}.schemaVersion must be ${CAPTURE_SCHEMA}`);
   }
@@ -130,12 +134,17 @@ export function nearestRank(values, percentile) {
   if (!Array.isArray(values) || values.length === 0) {
     throw new TypeError("values must contain at least one value");
   }
-  if (typeof percentile !== "number" || !Number.isFinite(percentile) || percentile <= 0 || percentile > 1) {
+  if (
+    typeof percentile !== "number" ||
+    !Number.isFinite(percentile) ||
+    percentile <= 0 ||
+    percentile > 1
+  ) {
     throw new RangeError("percentile must be greater than 0 and at most 1");
   }
-  const sorted = values.map((value, index) =>
-    requireSafeInteger(value, `values[${index}]`, 0),
-  ).sort((left, right) => left - right);
+  const sorted = values
+    .map((value, index) => requireSafeInteger(value, `values[${index}]`, 0))
+    .sort((left, right) => left - right);
   const rank = Math.ceil(percentile * sorted.length);
   return sorted[rank - 1];
 }
@@ -149,7 +158,9 @@ function summarizeGroup(captures) {
   for (const capture of captures) {
     droppedRustEvents += capture.rustSnapshot.droppedEvents;
     if (capture.rustSnapshot.droppedEvents > 0) {
-      warnings.push(`sample ${capture.sampleIndex} dropped ${capture.rustSnapshot.droppedEvents} Rust event(s)`);
+      warnings.push(
+        `sample ${capture.sampleIndex} dropped ${capture.rustSnapshot.droppedEvents} Rust event(s)`,
+      );
     }
     const extracted = extractMetrics(capture);
     for (const [name, value] of extracted) {
@@ -172,14 +183,14 @@ function summarizeGroup(captures) {
     sampleCount: captures.length,
     droppedRustEvents,
     missingMetrics: Object.freeze(
-      [...missing.entries()].sort(([left], [right]) => left.localeCompare(right)).map(([name, count]) =>
-        Object.freeze({ name, count }),
-      ),
+      [...missing.entries()]
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([name, count]) => Object.freeze({ name, count })),
     ),
     metrics: Object.freeze(
-      [...metrics.entries()].sort(([left], [right]) => left.localeCompare(right)).map(([name, values]) =>
-        summarizeMetric(name, values),
-      ),
+      [...metrics.entries()]
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([name, values]) => summarizeMetric(name, values)),
     ),
     warnings: Object.freeze([...new Set(warnings)].sort()),
   });
@@ -205,13 +216,29 @@ function extractMetrics(capture) {
   for (const event of capture.rustSnapshot.events) {
     if (event.durationMicros !== null) {
       const category = event.category ?? "none";
-      pushMetric(metrics, `rust.${rustEventMetricName(event.name)}.${category}`, event.durationMicros);
+      pushMetric(
+        metrics,
+        `rust.${rustEventMetricName(event.name)}.${category}`,
+        event.durationMicros,
+      );
     } else if (!rustMarks.has(event.name)) {
       rustMarks.set(event.name, event.atMicros);
     }
   }
-  addDifference(metrics, "rust.process_to_persistence_ready", rustMarks, "processEntry", "persistenceWorkerReady");
-  addDifference(metrics, "rust.process_to_main_window", rustMarks, "processEntry", "mainWindowAvailable");
+  addDifference(
+    metrics,
+    "rust.process_to_persistence_ready",
+    rustMarks,
+    "processEntry",
+    "persistenceWorkerReady",
+  );
+  addDifference(
+    metrics,
+    "rust.process_to_main_window",
+    rustMarks,
+    "processEntry",
+    "mainWindowAvailable",
+  );
   addDifference(metrics, "rust.tauri_setup", rustMarks, "tauriSetupStart", "tauriSetupComplete");
 
   const browserMarks = new Map();
@@ -298,10 +325,14 @@ function addDifference(metrics, name, marks, start, end) {
 
 function rustEventMetricName(name) {
   switch (name) {
-    case "tauriCommandDispatch": return "command_dispatch";
-    case "persistenceQueueWait": return "queue_wait";
-    case "persistenceDatabaseOperation": return "database_operation";
-    default: return name;
+    case "tauriCommandDispatch":
+      return "command_dispatch";
+    case "persistenceQueueWait":
+      return "queue_wait";
+    case "persistenceDatabaseOperation":
+      return "database_operation";
+    default:
+      return name;
   }
 }
 
@@ -332,14 +363,16 @@ function parseClassification(value, label) {
 function parseExternalDurations(value, label) {
   const durations = requireRecord(value, label);
   for (const key of Object.keys(durations)) {
-    if (!EXTERNAL_METRIC_NAMES.has(key)) throw new TypeError(`${label} contains unsupported metric ${key}`);
+    if (!EXTERNAL_METRIC_NAMES.has(key))
+      throw new TypeError(`${label} contains unsupported metric ${key}`);
   }
-  return Object.freeze(Object.fromEntries(
-    Object.entries(durations).sort(([left], [right]) => left.localeCompare(right)).map(([name, duration]) => [
-      name,
-      requireSafeInteger(duration, `${label}.${name}`, 0),
-    ]),
-  ));
+  return Object.freeze(
+    Object.fromEntries(
+      Object.entries(durations)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([name, duration]) => [name, requireSafeInteger(duration, `${label}.${name}`, 0)]),
+    ),
+  );
 }
 
 function parseRustSnapshot(value, label) {
@@ -350,23 +383,30 @@ function parseRustSnapshot(value, label) {
   }
   return Object.freeze({
     schemaVersion: RUST_SNAPSHOT_SCHEMA,
-    events: Object.freeze(requireArray(snapshot.events, `${label}.events`).map((event, index) =>
-      parseRustEvent(event, `${label}.events[${index}]`),
-    )),
+    events: Object.freeze(
+      requireArray(snapshot.events, `${label}.events`).map((event, index) =>
+        parseRustEvent(event, `${label}.events[${index}]`),
+      ),
+    ),
     droppedEvents: requireSafeInteger(snapshot.droppedEvents, `${label}.droppedEvents`, 0),
   });
 }
 
 function parseRustEvent(value, label) {
   const event = requireRecord(value, label);
-  requireExactKeys(event, ["name", "atMicros", "durationMicros", "category", "operationId", "queueDepth"], label);
+  requireExactKeys(
+    event,
+    ["name", "atMicros", "durationMicros", "category", "operationId", "queueDepth"],
+    label,
+  );
   return Object.freeze({
     name: requireClosedString(event.name, RUST_EVENT_NAMES, `${label}.name`),
     atMicros: requireSafeInteger(event.atMicros, `${label}.atMicros`, 0),
     durationMicros: requireNullableSafeInteger(event.durationMicros, `${label}.durationMicros`),
-    category: event.category === null
-      ? null
-      : requireClosedString(event.category, RUST_CATEGORIES, `${label}.category`),
+    category:
+      event.category === null
+        ? null
+        : requireClosedString(event.category, RUST_CATEGORIES, `${label}.category`),
     operationId: requireNullableSafeInteger(event.operationId, `${label}.operationId`),
     queueDepth: requireNullableSafeInteger(event.queueDepth, `${label}.queueDepth`),
   });
@@ -377,7 +417,8 @@ function parseBrowserEntry(value, label) {
   requireExactKeys(entry, ["name", "entryType", "startMicros", "durationMicros"], label);
   const entryType = requireClosedString(entry.entryType, BROWSER_ENTRY_TYPES, `${label}.entryType`);
   const duration = requireSafeInteger(entry.durationMicros, `${label}.durationMicros`, 0);
-  if (entryType === "mark" && duration !== 0) throw new TypeError(`${label}.durationMicros must be 0 for marks`);
+  if (entryType === "mark" && duration !== 0)
+    throw new TypeError(`${label}.durationMicros must be 0 for marks`);
   return Object.freeze({
     name: requireClosedString(entry.name, BROWSER_ENTRY_NAMES, `${label}.name`),
     entryType,
@@ -389,7 +430,10 @@ function parseBrowserEntry(value, label) {
 function assertComparableSource(captures) {
   const reference = JSON.stringify({ commit: captures[0].commit, host: captures[0].host });
   for (let index = 1; index < captures.length; index += 1) {
-    const candidate = JSON.stringify({ commit: captures[index].commit, host: captures[index].host });
+    const candidate = JSON.stringify({
+      commit: captures[index].commit,
+      host: captures[index].host,
+    });
     if (candidate !== reference) {
       throw new TypeError(`captures[${index}] has a different commit or host profile`);
     }
@@ -398,7 +442,12 @@ function assertComparableSource(captures) {
 
 function groupKey(capture) {
   const classification = capture.classification;
-  return [capture.scenario, classification.process, classification.osCache, classification.database].join("|");
+  return [
+    capture.scenario,
+    classification.process,
+    classification.osCache,
+    classification.database,
+  ].join("|");
 }
 
 function requireRecord(value, label) {

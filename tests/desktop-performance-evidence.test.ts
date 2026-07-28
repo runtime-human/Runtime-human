@@ -15,10 +15,7 @@ const HOST = {
   cpuModel: "Test CPU",
 } as const;
 
-function capture(
-  sampleIndex: number,
-  overrides: Readonly<Record<string, unknown>> = {},
-): unknown {
+function capture(sampleIndex: number, overrides: Readonly<Record<string, unknown>> = {}): unknown {
   return {
     schemaVersion: "runtime-human-desktop-performance-capture-v1",
     commit: COMMIT,
@@ -71,12 +68,7 @@ function rustMark(name: string, atMicros: number) {
   };
 }
 
-function rustDuration(
-  name: string,
-  category: string,
-  atMicros: number,
-  durationMicros: number,
-) {
+function rustDuration(name: string, category: string, atMicros: number, durationMicros: number) {
   return {
     name,
     atMicros,

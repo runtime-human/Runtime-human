@@ -49,14 +49,9 @@ export type DesktopEvidenceReport = Readonly<{
   captures: readonly DesktopEvidenceCapture[];
 }>;
 
-export function parseDesktopEvidenceCapture(
-  value: unknown,
-  label?: string,
-): DesktopEvidenceCapture;
+export function parseDesktopEvidenceCapture(value: unknown, label?: string): DesktopEvidenceCapture;
 
-export function createDesktopEvidenceReport(
-  captures: readonly unknown[],
-): DesktopEvidenceReport;
+export function createDesktopEvidenceReport(captures: readonly unknown[]): DesktopEvidenceReport;
 
 export function nearestRank(values: readonly number[], percentile: number): number;
 

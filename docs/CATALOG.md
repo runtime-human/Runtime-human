@@ -11,7 +11,7 @@ updated: 2026-07-29
 > Сгенерировано `node scripts/build-toc.mjs` из metadata документов. Не редактировать вручную.
 > Канонический навигационный вход и порядок источников истины: [INDEX.md](INDEX.md).
 
-Всего документов: **195**.
+Всего документов: **196**.
 
 ## Навигация
 
@@ -184,6 +184,7 @@ updated: 2026-07-29
 - [OPT-00 Performance Baseline Implementation Plan](superpowers/plans/2026-07-26-performance-baseline.md) — `completed`, `canon`
 - [OPT-00B File-backed SQLite Baseline Plan](superpowers/plans/2026-07-26-sqlite-performance-baseline.md) — `completed`, `canon`
 - [PERF-02A Renderer and First Meaningful Paint Implementation Plan](plans/PERF-02A-RENDERER-FMP-IMPLEMENTATION-PLAN.md) — `completed`, `canon`
+- [PERF-02A Windows Evidence Collection Implementation Plan](plans/PERF-02A-WINDOWS-EVIDENCE-IMPLEMENTATION-PLAN.md) — `draft`, `canon`
 - [Phase 0 entry criteria](plans/PHASE-0-ENTRY-CRITERIA.md) — `draft`, `canon`
 - [Plans](plans/README.md) — `draft`, `canon`
 - [Professional Challenge Engine — Implementation Plan](plans/PROFESSIONAL-CHALLENGE-IMPLEMENTATION-PLAN.md) — `draft`, `canon`
