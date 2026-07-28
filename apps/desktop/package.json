@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 1420",
     "build": "vite build",
+    "build:evidence": "vite build --mode evidence",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build -o storybook-static",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "tauri:build:evidence": "tauri build --config src-tauri/tauri.evidence.conf.json --features performance-evidence --no-bundle"
   },
   "dependencies": {
     "@runtime-human/game-application": "workspace:*",
