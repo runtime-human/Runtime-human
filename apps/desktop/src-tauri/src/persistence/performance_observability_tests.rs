@@ -45,6 +45,38 @@ fn queue_wait_and_database_spans_share_one_operation_context() {
 }
 
 #[test]
+fn caller_supplied_operation_id_reaches_queue_and_database_spans() {
+    let temp = TempDir::new().expect("temporary directory");
+    let recorder = DesktopPerformanceRecorder::with_capacity(16);
+    let handle = PersistenceHandle::start_with_performance(
+        temp.path().join("runtime-human.sqlite3"),
+        recorder.clone(),
+    )
+    .expect("start observed persistence worker");
+
+    handle
+        .recovery_status_with_operation_id(77)
+        .expect("read observed recovery status");
+    handle.shutdown().expect("shutdown persistence worker");
+
+    let observed = recorder
+        .snapshot()
+        .events
+        .into_iter()
+        .filter(|event| {
+            matches!(
+                event.name,
+                DesktopPerformanceEventName::PersistenceQueueWait
+                    | DesktopPerformanceEventName::PersistenceDatabaseOperation
+            )
+        })
+        .collect::<Vec<_>>();
+
+    assert_eq!(observed.len(), 2);
+    assert!(observed.iter().all(|event| event.operation_id == Some(77)));
+}
+
+#[test]
 fn sequential_commands_receive_distinct_operation_ids_and_return_to_zero_depth() {
     let temp = TempDir::new().expect("temporary directory");
     let recorder = DesktopPerformanceRecorder::with_capacity(16);
