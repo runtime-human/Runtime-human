@@ -1,0 +1,2 @@
+# Keep deterministic compiler golden artifacts byte-identical on every checkout.
+tests/fixtures/content-compiler/expected/** text eol=lf
