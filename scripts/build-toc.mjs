@@ -8,6 +8,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import {
+  validateDocumentationMetadata,
+  validateSupersessionTargets,
+} from "./docs-metadata.mjs";
+
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DOCS = path.join(ROOT, "docs");
 const MANIFEST = path.join(DOCS, "MANIFEST.jsonc");
@@ -49,7 +54,8 @@ const CATALOG_SECTIONS = [
 ];
 
 function walk(dir) {
-  return fs.readdirSync(dir, { withFileTypes: true })
+  return fs
+    .readdirSync(dir, { withFileTypes: true })
     .flatMap((entry) => {
       const full = path.join(dir, entry.name);
       return entry.isDirectory() ? walk(full) : entry.name.endsWith(".md") ? [full] : [];
@@ -107,7 +113,10 @@ function stripFrontMatter(raw) {
   if (end < 0) return { frontMatter: null, body: raw };
   return {
     frontMatter: lines.slice(1, end),
-    body: lines.slice(end + 1).join("\n").replace(/^\n/, ""),
+    body: lines
+      .slice(end + 1)
+      .join("\n")
+      .replace(/^\n/, ""),
   };
 }
 
@@ -117,9 +126,17 @@ function parseScalar(value) {
   if (trimmed === "false") return false;
   if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
     const inner = trimmed.slice(1, -1).trim();
-    return inner ? inner.split(",").map((item) => item.trim().replace(/^['\"]|['\"]$/g, "")).filter(Boolean) : [];
+    return inner
+      ? inner
+          .split(",")
+          .map((item) => item.trim().replace(/^['"]|['"]$/g, ""))
+          .filter(Boolean)
+      : [];
   }
-  if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
     return trimmed.slice(1, -1);
   }
   return trimmed;
@@ -153,8 +170,11 @@ function metadataFor(file, raw) {
 }
 
 function renderFrontMatter(meta) {
+  const supersededBy = meta.superseded_by
+    ? `\nsuperseded_by: ${quote(meta.superseded_by)}`
+    : "";
   const deps = meta.depends_on.length ? `\ndepends_on: [${meta.depends_on.join(", ")}]` : "";
-  return `---\ntitle: ${quote(meta.title)}\ntype: ${meta.type}\nstatus: ${meta.status}\ncanon: ${meta.canon}${deps}\nupdated: ${meta.updated}\n---\n\n`;
+  return `---\ntitle: ${quote(meta.title)}\ntype: ${meta.type}\nstatus: ${meta.status}${supersededBy}\ncanon: ${meta.canon}${deps}\nupdated: ${meta.updated}\n---\n\n`;
 }
 
 function validateMetadata(file, meta) {
@@ -162,12 +182,19 @@ function validateMetadata(file, meta) {
   for (const key of ["title", "type", "status", "canon", "updated"]) {
     if (meta?.[key] === undefined || meta[key] === "") errors.push(`${relative(file)}: missing ${key}`);
   }
-  if (meta && meta.type !== deriveType(file)) errors.push(`${relative(file)}: type must be ${deriveType(file)}`);
-  if (meta && typeof meta.canon !== "boolean") errors.push(`${relative(file)}: canon must be boolean`);
-  if (meta && !/^\d{4}-\d{2}-\d{2}$/.test(String(meta.updated))) errors.push(`${relative(file)}: updated must be YYYY-MM-DD`);
-  if (meta?.depends_on && (!Array.isArray(meta.depends_on) || meta.depends_on.some((id) => !/^ADR-\d{3}$/.test(id)))) {
+  if (meta && meta.type !== deriveType(file))
+    errors.push(`${relative(file)}: type must be ${deriveType(file)}`);
+  if (meta && typeof meta.canon !== "boolean")
+    errors.push(`${relative(file)}: canon must be boolean`);
+  if (meta && !/^\d{4}-\d{2}-\d{2}$/.test(String(meta.updated)))
+    errors.push(`${relative(file)}: updated must be YYYY-MM-DD`);
+  if (
+    meta?.depends_on &&
+    (!Array.isArray(meta.depends_on) || meta.depends_on.some((id) => !/^ADR-\d{3}$/.test(id)))
+  ) {
     errors.push(`${relative(file)}: depends_on must contain ADR-### IDs`);
   }
+  errors.push(...validateDocumentationMetadata(relative(file), meta));
   return errors;
 }
 
@@ -212,7 +239,9 @@ function buildCatalog(entries) {
     lines.push(`## ${title}`, "");
     for (const item of items) {
       const scope = item.canon ? "canon" : "non-canon";
-      lines.push(`- [${item.title}](${docsRelative(item.file)}) — \`${item.status}\`, \`${scope}\``);
+      lines.push(
+        `- [${item.title}](${docsRelative(item.file)}) — \`${item.status}\`, \`${scope}\``,
+      );
     }
     lines.push("");
   }
@@ -252,6 +281,9 @@ for (const file of files) {
     canon: meta.canon,
     dependsOn: Array.isArray(meta.depends_on) ? meta.depends_on : [],
     updated: String(meta.updated),
+    ...(typeof meta.superseded_by === "string"
+      ? { supersededBy: meta.superseded_by }
+      : {}),
   });
 }
 
@@ -263,19 +295,23 @@ const knownAdrIds = new Set(
 );
 for (const entry of entries) {
   for (const dependency of entry.dependsOn) {
-    if (!knownAdrIds.has(dependency)) errors.push(`${entry.file}: unknown depends_on ${dependency}`);
+    if (!knownAdrIds.has(dependency))
+      errors.push(`${entry.file}: unknown depends_on ${dependency}`);
   }
 }
+errors.push(...validateSupersessionTargets(entries));
 
 const manifestText = JSON.stringify(buildManifest(entries), null, 2) + "\n";
 const catalogText = buildCatalog(entries);
 
 if (CHECK) {
   if (!fs.existsSync(MANIFEST)) errors.push("docs/MANIFEST.jsonc: missing");
-  else if (fs.readFileSync(MANIFEST, "utf8") !== manifestText) errors.push("docs/MANIFEST.jsonc: stale; run node scripts/build-toc.mjs");
+  else if (fs.readFileSync(MANIFEST, "utf8") !== manifestText)
+    errors.push("docs/MANIFEST.jsonc: stale; run node scripts/build-toc.mjs");
 
   if (!fs.existsSync(CATALOG)) errors.push("docs/CATALOG.md: missing");
-  else if (fs.readFileSync(CATALOG, "utf8") !== catalogText) errors.push("docs/CATALOG.md: stale; run node scripts/build-toc.mjs");
+  else if (fs.readFileSync(CATALOG, "utf8") !== catalogText)
+    errors.push("docs/CATALOG.md: stale; run node scripts/build-toc.mjs");
 } else {
   fs.writeFileSync(MANIFEST, manifestText, "utf8");
   fs.writeFileSync(CATALOG, catalogText, "utf8");
