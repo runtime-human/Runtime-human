@@ -12,6 +12,10 @@ updated: 2026-07-29
 
 Produce source-backed, opt-in Windows evidence that joins the existing Rust desktop snapshot with browser User Timing and exact scenario metadata. The resulting report must preserve raw samples, keep incomparable clocks separate, compute nearest-rank percentiles and end PERF-02A with exactly one optimization recommendation.
 
+## Current delivery state
+
+Phase E1 is implemented in PR #67 and awaiting unchanged-head verification and merge. It includes lossless repeated-span aggregation, semantic event-shape validation, duplicate-capture rejection, warning-only budget classification, an importable report API, and a shell-free Node CLI smoke contract. Phase E2 and Phase E3 remain intentionally separate and unimplemented.
+
 ## Dependency decision
 
 ### Add in the harness block
@@ -33,18 +37,20 @@ Tauri's current official guidance recommends WebdriverIO with `@wdio/tauri-servi
 
 ## Phase E1 — Closed capture and report contract
 
-Implement without new dependencies:
+Implemented without new dependencies:
 
 - `runtime-human-desktop-performance-capture-v1` input schema;
 - `runtime-human-desktop-performance-evidence-v1` report schema;
 - exact closed scenarios and classifications;
 - exact Rust event and browser entry validation;
+- lossless repeated-operation-span aggregation;
+- duplicate capture identity rejection;
 - raw sample preservation;
 - nearest-rank p50/p95/p99;
 - warning-only budget evaluation;
 - deterministic output ordering;
 - CLI accepting repeated `--input=` and one `--output=`;
-- focused tests for malformed fields, unsafe numbers, unsupported names, percentile rules and mixed-host rejection.
+- focused tests for malformed fields, unsafe numbers, unsupported names, percentile rules, mixed-host rejection and direct executable behavior.
 
 ## Phase E2 — Real Windows capture harness
 
