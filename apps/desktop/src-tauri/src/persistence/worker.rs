@@ -238,8 +238,20 @@ impl PersistenceHandle {
         &self,
         command: CreateSaveCommandV1,
     ) -> Result<MutationOutcome<CreateSaveAcceptedV1>, PersistenceError> {
+        let operation_id = self.inner.performance.next_operation_id();
+        self.create_save_with_operation_id(command, operation_id)
+    }
+
+    pub(crate) fn create_save_with_operation_id(
+        &self,
+        command: CreateSaveCommandV1,
+        operation_id: u64,
+    ) -> Result<MutationOutcome<CreateSaveAcceptedV1>, PersistenceError> {
         let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::CreateSave { command, response })?;
+        self.send(
+            DatabaseCommand::CreateSave { command, response },
+            operation_id,
+        )?;
         receive(receiver)
     }
 
@@ -247,8 +259,17 @@ impl PersistenceHandle {
         &self,
         query: LoadSaveQueryV1,
     ) -> Result<Option<SaveRecordV1>, PersistenceError> {
+        let operation_id = self.inner.performance.next_operation_id();
+        self.load_save_with_operation_id(query, operation_id)
+    }
+
+    pub(crate) fn load_save_with_operation_id(
+        &self,
+        query: LoadSaveQueryV1,
+        operation_id: u64,
+    ) -> Result<Option<SaveRecordV1>, PersistenceError> {
         let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::LoadSave { query, response })?;
+        self.send(DatabaseCommand::LoadSave { query, response }, operation_id)?;
         receive(receiver)
     }
 
@@ -256,8 +277,20 @@ impl PersistenceHandle {
         &self,
         command: BeginPersistedMonthRunCommandV1,
     ) -> Result<MutationOutcome<BeginPersistedMonthRunAcceptedV1>, PersistenceError> {
+        let operation_id = self.inner.performance.next_operation_id();
+        self.begin_month_run_with_operation_id(command, operation_id)
+    }
+
+    pub(crate) fn begin_month_run_with_operation_id(
+        &self,
+        command: BeginPersistedMonthRunCommandV1,
+        operation_id: u64,
+    ) -> Result<MutationOutcome<BeginPersistedMonthRunAcceptedV1>, PersistenceError> {
         let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::BeginMonthRun { command, response })?;
+        self.send(
+            DatabaseCommand::BeginMonthRun { command, response },
+            operation_id,
+        )?;
         receive(receiver)
     }
 
@@ -265,8 +298,20 @@ impl PersistenceHandle {
         &self,
         query: LoadMonthRunQueryV1,
     ) -> Result<Option<MonthRunRecordV1>, PersistenceError> {
+        let operation_id = self.inner.performance.next_operation_id();
+        self.load_month_run_with_operation_id(query, operation_id)
+    }
+
+    pub(crate) fn load_month_run_with_operation_id(
+        &self,
+        query: LoadMonthRunQueryV1,
+        operation_id: u64,
+    ) -> Result<Option<MonthRunRecordV1>, PersistenceError> {
         let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::LoadMonthRun { query, response })?;
+        self.send(
+            DatabaseCommand::LoadMonthRun { query, response },
+            operation_id,
+        )?;
         receive(receiver)
     }
 
@@ -274,8 +319,20 @@ impl PersistenceHandle {
         &self,
         query: LoadActiveMonthRunQueryV1,
     ) -> Result<Option<MonthRunRecordV1>, PersistenceError> {
+        let operation_id = self.inner.performance.next_operation_id();
+        self.load_active_month_run_with_operation_id(query, operation_id)
+    }
+
+    pub(crate) fn load_active_month_run_with_operation_id(
+        &self,
+        query: LoadActiveMonthRunQueryV1,
+        operation_id: u64,
+    ) -> Result<Option<MonthRunRecordV1>, PersistenceError> {
         let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::LoadActiveMonthRun { query, response })?;
+        self.send(
+            DatabaseCommand::LoadActiveMonthRun { query, response },
+            operation_id,
+        )?;
         receive(receiver)
     }
 
@@ -283,8 +340,20 @@ impl PersistenceHandle {
         &self,
         command: StoreMonthRunBoundaryCommandV1,
     ) -> Result<MutationOutcome<StoreMonthRunBoundaryAcceptedV1>, PersistenceError> {
+        let operation_id = self.inner.performance.next_operation_id();
+        self.store_boundary_with_operation_id(command, operation_id)
+    }
+
+    pub(crate) fn store_boundary_with_operation_id(
+        &self,
+        command: StoreMonthRunBoundaryCommandV1,
+        operation_id: u64,
+    ) -> Result<MutationOutcome<StoreMonthRunBoundaryAcceptedV1>, PersistenceError> {
         let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::StoreBoundary { command, response })?;
+        self.send(
+            DatabaseCommand::StoreBoundary { command, response },
+            operation_id,
+        )?;
         receive(receiver)
     }
 
@@ -292,8 +361,20 @@ impl PersistenceHandle {
         &self,
         command: CommitPersistedMonthRunCommandV1,
     ) -> Result<MutationOutcome<CommitPersistedMonthRunAcceptedV1>, PersistenceError> {
+        let operation_id = self.inner.performance.next_operation_id();
+        self.commit_month_run_with_operation_id(command, operation_id)
+    }
+
+    pub(crate) fn commit_month_run_with_operation_id(
+        &self,
+        command: CommitPersistedMonthRunCommandV1,
+        operation_id: u64,
+    ) -> Result<MutationOutcome<CommitPersistedMonthRunAcceptedV1>, PersistenceError> {
         let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::CommitMonthRun { command, response })?;
+        self.send(
+            DatabaseCommand::CommitMonthRun { command, response },
+            operation_id,
+        )?;
         receive(receiver)
     }
 
@@ -301,14 +382,34 @@ impl PersistenceHandle {
         &self,
         command: CreateBackupCommandV1,
     ) -> Result<MutationOutcome<BackupMetadataV1>, PersistenceError> {
+        let operation_id = self.inner.performance.next_operation_id();
+        self.create_backup_with_operation_id(command, operation_id)
+    }
+
+    pub(crate) fn create_backup_with_operation_id(
+        &self,
+        command: CreateBackupCommandV1,
+        operation_id: u64,
+    ) -> Result<MutationOutcome<BackupMetadataV1>, PersistenceError> {
         let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::CreateBackup { command, response })?;
+        self.send(
+            DatabaseCommand::CreateBackup { command, response },
+            operation_id,
+        )?;
         receive(receiver)
     }
 
     pub(crate) fn recovery_status(&self) -> Result<RecoveryStatusV1, PersistenceError> {
+        let operation_id = self.inner.performance.next_operation_id();
+        self.recovery_status_with_operation_id(operation_id)
+    }
+
+    pub(crate) fn recovery_status_with_operation_id(
+        &self,
+        operation_id: u64,
+    ) -> Result<RecoveryStatusV1, PersistenceError> {
         let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::RecoveryStatus { response })?;
+        self.send(DatabaseCommand::RecoveryStatus { response }, operation_id)?;
         receive(receiver)
     }
 
@@ -317,13 +418,12 @@ impl PersistenceHandle {
         join_worker(&self.inner.worker)
     }
 
-    fn send(&self, command: DatabaseCommand) -> Result<(), PersistenceError> {
+    fn send(&self, command: DatabaseCommand, operation_id: u64) -> Result<(), PersistenceError> {
         if self.inner.shutdown_requested.load(Ordering::Acquire) {
             return Err(PersistenceError::Unavailable);
         }
 
         let category = command.category();
-        let operation_id = self.inner.performance.next_operation_id();
         let enqueued_at = Instant::now();
         let depth_at_enqueue =
             reserve_queue_depth(&self.inner.queue_depth).min(COMMAND_QUEUE_CAPACITY as u32);
