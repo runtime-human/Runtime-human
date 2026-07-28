@@ -1,0 +1,168 @@
+name: docs-rust-01b-status-closure
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/docs-rust-01b-status-closure.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  close-ledger:
+    runs-on: self-hosted
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          clean: true
+          persist-credentials: true
+          ref: docs/rust-01b-status-closure
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          $ErrorActionPreference = "Stop"
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Update canonical execution ledger
+        run: |
+          $ErrorActionPreference = "Stop"
+          @'
+          const fs = require("node:fs");
+
+          const statusPath = "docs/EXECUTION-STATUS.jsonc";
+          const status = JSON.parse(fs.readFileSync(statusPath, "utf8"));
+          status.updated = "2026-07-29";
+          status.mainHeadAtCurrentSliceStart = "961a74a658b2a38a68cfd45eba63c265fee13312";
+          status.currentPhase = "performance-renderer-observability";
+
+          const milestones = [
+            {
+              id: "performance-desktop-recorder",
+              status: "complete",
+              issue: 51,
+              pullRequest: 59,
+              commit: "1b79dd01600a91a26a29230df766148d4951a871",
+              scope: [
+                "bounded-rust-recorder",
+                "closed-desktop-performance-schema",
+                "startup-milestones",
+                "dropped-event-accounting"
+              ]
+            },
+            {
+              id: "performance-read-only-snapshot",
+              status: "complete",
+              issue: 51,
+              pullRequest: 60,
+              commit: "057c2fd9146f373f45524ef2c823e4a86d2c69ba",
+              scope: [
+                "typed-read-only-tauri-command",
+                "bounded-non-destructive-snapshot"
+              ]
+            },
+            {
+              id: "performance-persistence-queue-spans",
+              status: "complete",
+              issue: 51,
+              pullRequest: 61,
+              commit: "e2b008bcae110c6aaf7251877199e15bf24f35ee",
+              scope: [
+                "queue-depth",
+                "queue-wait-duration",
+                "sqlite-operation-duration",
+                "failure-safe-telemetry"
+              ]
+            },
+            {
+              id: "performance-tauri-command-linkage",
+              status: "complete",
+              issue: 51,
+              pullRequest: 62,
+              commit: "08d35ff2a63755359f85b21d3e03029dfb1bb58b",
+              scope: [
+                "tauri-dispatch-duration",
+                "shared-operation-context",
+                "command-queue-sqlite-correlation"
+              ]
+            },
+            {
+              id: "rust-production-logging",
+              status: "complete",
+              issue: 57,
+              pullRequest: 63,
+              commit: "961a74a658b2a38a68cfd45eba63c265fee13312",
+              scope: [
+                "bounded-lossy-jsonl-sink",
+                "daily-rotation-and-retention",
+                "closed-redacted-error-codes",
+                "lifecycle-flush",
+                "read-only-dropped-line-status"
+              ],
+              evidence: {
+                schemaVersion: "runtime-human-logging-status-v1",
+                bufferedLinesLimit: 1024,
+                retainedLogFiles: 8,
+                releaseFilter: "runtime_human_desktop=info",
+                thirdPartyDebugTargetsRejected: true,
+                temporaryWorkflowsRemoved: true,
+                foundationRun: 1583,
+                docsRun: 1187
+              }
+            }
+          ];
+
+          for (const milestone of milestones) {
+            const index = status.milestones.findIndex((candidate) => candidate.id === milestone.id);
+            if (index >= 0) status.milestones[index] = milestone;
+            else status.milestones.push(milestone);
+          }
+
+          status.verification.qualityGate = "complete-pr-63";
+          status.verification.currentConstraint =
+            "perf-02a-renderer-fmp-then-windows-evidence";
+          status.verification.currentPullRequestMayMerge = false;
+          fs.writeFileSync(statusPath, `${JSON.stringify(status, null, 2)}\n`);
+
+          const planPath = "docs/plans/RUST-01B-PRODUCTION-LOGGING-IMPLEMENTATION-PLAN.md";
+          const plan = fs
+            .readFileSync(planPath, "utf8")
+            .replace("status: draft", "status: completed");
+          fs.writeFileSync(planPath, plan);
+
+          const indexPath = "docs/INDEX.md";
+          const indexText = fs
+            .readFileSync(indexPath, "utf8")
+            .replace(
+              /- \[RUST-01B production logging\][^\n]+/u,
+              "- [RUST-01B production logging](plans/RUST-01B-PRODUCTION-LOGGING-IMPLEMENTATION-PLAN.md) / [issue #57](https://github.com/MrFr3di/Runtime-human/issues/57) — завершён: bounded JSONL sink, closed redaction, rotation, dropped-line status и lifecycle flush."
+            );
+          fs.writeFileSync(indexPath, indexText);
+          '@ | node
+      - name: Regenerate documentation indexes
+        run: |
+          $ErrorActionPreference = "Stop"
+          pnpm fmt
+          node scripts/build-toc.mjs
+          pnpm docs:check
+      - name: Remove temporary workflow and commit
+        run: |
+          $ErrorActionPreference = "Stop"
+          Remove-Item .github/workflows/docs-rust-01b-status-closure.yml
+          git add docs .github/workflows/docs-rust-01b-status-closure.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "docs: close RUST-01B and PERF-02A Blocks A-D"
+          git push origin HEAD:docs/rust-01b-status-closure
