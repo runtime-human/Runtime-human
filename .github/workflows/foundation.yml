@@ -95,23 +95,39 @@ jobs:
       - name: Finalize DOCS-01 generated state
         run: |
           $ErrorActionPreference = "Stop"
-          $statusPath = "docs/EXECUTION-STATUS.jsonc"
-          $text = Get-Content -Raw -Encoding UTF8 $statusPath
+          $script = @'
+          import fs from "node:fs";
 
-          function Replace-Exact([string]$Source, [string]$Old, [string]$New) {
-            if (-not $Source.Contains($Old)) {
-              throw "Expected status fragment was not found: $Old"
-            }
-            return $Source.Replace($Old, $New)
+          const path = "docs/EXECUTION-STATUS.jsonc";
+          const status = JSON.parse(fs.readFileSync(path, "utf8"));
+          const milestone = status.milestones.find(
+            (candidate) => candidate.id === "career-overview-projection",
+          );
+          if (!milestone) throw new Error("career-overview-projection milestone is missing");
+          if (milestone.pullRequest !== 48 || milestone.issue !== 46) {
+            throw new Error("career-overview-projection milestone identity changed");
+          }
+          if (
+            milestone.status !== "implementation-complete" ||
+            milestone.branch !== "agent/ui-02c-career-overview"
+          ) {
+            throw new Error("career-overview-projection milestone is not in the expected pre-closure state");
           }
 
-          $text = Replace-Exact $text '"updated": "2026-07-27"' '"updated": "2026-07-28"'
-          $text = Replace-Exact $text '"mainHeadAtCurrentSliceStart": "332bbe0597129aa28725095a22875250daedd657"' '"mainHeadAtCurrentSliceStart": "0fd57232f16a7a903b11dcc56f83559ec2f8e5bb"'
-          $text = Replace-Exact $text '"currentPhase": "career-overview-projection"' '"currentPhase": "documentation-governance"'
-          $text = Replace-Exact $text '"id": "career-overview-projection",`n      "status": "implementation-complete",`n      "issue": 46,`n      "pullRequest": 48,`n      "branch": "agent/ui-02c-career-overview",' '"id": "career-overview-projection",`n      "status": "complete",`n      "issue": 46,`n      "pullRequest": 48,`n      "commit": "0fd57232f16a7a903b11dcc56f83559ec2f8e5bb",'
-          $text = Replace-Exact $text '"qualityGate": "pending-pr-48-final-head"' '"qualityGate": "complete-pr-48"'
-          $text = Replace-Exact $text '"currentConstraint": "ui-02c-implementation-complete-permanent-gates-and-review-pending"' '"currentConstraint": "docs-01-source-of-truth-governance-then-perf-02a"'
-          Set-Content -Path $statusPath -Value $text -Encoding UTF8 -NoNewline
+          status.updated = "2026-07-28";
+          status.mainHeadAtCurrentSliceStart = "0fd57232f16a7a903b11dcc56f83559ec2f8e5bb";
+          status.currentPhase = "documentation-governance";
+          milestone.status = "complete";
+          delete milestone.branch;
+          milestone.commit = "0fd57232f16a7a903b11dcc56f83559ec2f8e5bb";
+          status.verification.qualityGate = "complete-pr-48";
+          status.verification.currentConstraint =
+            "docs-01-source-of-truth-governance-then-perf-02a";
+          status.verification.currentPullRequestMayMerge = false;
+
+          fs.writeFileSync(path, `${JSON.stringify(status, null, 2)}\n`, "utf8");
+          '@
+          $script | node --input-type=module -
 
           node scripts/build-toc.mjs
           pnpm fmt
