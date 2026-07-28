@@ -1,3 +1,5 @@
+import type { EvidenceBrowser } from "./wdio-types.js";
+
 export type RustPerformanceSnapshot = Readonly<{
   schemaVersion: "runtime-human-desktop-performance-snapshot-v1";
   events: readonly Readonly<{
@@ -12,7 +14,7 @@ export type RustPerformanceSnapshot = Readonly<{
 }>;
 
 export async function captureRustPerformanceSnapshot(
-  browser: WebdriverIO.Browser,
+  browser: EvidenceBrowser,
 ): Promise<RustPerformanceSnapshot> {
   return browser.execute(async () => {
     const globalWithTauri = globalThis as typeof globalThis & {
