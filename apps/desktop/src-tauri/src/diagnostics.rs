@@ -124,10 +124,7 @@ pub(crate) fn log_tauri_setup_started() {
 }
 
 pub(crate) fn log_persistence_worker_ready() {
-    tracing::info!(
-        event_name = "persistence_worker_ready",
-        "runtime lifecycle"
-    );
+    tracing::info!(event_name = "persistence_worker_ready", "runtime lifecycle");
 }
 
 pub(crate) fn log_main_window_available() {

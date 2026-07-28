@@ -8,9 +8,9 @@ use tauri::Manager;
 mod desktop_performance;
 #[cfg(test)]
 mod desktop_performance_tests;
-mod diagnostics;
 #[cfg(test)]
 mod determinism;
+mod diagnostics;
 mod persistence;
 
 fn main() {
