@@ -60,7 +60,7 @@ impl RuntimeDiagnostics {
         let (writer, guard) = NonBlockingBuilder::default()
             .buffered_lines_limit(LOG_BUFFERED_LINES_LIMIT)
             .lossy(true)
-            .thread_name("runtime-human-logging".to_owned())
+            .thread_name("runtime-human-logging")
             .finish(file_appender);
         let dropped_lines = writer.error_counter();
         let subscriber = tracing_subscriber::registry()
