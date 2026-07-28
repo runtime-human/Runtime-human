@@ -14,7 +14,7 @@ Produce source-backed, opt-in Windows evidence that joins the existing Rust desk
 
 ## Current delivery state
 
-Phase E1 is implemented in PR #67 and awaiting unchanged-head verification and merge. It includes lossless repeated-span aggregation, semantic event-shape validation, duplicate-capture rejection, warning-only budget classification, an importable report API, and a shell-free Node CLI smoke contract. Phase E2 and Phase E3 remain intentionally separate and unimplemented.
+Phase E1 is implemented in PR #67 and awaiting final unchanged-head verification and merge. Focused contracts, direct CLI execution and repository type-aware lint are green. E1 includes lossless repeated-span aggregation, semantic event-shape validation, duplicate-capture rejection, warning-only budget classification, an importable report API, and a shell-free Node CLI smoke contract. Phase E2 and Phase E3 remain intentionally separate and unimplemented.
 
 ## Dependency decision
 
