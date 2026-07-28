@@ -18,6 +18,11 @@ export type RendererMilestoneRecorder = Readonly<{
   scheduleFirstMeaningfulPaint(): () => void;
 }>;
 
+type PendingFrame = Readonly<{
+  token: number;
+  handle: number;
+}>;
+
 const FIRST_MEANINGFUL_PAINT: RendererMilestoneName = "app.first_meaningful_paint";
 const NOOP = () => undefined;
 
@@ -26,7 +31,8 @@ export function createRendererMilestoneRecorder(
   frames: AnimationFramePort | null = browserAnimationFramePort(),
 ): RendererMilestoneRecorder {
   const attempted = new Set<RendererMilestoneName>();
-  let pendingFrame: number | null = null;
+  let nextFrameToken = 0;
+  let pendingFrame: PendingFrame | null = null;
 
   const mark = (name: RendererMilestoneName): void => {
     if (attempted.has(name)) return;
@@ -43,22 +49,30 @@ export function createRendererMilestoneRecorder(
       return NOOP;
     }
 
+    nextFrameToken += 1;
+    const token = nextFrameToken;
+    let callbackRanSynchronously = false;
     try {
       const handle = frames.request(() => {
-        if (pendingFrame !== handle) return;
+        const frame = pendingFrame;
+        if (frame === null || frame.token !== token) {
+          callbackRanSynchronously = true;
+          return;
+        }
         pendingFrame = null;
         mark(FIRST_MEANINGFUL_PAINT);
       });
-      if (handle === null) return NOOP;
-      pendingFrame = handle;
+      if (handle === null || callbackRanSynchronously) return NOOP;
+      pendingFrame = { token, handle };
 
       return () => {
-        if (pendingFrame !== handle) return;
+        const frame = pendingFrame;
+        if (frame === null || frame.token !== token) return;
         pendingFrame = null;
         try {
-          frames.cancel(handle);
+          frames.cancel(frame.handle);
         } catch {
-          // Cancellation failures are observational only; a stale callback is ignored by handle.
+          // Cancellation failures are observational only; a stale callback is ignored by token.
         }
       };
     } catch {
