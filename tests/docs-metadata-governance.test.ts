@@ -49,6 +49,12 @@ describe("documentation metadata governance", () => {
         metadata("superseded", "docs/superpowers/plans/2026-07-28-current.md"),
       ),
     ).toEqual([]);
+    expect(
+      validateDocumentationMetadata(
+        "docs/superpowers/plans/2026-07-22-status.md",
+        metadata("superseded", "docs/EXECUTION-STATUS.jsonc"),
+      ),
+    ).toEqual([]);
   });
 
   it.each(["draft", "completed"])("rejects %s for a numbered ADR", (status) => {
@@ -92,5 +98,18 @@ describe("documentation metadata governance", () => {
         },
       ]),
     ).toEqual(["docs/plans/SELF.md: superseded_by cannot reference the same document"]);
+
+    expect(
+      validateSupersessionTargets(
+        [
+          {
+            file: "docs/plans/OLD.md",
+            status: "superseded",
+            supersededBy: "docs/EXECUTION-STATUS.jsonc",
+          },
+        ],
+        ["docs/EXECUTION-STATUS.jsonc"],
+      ),
+    ).toEqual([]);
   });
 });
