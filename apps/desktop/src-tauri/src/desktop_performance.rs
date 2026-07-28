@@ -179,6 +179,19 @@ impl DesktopPerformanceRecorder {
     }
 }
 
+pub(crate) fn read_desktop_performance_snapshot(
+    recorder: &DesktopPerformanceRecorder,
+) -> DesktopPerformanceSnapshotV1 {
+    recorder.snapshot()
+}
+
+#[tauri::command]
+pub(crate) fn desktop_get_performance_snapshot_v1(
+    recorder: tauri::State<'_, DesktopPerformanceRecorder>,
+) -> DesktopPerformanceSnapshotV1 {
+    read_desktop_performance_snapshot(recorder.inner())
+}
+
 fn duration_micros(duration: Duration) -> u64 {
     duration.as_micros().min(u128::from(MAX_SAFE_INTEGER)) as u64
 }
