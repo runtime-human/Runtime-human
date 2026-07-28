@@ -5,8 +5,8 @@
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "mainHeadAtCurrentSliceStart": "6472f5c3fac508cdc4cf2827aec34dcd15d8916d",
-  "currentPhase": "performance-evidence-collection",
+  "mainHeadAtCurrentSliceStart": "783f54b17cd7bd4b88c5e7aac4719afa1c0dadac",
+  "currentPhase": "performance-windows-capture-harness",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -608,6 +608,32 @@
         "docsRun": 1200,
         "temporaryWorkflowsRemoved": true
       }
+    },
+    {
+      "id": "performance-windows-evidence-contract",
+      "status": "complete",
+      "issue": 51,
+      "pullRequest": 67,
+      "commit": "783f54b17cd7bd4b88c5e7aac4719afa1c0dadac",
+      "scope": [
+        "versioned-capture-schema",
+        "versioned-report-schema",
+        "closed-clock-domains",
+        "lossless-repeated-span-aggregation",
+        "duplicate-capture-rejection",
+        "nearest-rank-percentiles",
+        "warning-only-budgets",
+        "importable-and-direct-report-cli"
+      ],
+      "evidence": {
+        "captureSchema": "runtime-human-desktop-performance-capture-v1",
+        "reportSchema": "runtime-human-desktop-performance-evidence-v1",
+        "runtimeDependenciesAdded": false,
+        "productionCapabilityChanged": false,
+        "foundationRun": 1630,
+        "docsRun": 1241,
+        "temporaryWorkflowsRemoved": true
+      }
     }
   ],
   "supersededPullRequests": [
@@ -625,8 +651,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "complete-pr-65",
-    "currentConstraint": "perf-02a-windows-evidence-then-one-recommendation",
+    "qualityGate": "complete-pr-67-e1",
+    "currentConstraint": "perf-02a-e2-isolated-windows-capture-harness",
     "currentPullRequestMayMerge": false
   }
 }
