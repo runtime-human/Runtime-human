@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use serde_json::json;
 
 use super::desktop_performance::{
@@ -72,6 +74,47 @@ fn telemetry_failure_never_changes_operation_result() {
 
     assert_eq!(result, Err(SentinelError));
     assert_eq!(recorder.snapshot().dropped_events, 1);
+}
+
+#[test]
+fn telemetry_write_drops_instead_of_waiting_for_snapshot_lock() {
+    let recorder = DesktopPerformanceRecorder::with_capacity(1);
+
+    recorder.with_state_lock_for_test(|| {
+        assert!(!recorder.record_duration(
+            DesktopPerformanceEventName::PersistenceQueueWait,
+            Duration::from_micros(1),
+            Some(DesktopPerformanceOperationCategory::Query),
+            Some(1),
+            Some(1),
+        ));
+    });
+
+    let snapshot = recorder.snapshot();
+    assert!(snapshot.events.is_empty());
+    assert_eq!(snapshot.dropped_events, 1);
+}
+
+#[test]
+fn completed_duration_keeps_the_closed_operation_context() {
+    let recorder = DesktopPerformanceRecorder::with_capacity(1);
+
+    assert!(recorder.record_duration(
+        DesktopPerformanceEventName::PersistenceQueueWait,
+        Duration::from_micros(42),
+        Some(DesktopPerformanceOperationCategory::Query),
+        Some(7),
+        Some(3),
+    ));
+
+    let event = &recorder.snapshot().events[0];
+    assert_eq!(event.duration_micros, Some(42));
+    assert_eq!(
+        event.category,
+        Some(DesktopPerformanceOperationCategory::Query)
+    );
+    assert_eq!(event.operation_id, Some(7));
+    assert_eq!(event.queue_depth, Some(3));
 }
 
 #[test]

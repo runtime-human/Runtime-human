@@ -2,11 +2,15 @@ use std::{
     path::{Path, PathBuf},
     sync::{
         Arc, Mutex,
-        atomic::{AtomicBool, Ordering},
+        atomic::{AtomicBool, AtomicU32, Ordering},
         mpsc::{self, Receiver, RecvTimeoutError, SyncSender, TrySendError},
     },
     thread::{self, JoinHandle},
-    time::Duration,
+    time::{Duration, Instant},
+};
+
+use crate::desktop_performance::{
+    DesktopPerformanceEventName, DesktopPerformanceOperationCategory, DesktopPerformanceRecorder,
 };
 
 use super::{
@@ -69,6 +73,30 @@ enum DatabaseCommand {
     },
 }
 
+impl DatabaseCommand {
+    fn category(&self) -> DesktopPerformanceOperationCategory {
+        match self {
+            Self::LoadSave { .. } | Self::LoadMonthRun { .. } | Self::LoadActiveMonthRun { .. } => {
+                DesktopPerformanceOperationCategory::Query
+            }
+            Self::CreateBackup { .. } => DesktopPerformanceOperationCategory::Backup,
+            Self::RecoveryStatus { .. } => DesktopPerformanceOperationCategory::Recovery,
+            Self::CreateSave { .. }
+            | Self::BeginMonthRun { .. }
+            | Self::StoreBoundary { .. }
+            | Self::CommitMonthRun { .. } => DesktopPerformanceOperationCategory::Mutation,
+        }
+    }
+}
+
+struct QueuedDatabaseCommand {
+    command: DatabaseCommand,
+    operation_id: u64,
+    category: DesktopPerformanceOperationCategory,
+    enqueued_at: Instant,
+    depth_at_enqueue: u32,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum WorkerMode {
     Normal,
@@ -77,7 +105,9 @@ enum WorkerMode {
 }
 
 struct PersistenceInner {
-    sender: SyncSender<DatabaseCommand>,
+    sender: SyncSender<QueuedDatabaseCommand>,
+    queue_depth: Arc<AtomicU32>,
+    performance: DesktopPerformanceRecorder,
     shutdown_requested: Arc<AtomicBool>,
     worker: Mutex<Option<JoinHandle<WorkerResult>>>,
 }
@@ -89,6 +119,13 @@ pub(crate) struct PersistenceHandle {
 
 impl PersistenceHandle {
     pub(crate) fn start(path: PathBuf) -> Result<Self, PersistenceError> {
+        Self::start_with_performance(path, DesktopPerformanceRecorder::default())
+    }
+
+    pub(crate) fn start_with_performance(
+        path: PathBuf,
+        performance: DesktopPerformanceRecorder,
+    ) -> Result<Self, PersistenceError> {
         let backup_directory = path
             .parent()
             .ok_or_else(|| {
@@ -99,6 +136,9 @@ impl PersistenceHandle {
             .join("backups");
         let (sender, receiver) = mpsc::sync_channel(COMMAND_QUEUE_CAPACITY);
         let (startup_sender, startup_receiver) = mpsc::sync_channel(1);
+        let queue_depth = Arc::new(AtomicU32::new(0));
+        let worker_queue_depth = Arc::clone(&queue_depth);
+        let worker_performance = performance.clone();
         let shutdown_requested = Arc::new(AtomicBool::new(false));
         let worker_shutdown = Arc::clone(&shutdown_requested);
         let worker = thread::Builder::new()
@@ -118,6 +158,8 @@ impl PersistenceHandle {
                                     read_only,
                                     receiver,
                                     &worker_shutdown,
+                                    &worker_queue_depth,
+                                    &worker_performance,
                                     &backup_directory,
                                     WorkerMode::RecoveryReadOnly,
                                 );
@@ -136,6 +178,8 @@ impl PersistenceHandle {
                         database,
                         receiver,
                         &worker_shutdown,
+                        &worker_queue_depth,
+                        &worker_performance,
                         &backup_directory,
                         WorkerMode::Normal,
                     )
@@ -150,6 +194,8 @@ impl PersistenceHandle {
                                 database,
                                 receiver,
                                 &worker_shutdown,
+                                &worker_queue_depth,
+                                &worker_performance,
                                 &backup_directory,
                                 WorkerMode::NewerSchemaReadOnly { found, supported },
                             )
@@ -171,6 +217,8 @@ impl PersistenceHandle {
             Ok(Ok(())) => Ok(Self {
                 inner: Arc::new(PersistenceInner {
                     sender,
+                    queue_depth,
+                    performance,
                     shutdown_requested,
                     worker: Mutex::new(Some(worker)),
                 }),
@@ -273,10 +321,30 @@ impl PersistenceHandle {
         if self.inner.shutdown_requested.load(Ordering::Acquire) {
             return Err(PersistenceError::Unavailable);
         }
-        match self.inner.sender.try_send(command) {
+
+        let category = command.category();
+        let operation_id = self.inner.performance.next_operation_id();
+        let enqueued_at = Instant::now();
+        let depth_at_enqueue =
+            reserve_queue_depth(&self.inner.queue_depth).min(COMMAND_QUEUE_CAPACITY as u32);
+        let queued = QueuedDatabaseCommand {
+            command,
+            operation_id,
+            category,
+            enqueued_at,
+            depth_at_enqueue,
+        };
+
+        match self.inner.sender.try_send(queued) {
             Ok(()) => Ok(()),
-            Err(TrySendError::Full(_)) => Err(PersistenceError::Overloaded),
-            Err(TrySendError::Disconnected(_)) => Err(PersistenceError::Unavailable),
+            Err(TrySendError::Full(_)) => {
+                release_queue_depth(&self.inner.queue_depth);
+                Err(PersistenceError::Overloaded)
+            }
+            Err(TrySendError::Disconnected(_)) => {
+                release_queue_depth(&self.inner.queue_depth);
+                Err(PersistenceError::Unavailable)
+            }
         }
     }
 }
@@ -309,8 +377,10 @@ fn join_worker(worker: &Mutex<Option<JoinHandle<WorkerResult>>>) -> Result<(), P
 
 fn worker_loop(
     mut database: Database,
-    receiver: Receiver<DatabaseCommand>,
+    receiver: Receiver<QueuedDatabaseCommand>,
     shutdown_requested: &AtomicBool,
+    queue_depth: &AtomicU32,
+    performance: &DesktopPerformanceRecorder,
     backup_directory: &Path,
     mode: WorkerMode,
 ) -> WorkerResult {
@@ -319,12 +389,52 @@ fn worker_loop(
             break;
         }
         match receiver.recv_timeout(SHUTDOWN_POLL_INTERVAL) {
-            Ok(command) => dispatch(&mut database, command, backup_directory, mode),
+            Ok(queued) => dispatch_observed(
+                &mut database,
+                queued,
+                queue_depth,
+                performance,
+                backup_directory,
+                mode,
+            ),
             Err(RecvTimeoutError::Timeout) => {}
             Err(RecvTimeoutError::Disconnected) => break,
         }
     }
     database.close()
+}
+
+fn dispatch_observed(
+    database: &mut Database,
+    queued: QueuedDatabaseCommand,
+    queue_depth: &AtomicU32,
+    performance: &DesktopPerformanceRecorder,
+    backup_directory: &Path,
+    mode: WorkerMode,
+) {
+    let QueuedDatabaseCommand {
+        command,
+        operation_id,
+        category,
+        enqueued_at,
+        depth_at_enqueue,
+    } = queued;
+    let remaining_depth = release_queue_depth(queue_depth);
+
+    performance.record_duration(
+        DesktopPerformanceEventName::PersistenceQueueWait,
+        enqueued_at.elapsed(),
+        Some(category),
+        Some(operation_id),
+        Some(depth_at_enqueue),
+    );
+    performance.measure(
+        DesktopPerformanceEventName::PersistenceDatabaseOperation,
+        Some(category),
+        Some(operation_id),
+        Some(remaining_depth),
+        || dispatch(database, command, backup_directory, mode),
+    );
 }
 
 fn dispatch(
@@ -393,6 +503,24 @@ fn send_mutation<T>(
         }
     };
     send_response(sender, result);
+}
+
+fn reserve_queue_depth(queue_depth: &AtomicU32) -> u32 {
+    queue_depth
+        .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+            Some(current.saturating_add(1))
+        })
+        .map(|previous| previous.saturating_add(1))
+        .unwrap_or(u32::MAX)
+}
+
+fn release_queue_depth(queue_depth: &AtomicU32) -> u32 {
+    queue_depth
+        .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+            current.checked_sub(1)
+        })
+        .map(|previous| previous - 1)
+        .unwrap_or(0)
 }
 
 fn backup_available(backup_directory: &Path) -> bool {

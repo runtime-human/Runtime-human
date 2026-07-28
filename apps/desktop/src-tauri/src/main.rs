@@ -26,8 +26,11 @@ fn main() {
                 .app_data_dir()
                 .map_err(|error| io::Error::other(error.to_string()))?;
             let database_path = data_dir.join("runtime-human.sqlite3");
-            let persistence = persistence::PersistenceHandle::start(database_path)
-                .map_err(|error| io::Error::other(error.to_string()))?;
+            let persistence = persistence::PersistenceHandle::start_with_performance(
+                database_path,
+                setup_performance.clone(),
+            )
+            .map_err(|error| io::Error::other(error.to_string()))?;
 
             setup_performance.record_once(DesktopPerformanceEventName::PersistenceWorkerReady);
             app.manage::<persistence::ManagedPersistence>(Arc::new(persistence));

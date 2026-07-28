@@ -1,7 +1,7 @@
 use std::{
     collections::HashSet,
     sync::{
-        Arc, Mutex, MutexGuard,
+        Arc, Mutex, MutexGuard, TryLockError,
         atomic::{AtomicU64, Ordering},
     },
     time::{Duration, Instant},
@@ -65,13 +65,13 @@ struct RecorderInner {
     origin: Instant,
     capacity: usize,
     next_operation_id: AtomicU64,
+    dropped_events: AtomicU64,
     state: Mutex<RecorderState>,
 }
 
 #[derive(Default)]
 struct RecorderState {
     events: Vec<DesktopPerformanceEventV1>,
-    dropped_events: u64,
     once: HashSet<DesktopPerformanceEventName>,
 }
 
@@ -88,6 +88,7 @@ impl DesktopPerformanceRecorder {
                 origin: Instant::now(),
                 capacity,
                 next_operation_id: AtomicU64::new(0),
+                dropped_events: AtomicU64::new(0),
                 state: Mutex::new(RecorderState::default()),
             }),
         }
@@ -95,12 +96,15 @@ impl DesktopPerformanceRecorder {
 
     pub(crate) fn record_once(&self, name: DesktopPerformanceEventName) -> bool {
         let at_micros = self.elapsed_micros();
-        let mut state = self.lock_state();
+        let Some(mut state) = self.try_lock_state() else {
+            self.drop_event();
+            return false;
+        };
         if state.once.contains(&name) {
             return false;
         }
         if state.events.len() >= self.inner.capacity {
-            state.dropped_events = increment_bounded(state.dropped_events);
+            self.drop_event();
             return false;
         }
 
@@ -148,23 +152,59 @@ impl DesktopPerformanceRecorder {
         result
     }
 
+    pub(crate) fn record_duration(
+        &self,
+        name: DesktopPerformanceEventName,
+        duration: Duration,
+        category: Option<DesktopPerformanceOperationCategory>,
+        operation_id: Option<u64>,
+        queue_depth: Option<u32>,
+    ) -> bool {
+        let duration_micros = duration_micros(duration);
+        self.record(DesktopPerformanceEventV1 {
+            name,
+            at_micros: self.elapsed_micros().saturating_sub(duration_micros),
+            duration_micros: Some(duration_micros),
+            category,
+            operation_id,
+            queue_depth,
+        })
+    }
+
     pub(crate) fn snapshot(&self) -> DesktopPerformanceSnapshotV1 {
         let state = self.lock_state();
         DesktopPerformanceSnapshotV1 {
             schema_version: DESKTOP_PERFORMANCE_SNAPSHOT_SCHEMA_VERSION,
             events: state.events.clone(),
-            dropped_events: state.dropped_events,
+            dropped_events: self.inner.dropped_events.load(Ordering::Relaxed),
         }
     }
 
+    #[cfg(test)]
+    pub(crate) fn with_state_lock_for_test(&self, operation: impl FnOnce()) {
+        let _state = self.lock_state();
+        operation();
+    }
+
     fn record(&self, event: DesktopPerformanceEventV1) -> bool {
-        let mut state = self.lock_state();
+        let Some(mut state) = self.try_lock_state() else {
+            self.drop_event();
+            return false;
+        };
         if state.events.len() >= self.inner.capacity {
-            state.dropped_events = increment_bounded(state.dropped_events);
+            self.drop_event();
             return false;
         }
         state.events.push(event);
         true
+    }
+
+    fn drop_event(&self) {
+        let _ = self.inner.dropped_events.fetch_update(
+            Ordering::Relaxed,
+            Ordering::Relaxed,
+            |current| Some(increment_bounded(current)),
+        );
     }
 
     fn elapsed_micros(&self) -> u64 {
@@ -176,6 +216,14 @@ impl DesktopPerformanceRecorder {
             .state
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner())
+    }
+
+    fn try_lock_state(&self) -> Option<MutexGuard<'_, RecorderState>> {
+        match self.inner.state.try_lock() {
+            Ok(state) => Some(state),
+            Err(TryLockError::Poisoned(poisoned)) => Some(poisoned.into_inner()),
+            Err(TryLockError::WouldBlock) => None,
+        }
     }
 }
 
