@@ -183,7 +183,7 @@ updated: 2026-07-29
 - [MonthRun Protocol Implementation Plan](superpowers/plans/2026-07-20-month-run-protocol.md) — `completed`, `non-canon`
 - [OPT-00 Performance Baseline Implementation Plan](superpowers/plans/2026-07-26-performance-baseline.md) — `completed`, `canon`
 - [OPT-00B File-backed SQLite Baseline Plan](superpowers/plans/2026-07-26-sqlite-performance-baseline.md) — `completed`, `canon`
-- [PERF-02A Renderer and First Meaningful Paint Implementation Plan](plans/PERF-02A-RENDERER-FMP-IMPLEMENTATION-PLAN.md) — `draft`, `canon`
+- [PERF-02A Renderer and First Meaningful Paint Implementation Plan](plans/PERF-02A-RENDERER-FMP-IMPLEMENTATION-PLAN.md) — `completed`, `canon`
 - [Phase 0 entry criteria](plans/PHASE-0-ENTRY-CRITERIA.md) — `draft`, `canon`
 - [Plans](plans/README.md) — `draft`, `canon`
 - [Professional Challenge Engine — Implementation Plan](plans/PROFESSIONAL-CHALLENGE-IMPLEMENTATION-PLAN.md) — `draft`, `canon`

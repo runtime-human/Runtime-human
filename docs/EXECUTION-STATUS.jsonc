@@ -5,8 +5,8 @@
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "mainHeadAtCurrentSliceStart": "961a74a658b2a38a68cfd45eba63c265fee13312",
-  "currentPhase": "performance-renderer-observability",
+  "mainHeadAtCurrentSliceStart": "6472f5c3fac508cdc4cf2827aec34dcd15d8916d",
+  "currentPhase": "performance-evidence-collection",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -580,6 +580,34 @@
         "foundationRun": 1583,
         "docsRun": 1187
       }
+    },
+    {
+      "id": "performance-renderer-fmp-milestones",
+      "status": "complete",
+      "issue": 51,
+      "pullRequest": 65,
+      "commit": "6472f5c3fac508cdc4cf2827aec34dcd15d8916d",
+      "scope": [
+        "renderer-bootstrap-mark",
+        "react-shell-commit-mark",
+        "january-session-ready-mark",
+        "frame-boundary-first-meaningful-paint",
+        "strict-mode-safe-idempotency",
+        "failure-safe-user-timing"
+      ],
+      "evidence": {
+        "milestoneNames": [
+          "app.renderer_bootstrap",
+          "app.react_shell_commit",
+          "app.january_session_ready",
+          "app.first_meaningful_paint"
+        ],
+        "rendererWritesRustTelemetry": false,
+        "failedBootstrapProducesFmp": false,
+        "foundationRun": 1595,
+        "docsRun": 1200,
+        "temporaryWorkflowsRemoved": true
+      }
     }
   ],
   "supersededPullRequests": [
@@ -597,8 +625,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "complete-pr-63",
-    "currentConstraint": "perf-02a-renderer-fmp-then-windows-evidence",
+    "qualityGate": "complete-pr-65",
+    "currentConstraint": "perf-02a-windows-evidence-then-one-recommendation",
     "currentPullRequestMayMerge": false
   }
 }
