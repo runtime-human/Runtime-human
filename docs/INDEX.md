@@ -4,7 +4,7 @@ type: index
 status: draft
 canon: true
 depends_on: [ADR-013, ADR-014, ADR-015, ADR-016, ADR-017, ADR-018, ADR-019, ADR-020]
-updated: 2026-07-18
+updated: 2026-07-28
 ---
 
 # Runtime Human — индекс документации
@@ -14,10 +14,36 @@ updated: 2026-07-18
 1. Accepted ADR.
 2. Специализированная спецификация.
 3. Master/Full Architecture.
-4. Implementation plans и PR.
+4. Current execution ledger, implementation plan и merged PR.
 5. Research/system-design reports.
 
-Research не становится каноном без ADR/spec synchronization.
+Research не становится каноном без ADR/spec synchronization. Generated [CATALOG.md](CATALOG.md) и [MANIFEST.jsonc](MANIFEST.jsonc) перечисляют документы, но не заменяют этот curated source-of-truth index.
+
+## Текущее исполнение
+
+- [EXECUTION-STATUS.jsonc](EXECUTION-STATUS.jsonc) — главный текущий execution ledger: завершённые milestones, активная фаза, verification gate и следующий constraint.
+- [DOCS-01 — source-of-truth governance](https://github.com/MrFr3di/Runtime-human/issues/50) — текущий ограниченный delivery slice.
+- [UI roadmap](https://github.com/MrFr3di/Runtime-human/issues/37) — UI-02 завершён; Skills, Relationships, Chronology и visual quality остаются отдельными последующими срезами.
+- [PERF master track](https://github.com/MrFr3di/Runtime-human/issues/24) → [product-facing baseline](https://github.com/MrFr3di/Runtime-human/issues/39) → [PERF-02A startup/IPC/queue timeline](https://github.com/MrFr3di/Runtime-human/issues/51).
+- [UI-02C implementation plan](superpowers/plans/2026-07-27-ui-02c-career-overview.md) — последний завершённый product-facing UI plan.
+
+Следующий порядок работ:
+
+```text
+DOCS-01 governance
+→ PERF-02A measured desktop timeline
+→ one evidence-backed optimization
+→ Windows idle/resources baseline
+→ NPC foundation and UI-03 projections
+```
+
+## Performance evidence
+
+- [Performance budgets](performance/PERFORMANCE-BUDGETS.md) — scope taxonomy и warning-only targets.
+- [Profiling runbook](performance/PROFILING-RUNBOOK.md) — воспроизводимые Windows application/SQLite runs и interpretation policy.
+- [OPT-00 application evidence](performance/OPT-00-EVIDENCE.json) — in-memory January baseline.
+- [OPT-00B SQLite evidence](performance/OPT-00B-EVIDENCE.json) — file-backed single-worker SQLite baseline.
+- [OPT-00C User Timing evidence](performance/OPT-00C-EVIDENCE.json) — browser content/session/month observability.
 
 ## Ключевой продуктовый канон
 
