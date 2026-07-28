@@ -7,8 +7,7 @@ use crate::desktop_performance::{
 };
 
 use super::{
-    PersistenceError, PersistenceHandle,
-    commands::run_blocking_observed,
+    commands::run_blocking_observed, PersistenceError, PersistenceHandle,
 };
 
 #[test]
