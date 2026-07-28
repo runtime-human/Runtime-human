@@ -1,3 +1,5 @@
+import type { EvidenceBrowser } from "./wdio-types.js";
+
 const BROWSER_ENTRY_NAMES = Object.freeze([
   "app.renderer_bootstrap",
   "app.react_shell_commit",
@@ -22,7 +24,7 @@ export type BrowserEvidenceEntry = Readonly<{
 }>;
 
 export async function waitForFirstMeaningfulPaint(
-  browser: WebdriverIO.Browser,
+  browser: EvidenceBrowser,
   timeoutMs = 60_000,
 ): Promise<void> {
   await browser.waitUntil(
@@ -40,7 +42,7 @@ export async function waitForFirstMeaningfulPaint(
 }
 
 export async function captureBrowserEntries(
-  browser: WebdriverIO.Browser,
+  browser: EvidenceBrowser,
 ): Promise<readonly BrowserEvidenceEntry[]> {
   const entries = await browser.execute((allowedNames) => {
     const allowed = new Set(allowedNames);
