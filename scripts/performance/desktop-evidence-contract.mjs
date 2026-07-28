@@ -2,6 +2,7 @@ const CAPTURE_SCHEMA = "runtime-human-desktop-performance-capture-v1";
 const REPORT_SCHEMA = "runtime-human-desktop-performance-evidence-v1";
 const RUST_SNAPSHOT_SCHEMA = "runtime-human-desktop-performance-snapshot-v1";
 const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER;
+const PERSISTENCE_QUEUE_CAPACITY = 64;
 
 const SCENARIOS = new Set([
   "startup-shell-fmp",
@@ -15,22 +16,27 @@ const PROCESS_CLASSES = new Set(["cold-process", "warm-process"]);
 const CACHE_CLASSES = new Set(["cold-os-cache", "warm-os-cache"]);
 const DATABASE_CLASSES = new Set(["new-database", "existing-clean-database"]);
 const SAMPLE_ROLES = new Set(["warmup", "measurement"]);
-const RUST_EVENT_NAMES = new Set([
+const RUST_MARK_NAMES = new Set([
   "processEntry",
   "tauriSetupStart",
   "persistenceWorkerReady",
   "tauriSetupComplete",
   "mainWindowAvailable",
+]);
+const RUST_SPAN_NAMES = new Set([
   "tauriCommandDispatch",
   "persistenceQueueWait",
   "persistenceDatabaseOperation",
 ]);
+const RUST_EVENT_NAMES = new Set([...RUST_MARK_NAMES, ...RUST_SPAN_NAMES]);
 const RUST_CATEGORIES = new Set(["query", "mutation", "backup", "recovery", "shutdown"]);
-const BROWSER_ENTRY_NAMES = new Set([
+const BROWSER_MARK_NAMES = new Set([
   "app.renderer_bootstrap",
   "app.react_shell_commit",
   "app.january_session_ready",
   "app.first_meaningful_paint",
+]);
+const BROWSER_MEASURE_NAMES = new Set([
   "app.session_bootstrap",
   "content.manifest",
   "content.chunk",
@@ -41,12 +47,19 @@ const BROWSER_ENTRY_NAMES = new Set([
   "month.commit",
   "month.retry",
 ]);
+const BROWSER_ENTRY_NAMES = new Set([...BROWSER_MARK_NAMES, ...BROWSER_MEASURE_NAMES]);
 const BROWSER_ENTRY_TYPES = new Set(["mark", "measure"]);
 const EXTERNAL_METRIC_NAMES = new Set([
   "processToShellFmpMicros",
   "processToJanuaryReadyMicros",
   "processToMainWindowObservedMicros",
 ]);
+const UNBUDGETED = Object.freeze({
+  status: "unbudgeted",
+  p50MaximumMicros: null,
+  p95MaximumMicros: null,
+  p99MaximumMicros: null,
+});
 
 export function parseDesktopEvidenceCapture(value, label = "capture") {
   const capture = requireRecord(value, label);
@@ -96,7 +109,12 @@ export function createDesktopEvidenceReport(captures) {
   const parsed = captures.map((capture, index) =>
     parseDesktopEvidenceCapture(capture, `captures[${index}]`),
   );
+  const firstCapture = parsed[0];
+  if (firstCapture === undefined) {
+    throw new TypeError("captures must contain at least one parsed capture");
+  }
   assertComparableSource(parsed);
+  assertUniqueCaptureIdentity(parsed);
 
   const measurements = parsed.filter(
     (capture) => capture.classification.sampleRole === "measurement",
@@ -115,16 +133,16 @@ export function createDesktopEvidenceReport(captures) {
 
   return Object.freeze({
     schemaVersion: REPORT_SCHEMA,
-    commit: parsed[0].commit,
-    host: parsed[0].host,
+    commit: firstCapture.commit,
+    host: firstCapture.host,
     captureCount: parsed.length,
     warmupCount: parsed.length - measurements.length,
     measurementCount: measurements.length,
     groups: Object.freeze(groups),
     captures: Object.freeze(
       [...parsed].sort((left, right) => {
-        const groupComparison = groupKey(left).localeCompare(groupKey(right));
-        return groupComparison || left.sampleIndex - right.sampleIndex;
+        const keyComparison = captureSortKey(left).localeCompare(captureSortKey(right));
+        return keyComparison || left.sampleIndex - right.sampleIndex;
       }),
     ),
   });
@@ -146,11 +164,17 @@ export function nearestRank(values, percentile) {
     .map((value, index) => requireSafeInteger(value, `values[${index}]`, 0))
     .sort((left, right) => left - right);
   const rank = Math.ceil(percentile * sorted.length);
-  return sorted[rank - 1];
+  const selected = sorted[rank - 1];
+  if (selected === undefined) throw new TypeError("nearest-rank selection was empty");
+  return selected;
 }
 
 function summarizeGroup(captures) {
+  const firstCapture = captures[0];
+  if (firstCapture === undefined) throw new TypeError("evidence group must not be empty");
+
   const metrics = new Map();
+  const capturePresence = new Map();
   const missing = new Map();
   const warnings = [];
   let droppedRustEvents = 0;
@@ -163,23 +187,24 @@ function summarizeGroup(captures) {
       );
     }
     const extracted = extractMetrics(capture);
-    for (const [name, value] of extracted) {
+    for (const [name, capturedValues] of extracted) {
+      if (capturedValues.length === 0) continue;
       const values = metrics.get(name) ?? [];
-      values.push(value);
+      values.push(...capturedValues);
       metrics.set(name, values);
+      capturePresence.set(name, (capturePresence.get(name) ?? 0) + 1);
     }
   }
 
-  const allMetricNames = expectedMetricNames(captures[0].scenario);
-  for (const name of allMetricNames) {
-    const present = metrics.get(name)?.length ?? 0;
-    const count = captures.length - present;
+  for (const name of expectedMetricNames(firstCapture.scenario)) {
+    const presentCaptures = capturePresence.get(name) ?? 0;
+    const count = captures.length - presentCaptures;
     if (count > 0) missing.set(name, count);
   }
 
   return Object.freeze({
-    scenario: captures[0].scenario,
-    classification: captures[0].classification,
+    scenario: firstCapture.scenario,
+    classification: firstCapture.classification,
     sampleCount: captures.length,
     droppedRustEvents,
     missingMetrics: Object.freeze(
@@ -190,24 +215,100 @@ function summarizeGroup(captures) {
     metrics: Object.freeze(
       [...metrics.entries()]
         .sort(([left], [right]) => left.localeCompare(right))
-        .map(([name, values]) => summarizeMetric(name, values)),
+        .map(([name, values]) => summarizeMetric(name, values, firstCapture)),
     ),
     warnings: Object.freeze([...new Set(warnings)].sort()),
   });
 }
 
-function summarizeMetric(name, values) {
+function summarizeMetric(name, values, capture) {
   const sorted = [...values].sort((left, right) => left - right);
-  return Object.freeze({
+  const minimum = sorted[0];
+  const maximum = sorted[sorted.length - 1];
+  if (minimum === undefined || maximum === undefined) {
+    throw new TypeError(`metric ${name} must contain at least one observation`);
+  }
+  const summary = {
     name,
     unit: "microseconds",
     count: sorted.length,
-    min: sorted[0],
+    min: minimum,
     p50: nearestRank(sorted, 0.5),
     p95: nearestRank(sorted, 0.95),
     p99: nearestRank(sorted, 0.99),
-    max: sorted.at(-1),
+    max: maximum,
+  };
+  return Object.freeze({
+    ...summary,
+    budget: classifyBudget(name, summary, capture),
   });
+}
+
+function classifyBudget(name, summary, capture) {
+  const thresholds = budgetThresholds(name, capture);
+  if (
+    thresholds.p50MaximumMicros === null &&
+    thresholds.p95MaximumMicros === null &&
+    thresholds.p99MaximumMicros === null
+  ) {
+    return UNBUDGETED;
+  }
+
+  const warning =
+    exceeds(summary.p50, thresholds.p50MaximumMicros) ||
+    exceeds(summary.p95, thresholds.p95MaximumMicros) ||
+    exceeds(summary.p99, thresholds.p99MaximumMicros);
+  return Object.freeze({
+    status: warning ? "warning" : "within-target",
+    ...thresholds,
+  });
+}
+
+function budgetThresholds(name, capture) {
+  if (name === "external.processToShellFmpMicros") {
+    if (capture.classification.process === "cold-process") {
+      return Object.freeze({
+        p50MaximumMicros: 1_200_000,
+        p95MaximumMicros: 2_500_000,
+        p99MaximumMicros: null,
+      });
+    }
+    return Object.freeze({
+      p50MaximumMicros: 700_000,
+      p95MaximumMicros: 1_500_000,
+      p99MaximumMicros: null,
+    });
+  }
+  if (name.startsWith("rust.queue_wait.")) {
+    return Object.freeze({
+      p50MaximumMicros: null,
+      p95MaximumMicros: 5_000,
+      p99MaximumMicros: 25_000,
+    });
+  }
+  if (capture.scenario === "load-persisted-context" && name === "browser.month.load") {
+    return Object.freeze({
+      p50MaximumMicros: null,
+      p95MaximumMicros: 25_000,
+      p99MaximumMicros: 75_000,
+    });
+  }
+  if (
+    (capture.scenario === "begin-month-run" && name === "browser.month.begin") ||
+    (capture.scenario === "resume-month-run" && name === "browser.month.resume") ||
+    (capture.scenario === "final-commit" && name === "browser.month.commit")
+  ) {
+    return Object.freeze({
+      p50MaximumMicros: null,
+      p95MaximumMicros: 200_000,
+      p99MaximumMicros: null,
+    });
+  }
+  return UNBUDGETED;
+}
+
+function exceeds(actual, maximum) {
+  return maximum !== null && actual > maximum;
 }
 
 function extractMetrics(capture) {
@@ -215,10 +316,9 @@ function extractMetrics(capture) {
   const rustMarks = new Map();
   for (const event of capture.rustSnapshot.events) {
     if (event.durationMicros !== null) {
-      const category = event.category ?? "none";
       pushMetric(
         metrics,
-        `rust.${rustEventMetricName(event.name)}.${category}`,
+        `rust.${rustEventMetricName(event.name)}.${event.category}`,
         event.durationMicros,
       );
     } else if (!rustMarks.has(event.name)) {
@@ -311,16 +411,16 @@ function expectedMetricNames(scenario) {
 }
 
 function pushMetric(metrics, name, value) {
-  const existing = metrics.get(name);
-  if (existing === undefined) metrics.set(name, value);
-  else if (Array.isArray(existing)) existing.push(value);
+  const values = metrics.get(name) ?? [];
+  values.push(value);
+  metrics.set(name, values);
 }
 
 function addDifference(metrics, name, marks, start, end) {
   const startValue = marks.get(start);
   const endValue = marks.get(end);
   if (startValue === undefined || endValue === undefined || endValue < startValue) return;
-  metrics.set(name, endValue - startValue);
+  pushMetric(metrics, name, endValue - startValue);
 }
 
 function rustEventMetricName(name) {
@@ -332,7 +432,7 @@ function rustEventMetricName(name) {
     case "persistenceDatabaseOperation":
       return "database_operation";
     default:
-      return name;
+      throw new TypeError(`unsupported Rust span name ${name}`);
   }
 }
 
@@ -363,8 +463,9 @@ function parseClassification(value, label) {
 function parseExternalDurations(value, label) {
   const durations = requireRecord(value, label);
   for (const key of Object.keys(durations)) {
-    if (!EXTERNAL_METRIC_NAMES.has(key))
+    if (!EXTERNAL_METRIC_NAMES.has(key)) {
       throw new TypeError(`${label} contains unsupported metric ${key}`);
+    }
   }
   return Object.freeze(
     Object.fromEntries(
@@ -399,36 +500,77 @@ function parseRustEvent(value, label) {
     ["name", "atMicros", "durationMicros", "category", "operationId", "queueDepth"],
     label,
   );
+  const name = requireClosedString(event.name, RUST_EVENT_NAMES, `${label}.name`);
+  const atMicros = requireSafeInteger(event.atMicros, `${label}.atMicros`, 0);
+
+  if (RUST_MARK_NAMES.has(name)) {
+    if (
+      event.durationMicros !== null ||
+      event.category !== null ||
+      event.operationId !== null ||
+      event.queueDepth !== null
+    ) {
+      throw new TypeError(`${label} must be a startup mark with null operation fields`);
+    }
+    return Object.freeze({
+      name,
+      atMicros,
+      durationMicros: null,
+      category: null,
+      operationId: null,
+      queueDepth: null,
+    });
+  }
+
+  if (event.durationMicros === null || event.category === null || event.operationId === null) {
+    throw new TypeError(`${label} must be an operation span with duration, category and operationId`);
+  }
+  const durationMicros = requireSafeInteger(event.durationMicros, `${label}.durationMicros`, 0);
+  const category = requireClosedString(event.category, RUST_CATEGORIES, `${label}.category`);
+  const operationId = requireSafeInteger(event.operationId, `${label}.operationId`, 0);
+  let queueDepth = null;
+  if (name === "persistenceQueueWait") {
+    queueDepth = requireSafeInteger(event.queueDepth, `${label}.queueDepth`, 1);
+    if (queueDepth > PERSISTENCE_QUEUE_CAPACITY) {
+      throw new TypeError(`${label}.queueDepth must be <= ${PERSISTENCE_QUEUE_CAPACITY}`);
+    }
+  } else if (event.queueDepth !== null) {
+    throw new TypeError(`${label}.queueDepth must be null outside persistenceQueueWait`);
+  }
+
   return Object.freeze({
-    name: requireClosedString(event.name, RUST_EVENT_NAMES, `${label}.name`),
-    atMicros: requireSafeInteger(event.atMicros, `${label}.atMicros`, 0),
-    durationMicros: requireNullableSafeInteger(event.durationMicros, `${label}.durationMicros`),
-    category:
-      event.category === null
-        ? null
-        : requireClosedString(event.category, RUST_CATEGORIES, `${label}.category`),
-    operationId: requireNullableSafeInteger(event.operationId, `${label}.operationId`),
-    queueDepth: requireNullableSafeInteger(event.queueDepth, `${label}.queueDepth`),
+    name,
+    atMicros,
+    durationMicros,
+    category,
+    operationId,
+    queueDepth,
   });
 }
 
 function parseBrowserEntry(value, label) {
   const entry = requireRecord(value, label);
   requireExactKeys(entry, ["name", "entryType", "startMicros", "durationMicros"], label);
+  const name = requireClosedString(entry.name, BROWSER_ENTRY_NAMES, `${label}.name`);
   const entryType = requireClosedString(entry.entryType, BROWSER_ENTRY_TYPES, `${label}.entryType`);
-  const duration = requireSafeInteger(entry.durationMicros, `${label}.durationMicros`, 0);
-  if (entryType === "mark" && duration !== 0)
-    throw new TypeError(`${label}.durationMicros must be 0 for marks`);
-  return Object.freeze({
-    name: requireClosedString(entry.name, BROWSER_ENTRY_NAMES, `${label}.name`),
-    entryType,
-    startMicros: requireSafeInteger(entry.startMicros, `${label}.startMicros`, 0),
-    durationMicros: duration,
-  });
+  const startMicros = requireSafeInteger(entry.startMicros, `${label}.startMicros`, 0);
+  const durationMicros = requireSafeInteger(entry.durationMicros, `${label}.durationMicros`, 0);
+
+  if (BROWSER_MARK_NAMES.has(name)) {
+    if (entryType !== "mark" || durationMicros !== 0) {
+      throw new TypeError(`${label} must be a browser mark with zero duration`);
+    }
+  } else if (entryType !== "measure") {
+    throw new TypeError(`${label} must be a browser measure`);
+  }
+
+  return Object.freeze({ name, entryType, startMicros, durationMicros });
 }
 
 function assertComparableSource(captures) {
-  const reference = JSON.stringify({ commit: captures[0].commit, host: captures[0].host });
+  const firstCapture = captures[0];
+  if (firstCapture === undefined) throw new TypeError("captures must not be empty");
+  const reference = JSON.stringify({ commit: firstCapture.commit, host: firstCapture.host });
   for (let index = 1; index < captures.length; index += 1) {
     const candidate = JSON.stringify({
       commit: captures[index].commit,
@@ -438,6 +580,25 @@ function assertComparableSource(captures) {
       throw new TypeError(`captures[${index}] has a different commit or host profile`);
     }
   }
+}
+
+function assertUniqueCaptureIdentity(captures) {
+  const identities = new Set();
+  for (let index = 0; index < captures.length; index += 1) {
+    const identity = captureIdentity(captures[index]);
+    if (identities.has(identity)) {
+      throw new TypeError(`captures[${index}] has a duplicate capture identity`);
+    }
+    identities.add(identity);
+  }
+}
+
+function captureIdentity(capture) {
+  return `${captureSortKey(capture)}|${capture.sampleIndex}`;
+}
+
+function captureSortKey(capture) {
+  return `${groupKey(capture)}|${capture.classification.sampleRole}`;
 }
 
 function groupKey(capture) {
@@ -496,10 +657,6 @@ function requireSafeInteger(value, label, minimum) {
     throw new TypeError(`${label} must be a safe integer >= ${minimum}`);
   }
   return value;
-}
-
-function requireNullableSafeInteger(value, label) {
-  return value === null ? null : requireSafeInteger(value, label, 0);
 }
 
 export const DESKTOP_EVIDENCE_SCHEMAS = Object.freeze({
