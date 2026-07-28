@@ -24,6 +24,17 @@ function readSources(): ContentSourceFile[] {
   }));
 }
 
+function readExpectedArtifact(path: string): string {
+  const normalized = readFileSync(join(expectedRoot, `${path}.txt`), "utf8").replaceAll(
+    "\r\n",
+    "\n",
+  );
+  if (normalized.includes("\r")) {
+    throw new Error(`Expected fixture ${path} contains an unsupported carriage return`);
+  }
+  return normalized;
+}
+
 function requireBundle(result: ReturnType<typeof compileContentSources>) {
   if (result.kind === "failure") {
     throw new Error(
@@ -48,8 +59,8 @@ describe("compiled content byte contract", () => {
     ]);
 
     for (const artifact of bundle.artifacts) {
-      const expected = readFileSync(join(expectedRoot, `${artifact.path}.txt`), "utf8");
-      expect(artifact.json).toBe(expected);
+      expect(artifact.json).not.toContain("\r");
+      expect(artifact.json).toBe(readExpectedArtifact(artifact.path));
     }
   });
 
