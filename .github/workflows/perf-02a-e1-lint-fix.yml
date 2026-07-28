@@ -1,0 +1,63 @@
+name: perf-02a-e1-lint-fix
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/perf-02a-e1-lint-fix.yml"
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  fix:
+    runs-on: self-hosted
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          clean: true
+          persist-credentials: true
+          ref: agent/perf-02a-windows-evidence
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          $ErrorActionPreference = "Stop"
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Apply explicit string comparator
+        run: |
+          $ErrorActionPreference = "Stop"
+          $path = "scripts/performance/desktop-evidence-contract.mjs"
+          $source = Get-Content $path -Raw
+          $before = 'warnings: Object.freeze([...new Set(warnings)].sort()),'
+          $after = 'warnings: Object.freeze([...new Set(warnings)].sort((left, right) => left.localeCompare(right))),'
+          if (-not $source.Contains($before)) {
+            throw "Expected warning sort expression was not found"
+          }
+          Set-Content $path ($source.Replace($before, $after)) -NoNewline
+          pnpm fmt
+      - name: Verify type-aware lint and E1 tests
+        run: |
+          $ErrorActionPreference = "Stop"
+          pnpm lint:type-aware
+          pnpm evidence:desktop:check
+      - name: Remove temporary workflow and commit
+        run: |
+          $ErrorActionPreference = "Stop"
+          Remove-Item .github/workflows/perf-02a-e1-lint-fix.yml
+          git add -A
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "fix: sort evidence warnings deterministically"
+          git push origin HEAD:agent/perf-02a-windows-evidence
