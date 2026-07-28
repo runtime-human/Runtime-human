@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "build": {
+    "beforeBuildCommand": "pnpm build:evidence"
+  },
+  "app": {
+    "withGlobalTauri": true
+  },
+  "bundle": {
+    "active": false
+  }
+}
