@@ -1,7 +1,7 @@
 ---
 title: "PERF-02A Renderer and First Meaningful Paint Implementation Plan"
 type: plan
-status: draft
+status: completed
 canon: true
 updated: 2026-07-29
 ---
