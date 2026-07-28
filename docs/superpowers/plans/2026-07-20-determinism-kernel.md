@@ -1,10 +1,10 @@
 ---
 title: "Determinism Kernel Implementation Plan"
 type: plan
-status: active
+status: completed
 canon: false
 depends_on: [ADR-006, ADR-007]
-updated: 2026-07-20
+updated: 2026-07-28
 ---
 
 # Determinism Kernel Implementation Plan

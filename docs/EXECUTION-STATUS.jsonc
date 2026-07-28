@@ -1,12 +1,12 @@
 {
   "_schemaVersion": 1,
-  "updated": "2026-07-27",
+  "updated": "2026-07-28",
   "implementationProfile": "MVP Casual",
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "mainHeadAtCurrentSliceStart": "332bbe0597129aa28725095a22875250daedd657",
-  "currentPhase": "career-overview-projection",
+  "mainHeadAtCurrentSliceStart": "0fd57232f16a7a903b11dcc56f83559ec2f8e5bb",
+  "currentPhase": "documentation-governance",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -458,10 +458,9 @@
     },
     {
       "id": "career-overview-projection",
-      "status": "implementation-complete",
+      "status": "complete",
       "issue": 46,
       "pullRequest": 48,
-      "branch": "agent/ui-02c-career-overview",
       "scope": [
         "strict-january-result-summary",
         "shared-result-parser",
@@ -494,7 +493,8 @@
         "overviewStoryStates": 9,
         "januaryControllerLifecycles": 1,
         "placeholderRemoved": true
-      }
+      },
+      "commit": "0fd57232f16a7a903b11dcc56f83559ec2f8e5bb"
     },
     {
       "id": "npc-foundation",
@@ -524,8 +524,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "pending-pr-48-final-head",
-    "currentConstraint": "ui-02c-implementation-complete-permanent-gates-and-review-pending",
+    "qualityGate": "complete-pr-48",
+    "currentConstraint": "docs-01-source-of-truth-governance-then-perf-02a",
     "currentPullRequestMayMerge": false
   }
 }

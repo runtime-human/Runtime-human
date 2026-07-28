@@ -1,10 +1,10 @@
 ---
 title: "Runtime Human source adaptation register"
 type: plan
-status: active
+status: completed
 canon: false
 depends_on: [ADR-004, ADR-005, ADR-007, ADR-010, ADR-015]
-updated: 2026-07-22
+updated: 2026-07-28
 ---
 
 # Runtime Human source adaptation register

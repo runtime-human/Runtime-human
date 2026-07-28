@@ -1,10 +1,10 @@
 ---
 title: "Crash-safe MonthRun protocol design"
 type: plan
-status: active
+status: accepted
 canon: true
 depends_on: [ADR-005, ADR-007, ADR-010, ADR-015]
-updated: 2026-07-21
+updated: 2026-07-28
 ---
 
 # Crash-safe MonthRun protocol design

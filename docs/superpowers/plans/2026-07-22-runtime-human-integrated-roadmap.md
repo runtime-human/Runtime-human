@@ -1,10 +1,11 @@
 ---
 title: "Runtime Human integrated implementation roadmap"
 type: plan
-status: active
+status: superseded
+superseded_by: docs/plans/ROADMAP.md
 canon: false
 depends_on: [ADR-004, ADR-005, ADR-007, ADR-010, ADR-015]
-updated: 2026-07-22
+updated: 2026-07-28
 ---
 
 # Runtime Human integrated implementation roadmap

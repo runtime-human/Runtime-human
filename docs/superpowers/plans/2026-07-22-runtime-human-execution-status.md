@@ -1,10 +1,11 @@
 ---
 title: "Runtime Human execution status and next gates"
 type: plan
-status: active
+status: superseded
+superseded_by: docs/EXECUTION-STATUS.jsonc
 canon: false
 depends_on: [ADR-004, ADR-005, ADR-007, ADR-010, ADR-015]
-updated: 2026-07-24
+updated: 2026-07-28
 ---
 
 # Runtime Human execution status and next gates
