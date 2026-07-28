@@ -1,10 +1,10 @@
 ---
 title: "Compiled content foundation review and completion plan"
 type: plan
-status: active
+status: completed
 canon: false
 depends_on: [ADR-004, ADR-005, ADR-007, ADR-010, ADR-015]
-updated: 2026-07-23
+updated: 2026-07-28
 ---
 
 # Compiled Content Foundation Review and Completion Plan

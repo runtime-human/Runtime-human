@@ -299,7 +299,7 @@ for (const entry of entries) {
       errors.push(`${entry.file}: unknown depends_on ${dependency}`);
   }
 }
-errors.push(...validateSupersessionTargets(entries));
+errors.push(...validateSupersessionTargets(entries, ["docs/EXECUTION-STATUS.jsonc"]));
 
 const manifestText = JSON.stringify(buildManifest(entries), null, 2) + "\n";
 const catalogText = buildCatalog(entries);

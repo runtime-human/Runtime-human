@@ -174,15 +174,15 @@ updated: 2026-07-28
 
 ## Планы
 
-- [Compiled content foundation review and completion plan](superpowers/plans/2026-07-23-compiled-content-foundation-review-and-completion.md) — `active`, `non-canon`
-- [Crash-safe MonthRun protocol design](superpowers/specs/2026-07-20-month-run-protocol-design.md) — `active`, `canon`
-- [Determinism Kernel Implementation Plan](superpowers/plans/2026-07-20-determinism-kernel.md) — `active`, `non-canon`
+- [Compiled content foundation review and completion plan](superpowers/plans/2026-07-23-compiled-content-foundation-review-and-completion.md) — `completed`, `non-canon`
+- [Crash-safe MonthRun protocol design](superpowers/specs/2026-07-20-month-run-protocol-design.md) — `accepted`, `canon`
+- [Determinism Kernel Implementation Plan](superpowers/plans/2026-07-20-determinism-kernel.md) — `completed`, `non-canon`
 - [DOCS-01 Source-of-Truth Governance Implementation Plan](superpowers/plans/2026-07-28-docs-source-of-truth-governance.md) — `completed`, `canon`
 - [Documentation review checklist](plans/DOCUMENTATION-REVIEW-CHECKLIST.md) — `draft`, `canon`
-- [January 1990 playable slice implementation plan](superpowers/plans/2026-07-24-january-1990-playable-slice.md) — `active`, `non-canon`
-- [MonthRun Protocol Implementation Plan](superpowers/plans/2026-07-20-month-run-protocol.md) — `active`, `non-canon`
+- [January 1990 playable slice implementation plan](superpowers/plans/2026-07-24-january-1990-playable-slice.md) — `completed`, `non-canon`
+- [MonthRun Protocol Implementation Plan](superpowers/plans/2026-07-20-month-run-protocol.md) — `completed`, `non-canon`
 - [OPT-00 Performance Baseline Implementation Plan](superpowers/plans/2026-07-26-performance-baseline.md) — `completed`, `canon`
-- [OPT-00B File-backed SQLite Baseline Plan](superpowers/plans/2026-07-26-sqlite-performance-baseline.md) — `implementation-complete`, `canon`
+- [OPT-00B File-backed SQLite Baseline Plan](superpowers/plans/2026-07-26-sqlite-performance-baseline.md) — `completed`, `canon`
 - [Phase 0 entry criteria](plans/PHASE-0-ENTRY-CRITERIA.md) — `draft`, `canon`
 - [Plans](plans/README.md) — `draft`, `canon`
 - [Professional Challenge Engine — Implementation Plan](plans/PROFESSIONAL-CHALLENGE-IMPLEMENTATION-PLAN.md) — `draft`, `canon`
@@ -194,14 +194,14 @@ updated: 2026-07-28
 - [Proposed ADR decision sheet](plans/PROPOSED-ADR-DECISIONS.md) — `draft`, `canon`
 - [Release milestones](plans/RELEASE-MILESTONES.md) — `draft`, `canon`
 - [Repository Foundation design](superpowers/specs/2026-07-19-repository-foundation-design.md) — `draft`, `canon`
-- [Repository Foundation Implementation Plan](superpowers/plans/2026-07-19-repository-foundation.md) — `draft`, `canon`
+- [Repository Foundation Implementation Plan](superpowers/plans/2026-07-19-repository-foundation.md) — `completed`, `canon`
 - [Roadmap](plans/ROADMAP.md) — `draft`, `canon`
-- [Runtime Human execution status and next gates](superpowers/plans/2026-07-22-runtime-human-execution-status.md) — `active`, `non-canon`
-- [Runtime Human integrated implementation roadmap](superpowers/plans/2026-07-22-runtime-human-integrated-roadmap.md) — `active`, `non-canon`
-- [Runtime Human source adaptation register](superpowers/plans/2026-07-22-runtime-human-source-adaptation-register.md) — `active`, `non-canon`
-- [SQLite Durable Store design](superpowers/specs/2026-07-21-month-run-sqlite-durable-store-design.md) — `active`, `canon`
-- [SQLite Durable Store final design addendum](superpowers/specs/2026-07-22-month-run-sqlite-durable-store-final-addendum.md) — `active`, `canon`
-- [SQLite Durable Store implementation plan](superpowers/plans/2026-07-21-month-run-sqlite-durable-store.md) — `active`, `non-canon`
+- [Runtime Human execution status and next gates](superpowers/plans/2026-07-22-runtime-human-execution-status.md) — `superseded`, `non-canon`
+- [Runtime Human integrated implementation roadmap](superpowers/plans/2026-07-22-runtime-human-integrated-roadmap.md) — `superseded`, `non-canon`
+- [Runtime Human source adaptation register](superpowers/plans/2026-07-22-runtime-human-source-adaptation-register.md) — `completed`, `non-canon`
+- [SQLite Durable Store design](superpowers/specs/2026-07-21-month-run-sqlite-durable-store-design.md) — `accepted`, `canon`
+- [SQLite Durable Store final design addendum](superpowers/specs/2026-07-22-month-run-sqlite-durable-store-final-addendum.md) — `accepted`, `canon`
+- [SQLite Durable Store implementation plan](superpowers/plans/2026-07-21-month-run-sqlite-durable-store.md) — `completed`, `non-canon`
 - [Technology & Ecosystem Engine — Implementation Plan](plans/TECHNOLOGY-ECOSYSTEM-IMPLEMENTATION-PLAN.md) — `draft`, `canon`
 - [UI-02A Desktop Shell Extraction Implementation Plan](superpowers/plans/2026-07-27-ui-02a-desktop-shell-extraction.md) — `completed`, `canon`
 - [UI-02B Desktop Routing Implementation Plan](superpowers/plans/2026-07-27-ui-02b-desktop-routing.md) — `completed`, `canon`

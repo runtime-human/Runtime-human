@@ -1,10 +1,10 @@
 ---
 title: "SQLite Durable Store final design addendum"
 type: plan
-status: active
+status: accepted
 canon: true
 depends_on: [ADR-004, ADR-005, ADR-007, ADR-010, ADR-015]
-updated: 2026-07-22
+updated: 2026-07-28
 ---
 
 # SQLite Durable Store final design addendum

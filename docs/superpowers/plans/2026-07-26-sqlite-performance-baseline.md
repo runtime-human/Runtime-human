@@ -1,9 +1,9 @@
 ---
 title: "OPT-00B File-backed SQLite Baseline Plan"
 type: plan
-status: implementation-complete
+status: completed
 canon: true
-updated: 2026-07-26
+updated: 2026-07-28
 ---
 
 # OPT-00B File-backed SQLite Baseline Plan
