@@ -628,8 +628,8 @@ function requireArray(value, label) {
 }
 
 function requireExactKeys(value, expected, label) {
-  const actual = Object.keys(value).sort();
-  const required = [...expected].sort();
+  const actual = Object.keys(value).sort((left, right) => left.localeCompare(right));
+  const required = [...expected].sort((left, right) => left.localeCompare(right));
   if (actual.length !== required.length || actual.some((key, index) => key !== required[index])) {
     throw new TypeError(`${label} must contain exactly: ${required.join(", ")}`);
   }
