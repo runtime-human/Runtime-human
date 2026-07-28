@@ -118,6 +118,25 @@ describe("renderer milestone recorder", () => {
     expect(marks).toEqual(["app.first_meaningful_paint"]);
   });
 
+  it("does not retain an invalid synchronously invoked frame request", () => {
+    const timing = { mark: vi.fn() };
+    let requests = 0;
+    const recorder = createRendererMilestoneRecorder(timing, {
+      request(callback) {
+        requests += 1;
+        callback();
+        return requests;
+      },
+      cancel: vi.fn(),
+    });
+
+    recorder.scheduleFirstMeaningfulPaint();
+    recorder.scheduleFirstMeaningfulPaint();
+
+    expect(requests).toBe(2);
+    expect(timing.mark).not.toHaveBeenCalled();
+  });
+
   it("does not invent FMP when requestAnimationFrame is unavailable", () => {
     const timing = { mark: vi.fn() };
     const recorder = createRendererMilestoneRecorder(timing, null);
