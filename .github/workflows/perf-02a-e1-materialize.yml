@@ -10,6 +10,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: perf-02a-e1-materialize-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 defaults:
   run:
     shell: pwsh
@@ -53,7 +57,7 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           Remove-Item .github/workflows/perf-02a-e1-materialize.yml
-          Remove-Item .github/workflows/perf-02a-e1-red.yml
+          Remove-Item .github/workflows/perf-02a-e1-red.yml -ErrorAction SilentlyContinue
           git add package.json scripts tests docs .github/workflows/perf-02a-e1-materialize.yml .github/workflows/perf-02a-e1-red.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
