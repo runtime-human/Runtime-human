@@ -1,6 +1,9 @@
+import { execFile } from "node:child_process";
 import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 
 import { describe, expect, it, vi } from "vitest";
 
@@ -9,6 +12,10 @@ import {
   runDesktopEvidenceCli,
 } from "../scripts/run-desktop-performance-evidence.mjs";
 
+const execFileAsync = promisify(execFile);
+const CLI_PATH = fileURLToPath(
+  new URL("../scripts/run-desktop-performance-evidence.mjs", import.meta.url),
+);
 const COMMIT = "6472f5c3fac508cdc4cf2827aec34dcd15d8916d";
 
 function capture(sampleIndex: number) {
@@ -126,5 +133,23 @@ describe("desktop performance evidence CLI", () => {
     expect(report).toEqual(written);
     expect(log).toHaveBeenCalledOnce();
     expect(log).toHaveBeenCalledWith(`Wrote 3 measurement capture(s) to ${output}`);
+  });
+
+  it("runs as a shell-free Node executable", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "runtime-human-desktop-evidence-process-"));
+    const input = join(directory, "capture.json");
+    const output = join(directory, "report.json");
+    await writeFile(input, `${JSON.stringify(capture(0))}\n`, "utf8");
+
+    const { stdout, stderr } = await execFileAsync(process.execPath, [
+      CLI_PATH,
+      `--input=${input}`,
+      `--output=${output}`,
+    ]);
+
+    expect(stderr).toBe("");
+    expect(stdout.trim()).toBe(`Wrote 1 measurement capture(s) to ${output}`);
+    const written = JSON.parse(await readFile(output, "utf8")) as { measurementCount: number };
+    expect(written.measurementCount).toBe(1);
   });
 });
