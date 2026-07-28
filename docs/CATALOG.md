@@ -3,7 +3,7 @@ title: "Runtime Human — полный каталог документации"
 type: index
 status: draft
 canon: false
-updated: 2026-07-27
+updated: 2026-07-28
 ---
 
 # Runtime Human — полный каталог документации
@@ -11,7 +11,7 @@ updated: 2026-07-27
 > Сгенерировано `node scripts/build-toc.mjs` из metadata документов. Не редактировать вручную.
 > Канонический навигационный вход и порядок источников истины: [INDEX.md](INDEX.md).
 
-Всего документов: **192**.
+Всего документов: **193**.
 
 ## Навигация
 
@@ -177,6 +177,7 @@ updated: 2026-07-27
 - [Compiled content foundation review and completion plan](superpowers/plans/2026-07-23-compiled-content-foundation-review-and-completion.md) — `active`, `non-canon`
 - [Crash-safe MonthRun protocol design](superpowers/specs/2026-07-20-month-run-protocol-design.md) — `active`, `canon`
 - [Determinism Kernel Implementation Plan](superpowers/plans/2026-07-20-determinism-kernel.md) — `active`, `non-canon`
+- [DOCS-01 Source-of-Truth Governance Implementation Plan](superpowers/plans/2026-07-28-docs-source-of-truth-governance.md) — `completed`, `canon`
 - [Documentation review checklist](plans/DOCUMENTATION-REVIEW-CHECKLIST.md) — `draft`, `canon`
 - [January 1990 playable slice implementation plan](superpowers/plans/2026-07-24-january-1990-playable-slice.md) — `active`, `non-canon`
 - [MonthRun Protocol Implementation Plan](superpowers/plans/2026-07-20-month-run-protocol.md) — `active`, `non-canon`

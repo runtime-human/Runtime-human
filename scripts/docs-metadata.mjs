@@ -22,9 +22,7 @@ export function validateDocumentationMetadata(file, metadata) {
   const validStatus = typeof status === "string" && DOCUMENT_STATUSES.includes(status);
 
   if (!validStatus) {
-    errors.push(
-      `${normalizedFile}: status must be one of ${DOCUMENT_STATUSES.join(", ")}`,
-    );
+    errors.push(`${normalizedFile}: status must be one of ${DOCUMENT_STATUSES.join(", ")}`);
   }
 
   if (
@@ -34,13 +32,8 @@ export function validateDocumentationMetadata(file, metadata) {
     errors.push(`${normalizedFile}: superpowers plans must be completed or superseded`);
   }
 
-  if (
-    /^docs\/adr\/ADR-\d{3}-/u.test(normalizedFile) &&
-    !NUMBERED_ADR_STATUSES.includes(status)
-  ) {
-    errors.push(
-      `${normalizedFile}: numbered ADR status must be accepted, proposed or superseded`,
-    );
+  if (/^docs\/adr\/ADR-\d{3}-/u.test(normalizedFile) && !NUMBERED_ADR_STATUSES.includes(status)) {
+    errors.push(`${normalizedFile}: numbered ADR status must be accepted, proposed or superseded`);
   }
 
   const supersededBy = metadata.superseded_by;
@@ -48,14 +41,10 @@ export function validateDocumentationMetadata(file, metadata) {
     if (typeof supersededBy !== "string" || supersededBy.trim() === "") {
       errors.push(`${normalizedFile}: superseded documents require superseded_by`);
     } else if (!/^docs\/.+\.md$/u.test(normalizeFile(supersededBy))) {
-      errors.push(
-        `${normalizedFile}: superseded_by must be a repository-relative docs/*.md path`,
-      );
+      errors.push(`${normalizedFile}: superseded_by must be a repository-relative docs/*.md path`);
     }
   } else if (supersededBy !== undefined) {
-    errors.push(
-      `${normalizedFile}: superseded_by is only valid when status is superseded`,
-    );
+    errors.push(`${normalizedFile}: superseded_by is only valid when status is superseded`);
   }
 
   return errors;

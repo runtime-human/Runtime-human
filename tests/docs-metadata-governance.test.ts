@@ -7,20 +7,12 @@ import {
 } from "../scripts/docs-metadata.mjs";
 
 function metadata(status: string, supersededBy?: string) {
-  return supersededBy === undefined
-    ? { status }
-    : { status, superseded_by: supersededBy };
+  return supersededBy === undefined ? { status } : { status, superseded_by: supersededBy };
 }
 
 describe("documentation metadata governance", () => {
   it("publishes the closed status vocabulary", () => {
-    expect(DOCUMENT_STATUSES).toEqual([
-      "accepted",
-      "draft",
-      "superseded",
-      "proposed",
-      "completed",
-    ]);
+    expect(DOCUMENT_STATUSES).toEqual(["accepted", "draft", "superseded", "proposed", "completed"]);
     expect(Object.isFrozen(DOCUMENT_STATUSES)).toBe(true);
   });
 
@@ -61,19 +53,16 @@ describe("documentation metadata governance", () => {
 
   it.each(["draft", "completed"])("rejects %s for a numbered ADR", (status) => {
     expect(
-      validateDocumentationMetadata(
-        "docs/adr/ADR-021-example-decision.md",
-        metadata(status),
-      ),
+      validateDocumentationMetadata("docs/adr/ADR-021-example-decision.md", metadata(status)),
     ).toContain(
       "docs/adr/ADR-021-example-decision.md: numbered ADR status must be accepted, proposed or superseded",
     );
   });
 
   it("requires superseded_by only for superseded documents", () => {
-    expect(
-      validateDocumentationMetadata("docs/plans/OLD.md", metadata("superseded")),
-    ).toContain("docs/plans/OLD.md: superseded documents require superseded_by");
+    expect(validateDocumentationMetadata("docs/plans/OLD.md", metadata("superseded"))).toContain(
+      "docs/plans/OLD.md: superseded documents require superseded_by",
+    );
     expect(
       validateDocumentationMetadata(
         "docs/plans/CURRENT.md",

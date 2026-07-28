@@ -47,7 +47,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
 
 defaults:
   run:
@@ -64,9 +64,7 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           clean: true
-          fetch-depth: 0
-          persist-credentials: true
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
           show-progress: false
       - name: Normalize tracked files
         run: |
@@ -92,76 +90,6 @@ jobs:
           cargo --version
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Finalize DOCS-01 generated state
-        run: |
-          $ErrorActionPreference = "Stop"
-          $script = @'
-          import fs from "node:fs";
-
-          const path = "docs/EXECUTION-STATUS.jsonc";
-          const status = JSON.parse(fs.readFileSync(path, "utf8"));
-          const milestone = status.milestones.find(
-            (candidate) => candidate.id === "career-overview-projection",
-          );
-          if (!milestone) throw new Error("career-overview-projection milestone is missing");
-          if (milestone.pullRequest !== 48 || milestone.issue !== 46) {
-            throw new Error("career-overview-projection milestone identity changed");
-          }
-          if (
-            milestone.status !== "implementation-complete" ||
-            milestone.branch !== "agent/ui-02c-career-overview"
-          ) {
-            throw new Error("career-overview-projection milestone is not in the expected pre-closure state");
-          }
-
-          status.updated = "2026-07-28";
-          status.mainHeadAtCurrentSliceStart = "0fd57232f16a7a903b11dcc56f83559ec2f8e5bb";
-          status.currentPhase = "documentation-governance";
-          milestone.status = "complete";
-          delete milestone.branch;
-          milestone.commit = "0fd57232f16a7a903b11dcc56f83559ec2f8e5bb";
-          status.verification.qualityGate = "complete-pr-48";
-          status.verification.currentConstraint =
-            "docs-01-source-of-truth-governance-then-perf-02a";
-          status.verification.currentPullRequestMayMerge = false;
-
-          fs.writeFileSync(path, `${JSON.stringify(status, null, 2)}\n`, "utf8");
-          '@
-          $script | node --input-type=module -
-
-          node scripts/build-toc.mjs
-          pnpm fmt
-          node scripts/build-toc.mjs --check
-
-          git fetch origin main
-          git checkout origin/main -- .github/workflows/foundation.yml
-          git add -A
-
-          $expected = @(
-            "docs/CATALOG.md",
-            "docs/EXECUTION-STATUS.jsonc",
-            "docs/INDEX.md",
-            "docs/MANIFEST.jsonc",
-            "docs/STYLE.md",
-            "docs/superpowers/plans/2026-07-28-docs-source-of-truth-governance.md",
-            "package.json",
-            "scripts/build-toc.mjs",
-            "scripts/docs-metadata.d.mts",
-            "scripts/docs-metadata.mjs",
-            "tests/docs-metadata-governance.test.ts"
-          ) | Sort-Object
-          $actual = @(git diff --cached --name-only origin/main | Sort-Object)
-          $unexpected = Compare-Object -ReferenceObject $expected -DifferenceObject $actual
-          if ($unexpected) {
-            $details = $unexpected | Format-Table | Out-String
-            throw "Unexpected DOCS-01 final diff:`n$details"
-          }
-
-          git diff --cached --check
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "docs: finalize source-of-truth governance"
-          git push origin HEAD:agent/docs-01-governance
       - name: Check documentation
         run: pnpm docs:check
       - name: Check formatting
