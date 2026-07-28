@@ -2,15 +2,25 @@
 
 use std::{io, sync::Arc};
 
+use desktop_performance::{DesktopPerformanceEventName, DesktopPerformanceRecorder};
 use tauri::Manager;
 
+mod desktop_performance;
+#[cfg(test)]
+mod desktop_performance_tests;
 #[cfg(test)]
 mod determinism;
 mod persistence;
 
 fn main() {
+    let performance = DesktopPerformanceRecorder::default();
+    performance.record_once(DesktopPerformanceEventName::ProcessEntry);
+
+    let setup_performance = performance.clone();
     let app = tauri::Builder::default()
-        .setup(|app| {
+        .setup(move |app| {
+            setup_performance.record_once(DesktopPerformanceEventName::TauriSetupStart);
+
             let data_dir = app
                 .path()
                 .app_data_dir()
@@ -18,7 +28,11 @@ fn main() {
             let database_path = data_dir.join("runtime-human.sqlite3");
             let persistence = persistence::PersistenceHandle::start(database_path)
                 .map_err(|error| io::Error::other(error.to_string()))?;
+
+            setup_performance.record_once(DesktopPerformanceEventName::PersistenceWorkerReady);
             app.manage::<persistence::ManagedPersistence>(Arc::new(persistence));
+            app.manage(setup_performance.clone());
+            setup_performance.record_once(DesktopPerformanceEventName::TauriSetupComplete);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -35,7 +49,10 @@ fn main() {
         .build(tauri::generate_context!())
         .expect("failed to build Runtime Human desktop shell");
 
-    app.run(|app_handle, event| {
+    app.run(move |app_handle, event| {
+        if matches!(event, tauri::RunEvent::Ready) {
+            performance.record_once(DesktopPerformanceEventName::MainWindowAvailable);
+        }
         if matches!(event, tauri::RunEvent::Exit) {
             let state = app_handle.state::<persistence::ManagedPersistence>();
             if let Err(error) = state.shutdown() {
