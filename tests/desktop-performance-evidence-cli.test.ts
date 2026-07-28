@@ -1,8 +1,7 @@
 import { execFile } from "node:child_process";
 import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join, resolve } from "node:path";
 import { promisify } from "node:util";
 
 import { describe, expect, it, vi } from "vitest";
@@ -13,9 +12,7 @@ import {
 } from "../scripts/run-desktop-performance-evidence.mjs";
 
 const execFileAsync = promisify(execFile);
-const CLI_PATH = fileURLToPath(
-  new URL("../scripts/run-desktop-performance-evidence.mjs", import.meta.url),
-);
+const CLI_PATH = resolve(process.cwd(), "scripts", "run-desktop-performance-evidence.mjs");
 const COMMIT = "6472f5c3fac508cdc4cf2827aec34dcd15d8916d";
 
 function capture(sampleIndex: number) {
