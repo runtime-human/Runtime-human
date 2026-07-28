@@ -12,9 +12,7 @@ export type AppProps = Readonly<{
   rendererMilestones?: RendererMilestoneRecorder;
 }>;
 
-export function App({
-  rendererMilestones = RUNTIME_RENDERER_MILESTONES,
-}: AppProps = {}) {
+export function App({ rendererMilestones = RUNTIME_RENDERER_MILESTONES }: AppProps = {}) {
   const session = useJanuarySession();
   const routing = useDesktopRoute();
 

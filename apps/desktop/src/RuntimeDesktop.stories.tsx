@@ -22,11 +22,7 @@ const saveId = parseSaveId("storybook-routing-save");
 const runId = parseMonthRunId("storybook-routing-run");
 const checkpointHash = fingerprint("storybook-routing-checkpoint", { version: 1 });
 
-function createSession(
-  view: JanuarySessionView,
-  busy = false,
-  ready = true,
-): JanuarySessionState {
+function createSession(view: JanuarySessionView, busy = false, ready = true): JanuarySessionState {
   return Object.freeze({
     view: Object.freeze(view),
     busy,
