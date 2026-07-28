@@ -6,6 +6,10 @@ edition = "2024"
 rust-version = "1.97.1"
 publish = false
 
+[features]
+default = []
+performance-evidence = []
+
 [build-dependencies]
 tauri-build = "=2.6.3"
 
