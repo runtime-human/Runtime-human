@@ -24,4 +24,5 @@ export function validateDocumentationMetadata(
 
 export function validateSupersessionTargets(
   entries: readonly DocumentationManifestEntry[],
+  additionalTargets?: readonly string[],
 ): readonly string[];
