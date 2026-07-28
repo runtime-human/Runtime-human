@@ -81,11 +81,11 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
           pnpm --version
-      - name: Install Rust 1.97.0
+      - name: Install Rust 1.97.1
         run: |
           $ErrorActionPreference = "Stop"
-          rustup toolchain install 1.97.0 --profile minimal --component rustfmt,clippy
-          rustup default 1.97.0
+          rustup toolchain install 1.97.1 --profile minimal --component rustfmt,clippy
+          rustup default 1.97.1
           rustc --version
           cargo --version
       - name: Install dependencies
