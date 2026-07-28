@@ -40,8 +40,10 @@ export function validateDocumentationMetadata(file, metadata) {
   if (status === "superseded") {
     if (typeof supersededBy !== "string" || supersededBy.trim() === "") {
       errors.push(`${normalizedFile}: superseded documents require superseded_by`);
-    } else if (!/^docs\/.+\.md$/u.test(normalizeFile(supersededBy))) {
-      errors.push(`${normalizedFile}: superseded_by must be a repository-relative docs/*.md path`);
+    } else if (!/^docs\/.+\.(?:md|jsonc)$/u.test(normalizeFile(supersededBy))) {
+      errors.push(
+        `${normalizedFile}: superseded_by must be a repository-relative docs/*.md or docs/*.jsonc path`,
+      );
     }
   } else if (supersededBy !== undefined) {
     errors.push(`${normalizedFile}: superseded_by is only valid when status is superseded`);
@@ -50,8 +52,11 @@ export function validateDocumentationMetadata(file, metadata) {
   return errors;
 }
 
-export function validateSupersessionTargets(entries) {
-  const knownFiles = new Set(entries.map((entry) => normalizeFile(entry.file)));
+export function validateSupersessionTargets(entries, additionalTargets = []) {
+  const knownFiles = new Set([
+    ...entries.map((entry) => normalizeFile(entry.file)),
+    ...additionalTargets.map(normalizeFile),
+  ]);
   const errors = [];
 
   for (const entry of entries) {
