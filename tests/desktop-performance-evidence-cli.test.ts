@@ -84,16 +84,16 @@ describe("desktop performance evidence CLI", () => {
   });
 
   it("rejects missing inputs, duplicate outputs and unknown options", () => {
-    expect(() => parseDesktopEvidenceArguments([])).toThrow(/at least one --input/u);
+    expect(() => parseDesktopEvidenceArguments([])).toThrow(/at least one --input/iu);
     expect(() =>
       parseDesktopEvidenceArguments([
         "--input=one.json",
         "--output=one-report.json",
         "--output=two-report.json",
       ]),
-    ).toThrow(/only one --output/u);
+    ).toThrow(/only one --output/iu);
     expect(() => parseDesktopEvidenceArguments(["--input=one.json", "--other=value"])).toThrow(
-      /unknown desktop evidence option/u,
+      /unknown desktop evidence option/iu,
     );
   });
 
