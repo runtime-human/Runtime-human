@@ -4,7 +4,7 @@ type: index
 status: draft
 canon: true
 depends_on: [ADR-013, ADR-014, ADR-015, ADR-016, ADR-017, ADR-018, ADR-019, ADR-020]
-updated: 2026-07-28
+updated: 2026-07-29
 ---
 
 # Runtime Human — индекс документации
@@ -22,18 +22,20 @@ Research не становится каноном без ADR/spec synchronizatio
 ## Текущее исполнение
 
 - [EXECUTION-STATUS.jsonc](EXECUTION-STATUS.jsonc) — главный текущий execution ledger: завершённые milestones, активная фаза, verification gate и следующий constraint.
-- [DOCS-01 — source-of-truth governance](https://github.com/MrFr3di/Runtime-human/issues/50) — текущий ограниченный delivery slice.
+- [RUST-01B production logging](plans/RUST-01B-PRODUCTION-LOGGING-IMPLEMENTATION-PLAN.md) / [issue #57](https://github.com/MrFr3di/Runtime-human/issues/57) — текущий ограниченный Rust delivery slice: bounded JSONL sink, redaction, rotation, dropped-line status и lifecycle flush.
+- [PERF-02A startup/IPC/queue timeline](https://github.com/MrFr3di/Runtime-human/issues/51) — Rust startup recorder, read-only snapshot, persistence queue/SQLite spans и Tauri command linkage завершены; renderer/FMP и Windows evidence остаются.
+- [RUST-01C FIFO shutdown](https://github.com/MrFr3di/Runtime-human/issues/58) — отдельный следующий Rust-кандидат, который не смешивается с измерительным baseline до PERF-02A evidence.
 - [UI roadmap](https://github.com/MrFr3di/Runtime-human/issues/37) — UI-02 завершён; Skills, Relationships, Chronology и visual quality остаются отдельными последующими срезами.
-- [PERF master track](https://github.com/MrFr3di/Runtime-human/issues/24) → [product-facing baseline](https://github.com/MrFr3di/Runtime-human/issues/39) → [PERF-02A startup/IPC/queue timeline](https://github.com/MrFr3di/Runtime-human/issues/51).
-- [UI-02C implementation plan](superpowers/plans/2026-07-27-ui-02c-career-overview.md) — последний завершённый product-facing UI plan.
+- [PERF master track](https://github.com/MrFr3di/Runtime-human/issues/24) → [product-facing baseline](https://github.com/MrFr3di/Runtime-human/issues/39) → PERF-02A → one measured optimization.
 
 Следующий порядок работ:
 
 ```text
-DOCS-01 governance
-→ PERF-02A measured desktop timeline
-→ one evidence-backed optimization
-→ Windows idle/resources baseline
+RUST-01B redacted production logging
+→ PERF-02A renderer / React commit / January ready / first meaningful paint
+→ opt-in cold/warm Windows evidence collector
+→ exactly one evidence-backed optimization
+→ PERF-02B idle resources and 100-cycle stabilization
 → NPC foundation and UI-03 projections
 ```
 
@@ -178,48 +180,3 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [Technology Ecosystem Balance](simulation/TECHNOLOGY-ECOSYSTEM-BALANCE.md)
 - [Event Engine](events/EVENT-ENGINE.md)
 - [Narrative Director](events/NARRATIVE-DIRECTOR.md)
-- [NPC Memory](events/NPC-AND-NARRATIVE-MEMORY.md)
-
-## Persistence и content
-
-- [Save Model](persistence/SAVE-MODEL.md)
-- [Persistence Boundary](persistence/PERSISTENCE-BOUNDARY.md)
-- [SQLite Architecture](persistence/SQLITE-ARCHITECTURE.md)
-- [Migrations](persistence/MIGRATIONS.md)
-- [Save Compatibility](persistence/SAVE-COMPATIBILITY.md)
-- [Professional Situation Compatibility](persistence/PROFESSIONAL-SITUATION-CONTENT-COMPATIBILITY.md)
-- [Technology Context Compatibility](persistence/TECHNOLOGY-CONTEXT-COMPATIBILITY.md)
-- [Backup/Restore](persistence/BACKUP-AND-RESTORE.md)
-- [Safe Mode](persistence/SAFE-MODE.md)
-- [Content Architecture](content/CONTENT-ARCHITECTURE.md)
-- [Professional Situation Content](content/PROFESSIONAL-SITUATION-CONTENT.md)
-- [Programmer Learning Content](content/PROGRAMMER-LEARNING-CONTENT.md)
-- [Programmer Career Content](content/PROGRAMMER-CAREER-CONTENT.md)
-- [Technology Ecosystem Content](content/TECHNOLOGY-ECOSYSTEM-CONTENT.md)
-- [Historical Catalog](content/HISTORICAL-CATALOG.md)
-- [Historical Labor Market Catalog](content/HISTORICAL-LABOR-MARKET-CATALOG.md)
-- [Historical Technology Catalog](content/HISTORICAL-TECHNOLOGY-CATALOG.md)
-- [Modding](content/MODDING.md)
-
-## UI, engineering и plans
-
-- [UI Architecture](ui/UI-ARCHITECTURE.md)
-- [Design System](ui/DESIGN-SYSTEM.md)
-- [Accessibility](ui/ACCESSIBILITY.md)
-- [Professional Challenge UI](ui/PROFESSIONAL-CHALLENGE-UI.md)
-- [Professional Situation Content Studio UI](ui/PROFESSIONAL-SITUATION-CONTENT-UI.md)
-- [Programmer Learning UI](ui/PROGRAMMER-LEARNING-UI.md)
-- [Programmer Career UI](ui/PROGRAMMER-CAREER-UI.md)
-- [Technology Ecosystem UI](ui/TECHNOLOGY-ECOSYSTEM-UI.md)
-- [Tech Stack](engineering/TECH-STACK.md)
-- [TypeScript Policy](engineering/TYPESCRIPT-POLICY.md)
-- [Storybook Workflow](engineering/STORYBOOK-WORKFLOW.md)
-- [Testing Strategy](engineering/TESTING-STRATEGY.md)
-- [CI/CD](engineering/CI-CD.md)
-- [Security](engineering/SECURITY.md)
-- [Vertical Slice](plans/VERTICAL-SLICE-PLAN.md)
-- [Programmer Career Implementation Plan](plans/PROGRAMMER-CAREER-IMPLEMENTATION-PLAN.md)
-- [Technology Ecosystem Implementation Plan](plans/TECHNOLOGY-ECOSYSTEM-IMPLEMENTATION-PLAN.md)
-- [Professional Situation Content Implementation Plan](plans/PROFESSIONAL-SITUATION-CONTENT-IMPLEMENTATION-PLAN.md)
-- [Roadmap](plans/ROADMAP.md)
-- [ADR Index](adr/README.md)
