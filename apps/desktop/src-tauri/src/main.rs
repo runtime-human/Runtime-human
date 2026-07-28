@@ -1,9 +1,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{io, sync::Arc};
+use std::{io, path::PathBuf, sync::Arc};
 
 use desktop_performance::{DesktopPerformanceEventName, DesktopPerformanceRecorder};
-use tauri::Manager;
+use tauri::{Manager, Runtime};
 
 mod desktop_performance;
 #[cfg(test)]
@@ -11,6 +11,8 @@ mod desktop_performance_tests;
 #[cfg(test)]
 mod determinism;
 mod diagnostics;
+#[cfg(feature = "performance-evidence")]
+mod evidence;
 mod persistence;
 
 fn main() {
@@ -25,10 +27,7 @@ fn main() {
             app.manage(diagnostics);
             diagnostics::log_tauri_setup_logging_ready();
 
-            let data_dir = app
-                .path()
-                .app_data_dir()
-                .map_err(|error| io::Error::other(error.to_string()))?;
+            let data_dir = resolve_desktop_data_directory(app)?;
             let database_path = data_dir.join("runtime-human.sqlite3");
             let persistence = match persistence::PersistenceHandle::start_with_performance(
                 database_path,
@@ -80,4 +79,16 @@ fn main() {
             diagnostics::log_process_exit(diagnostics.dropped_line_count());
         }
     });
+}
+
+fn resolve_desktop_data_directory<R: Runtime>(app: &tauri::App<R>) -> Result<PathBuf, io::Error> {
+    #[cfg(feature = "performance-evidence")]
+    if let Some(directory) = evidence::app_data_directory_override() {
+        std::fs::create_dir_all(&directory)?;
+        return Ok(directory);
+    }
+
+    app.path()
+        .app_data_dir()
+        .map_err(|error| io::Error::other(error.to_string()))
 }
