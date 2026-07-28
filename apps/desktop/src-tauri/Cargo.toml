@@ -3,7 +3,7 @@ name = "runtime-human-desktop"
 version = "0.0.1"
 description = "Runtime Human desktop shell"
 edition = "2024"
-rust-version = "1.97"
+rust-version = "1.97.1"
 publish = false
 
 [build-dependencies]
