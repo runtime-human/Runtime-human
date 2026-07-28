@@ -1,0 +1,61 @@
+name: perf-02a-e1-materialize
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/perf-02a-e1-materialize.yml"
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  materialize:
+    runs-on: self-hosted
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          clean: true
+          fetch-depth: 0
+          persist-credentials: true
+          ref: agent/perf-02a-windows-evidence
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          $ErrorActionPreference = "Stop"
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Format and regenerate documentation
+        run: |
+          $ErrorActionPreference = "Stop"
+          pnpm fmt
+          node scripts/build-toc.mjs
+          pnpm docs:check
+      - name: Lint and typecheck E1
+        run: |
+          $ErrorActionPreference = "Stop"
+          pnpm lint
+          pnpm typecheck
+      - name: Run E1 tests
+        run: pnpm exec vitest run tests/desktop-performance-evidence.test.ts tests/desktop-performance-evidence-cli.test.ts
+      - name: Remove temporary workflows and commit
+        run: |
+          $ErrorActionPreference = "Stop"
+          Remove-Item .github/workflows/perf-02a-e1-materialize.yml
+          Remove-Item .github/workflows/perf-02a-e1-red.yml
+          git add package.json scripts tests docs .github/workflows/perf-02a-e1-materialize.yml .github/workflows/perf-02a-e1-red.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "build: materialize PERF-02A E1 evidence contract"
+          git push origin HEAD:agent/perf-02a-windows-evidence
