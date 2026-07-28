@@ -204,7 +204,9 @@ fn filter_directive(debug_build: bool, rust_log: Option<&str>) -> String {
 }
 
 fn debug_log_level(value: &str) -> Option<&'static str> {
-    let candidate = value.strip_prefix("runtime_human_desktop=").unwrap_or(value);
+    let candidate = value
+        .strip_prefix("runtime_human_desktop=")
+        .unwrap_or(value);
     match candidate {
         "error" => Some("error"),
         "warn" => Some("warn"),
