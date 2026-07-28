@@ -217,7 +217,9 @@ function summarizeGroup(captures) {
         .sort(([left], [right]) => left.localeCompare(right))
         .map(([name, values]) => summarizeMetric(name, values, firstCapture)),
     ),
-    warnings: Object.freeze([...new Set(warnings)].sort()),
+    warnings: Object.freeze(
+      [...new Set(warnings)].sort((left, right) => left.localeCompare(right)),
+    ),
   });
 }
 
