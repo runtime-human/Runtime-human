@@ -6,46 +6,154 @@ export type DesktopEvidenceScenario =
   | "resume-month-run"
   | "final-commit";
 
+export type DesktopEvidenceClassification = Readonly<{
+  process: "cold-process" | "warm-process";
+  osCache: "cold-os-cache" | "warm-os-cache";
+  database: "new-database" | "existing-clean-database";
+  sampleRole: "warmup" | "measurement";
+}>;
+
+export type DesktopEvidenceHost = Readonly<{
+  os: "windows";
+  arch: "x64" | "arm64";
+  logicalProcessors: number;
+  memoryMiB: number;
+  cpuModel: string;
+}>;
+
+export type DesktopRustCategory =
+  | "query"
+  | "mutation"
+  | "backup"
+  | "recovery"
+  | "shutdown";
+
+export type DesktopRustMarkEvent = Readonly<{
+  name:
+    | "processEntry"
+    | "tauriSetupStart"
+    | "persistenceWorkerReady"
+    | "tauriSetupComplete"
+    | "mainWindowAvailable";
+  atMicros: number;
+  durationMicros: null;
+  category: null;
+  operationId: null;
+  queueDepth: null;
+}>;
+
+export type DesktopRustOperationEvent = Readonly<{
+  name: "tauriCommandDispatch" | "persistenceDatabaseOperation";
+  atMicros: number;
+  durationMicros: number;
+  category: DesktopRustCategory;
+  operationId: number;
+  queueDepth: null;
+}>;
+
+export type DesktopRustQueueWaitEvent = Readonly<{
+  name: "persistenceQueueWait";
+  atMicros: number;
+  durationMicros: number;
+  category: DesktopRustCategory;
+  operationId: number;
+  queueDepth: number;
+}>;
+
+export type DesktopRustEvent =
+  | DesktopRustMarkEvent
+  | DesktopRustOperationEvent
+  | DesktopRustQueueWaitEvent;
+
+export type DesktopBrowserMark = Readonly<{
+  name:
+    | "app.renderer_bootstrap"
+    | "app.react_shell_commit"
+    | "app.january_session_ready"
+    | "app.first_meaningful_paint";
+  entryType: "mark";
+  startMicros: number;
+  durationMicros: 0;
+}>;
+
+export type DesktopBrowserMeasure = Readonly<{
+  name:
+    | "app.session_bootstrap"
+    | "content.manifest"
+    | "content.chunk"
+    | "content.registry"
+    | "month.load"
+    | "month.begin"
+    | "month.resume"
+    | "month.commit"
+    | "month.retry";
+  entryType: "measure";
+  startMicros: number;
+  durationMicros: number;
+}>;
+
 export type DesktopEvidenceCapture = Readonly<{
   schemaVersion: "runtime-human-desktop-performance-capture-v1";
   commit: string;
-  host: Readonly<{
-    os: "windows";
-    arch: "x64" | "arm64";
-    logicalProcessors: number;
-    memoryMiB: number;
-    cpuModel: string;
-  }>;
+  host: DesktopEvidenceHost;
   scenario: DesktopEvidenceScenario;
-  classification: Readonly<{
-    process: "cold-process" | "warm-process";
-    osCache: "cold-os-cache" | "warm-os-cache";
-    database: "new-database" | "existing-clean-database";
-    sampleRole: "warmup" | "measurement";
-  }>;
+  classification: DesktopEvidenceClassification;
   sampleIndex: number;
-  externalDurationsMicros: Readonly<Record<string, number>>;
+  externalDurationsMicros: Readonly<
+    Partial<
+      Record<
+        | "processToShellFmpMicros"
+        | "processToJanuaryReadyMicros"
+        | "processToMainWindowObservedMicros",
+        number
+      >
+    >
+  >;
   rustSnapshot: Readonly<{
     schemaVersion: "runtime-human-desktop-performance-snapshot-v1";
-    events: readonly Readonly<Record<string, unknown>>[];
+    events: readonly DesktopRustEvent[];
     droppedEvents: number;
   }>;
-  browserEntries: readonly Readonly<{
-    name: string;
-    entryType: "mark" | "measure";
-    startMicros: number;
-    durationMicros: number;
-  }>[];
+  browserEntries: readonly (DesktopBrowserMark | DesktopBrowserMeasure)[];
+}>;
+
+export type DesktopMetricBudget = Readonly<{
+  status: "within-target" | "warning" | "unbudgeted";
+  p50MaximumMicros: number | null;
+  p95MaximumMicros: number | null;
+  p99MaximumMicros: number | null;
+}>;
+
+export type DesktopMetricSummary = Readonly<{
+  name: string;
+  unit: "microseconds";
+  count: number;
+  min: number;
+  p50: number;
+  p95: number;
+  p99: number;
+  max: number;
+  budget: DesktopMetricBudget;
+}>;
+
+export type DesktopEvidenceGroup = Readonly<{
+  scenario: DesktopEvidenceScenario;
+  classification: DesktopEvidenceClassification;
+  sampleCount: number;
+  droppedRustEvents: number;
+  missingMetrics: readonly Readonly<{ name: string; count: number }>[];
+  metrics: readonly DesktopMetricSummary[];
+  warnings: readonly string[];
 }>;
 
 export type DesktopEvidenceReport = Readonly<{
   schemaVersion: "runtime-human-desktop-performance-evidence-v1";
   commit: string;
-  host: DesktopEvidenceCapture["host"];
+  host: DesktopEvidenceHost;
   captureCount: number;
   warmupCount: number;
   measurementCount: number;
-  groups: readonly Readonly<Record<string, unknown>>[];
+  groups: readonly DesktopEvidenceGroup[];
   captures: readonly DesktopEvidenceCapture[];
 }>;
 
