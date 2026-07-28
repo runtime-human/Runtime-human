@@ -72,6 +72,34 @@ impl PersistenceError {
         Self::Io { context, source }
     }
 
+    pub(crate) fn diagnostic_code(&self) -> &'static str {
+        match self {
+            Self::InvalidCommand(_) => "invalid_command",
+            Self::PayloadTooLarge { .. } => "payload_too_large",
+            Self::PayloadHashMismatch => "payload_hash_mismatch",
+            Self::Overloaded => "persistence_overloaded",
+            Self::Unavailable => "persistence_unavailable",
+            Self::UnsupportedSqliteVersion { .. } => "unsupported_sqlite_version",
+            Self::IncompatibleSchema { .. } => "incompatible_schema",
+            Self::MigrationHistoryMismatch => "migration_history_mismatch",
+            Self::IntegrityCheckFailed(_) => "integrity_check_failed",
+            Self::RequestPayloadConflict => "request_payload_conflict",
+            Self::SaveAlreadyExists => "save_already_exists",
+            Self::SaveNotFound => "save_not_found",
+            Self::SaveRevisionConflict => "save_revision_conflict",
+            Self::ActiveRunExists => "active_run_exists",
+            Self::RunNotFound => "run_not_found",
+            Self::RunRevisionConflict => "run_revision_conflict",
+            Self::CheckpointHashConflict => "checkpoint_hash_conflict",
+            Self::RunAlreadyCommitted => "run_already_committed",
+            Self::InvalidRunBoundary => "invalid_run_boundary",
+            Self::CorruptedStoredPayload => "corrupted_stored_payload",
+            Self::RecoveryRequired => "recovery_required",
+            Self::Storage { .. } | Self::Io { .. } | Self::Invariant(_) => "storage_unavailable",
+            Self::BackupFailed(_) => "backup_failed",
+        }
+    }
+
     pub(crate) fn public(&self) -> PersistenceErrorV1 {
         PersistenceErrorV1 {
             schema_version: "persistence-error-v1",
@@ -185,4 +213,24 @@ pub(crate) struct PersistenceErrorV1 {
     schema_version: &'static str,
     code: PersistenceErrorCode,
     message: String,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::PersistenceError;
+
+    #[test]
+    fn diagnostic_codes_never_expose_free_form_error_data() {
+        let invalid = PersistenceError::InvalidCommand("save-id-secret".to_owned());
+        assert_eq!(invalid.diagnostic_code(), "invalid_command");
+        assert!(!invalid.diagnostic_code().contains("secret"));
+
+        let io = PersistenceError::io(
+            "opening the database",
+            std::io::Error::other(r"C:\Users\Dmitry\private-save.sqlite3"),
+        );
+        assert_eq!(io.diagnostic_code(), "storage_unavailable");
+        assert!(!io.diagnostic_code().contains("Dmitry"));
+        assert!(!io.diagnostic_code().contains("sqlite3"));
+    }
 }

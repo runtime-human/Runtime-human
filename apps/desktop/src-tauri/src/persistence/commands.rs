@@ -2,7 +2,10 @@ use std::{sync::Arc, time::Instant};
 
 use tauri::State;
 
-use crate::desktop_performance::DesktopPerformanceOperationCategory;
+use crate::{
+    desktop_performance::DesktopPerformanceOperationCategory,
+    diagnostics::log_persistence_operation_failed,
+};
 
 use super::{
     BackupMetadataV1, BeginPersistedMonthRunAcceptedV1, BeginPersistedMonthRunCommandV1,
@@ -178,5 +181,8 @@ pub(super) async fn run_blocking_observed<T: Send + 'static>(
     };
 
     handle.record_tauri_command_dispatch(operation_context, category, started.elapsed());
+    if let Err(error) = &result {
+        log_persistence_operation_failed(category, error.diagnostic_code());
+    }
     result
 }
