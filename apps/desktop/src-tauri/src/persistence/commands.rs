@@ -5,13 +5,13 @@ use tauri::State;
 use crate::desktop_performance::DesktopPerformanceOperationCategory;
 
 use super::{
-    worker::PersistenceOperationContext, BackupMetadataV1, BeginPersistedMonthRunAcceptedV1,
-    BeginPersistedMonthRunCommandV1, CommitPersistedMonthRunAcceptedV1,
-    CommitPersistedMonthRunCommandV1, CreateBackupCommandV1, CreateSaveAcceptedV1,
-    CreateSaveCommandV1, GetRecoveryStatusQueryV1, LoadActiveMonthRunQueryV1,
+    BackupMetadataV1, BeginPersistedMonthRunAcceptedV1, BeginPersistedMonthRunCommandV1,
+    CommitPersistedMonthRunAcceptedV1, CommitPersistedMonthRunCommandV1, CreateBackupCommandV1,
+    CreateSaveAcceptedV1, CreateSaveCommandV1, GetRecoveryStatusQueryV1, LoadActiveMonthRunQueryV1,
     LoadMonthRunQueryV1, LoadSaveQueryV1, MonthRunRecordV1, PersistenceError, PersistenceHandle,
     PersistenceMutationResultV1, PersistenceQueryResultV1, RecoveryStatusV1, SaveRecordV1,
     StoreMonthRunBoundaryAcceptedV1, StoreMonthRunBoundaryCommandV1,
+    worker::PersistenceOperationContext,
 };
 
 pub(crate) type ManagedPersistence = Arc<PersistenceHandle>;
@@ -162,8 +162,8 @@ pub(super) async fn run_blocking_observed<T: Send + 'static>(
         Arc<PersistenceHandle>,
         PersistenceOperationContext,
     ) -> Result<T, PersistenceError>
-        + Send
-        + 'static,
+    + Send
+    + 'static,
 ) -> Result<T, PersistenceError> {
     let started = Instant::now();
     let operation_context = handle.begin_operation();

@@ -307,7 +307,10 @@ impl PersistenceHandle {
         operation: PersistenceOperationContext,
     ) -> Result<MutationOutcome<BeginPersistedMonthRunAcceptedV1>, PersistenceError> {
         let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::BeginMonthRun { command, response }, operation)?;
+        self.send(
+            DatabaseCommand::BeginMonthRun { command, response },
+            operation,
+        )?;
         receive(receiver)
     }
 
@@ -361,7 +364,10 @@ impl PersistenceHandle {
         operation: PersistenceOperationContext,
     ) -> Result<MutationOutcome<StoreMonthRunBoundaryAcceptedV1>, PersistenceError> {
         let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::StoreBoundary { command, response }, operation)?;
+        self.send(
+            DatabaseCommand::StoreBoundary { command, response },
+            operation,
+        )?;
         receive(receiver)
     }
 
@@ -378,7 +384,10 @@ impl PersistenceHandle {
         operation: PersistenceOperationContext,
     ) -> Result<MutationOutcome<CommitPersistedMonthRunAcceptedV1>, PersistenceError> {
         let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::CommitMonthRun { command, response }, operation)?;
+        self.send(
+            DatabaseCommand::CommitMonthRun { command, response },
+            operation,
+        )?;
         receive(receiver)
     }
 
@@ -395,7 +404,10 @@ impl PersistenceHandle {
         operation: PersistenceOperationContext,
     ) -> Result<MutationOutcome<BackupMetadataV1>, PersistenceError> {
         let (response, receiver) = response_channel();
-        self.send(DatabaseCommand::CreateBackup { command, response }, operation)?;
+        self.send(
+            DatabaseCommand::CreateBackup { command, response },
+            operation,
+        )?;
         receive(receiver)
     }
 

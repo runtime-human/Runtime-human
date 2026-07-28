@@ -6,9 +6,7 @@ use crate::desktop_performance::{
     DesktopPerformanceEventName, DesktopPerformanceOperationCategory, DesktopPerformanceRecorder,
 };
 
-use super::{
-    commands::run_blocking_observed, PersistenceError, PersistenceHandle,
-};
+use super::{PersistenceError, PersistenceHandle, commands::run_blocking_observed};
 
 #[test]
 fn tauri_dispatch_queue_and_database_spans_share_one_operation_id() {
