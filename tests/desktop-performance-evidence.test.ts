@@ -68,13 +68,19 @@ function rustMark(name: string, atMicros: number) {
   };
 }
 
-function rustDuration(name: string, category: string, atMicros: number, durationMicros: number) {
+function rustDuration(
+  name: string,
+  category: string,
+  atMicros: number,
+  durationMicros: number,
+  operationId = 1,
+) {
   return {
     name,
     atMicros,
     durationMicros,
     category,
-    operationId: 1,
+    operationId,
     queueDepth: name === "persistenceQueueWait" ? 1 : null,
   };
 }
@@ -85,6 +91,30 @@ function browserMark(name: string, startMicros: number) {
 
 function browserMeasure(name: string, startMicros: number, durationMicros: number) {
   return { name, entryType: "measure", startMicros, durationMicros };
+}
+
+type MetricSummary = Readonly<{
+  name: string;
+  unit: "microseconds";
+  count: number;
+  min: number;
+  p50: number;
+  p95: number;
+  p99: number;
+  max: number;
+  budget: Readonly<{
+    status: "within-target" | "warning" | "unbudgeted";
+    p50MaximumMicros: number | null;
+    p95MaximumMicros: number | null;
+    p99MaximumMicros: number | null;
+  }>;
+}>;
+
+function metric(report: ReturnType<typeof createDesktopEvidenceReport>, name: string): MetricSummary {
+  const group = report.groups[0] as { metrics: readonly MetricSummary[] } | undefined;
+  const found = group?.metrics.find((candidate) => candidate.name === name);
+  if (found === undefined) throw new Error(`Missing metric ${name}`);
+  return found;
 }
 
 describe("desktop performance evidence", () => {
@@ -111,6 +141,36 @@ describe("desktop performance evidence", () => {
     ).toThrow(/unsupported/u);
   });
 
+  it("rejects Rust and browser entries with the wrong semantic shape", () => {
+    const invalidStartupSpan = capture(0, {
+      rustSnapshot: {
+        schemaVersion: "runtime-human-desktop-performance-snapshot-v1",
+        events: [{ ...rustMark("processEntry", 0), durationMicros: 1 }],
+        droppedEvents: 0,
+      },
+    });
+    expect(() => parseDesktopEvidenceCapture(invalidStartupSpan)).toThrow(/startup mark/u);
+
+    const invalidQueueMark = capture(0, {
+      rustSnapshot: {
+        schemaVersion: "runtime-human-desktop-performance-snapshot-v1",
+        events: [rustMark("persistenceQueueWait", 0)],
+        droppedEvents: 0,
+      },
+    });
+    expect(() => parseDesktopEvidenceCapture(invalidQueueMark)).toThrow(/operation span/u);
+
+    const invalidRendererMeasure = capture(0, {
+      browserEntries: [browserMeasure("app.renderer_bootstrap", 0, 1)],
+    });
+    expect(() => parseDesktopEvidenceCapture(invalidRendererMeasure)).toThrow(/browser mark/u);
+
+    const invalidMonthMark = capture(0, {
+      browserEntries: [browserMark("month.load", 0)],
+    });
+    expect(() => parseDesktopEvidenceCapture(invalidMonthMark)).toThrow(/browser measure/u);
+  });
+
   it("uses nearest-rank percentiles", () => {
     expect(nearestRank([40, 10, 30, 20], 0.5)).toBe(20);
     expect(nearestRank([40, 10, 30, 20], 0.95)).toBe(40);
@@ -128,12 +188,11 @@ describe("desktop performance evidence", () => {
 
     const group = report.groups[0] as {
       sampleCount: number;
-      metrics: readonly Readonly<Record<string, unknown>>[];
       missingMetrics: readonly unknown[];
     };
     expect(group.sampleCount).toBe(3);
     expect(group.missingMetrics).toEqual([]);
-    expect(group.metrics).toContainEqual({
+    expect(metric(report, "browser.renderer_to_first_meaningful_paint")).toEqual({
       name: "browser.renderer_to_first_meaningful_paint",
       unit: "microseconds",
       count: 3,
@@ -142,7 +201,75 @@ describe("desktop performance evidence", () => {
       p95: 6_002,
       p99: 6_002,
       max: 6_002,
+      budget: {
+        status: "unbudgeted",
+        p50MaximumMicros: null,
+        p95MaximumMicros: null,
+        p99MaximumMicros: null,
+      },
     });
+  });
+
+  it("preserves every repeated Rust operation span inside one capture", () => {
+    const base = capture(0) as {
+      rustSnapshot: { schemaVersion: string; events: unknown[]; droppedEvents: number };
+    };
+    const report = createDesktopEvidenceReport([
+      {
+        ...base,
+        rustSnapshot: {
+          ...base.rustSnapshot,
+          events: [
+            ...base.rustSnapshot.events,
+            rustDuration("persistenceQueueWait", "query", 1_300, 70, 2),
+            rustDuration("persistenceDatabaseOperation", "query", 1_400, 500, 2),
+          ],
+        },
+      },
+    ]);
+
+    expect(metric(report, "rust.queue_wait.query")).toEqual({
+      name: "rust.queue_wait.query",
+      unit: "microseconds",
+      count: 2,
+      min: 50,
+      p50: 50,
+      p95: 70,
+      p99: 70,
+      max: 70,
+      budget: {
+        status: "within-target",
+        p50MaximumMicros: null,
+        p95MaximumMicros: 5_000,
+        p99MaximumMicros: 25_000,
+      },
+    });
+    expect(metric(report, "rust.database_operation.query").count).toBe(2);
+  });
+
+  it("classifies startup targets as warning-only without rejecting the report", () => {
+    const report = createDesktopEvidenceReport([
+      capture(0, {
+        externalDurationsMicros: {
+          processToShellFmpMicros: 3_000_000,
+          processToMainWindowObservedMicros: 10_000,
+        },
+      }),
+    ]);
+
+    expect(metric(report, "external.processToShellFmpMicros").budget).toEqual({
+      status: "warning",
+      p50MaximumMicros: 1_200_000,
+      p95MaximumMicros: 2_500_000,
+      p99MaximumMicros: null,
+    });
+    expect(report.measurementCount).toBe(1);
+  });
+
+  it("rejects duplicate capture identities that would bias percentiles", () => {
+    expect(() => createDesktopEvidenceReport([capture(0), capture(0)])).toThrow(
+      /duplicate capture identity/u,
+    );
   });
 
   it("does not mix commits or host profiles", () => {
