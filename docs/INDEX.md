@@ -23,7 +23,7 @@ Research не становится каноном без ADR/spec synchronizatio
 
 - [EXECUTION-STATUS.jsonc](EXECUTION-STATUS.jsonc) — главный текущий execution ledger: завершённые milestones, активная фаза, verification gate и следующий constraint.
 - [RUST-01B production logging](plans/RUST-01B-PRODUCTION-LOGGING-IMPLEMENTATION-PLAN.md) / [issue #57](https://github.com/MrFr3di/Runtime-human/issues/57) — завершён: bounded JSONL sink, closed redaction, rotation, dropped-line status и lifecycle flush.
-- [PERF-02A startup/IPC/queue timeline](https://github.com/MrFr3di/Runtime-human/issues/51) — Rust startup, read-only snapshot, queue/SQLite spans, Tauri linkage и renderer/FMP завершены; остаётся opt-in Windows evidence collector и одна доказанная рекомендация.
+- [PERF-02A startup/IPC/queue timeline](https://github.com/MrFr3di/Runtime-human/issues/51) — recorder, snapshot, queue/SQLite spans, Tauri linkage, renderer/FMP и E1 capture/report contract завершены; активный срез — isolated Windows capture harness, затем real evidence и одна рекомендация.
 - [RUST-01C FIFO shutdown](https://github.com/MrFr3di/Runtime-human/issues/58) — отдельный следующий Rust-кандидат, который не смешивается с измерительным baseline до PERF-02A evidence.
 - [UI roadmap](https://github.com/MrFr3di/Runtime-human/issues/37) — UI-02 завершён; Skills, Relationships, Chronology и visual quality остаются отдельными последующими срезами.
 - [PERF master track](https://github.com/MrFr3di/Runtime-human/issues/24) → [product-facing baseline](https://github.com/MrFr3di/Runtime-human/issues/39) → PERF-02A → one measured optimization.
