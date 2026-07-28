@@ -96,6 +96,10 @@ Synchronize `docs/EXECUTION-STATUS.jsonc` with merged PR #48:
 - pass docs and full foundation gates on one unchanged head;
 - close issue #50 only after merge.
 
+## Closure evidence
+
+The migration classifies completed implementation plans, accepted design specifications and explicitly superseded execution documents without deleting historical material or weakening the closed status policy.
+
 ## Explicit exclusions
 
 - runtime, gameplay, persistence or content changes;
