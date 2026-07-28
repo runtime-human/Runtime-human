@@ -21,12 +21,7 @@ export type DesktopEvidenceHost = Readonly<{
   cpuModel: string;
 }>;
 
-export type DesktopRustCategory =
-  | "query"
-  | "mutation"
-  | "backup"
-  | "recovery"
-  | "shutdown";
+export type DesktopRustCategory = "query" | "mutation" | "backup" | "recovery" | "shutdown";
 
 export type DesktopRustMarkEvent = Readonly<{
   name:

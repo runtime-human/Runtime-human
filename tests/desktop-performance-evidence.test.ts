@@ -110,7 +110,10 @@ type MetricSummary = Readonly<{
   }>;
 }>;
 
-function metric(report: ReturnType<typeof createDesktopEvidenceReport>, name: string): MetricSummary {
+function metric(
+  report: ReturnType<typeof createDesktopEvidenceReport>,
+  name: string,
+): MetricSummary {
   const group = report.groups[0] as { metrics: readonly MetricSummary[] } | undefined;
   const found = group?.metrics.find((candidate) => candidate.name === name);
   if (found === undefined) throw new Error(`Missing metric ${name}`);

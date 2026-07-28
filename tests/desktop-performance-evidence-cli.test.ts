@@ -111,11 +111,7 @@ describe("desktop performance evidence CLI", () => {
     const log = vi.fn();
 
     const report = await runDesktopEvidenceCli(
-      [
-        `--input=${firstInput}`,
-        `--input=${secondInput}`,
-        `--output=${output}`,
-      ],
+      [`--input=${firstInput}`, `--input=${secondInput}`, `--output=${output}`],
       log,
     );
 

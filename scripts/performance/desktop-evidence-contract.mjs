@@ -523,7 +523,9 @@ function parseRustEvent(value, label) {
   }
 
   if (event.durationMicros === null || event.category === null || event.operationId === null) {
-    throw new TypeError(`${label} must be an operation span with duration, category and operationId`);
+    throw new TypeError(
+      `${label} must be an operation span with duration, category and operationId`,
+    );
   }
   const durationMicros = requireSafeInteger(event.durationMicros, `${label}.durationMicros`, 0);
   const category = requireClosedString(event.category, RUST_CATEGORIES, `${label}.category`);

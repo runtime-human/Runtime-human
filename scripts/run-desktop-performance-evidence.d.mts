@@ -5,9 +5,7 @@ export type DesktopEvidenceCliOptions = Readonly<{
   output: string;
 }>;
 
-export function parseDesktopEvidenceArguments(
-  args: readonly string[],
-): DesktopEvidenceCliOptions;
+export function parseDesktopEvidenceArguments(args: readonly string[]): DesktopEvidenceCliOptions;
 
 export function runDesktopEvidenceCli(
   args: readonly string[],
