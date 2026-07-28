@@ -12,6 +12,7 @@ const GOLDEN_PATH = join(
   "january-1990-bounded-trace-v1.json",
 );
 
+// This deterministic corpus executes 64 seeds × 12 answer profiles on the shared Windows runner.
 const BALANCE_TRACE_TIMEOUT_MS = 15_000;
 
 describe("January 1990 bounded balance trace", () => {
