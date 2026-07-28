@@ -12,6 +12,7 @@ import {
 } from "@runtime-human/game-schema";
 
 import { JanuaryRuntimeScreen } from "../apps/desktop/src/january/JanuaryRuntimeScreen";
+import { createJanuary1990ResultFixture } from "../apps/desktop/src/january/january-result.fixture";
 
 const saveId = parseSaveId("screen-january-save");
 const runId = parseMonthRunId("screen-january-run");
@@ -85,14 +86,7 @@ describe("January 1990 runtime screen", () => {
           runId,
           saveRevision: parseSaveRevision(1),
           checkpointHash,
-          result: {
-            schemaVersion: "january-1990-result-v1",
-            month: "1990-01",
-            programmingOutcome: {
-              schemaVersion: "january-1990-programming-outcome-v1",
-              qualityScores: { clarity: 8, correctness: 10, reliability: 7 },
-            },
-          },
+          result: createJanuary1990ResultFixture(),
         }}
       />,
     );

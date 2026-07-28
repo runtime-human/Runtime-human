@@ -9,6 +9,7 @@ import {
   parseSaveRevision,
 } from "@runtime-human/game-schema";
 
+import { createJanuary1990ResultFixture } from "../apps/desktop/src/january/january-result.fixture";
 import { buildJanuaryScreenModel } from "../apps/desktop/src/january/january-screen-model";
 
 const saveId = parseSaveId("save-january-screen-model");
@@ -70,16 +71,7 @@ describe("January 1990 desktop screen model", () => {
       runId,
       saveRevision: parseSaveRevision(1),
       checkpointHash,
-      result: {
-        schemaVersion: "january-1990-result-v1",
-        month: "1990-01",
-        projectId: "core.project-archetype.personal-utility",
-        outcomeEventId: "core.event.program-runs",
-        programmingOutcome: {
-          schemaVersion: "january-1990-programming-outcome-v1",
-          qualityScores: { clarity: 8, correctness: 10, reliability: 7 },
-        },
-      },
+      result: createJanuary1990ResultFixture(),
     });
     expect(committed).toMatchObject({
       title: "Первая программа готова",

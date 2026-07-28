@@ -5,7 +5,7 @@
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "mainHeadAtCurrentSliceStart": "e1f225063fc9c097cf8c4f65463b521a029acbac",
+  "mainHeadAtCurrentSliceStart": "332bbe0597129aa28725095a22875250daedd657",
   "currentPhase": "career-overview-projection",
   "milestones": [
     {
@@ -457,6 +457,46 @@
       "commit": "e1f225063fc9c097cf8c4f65463b521a029acbac"
     },
     {
+      "id": "career-overview-projection",
+      "status": "implementation-complete",
+      "issue": 46,
+      "pullRequest": 48,
+      "branch": "agent/ui-02c-career-overview",
+      "scope": [
+        "strict-january-result-summary",
+        "shared-result-parser",
+        "pure-career-overview-projection",
+        "authoritative-overview-screen",
+        "state-specific-overview-storybook"
+      ],
+      "exclusions": [
+        "new-persistence-reads",
+        "second-january-controller",
+        "salary-xp-streak-productivity",
+        "multi-month-chronology",
+        "npc-implementation",
+        "performance-optimization"
+      ],
+      "evidence": {
+        "additionalPersistenceReads": 0,
+        "overviewReadsRawAuthoritativeJson": false,
+        "januarySessionKindsMapped": 9,
+        "activeProgressValues": [
+          28,
+          52,
+          76
+        ],
+        "qualityScoreMaximums": {
+          "clarity": 10,
+          "correctness": 11,
+          "reliability": 9
+        },
+        "overviewStoryStates": 9,
+        "januaryControllerLifecycles": 1,
+        "placeholderRemoved": true
+      }
+    },
+    {
       "id": "npc-foundation",
       "status": "planned-after-product-facing-performance-baselines",
       "scope": [
@@ -484,8 +524,8 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "complete-pr-45",
-    "currentConstraint": "next-delivery-ui-02c-issue-46-career-overview-projection",
+    "qualityGate": "pending-pr-48-final-head",
+    "currentConstraint": "ui-02c-implementation-complete-permanent-gates-and-review-pending",
     "currentPullRequestMayMerge": false
   }
 }

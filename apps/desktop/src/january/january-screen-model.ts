@@ -1,4 +1,8 @@
-import type { January1990RuntimeView } from "@runtime-human/game-application";
+import {
+  parseJanuary1990ResultSummary,
+  type January1990QualityScores,
+  type January1990RuntimeView,
+} from "@runtime-human/game-application";
 
 import type { JanuarySessionChoice, JanuarySessionView } from "./january-session-controller";
 
@@ -13,11 +17,7 @@ export type JanuaryScreenAction = Readonly<{
   label: string;
 }>;
 
-export type JanuaryQualityScores = Readonly<{
-  clarity: number;
-  correctness: number;
-  reliability: number;
-}>;
+export type JanuaryQualityScores = January1990QualityScores;
 
 export type JanuaryScreenModel = Readonly<{
   eyebrow: string;
@@ -189,27 +189,12 @@ function model(
 function readQualityScores(
   view: Extract<January1990RuntimeView, { kind: "committed" }>,
 ): JanuaryQualityScores | null {
-  const result = asRecord(view.result);
-  const programmingOutcome = asRecord(result?.programmingOutcome);
-  const scores = asRecord(programmingOutcome?.qualityScores);
-  if (scores === null) return null;
-  const clarity = score(scores.clarity);
-  const correctness = score(scores.correctness);
-  const reliability = score(scores.reliability);
-  if (clarity === null || correctness === null || reliability === null) return null;
-  return Object.freeze({ clarity, correctness, reliability });
-}
-
-function asRecord(value: unknown): Readonly<Record<string, unknown>> | null {
-  return typeof value === "object" && value !== null && !Array.isArray(value)
-    ? (value as Readonly<Record<string, unknown>>)
-    : null;
-}
-
-function score(value: unknown): number | null {
-  return Number.isSafeInteger(value) && (value as number) >= 0 && (value as number) <= 100
-    ? (value as number)
-    : null;
+  try {
+    return parseJanuary1990ResultSummary(view.result).qualityScores;
+  } catch (error) {
+    if (!(error instanceof TypeError)) throw error;
+    return null;
+  }
 }
 
 function blockedTitle(reason: Extract<January1990RuntimeView, { kind: "blocked" }>["reason"]) {
