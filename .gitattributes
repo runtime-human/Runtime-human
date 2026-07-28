@@ -1,2 +1,5 @@
-# Keep deterministic text fixtures byte-identical on every checkout.
-*.txt text eol=lf
+# These files are canonical byte-golden artifacts, not line-ending-normalized prose.
+tests/fixtures/content-compiler/expected/manifest.json.txt -text
+tests/fixtures/content-compiler/expected/chunks/1980s/programming.json.txt -text
+tests/fixtures/content-compiler/expected/chunks/1990s/programming.json.txt -text
+tests/fixtures/content-compiler/expected/chunks/2000s/ecosystem.json.txt -text
