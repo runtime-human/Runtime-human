@@ -1,0 +1,226 @@
+name: perf-02a-tauri-green
+
+on:
+  push:
+    branches:
+      - agent/perf-02a-tauri-boundary
+    paths:
+      - ".github/workflows/perf-02a-tauri-green.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  implement:
+    runs-on: self-hosted
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          clean: true
+          persist-credentials: true
+          ref: agent/perf-02a-tauri-boundary
+          show-progress: false
+      - name: Add caller-supplied operation IDs
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          @'
+          import fs from "node:fs";
+
+          const path = "apps/desktop/src-tauri/src/persistence/worker.rs";
+          let source = fs.readFileSync(path, "utf8");
+          const start = source.indexOf("    pub(crate) fn create_save(");
+          const end = source.indexOf("    pub(crate) fn shutdown(", start);
+          if (start < 0 || end < 0) throw new Error("persistence method seam changed");
+
+          const replacement = `    pub(crate) fn create_save(
+              &self,
+              command: CreateSaveCommandV1,
+          ) -> Result<MutationOutcome<CreateSaveAcceptedV1>, PersistenceError> {
+              let operation_id = self.inner.performance.next_operation_id();
+              self.create_save_with_operation_id(command, operation_id)
+          }
+
+          pub(crate) fn create_save_with_operation_id(
+              &self,
+              command: CreateSaveCommandV1,
+              operation_id: u64,
+          ) -> Result<MutationOutcome<CreateSaveAcceptedV1>, PersistenceError> {
+              let (response, receiver) = response_channel();
+              self.send(DatabaseCommand::CreateSave { command, response }, operation_id)?;
+              receive(receiver)
+          }
+
+          pub(crate) fn load_save(
+              &self,
+              query: LoadSaveQueryV1,
+          ) -> Result<Option<SaveRecordV1>, PersistenceError> {
+              let operation_id = self.inner.performance.next_operation_id();
+              self.load_save_with_operation_id(query, operation_id)
+          }
+
+          pub(crate) fn load_save_with_operation_id(
+              &self,
+              query: LoadSaveQueryV1,
+              operation_id: u64,
+          ) -> Result<Option<SaveRecordV1>, PersistenceError> {
+              let (response, receiver) = response_channel();
+              self.send(DatabaseCommand::LoadSave { query, response }, operation_id)?;
+              receive(receiver)
+          }
+
+          pub(crate) fn begin_month_run(
+              &self,
+              command: BeginPersistedMonthRunCommandV1,
+          ) -> Result<MutationOutcome<BeginPersistedMonthRunAcceptedV1>, PersistenceError> {
+              let operation_id = self.inner.performance.next_operation_id();
+              self.begin_month_run_with_operation_id(command, operation_id)
+          }
+
+          pub(crate) fn begin_month_run_with_operation_id(
+              &self,
+              command: BeginPersistedMonthRunCommandV1,
+              operation_id: u64,
+          ) -> Result<MutationOutcome<BeginPersistedMonthRunAcceptedV1>, PersistenceError> {
+              let (response, receiver) = response_channel();
+              self.send(DatabaseCommand::BeginMonthRun { command, response }, operation_id)?;
+              receive(receiver)
+          }
+
+          pub(crate) fn load_month_run(
+              &self,
+              query: LoadMonthRunQueryV1,
+          ) -> Result<Option<MonthRunRecordV1>, PersistenceError> {
+              let operation_id = self.inner.performance.next_operation_id();
+              self.load_month_run_with_operation_id(query, operation_id)
+          }
+
+          pub(crate) fn load_month_run_with_operation_id(
+              &self,
+              query: LoadMonthRunQueryV1,
+              operation_id: u64,
+          ) -> Result<Option<MonthRunRecordV1>, PersistenceError> {
+              let (response, receiver) = response_channel();
+              self.send(DatabaseCommand::LoadMonthRun { query, response }, operation_id)?;
+              receive(receiver)
+          }
+
+          pub(crate) fn load_active_month_run(
+              &self,
+              query: LoadActiveMonthRunQueryV1,
+          ) -> Result<Option<MonthRunRecordV1>, PersistenceError> {
+              let operation_id = self.inner.performance.next_operation_id();
+              self.load_active_month_run_with_operation_id(query, operation_id)
+          }
+
+          pub(crate) fn load_active_month_run_with_operation_id(
+              &self,
+              query: LoadActiveMonthRunQueryV1,
+              operation_id: u64,
+          ) -> Result<Option<MonthRunRecordV1>, PersistenceError> {
+              let (response, receiver) = response_channel();
+              self.send(
+                  DatabaseCommand::LoadActiveMonthRun { query, response },
+                  operation_id,
+              )?;
+              receive(receiver)
+          }
+
+          pub(crate) fn store_boundary(
+              &self,
+              command: StoreMonthRunBoundaryCommandV1,
+          ) -> Result<MutationOutcome<StoreMonthRunBoundaryAcceptedV1>, PersistenceError> {
+              let operation_id = self.inner.performance.next_operation_id();
+              self.store_boundary_with_operation_id(command, operation_id)
+          }
+
+          pub(crate) fn store_boundary_with_operation_id(
+              &self,
+              command: StoreMonthRunBoundaryCommandV1,
+              operation_id: u64,
+          ) -> Result<MutationOutcome<StoreMonthRunBoundaryAcceptedV1>, PersistenceError> {
+              let (response, receiver) = response_channel();
+              self.send(DatabaseCommand::StoreBoundary { command, response }, operation_id)?;
+              receive(receiver)
+          }
+
+          pub(crate) fn commit_month_run(
+              &self,
+              command: CommitPersistedMonthRunCommandV1,
+          ) -> Result<MutationOutcome<CommitPersistedMonthRunAcceptedV1>, PersistenceError> {
+              let operation_id = self.inner.performance.next_operation_id();
+              self.commit_month_run_with_operation_id(command, operation_id)
+          }
+
+          pub(crate) fn commit_month_run_with_operation_id(
+              &self,
+              command: CommitPersistedMonthRunCommandV1,
+              operation_id: u64,
+          ) -> Result<MutationOutcome<CommitPersistedMonthRunAcceptedV1>, PersistenceError> {
+              let (response, receiver) = response_channel();
+              self.send(DatabaseCommand::CommitMonthRun { command, response }, operation_id)?;
+              receive(receiver)
+          }
+
+          pub(crate) fn create_backup(
+              &self,
+              command: CreateBackupCommandV1,
+          ) -> Result<MutationOutcome<BackupMetadataV1>, PersistenceError> {
+              let operation_id = self.inner.performance.next_operation_id();
+              self.create_backup_with_operation_id(command, operation_id)
+          }
+
+          pub(crate) fn create_backup_with_operation_id(
+              &self,
+              command: CreateBackupCommandV1,
+              operation_id: u64,
+          ) -> Result<MutationOutcome<BackupMetadataV1>, PersistenceError> {
+              let (response, receiver) = response_channel();
+              self.send(DatabaseCommand::CreateBackup { command, response }, operation_id)?;
+              receive(receiver)
+          }
+
+          pub(crate) fn recovery_status(&self) -> Result<RecoveryStatusV1, PersistenceError> {
+              let operation_id = self.inner.performance.next_operation_id();
+              self.recovery_status_with_operation_id(operation_id)
+          }
+
+          pub(crate) fn recovery_status_with_operation_id(
+              &self,
+              operation_id: u64,
+          ) -> Result<RecoveryStatusV1, PersistenceError> {
+              let (response, receiver) = response_channel();
+              self.send(DatabaseCommand::RecoveryStatus { response }, operation_id)?;
+              receive(receiver)
+          }
+
+          `;
+          source = source.slice(0, start) + replacement + source.slice(end);
+
+          const oldSignature = "    fn send(&self, command: DatabaseCommand) -> Result<(), PersistenceError> {";
+          const newSignature = `    fn send(
+              &self,
+              command: DatabaseCommand,
+              operation_id: u64,
+          ) -> Result<(), PersistenceError> {`;
+          if (!source.includes(oldSignature)) throw new Error("send signature changed");
+          source = source.replace(oldSignature, newSignature);
+          const allocated = "        let operation_id = self.inner.performance.next_operation_id();\n";
+          const allocationIndex = source.indexOf(allocated, source.indexOf(newSignature));
+          if (allocationIndex < 0) throw new Error("send operation allocation changed");
+          source = source.slice(0, allocationIndex) + source.slice(allocationIndex + allocated.length);
+
+          fs.writeFileSync(path, source, "utf8");
+          '@ | node --input-type=module -
+
+          rustup toolchain install 1.97.1 --profile minimal --component rustfmt
+          rustup default 1.97.1
+          cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all
+          git rm .github/workflows/perf-02a-tauri-green.yml
+          git add apps/desktop/src-tauri/src
+          git diff --cached --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "feat(perf): correlate Tauri and persistence spans"
+          git push origin HEAD:agent/perf-02a-tauri-boundary
