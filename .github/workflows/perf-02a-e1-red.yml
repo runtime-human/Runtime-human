@@ -12,11 +12,11 @@ permissions:
 
 defaults:
   run:
-    shell: pwsh
+    shell: bash
 
 jobs:
   red:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
@@ -29,7 +29,6 @@ jobs:
           node-version: "24"
       - name: Activate pnpm
         run: |
-          $ErrorActionPreference = "Stop"
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
       - name: Install dependencies
