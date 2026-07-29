@@ -1,4 +1,4 @@
-import { resolve } from "node:path";
+import { isAbsolute, relative, resolve, sep } from "node:path";
 
 export type StartupCaptureOptions = Readonly<{
   binaryPath: string;
@@ -57,41 +57,54 @@ export function parseStartupCaptureArguments(
   }
 
   const sampleIndex = parseSampleIndex(requireOption(values, "--sample-index"));
+  const processClass = parseClosed(
+    requireOption(values, "--process"),
+    PROCESS_CLASSES,
+    "--process",
+  );
+  const osCache = parseClosed(
+    requireOption(values, "--os-cache"),
+    CACHE_CLASSES,
+    "--os-cache",
+  );
+  const database = parseClosed(
+    requireOption(values, "--database"),
+    DATABASE_CLASSES,
+    "--database",
+  );
+  const sampleRole = parseClosed(
+    requireOption(values, "--sample-role"),
+    SAMPLE_ROLES,
+    "--sample-role",
+  );
   const binaryPath = resolve(
     repositoryRoot,
     values.get("--binary") ??
       "apps/desktop/src-tauri/target/release/runtime-human-desktop.exe",
   );
+  const rawOutputRoot = resolve(repositoryRoot, "artifacts/performance/raw");
+  const defaultOutputName = [
+    "startup-shell-fmp",
+    processClass,
+    osCache,
+    database,
+    sampleRole,
+    `${sampleIndex}.json`,
+  ].join("-");
   const outputPath = resolve(
     repositoryRoot,
-    values.get("--output") ??
-      `artifacts/performance/raw/startup-shell-fmp-${sampleIndex}.json`,
+    values.get("--output") ?? `artifacts/performance/raw/${defaultOutputName}`,
   );
+  requireRawJsonOutputPath(outputPath, rawOutputRoot);
 
   return Object.freeze({
     binaryPath,
     commit: parseCommit(requireOption(values, "--commit")),
     outputPath,
-    process: parseClosed(
-      requireOption(values, "--process"),
-      PROCESS_CLASSES,
-      "--process",
-    ),
-    osCache: parseClosed(
-      requireOption(values, "--os-cache"),
-      CACHE_CLASSES,
-      "--os-cache",
-    ),
-    database: parseClosed(
-      requireOption(values, "--database"),
-      DATABASE_CLASSES,
-      "--database",
-    ),
-    sampleRole: parseClosed(
-      requireOption(values, "--sample-role"),
-      SAMPLE_ROLES,
-      "--sample-role",
-    ),
+    process: processClass,
+    osCache,
+    database,
+    sampleRole,
     sampleIndex,
   });
 }
@@ -124,4 +137,15 @@ function parseClosed<T extends string>(
 ): T {
   if (!allowed.has(value as T)) throw new Error(`${name} has an unsupported value`);
   return value as T;
+}
+
+function requireRawJsonOutputPath(outputPath: string, rawOutputRoot: string): void {
+  const relativePath = relative(rawOutputRoot, outputPath);
+  const outsideRoot =
+    relativePath === ".." ||
+    relativePath.startsWith(`..${sep}`) ||
+    isAbsolute(relativePath);
+  if (outsideRoot || relativePath.length === 0 || !relativePath.endsWith(".json")) {
+    throw new Error("--output must be a .json file inside artifacts/performance/raw");
+  }
 }
