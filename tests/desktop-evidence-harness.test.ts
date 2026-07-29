@@ -32,7 +32,7 @@ function validCapture() {
     },
     scenario: "startup-shell-fmp",
     classification: {
-      process: "warm-process",
+      process: "cold-process",
       osCache: "warm-os-cache",
       database: "new-database",
       sampleRole: "warmup",
@@ -80,7 +80,7 @@ describe("desktop evidence harness", () => {
     const options = parseStartupCaptureArguments(
       [
         `--commit=${COMMIT}`,
-        "--process=warm-process",
+        "--process=cold-process",
         "--os-cache=warm-os-cache",
         "--database=new-database",
         "--sample-role=warmup",
@@ -97,9 +97,9 @@ describe("desktop evidence harness", () => {
       commit: COMMIT,
       outputPath: resolve(
         repositoryRoot,
-        "artifacts/performance/raw/startup-shell-fmp-warm-process-warm-os-cache-new-database-warmup-7.json",
+        "artifacts/performance/raw/startup-shell-fmp-cold-process-warm-os-cache-new-database-warmup-7.json",
       ),
-      process: "warm-process",
+      process: "cold-process",
       osCache: "warm-os-cache",
       database: "new-database",
       sampleRole: "warmup",
@@ -107,7 +107,7 @@ describe("desktop evidence harness", () => {
     });
   });
 
-  it("rejects guessed, duplicate, malformed and non-raw startup options", () => {
+  it("rejects guessed, duplicate, malformed and false startup classifications", () => {
     expect(() => parseStartupCaptureArguments([`--commit=${COMMIT}`])).toThrow(
       /--sample-index is required/u,
     );
@@ -115,7 +115,7 @@ describe("desktop evidence harness", () => {
       parseStartupCaptureArguments([
         `--commit=${COMMIT}`,
         "--commit=783f54b17cd7bd4b88c5e7aac4719afa1c0dadac",
-        "--process=warm-process",
+        "--process=cold-process",
         "--os-cache=warm-os-cache",
         "--database=new-database",
         "--sample-role=warmup",
@@ -125,17 +125,30 @@ describe("desktop evidence harness", () => {
     expect(() =>
       parseStartupCaptureArguments([
         `--commit=${COMMIT}`,
-        "--process=unknown-process",
+        "--process=warm-process",
         "--os-cache=warm-os-cache",
         "--database=new-database",
         "--sample-role=warmup",
         "--sample-index=0",
       ]),
-    ).toThrow(/--process has an unsupported value/u);
+    ).toThrow(/must be cold-process/u);
     expect(() =>
       parseStartupCaptureArguments([
         `--commit=${COMMIT}`,
-        "--process=warm-process",
+        "--process=cold-process",
+        "--os-cache=warm-os-cache",
+        "--database=existing-clean-database",
+        "--sample-role=warmup",
+        "--sample-index=0",
+      ]),
+    ).toThrow(/must be new-database/u);
+  });
+
+  it("keeps output inside the ignored raw evidence directory", () => {
+    expect(() =>
+      parseStartupCaptureArguments([
+        `--commit=${COMMIT}`,
+        "--process=cold-process",
         "--os-cache=warm-os-cache",
         "--database=new-database",
         "--sample-role=warmup",
@@ -196,7 +209,7 @@ describe("desktop evidence harness", () => {
     await expect(captureRustPerformanceSnapshot(browser)).resolves.toEqual(snapshot);
   });
 
-  it("validates before writing a raw capture", async () => {
+  it("validates and writes every raw capture exactly once", async () => {
     const directory = await mkdtemp(join(tmpdir(), "runtime-human-evidence-harness-"));
     try {
       const outputPath = join(directory, "raw", "capture.json");
@@ -210,6 +223,9 @@ describe("desktop evidence harness", () => {
       expect(disk).toMatchObject({
         schemaVersion: "runtime-human-desktop-performance-capture-v1",
         sampleIndex: 0,
+      });
+      await expect(writeValidatedCapture(outputPath, validCapture())).rejects.toMatchObject({
+        code: "EEXIST",
       });
 
       await expect(
