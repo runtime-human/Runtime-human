@@ -8,6 +8,10 @@ on:
       - ".github/workflows/perf-02a-e2-materialize.yml"
   workflow_dispatch:
 
+concurrency:
+  group: perf-02a-e2-materialize
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
