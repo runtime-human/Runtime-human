@@ -23,11 +23,14 @@ fn main() {
     let app = tauri::Builder::default()
         .setup(move |app| {
             setup_performance.record_once(DesktopPerformanceEventName::TauriSetupStart);
-            let diagnostics = diagnostics::RuntimeDiagnostics::initialize(app.handle());
+            let data_dir = resolve_desktop_data_directory(app)?;
+            let diagnostics = diagnostics::RuntimeDiagnostics::initialize(
+                app.handle(),
+                diagnostics_log_directory(&data_dir),
+            );
             app.manage(diagnostics);
             diagnostics::log_tauri_setup_logging_ready();
 
-            let data_dir = resolve_desktop_data_directory(app)?;
             let database_path = data_dir.join("runtime-human.sqlite3");
             let persistence = match persistence::PersistenceHandle::start_with_performance(
                 database_path,
@@ -94,5 +97,17 @@ fn resolve_desktop_data_directory<R: Runtime>(_app: &tauri::App<R>) -> Result<Pa
         _app.path()
             .app_data_dir()
             .map_err(|error| io::Error::other(error.to_string()))
+    }
+}
+
+fn diagnostics_log_directory(_data_dir: &std::path::Path) -> Option<PathBuf> {
+    #[cfg(feature = "performance-evidence")]
+    {
+        return Some(_data_dir.join("logs"));
+    }
+
+    #[cfg(not(feature = "performance-evidence"))]
+    {
+        None
     }
 }
