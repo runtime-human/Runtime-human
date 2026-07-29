@@ -23,7 +23,7 @@ export async function captureStartupShellFmp(arguments_: readonly string[]): Pro
   try {
     const capabilities = createTauriCapabilities(options.binaryPath, {
       appArgs: [`--runtime-human-evidence-data-dir=${isolatedDataDirectory}`],
-      autoInstallTauriDriver: true,
+      autoInstallTauriDriver: false,
       driverProvider: "external",
       logLevel: "warn",
       startTimeout: 120_000,
@@ -38,6 +38,7 @@ export async function captureStartupShellFmp(arguments_: readonly string[]): Pro
     browser = await startWdioSession(capabilities, {
       rootDir: REPOSITORY_ROOT,
       autoDownloadEdgeDriver: true,
+      autoInstallTauriDriver: false,
     });
     await waitForFirstMeaningfulPaint(browser);
 
