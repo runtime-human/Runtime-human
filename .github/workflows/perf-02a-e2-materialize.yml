@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - agent/perf-02a-windows-capture-harness
-    paths:
-      - ".github/workflows/perf-02a-e2-materialize.yml"
   workflow_dispatch:
 
 concurrency:
@@ -21,6 +19,7 @@ defaults:
 
 jobs:
   materialize:
+    if: github.actor != 'github-actions[bot]'
     runs-on: self-hosted
     timeout-minutes: 45
     steps:
