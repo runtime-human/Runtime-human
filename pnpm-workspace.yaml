@@ -3,6 +3,11 @@ packages:
   - packages/*
   - tools/*
 
+# @wdio/tauri-service 1.2.0 imports installMockSyncOverride, which is exported
+# by the matching @wdio/native-utils 2.5.0 workspace release, not 2.4.0.
+overrides:
+  "@wdio/native-utils": 2.5.0
+
 allowBuilds:
   esbuild: true
   "@tauri-apps/cli": true
