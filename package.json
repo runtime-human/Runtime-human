@@ -10,6 +10,7 @@
     "evidence:january:e2": "node scripts/write-january-e2-fixtures.mjs",
     "evidence:desktop:report": "node scripts/run-desktop-performance-evidence.mjs",
     "evidence:desktop:check": "vitest run tests/desktop-performance-evidence.test.ts tests/desktop-performance-evidence-cli.test.ts tests/desktop-evidence-harness.test.ts",
+    "evidence:desktop:driver:install": "cargo install tauri-driver --version 2.0.6 --locked",
     "evidence:desktop:build": "pnpm --filter @runtime-human/desktop tauri:build:evidence",
     "evidence:desktop:capture:startup": "pnpm --filter @runtime-human/desktop-evidence capture:startup",
     "perf:january:baseline": "node scripts/run-january-performance-baseline.mjs",
