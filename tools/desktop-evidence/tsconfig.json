@@ -1,9 +1,9 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "composite": false,
-    "declaration": false,
-    "declarationMap": false,
+    "rootDir": "src",
+    "outDir": "../../.tsbuild/tools/desktop-evidence",
+    "tsBuildInfoFile": "../../.tsbuild/tools-desktop-evidence.tsbuildinfo",
     "lib": ["ES2024", "DOM"],
     "types": ["node"]
   },
