@@ -81,6 +81,15 @@ jobs:
         run: >-
           pnpm --filter @runtime-human/desktop-evidence exec node --input-type=module
           -e "await import('@wdio/tauri-service'); console.log('WDIO Tauri service import succeeded')"
+      - name: Install pinned Tauri driver
+        run: |
+          $ErrorActionPreference = "Stop"
+          pnpm evidence:desktop:driver:install
+          $version = tauri-driver --version
+          if ($version -ne "tauri-driver 2.0.6") {
+            throw "Expected tauri-driver 2.0.6, got: $version"
+          }
+          Write-Host $version
       - name: Build evidence executable
         run: pnpm evidence:desktop:build
       - name: Capture real Windows startup warmup
