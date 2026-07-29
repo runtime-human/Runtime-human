@@ -213,7 +213,6 @@ fn logging_status(active: bool, dropped_lines: u64) -> RuntimeLoggingStatusV1 {
 
 fn operation_category_name(category: DesktopPerformanceOperationCategory) -> &'static str {
     match category {
-        DesktopPerformanceOperationCategory::Startup => "startup",
         DesktopPerformanceOperationCategory::Query => "query",
         DesktopPerformanceOperationCategory::Mutation => "mutation",
         DesktopPerformanceOperationCategory::Backup => "backup",
