@@ -16,6 +16,10 @@ mod evidence;
 mod persistence;
 
 fn main() {
+    #[cfg(feature = "performance-evidence")]
+    evidence::configure_webview_data_directory()
+        .expect("failed to configure isolated evidence WebView2 data");
+
     let performance = DesktopPerformanceRecorder::default();
     performance.record_once(DesktopPerformanceEventName::ProcessEntry);
 
