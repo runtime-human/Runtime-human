@@ -4,10 +4,17 @@ on:
   push:
     branches:
       - agent/perf-02a-windows-capture-harness
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
   workflow_dispatch:
 
 concurrency:
-  group: perf-02a-e2-materialize
+  group: perf-02a-e2-materialize-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
 permissions:
@@ -19,7 +26,10 @@ defaults:
 
 jobs:
   materialize:
-    if: github.actor != 'github-actions[bot]'
+    if: >-
+      github.actor != 'github-actions[bot]' &&
+      (github.event_name != 'pull_request' ||
+       github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: self-hosted
     timeout-minutes: 45
     steps:
