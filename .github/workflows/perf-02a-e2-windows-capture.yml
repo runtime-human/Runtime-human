@@ -68,8 +68,19 @@ jobs:
           & $rustup default 1.97.1
           rustc --version
           cargo --version
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Align dependency graph
+        run: |
+          $ErrorActionPreference = "Stop"
+          pnpm install --no-frozen-lockfile --reporter=append-only
+          git add pnpm-lock.yaml
+          if (-not (git diff --cached --quiet)) {
+            git commit -m "build: align WDIO native runtime dependencies"
+            git push origin HEAD:agent/perf-02a-windows-capture-harness
+          }
+      - name: Preflight WDIO runtime exports
+        run: >-
+          pnpm --filter @runtime-human/desktop-evidence exec node --input-type=module
+          -e "await import('@wdio/tauri-service'); console.log('WDIO Tauri service import succeeded')"
       - name: Build evidence executable
         run: pnpm evidence:desktop:build
       - name: Capture real Windows startup warmup
