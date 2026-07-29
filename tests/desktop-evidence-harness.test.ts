@@ -1,4 +1,4 @@
-import { mkdtemp, readFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -75,7 +75,7 @@ function browserMark(name: string, startMicros: number) {
 }
 
 describe("desktop evidence harness", () => {
-  it("requires explicit evidence classifications and resolves default paths", () => {
+  it("requires explicit evidence classifications and resolves collision-free default paths", () => {
     const repositoryRoot = resolve("repository-root");
     const options = parseStartupCaptureArguments(
       [
@@ -97,7 +97,7 @@ describe("desktop evidence harness", () => {
       commit: COMMIT,
       outputPath: resolve(
         repositoryRoot,
-        "artifacts/performance/raw/startup-shell-fmp-7.json",
+        "artifacts/performance/raw/startup-shell-fmp-warm-process-warm-os-cache-new-database-warmup-7.json",
       ),
       process: "warm-process",
       osCache: "warm-os-cache",
@@ -107,7 +107,7 @@ describe("desktop evidence harness", () => {
     });
   });
 
-  it("rejects guessed, duplicate and malformed startup options", () => {
+  it("rejects guessed, duplicate, malformed and non-raw startup options", () => {
     expect(() => parseStartupCaptureArguments([`--commit=${COMMIT}`])).toThrow(
       /--sample-index is required/u,
     );
@@ -132,6 +132,17 @@ describe("desktop evidence harness", () => {
         "--sample-index=0",
       ]),
     ).toThrow(/--process has an unsupported value/u);
+    expect(() =>
+      parseStartupCaptureArguments([
+        `--commit=${COMMIT}`,
+        "--process=warm-process",
+        "--os-cache=warm-os-cache",
+        "--database=new-database",
+        "--sample-role=warmup",
+        "--sample-index=0",
+        "--output=package.json",
+      ]),
+    ).toThrow(/inside artifacts\/performance\/raw/u);
   });
 
   it("waits for FMP and normalizes browser timing entries", async () => {
@@ -187,24 +198,28 @@ describe("desktop evidence harness", () => {
 
   it("validates before writing a raw capture", async () => {
     const directory = await mkdtemp(join(tmpdir(), "runtime-human-evidence-harness-"));
-    const outputPath = join(directory, "raw", "capture.json");
+    try {
+      const outputPath = join(directory, "raw", "capture.json");
 
-    const written = await writeValidatedCapture(outputPath, validCapture());
-    const disk = JSON.parse(await readFile(outputPath, "utf8")) as {
-      schemaVersion: string;
-      sampleIndex: number;
-    };
-    expect(written.schemaVersion).toBe("runtime-human-desktop-performance-capture-v1");
-    expect(disk).toMatchObject({
-      schemaVersion: "runtime-human-desktop-performance-capture-v1",
-      sampleIndex: 0,
-    });
+      const written = await writeValidatedCapture(outputPath, validCapture());
+      const disk = JSON.parse(await readFile(outputPath, "utf8")) as {
+        schemaVersion: string;
+        sampleIndex: number;
+      };
+      expect(written.schemaVersion).toBe("runtime-human-desktop-performance-capture-v1");
+      expect(disk).toMatchObject({
+        schemaVersion: "runtime-human-desktop-performance-capture-v1",
+        sampleIndex: 0,
+      });
 
-    await expect(
-      writeValidatedCapture(join(directory, "invalid.json"), {
-        ...validCapture(),
-        scenario: "invented-scenario",
-      }),
-    ).rejects.toThrow(/unsupported value/u);
+      await expect(
+        writeValidatedCapture(join(directory, "invalid.json"), {
+          ...validCapture(),
+          scenario: "invented-scenario",
+        }),
+      ).rejects.toThrow(/unsupported value/u);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
   });
 });
