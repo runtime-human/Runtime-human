@@ -71,10 +71,13 @@ export async function captureStartupShellFmp(
     });
     return options.outputPath;
   } finally {
-    if (browser !== undefined) {
-      await cleanupWdioSession(browser);
+    try {
+      if (browser !== undefined) {
+        await cleanupWdioSession(browser);
+      }
+    } finally {
+      await rm(isolatedDataDirectory, { recursive: true, force: true });
     }
-    await rm(isolatedDataDirectory, { recursive: true, force: true });
   }
 }
 
