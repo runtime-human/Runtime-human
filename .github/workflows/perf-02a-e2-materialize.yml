@@ -1,0 +1,79 @@
+name: perf-02a-e2-materialize
+
+on:
+  push:
+    branches:
+      - agent/perf-02a-windows-capture-harness
+    paths:
+      - ".github/workflows/perf-02a-e2-materialize.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  materialize:
+    runs-on: self-hosted
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: agent/perf-02a-windows-capture-harness
+          fetch-depth: 0
+          clean: true
+          persist-credentials: true
+          show-progress: false
+      - name: Normalize repository
+        run: |
+          $ErrorActionPreference = "Stop"
+          git config --local core.autocrlf false
+          git config --local core.eol lf
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout-index --all --force
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          $ErrorActionPreference = "Stop"
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+          pnpm --version
+      - name: Install Rust 1.97.1
+        run: |
+          $ErrorActionPreference = "Stop"
+          rustup toolchain install 1.97.1 --profile minimal --component rustfmt,clippy
+          rustup default 1.97.1
+          rustc --version
+          cargo --version
+      - name: Materialize dependency graph
+        run: pnpm install --no-frozen-lockfile --reporter=append-only
+      - name: Format repository changes
+        run: |
+          pnpm fmt
+          cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all
+      - name: Verify E2 TypeScript contracts
+        run: |
+          pnpm lint
+          pnpm lint:type-aware
+          pnpm typecheck
+          pnpm evidence:desktop:check
+      - name: Verify default and evidence Rust builds
+        run: |
+          cargo check --locked --manifest-path apps/desktop/src-tauri/Cargo.toml
+          cargo check --locked --manifest-path apps/desktop/src-tauri/Cargo.toml --features performance-evidence
+          cargo test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml --features performance-evidence -- --nocapture --test-threads=1
+      - name: Commit materialized files
+        run: |
+          $ErrorActionPreference = "Stop"
+          Remove-Item ".github/workflows/perf-02a-e2-materialize.yml" -Force
+          git add -A
+          if (-not (git diff --cached --quiet)) {
+            git commit -m "perf: materialize Windows capture harness"
+            git push origin HEAD:agent/perf-02a-windows-capture-harness
+          }
