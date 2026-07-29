@@ -12,6 +12,9 @@ export async function writeValidatedCapture(
 ): Promise<DesktopEvidenceCapture> {
   const validated = parseDesktopEvidenceCapture(capture);
   await mkdir(dirname(outputPath), { recursive: true });
-  await writeFile(outputPath, `${JSON.stringify(validated, null, 2)}\n`, "utf8");
+  await writeFile(outputPath, `${JSON.stringify(validated, null, 2)}\n`, {
+    encoding: "utf8",
+    flag: "wx",
+  });
   return validated;
 }
