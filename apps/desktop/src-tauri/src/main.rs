@@ -81,14 +81,18 @@ fn main() {
     });
 }
 
-fn resolve_desktop_data_directory<R: Runtime>(app: &tauri::App<R>) -> Result<PathBuf, io::Error> {
+fn resolve_desktop_data_directory<R: Runtime>(_app: &tauri::App<R>) -> Result<PathBuf, io::Error> {
     #[cfg(feature = "performance-evidence")]
-    if let Some(directory) = evidence::app_data_directory_override() {
+    {
+        let directory = evidence::required_app_data_directory_override()?;
         std::fs::create_dir_all(&directory)?;
         return Ok(directory);
     }
 
-    app.path()
-        .app_data_dir()
-        .map_err(|error| io::Error::other(error.to_string()))
+    #[cfg(not(feature = "performance-evidence"))]
+    {
+        _app.path()
+            .app_data_dir()
+            .map_err(|error| io::Error::other(error.to_string()))
+    }
 }
