@@ -50,8 +50,7 @@ export async function captureBrowserEntries(
       .getEntries()
       .filter(
         (entry) =>
-          allowed.has(entry.name) &&
-          (entry.entryType === "mark" || entry.entryType === "measure"),
+          allowed.has(entry.name) && (entry.entryType === "mark" || entry.entryType === "measure"),
       )
       .map((entry) => ({
         name: entry.name,

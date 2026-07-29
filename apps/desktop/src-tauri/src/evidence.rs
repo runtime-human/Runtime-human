@@ -66,7 +66,9 @@ mod tests {
 
     #[test]
     fn rejects_missing_empty_relative_or_duplicate_evidence_directory() {
-        assert!(parse_data_directory_argument([OsString::from("runtime-human-desktop.exe")]).is_err());
+        assert!(
+            parse_data_directory_argument([OsString::from("runtime-human-desktop.exe")]).is_err()
+        );
         assert!(
             parse_data_directory_argument([
                 OsString::from("runtime-human-desktop.exe"),

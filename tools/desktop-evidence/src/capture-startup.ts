@@ -3,11 +3,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import {
-  cleanupWdioSession,
-  createTauriCapabilities,
-  startWdioSession,
-} from "@wdio/tauri-service";
+import { cleanupWdioSession, createTauriCapabilities, startWdioSession } from "@wdio/tauri-service";
 
 import { captureBrowserEntries, waitForFirstMeaningfulPaint } from "./capture-browser.js";
 import { captureWindowsHostProfile } from "./capture-host.js";
@@ -18,15 +14,11 @@ import { writeValidatedCapture } from "./write-capture.js";
 
 const REPOSITORY_ROOT = resolve(import.meta.dirname, "../../..");
 
-export async function captureStartupShellFmp(
-  arguments_: readonly string[],
-): Promise<string> {
+export async function captureStartupShellFmp(arguments_: readonly string[]): Promise<string> {
   const options = parseStartupCaptureArguments(arguments_, REPOSITORY_ROOT);
   await access(options.binaryPath);
 
-  const isolatedDataDirectory = await mkdtemp(
-    join(tmpdir(), "runtime-human-desktop-evidence-"),
-  );
+  const isolatedDataDirectory = await mkdtemp(join(tmpdir(), "runtime-human-desktop-evidence-"));
   let browser: EvidenceBrowser | undefined;
   try {
     const capabilities = createTauriCapabilities(options.binaryPath, {

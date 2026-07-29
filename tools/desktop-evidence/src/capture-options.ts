@@ -11,14 +11,8 @@ export type StartupCaptureOptions = Readonly<{
   sampleIndex: number;
 }>;
 
-const CACHE_CLASSES = new Set<StartupCaptureOptions["osCache"]>([
-  "cold-os-cache",
-  "warm-os-cache",
-]);
-const SAMPLE_ROLES = new Set<StartupCaptureOptions["sampleRole"]>([
-  "warmup",
-  "measurement",
-]);
+const CACHE_CLASSES = new Set<StartupCaptureOptions["osCache"]>(["cold-os-cache", "warm-os-cache"]);
+const SAMPLE_ROLES = new Set<StartupCaptureOptions["sampleRole"]>(["warmup", "measurement"]);
 
 export function parseStartupCaptureArguments(
   arguments_: readonly string[],
@@ -54,16 +48,8 @@ export function parseStartupCaptureArguments(
     "cold-process",
     "--process",
   );
-  const osCache = parseClosed(
-    requireOption(values, "--os-cache"),
-    CACHE_CLASSES,
-    "--os-cache",
-  );
-  const database = requireExact(
-    requireOption(values, "--database"),
-    "new-database",
-    "--database",
-  );
+  const osCache = parseClosed(requireOption(values, "--os-cache"), CACHE_CLASSES, "--os-cache");
+  const database = requireExact(requireOption(values, "--database"), "new-database", "--database");
   const sampleRole = parseClosed(
     requireOption(values, "--sample-role"),
     SAMPLE_ROLES,
@@ -71,8 +57,7 @@ export function parseStartupCaptureArguments(
   );
   const binaryPath = resolve(
     repositoryRoot,
-    values.get("--binary") ??
-      "apps/desktop/src-tauri/target/release/runtime-human-desktop.exe",
+    values.get("--binary") ?? "apps/desktop/src-tauri/target/release/runtime-human-desktop.exe",
   );
   const rawOutputRoot = resolve(repositoryRoot, "artifacts/performance/raw");
   const defaultOutputName = [
@@ -122,11 +107,7 @@ function parseSampleIndex(value: string): number {
   return parsed;
 }
 
-function parseClosed<T extends string>(
-  value: string,
-  allowed: ReadonlySet<T>,
-  name: string,
-): T {
+function parseClosed<T extends string>(value: string, allowed: ReadonlySet<T>, name: string): T {
   if (!allowed.has(value as T)) throw new Error(`${name} has an unsupported value`);
   return value as T;
 }
@@ -141,9 +122,7 @@ function requireExact<T extends string>(value: string, expected: T, name: string
 function requireRawJsonOutputPath(outputPath: string, rawOutputRoot: string): void {
   const relativePath = relative(rawOutputRoot, outputPath);
   const outsideRoot =
-    relativePath === ".." ||
-    relativePath.startsWith(`..${sep}`) ||
-    isAbsolute(relativePath);
+    relativePath === ".." || relativePath.startsWith(`..${sep}`) || isAbsolute(relativePath);
   if (outsideRoot || relativePath.length === 0 || !relativePath.endsWith(".json")) {
     throw new Error("--output must be a .json file inside artifacts/performance/raw");
   }
