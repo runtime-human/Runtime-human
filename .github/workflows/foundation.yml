@@ -17,6 +17,7 @@ on:
       - "content/**"
       - "docs/**"
       - "scripts/**"
+      - "tools/**"
       - "rust-toolchain.toml"
       - ".ox*.json"
       - ".gitattributes"
@@ -37,6 +38,7 @@ on:
       - "content/**"
       - "docs/**"
       - "scripts/**"
+      - "tools/**"
       - "rust-toolchain.toml"
       - ".ox*.json"
       - ".gitattributes"
@@ -81,6 +83,17 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
           pnpm --version
+      - name: Restore Rust toolchain path
+        run: |
+          $ErrorActionPreference = "Stop"
+          $cargoBin = Join-Path $env:USERPROFILE ".cargo\bin"
+          $rustup = Join-Path $cargoBin "rustup.exe"
+          if (-not (Test-Path $rustup)) {
+            throw "rustup.exe was not found at $rustup"
+          }
+          $cargoBin | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          $env:PATH = "$cargoBin;$env:PATH"
+          & $rustup --version
       - name: Install Rust 1.97.1
         run: |
           $ErrorActionPreference = "Stop"
