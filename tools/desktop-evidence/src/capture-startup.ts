@@ -27,22 +27,22 @@ export async function captureStartupShellFmp(
   const isolatedDataDirectory = await mkdtemp(
     join(tmpdir(), "runtime-human-desktop-evidence-"),
   );
-  const capabilities = createTauriCapabilities(options.binaryPath, {
-    appArgs: [`--runtime-human-evidence-data-dir=${isolatedDataDirectory}`],
-    autoInstallTauriDriver: true,
-    driverProvider: "external",
-    logLevel: "warn",
-    startTimeout: 120_000,
-  });
-  capabilities["wdio:tauriServiceOptions"] = {
-    ...capabilities["wdio:tauriServiceOptions"],
-    autoDownloadEdgeDriver: true,
-    captureBackendLogs: false,
-    captureFrontendLogs: false,
-  };
-
   let browser: EvidenceBrowser | undefined;
   try {
+    const capabilities = createTauriCapabilities(options.binaryPath, {
+      appArgs: [`--runtime-human-evidence-data-dir=${isolatedDataDirectory}`],
+      autoInstallTauriDriver: true,
+      driverProvider: "external",
+      logLevel: "warn",
+      startTimeout: 120_000,
+    });
+    capabilities["wdio:tauriServiceOptions"] = {
+      ...capabilities["wdio:tauriServiceOptions"],
+      autoDownloadEdgeDriver: true,
+      captureBackendLogs: false,
+      captureFrontendLogs: false,
+    };
+
     browser = await startWdioSession(capabilities, {
       rootDir: REPOSITORY_ROOT,
       autoDownloadEdgeDriver: true,
