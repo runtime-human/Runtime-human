@@ -1,7 +1,7 @@
 ---
 title: "PERF-02A Windows Evidence Collection Implementation Plan"
 type: plan
-status: draft
+status: active
 canon: true
 updated: 2026-07-29
 ---
@@ -10,60 +10,107 @@ updated: 2026-07-29
 
 ## Goal
 
-Produce source-backed, opt-in Windows evidence that joins the existing Rust desktop snapshot with browser User Timing and exact scenario metadata. The resulting report must preserve raw samples, keep incomparable clocks separate, compute nearest-rank percentiles and end PERF-02A with exactly one optimization recommendation.
+Produce source-backed, opt-in Windows evidence that joins the existing Rust desktop snapshot with browser User Timing and exact scenario metadata. Raw captures must be immutable, generated outside Git, keep incomparable clocks separate and end PERF-02A with exactly one evidence-backed optimization recommendation or `collect-more-evidence`.
 
 ## Current delivery state
 
-Phase E1 is implemented in PR #67 and awaiting final unchanged-head verification and merge. Focused contracts, direct CLI execution and repository type-aware lint are green. E1 includes lossless repeated-span aggregation, semantic event-shape validation, duplicate-capture rejection, warning-only budget classification, an importable report API, and a shell-free Node CLI smoke contract. Phase E2 and Phase E3 remain intentionally separate and unimplemented.
+### Completed
 
-## Dependency decision
+- PR #67 / merge `783f54b17cd7bd4b88c5e7aac4719afa1c0dadac`: closed capture/report contracts, lossless repeated spans, exact semantic validation, duplicate identity rejection, nearest-rank percentiles, warning-only budgets and report CLI.
+- PR #68 / merge `ac3e21daa0f8e11707ce4f9df5e68fbf7032db19`: execution ledger moved to the Windows capture harness constraint.
+- Rust startup milestones, renderer/FMP milestones, read-only snapshot command and Tauri/queue/SQLite operation correlation already exist in production code.
 
-### Add in the harness block
+### Active
 
-- `@wdio/tauri-service 1.2.0` as an isolated development dependency;
-- WebdriverIO 9.30.x runner packages in a dedicated evidence workspace;
-- optional `tauri-plugin-wdio` enabled only in an evidence build feature/configuration.
+PR #69 implements the first real Windows path, deliberately limited to:
 
-Tauri's current official guidance recommends WebdriverIO with `@wdio/tauri-service` for Windows, Linux and macOS and supports JavaScript execution plus Tauri IPC access. The evidence harness will use Windows only and remain opt-in.
+```text
+startup-shell-fmp
++ cold-process
++ new-database
++ explicit cold/warm OS-cache classification
++ warmup/measurement role
+```
 
-### Do not use
+A standalone launch always creates a new process and an isolated empty database. It must not label that evidence as `warm-process` or `existing-clean-database`.
 
-- Playwright/CDP-only capture as the canonical path;
-- production analytics or network upload;
-- a renderer-to-Rust telemetry write channel;
-- wall-clock subtraction between Rust and browser origins;
-- arbitrary benchmark names or user payloads;
-- automatic optimization based only on one sample.
+## Dependency and integration decision
 
-## Phase E1 — Closed capture and report contract
+### E2a dependencies
 
-Implemented without new dependencies:
+Use only:
 
-- `runtime-human-desktop-performance-capture-v1` input schema;
-- `runtime-human-desktop-performance-evidence-v1` report schema;
-- exact closed scenarios and classifications;
-- exact Rust event and browser entry validation;
-- lossless repeated-operation-span aggregation;
-- duplicate capture identity rejection;
-- raw sample preservation;
-- nearest-rank p50/p95/p99;
-- warning-only budget evaluation;
-- deterministic output ordering;
-- CLI accepting repeated `--input=` and one `--output=`;
-- focused tests for malformed fields, unsafe numbers, unsupported names, percentile rules, mixed-host rejection and direct executable behavior.
+- `@wdio/tauri-service 1.2.0` in the isolated `tools/desktop-evidence` workspace;
+- its standalone `createTauriCapabilities`, `startWdioSession` and `cleanupWdioSession` API;
+- canonical `driverProvider: external`;
+- standard WebDriver `browser.execute()` for renderer User Timing;
+- evidence-only `window.__TAURI__.core.invoke` for the existing read-only Rust snapshot.
 
-## Phase E2 — Real Windows capture harness
+Do not add in E2a:
 
-Create isolated `tools/desktop-evidence` workspace:
+- `@wdio/cli`, Mocha or runner packages;
+- `tauri-plugin-wdio`;
+- a new Rust IPC command;
+- a production capability or dependency;
+- renderer-to-Rust telemetry writes;
+- network upload or analytics storage.
 
-- build the Tauri executable with an explicit `performance-evidence` feature;
-- register `tauri-plugin-wdio` only for that feature;
-- use `@wdio/tauri-service` on the self-hosted Windows host;
-- execute JavaScript to read browser User Timing;
-- invoke `desktop_get_performance_snapshot_v1` for the Rust snapshot;
-- record external monotonic process-to-observation durations in the Node harness;
-- write one capture file per run under `artifacts/performance/raw/`;
-- never commit generated host captures.
+`browser.tauri.execute()` and a Rust plugin bridge may be introduced later only if standard WebDriver execution cannot reach a required read-only surface.
+
+## Phase E2a — isolated startup capture
+
+### Build isolation
+
+- compile an explicit Cargo feature `performance-evidence`;
+- use a separate Tauri config with `withGlobalTauri: true` and no bundle;
+- keep the normal production config and default Cargo feature set unchanged;
+- require exactly one absolute `--runtime-human-evidence-data-dir` argument in evidence builds;
+- fail closed when the argument is missing, empty, relative or duplicated;
+- create and delete a temporary application-data directory for every run.
+
+### Capture contract
+
+The CLI requires explicit:
+
+- commit SHA;
+- process class;
+- OS-cache class;
+- database class;
+- sample role;
+- sample index.
+
+For E2a, process must be `cold-process` and database must be `new-database`. Output must be a `.json` file under ignored `artifacts/performance/raw/`.
+
+Default filenames include the complete classification and sample index so groups cannot overwrite each other. Existing raw files are never overwritten.
+
+### Browser and Rust data
+
+1. Start the evidence executable through the standalone Tauri service.
+2. Wait for `app.first_meaningful_paint`.
+3. Read the closed browser mark/measure set.
+4. Invoke `desktop_get_performance_snapshot_v1` through evidence-only global Tauri.
+5. Join the two independent timelines without subtracting their origins.
+6. Validate the complete object through `runtime-human-desktop-performance-capture-v1`.
+7. Write one immutable raw capture.
+8. Close WebDriver/app processes and remove temporary application data even when capture fails.
+
+### E2a completion gates
+
+- [x] isolated workspace and root project reference;
+- [x] evidence-only Cargo feature and Tauri config;
+- [x] fail-closed temporary data path;
+- [x] strict honest startup classifications;
+- [x] collision-free ignored raw output policy;
+- [x] immutable raw file write;
+- [x] pure harness contract tests;
+- [x] self-hosted Rust PATH bootstrap made restart-safe;
+- [ ] materialized pnpm lockfile;
+- [ ] formatter, lint, type-aware lint and TypeScript build green;
+- [ ] default and evidence-feature Rust checks/tests green;
+- [ ] evidence executable built without bundle;
+- [ ] one Windows warmup capture produced and inspected without committing it;
+- [ ] unchanged-head permanent docs/foundation gates green;
+- [ ] PR #69 reviewed and merged.
 
 ## Clock policy
 
@@ -73,50 +120,66 @@ Reported timelines:
 
 1. Rust process timeline: process entry → setup/worker/window milestones;
 2. browser timeline: renderer bootstrap → shell commit → January ready → FMP;
-3. browser end-to-end measures: existing content/session/month measures;
-4. external harness timeline: process launch → observed shell/ready/FMP.
+3. browser end-to-end measures: content/session/month operations;
+4. external harness timeline: OS process launch → observed milestone, only after an app-process-only clock exists.
 
-Only the external harness may produce process-to-FMP and process-to-January-ready values.
+Calling `startWdioSession()` is not an app process timestamp because it includes driver preparation, Edge-driver checks and WebDriver session creation. E2a therefore leaves external durations empty rather than publishing a false process-to-FMP value.
 
-## Closed scenarios
+## Phase E2b — exact external process timing
 
-- `startup-shell-fmp`;
-- `startup-january-ready`;
-- `load-persisted-context`;
-- `begin-month-run`;
-- `resume-month-run`;
-- `final-commit`.
+Implement a separately reviewed app-process-only clock using one of:
 
-Each capture classifies:
+- a public service launch hook;
+- a controlled external launcher with preserved WebDriver attach semantics;
+- an evidence-only monotonic process-entry beacon;
+- another mechanism whose error and origin are explicitly tested.
 
-- process: `cold-process` or `warm-process`;
-- OS cache: `cold-os-cache` or `warm-os-cache`;
-- database: `new-database` or `existing-clean-database`;
-- sample role: `warmup` or `measurement`.
+Required outputs:
 
-## Required output
+- `processToMainWindowObservedMicros`;
+- `processToShellFmpMicros`;
+- `processToJanuaryReadyMicros`.
 
-For every scenario/classification group:
+Do not infer these values from driver/session setup time.
 
-- sample count;
-- raw samples;
-- p50/p95/p99 for each available metric;
-- minimum/maximum;
-- dropped Rust event count;
-- missing metric count;
-- warning list.
+## Phase E2c — remaining real scenarios
 
-The report contains no pass/fail performance gate. Correctness gates remain separate.
+Add scenarios one at a time:
 
-## Recommendation rule
+1. `startup-january-ready`;
+2. `load-persisted-context` using a deliberately prepared copied database;
+3. `begin-month-run`;
+4. `resume-month-run`;
+5. `final-commit`.
 
-After enough cold and warm measurement samples exist, compare the largest user-visible contributions:
+Operation captures must use before/after Rust snapshots and retain only newly observed operation IDs/events. A long-lived process may then be classified as `warm-process`; an existing database may be classified only after the harness actually provisions one.
 
-- process/Tauri setup;
+## Phase E3 — evidence matrix and recommendation
+
+For every supported group:
+
+- run warmups separately from measurements;
+- preserve every raw sample;
+- report sample count, min/max, nearest-rank p50/p95/p99, dropped Rust events and missing metrics;
+- keep warning budgets separate from correctness;
+- document whether OS cache state is controlled or only observed.
+
+Compare user-visible contributions:
+
+- Tauri/process setup;
 - persistence worker startup;
-- renderer bootstrap/shell/FMP;
+- renderer bootstrap, shell commit and FMP;
 - January restoration;
-- Tauri dispatch/queue/SQLite path;
-- controlled shutdown/idle resources only if separately measured.
+- Tauri dispatch, queue wait and SQLite duration;
+- shutdown/idle resources only when PERF-02B evidence exists.
 
-Select exactly one next optimization. If evidence is incomplete or contradictory, the recommendation is `collect-more-evidence`, not an architectural guess.
+Select exactly one next action:
+
+- renderer/WebView startup optimization;
+- persistence startup optimization;
+- IPC/queue optimization;
+- SQLite-path optimization;
+- typed FIFO shutdown from issue #58;
+- `collect-more-evidence`.
+
+Issue #58 remains deferred until evidence shows idle polling or shutdown ordering is the highest-value next slice.
