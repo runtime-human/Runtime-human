@@ -4,24 +4,16 @@ export type StartupCaptureOptions = Readonly<{
   binaryPath: string;
   commit: string;
   outputPath: string;
-  process: "cold-process" | "warm-process";
+  process: "cold-process";
   osCache: "cold-os-cache" | "warm-os-cache";
-  database: "new-database" | "existing-clean-database";
+  database: "new-database";
   sampleRole: "warmup" | "measurement";
   sampleIndex: number;
 }>;
 
-const PROCESS_CLASSES = new Set<StartupCaptureOptions["process"]>([
-  "cold-process",
-  "warm-process",
-]);
 const CACHE_CLASSES = new Set<StartupCaptureOptions["osCache"]>([
   "cold-os-cache",
   "warm-os-cache",
-]);
-const DATABASE_CLASSES = new Set<StartupCaptureOptions["database"]>([
-  "new-database",
-  "existing-clean-database",
 ]);
 const SAMPLE_ROLES = new Set<StartupCaptureOptions["sampleRole"]>([
   "warmup",
@@ -57,9 +49,9 @@ export function parseStartupCaptureArguments(
   }
 
   const sampleIndex = parseSampleIndex(requireOption(values, "--sample-index"));
-  const processClass = parseClosed(
+  const processClass = requireExact(
     requireOption(values, "--process"),
-    PROCESS_CLASSES,
+    "cold-process",
     "--process",
   );
   const osCache = parseClosed(
@@ -67,9 +59,9 @@ export function parseStartupCaptureArguments(
     CACHE_CLASSES,
     "--os-cache",
   );
-  const database = parseClosed(
+  const database = requireExact(
     requireOption(values, "--database"),
-    DATABASE_CLASSES,
+    "new-database",
     "--database",
   );
   const sampleRole = parseClosed(
@@ -137,6 +129,13 @@ function parseClosed<T extends string>(
 ): T {
   if (!allowed.has(value as T)) throw new Error(`${name} has an unsupported value`);
   return value as T;
+}
+
+function requireExact<T extends string>(value: string, expected: T, name: string): T {
+  if (value !== expected) {
+    throw new Error(`${name} must be ${expected} for the startup-shell-fmp harness`);
+  }
+  return expected;
 }
 
 function requireRawJsonOutputPath(outputPath: string, rawOutputRoot: string): void {
