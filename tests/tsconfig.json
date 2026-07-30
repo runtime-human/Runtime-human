@@ -23,6 +23,7 @@
     "../apps/desktop/src/shell/**/*.ts",
     "../apps/desktop/src/shell/**/*.tsx",
     "../scripts/performance/**/*.ts",
+    "../tools/desktop-evidence/src/**/*.ts",
     "../vitest.config.ts"
   ],
   "exclude": [
