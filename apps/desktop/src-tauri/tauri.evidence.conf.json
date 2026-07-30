@@ -4,7 +4,17 @@
     "beforeBuildCommand": "pnpm build:evidence"
   },
   "app": {
-    "withGlobalTauri": true
+    "withGlobalTauri": true,
+    "security": {
+      "capabilities": [
+        {
+          "identifier": "performance-evidence",
+          "description": "Evidence-only permissions for the isolated desktop capture binary",
+          "windows": ["main"],
+          "permissions": ["core:default", "wdio-webdriver:default"]
+        }
+      ]
+    }
   },
   "bundle": {
     "active": false
