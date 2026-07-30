@@ -81,12 +81,10 @@ fn shutdown_marker_waits_behind_a_full_accepted_queue() {
             .expect("publish shutdown result");
     });
 
-    assert!(
-        shutdown_result_receiver
-            .recv_timeout(Duration::from_millis(100))
-            .is_err(),
-        "shutdown completed while the worker and every queue slot were still blocked",
-    );
+    assert!(matches!(
+        shutdown_result_receiver.recv_timeout(Duration::from_millis(100)),
+        Err(mpsc::RecvTimeoutError::Timeout)
+    ));
 
     worker_release_sender.send(()).expect("release worker barrier");
     worker_response
