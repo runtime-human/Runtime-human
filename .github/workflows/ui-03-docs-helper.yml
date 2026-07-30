@@ -1,0 +1,54 @@
+name: ui-03-docs-helper
+
+on:
+  push:
+    branches:
+      - agent/ui-03-game-shell-sandwich-panels
+    paths:
+      - ".github/workflows/ui-03-docs-helper.yml"
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  normalize-docs:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: self-hosted
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: agent/ui-03-game-shell-sandwich-panels
+          clean: true
+          persist-credentials: true
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Accept implementation plan and rebuild docs indexes
+        run: |
+          $ErrorActionPreference = "Stop"
+          $path = "docs/plans/UI-03-GAME-SHELL-SANDWICH-PANELS-IMPLEMENTATION-PLAN.md"
+          $text = Get-Content $path -Raw
+          $updated = $text -replace '(?m)^status: active$', 'status: accepted'
+          if ($updated -eq $text) {
+            throw "UI-03 plan status was not updated"
+          }
+          [System.IO.File]::WriteAllText((Resolve-Path $path), $updated, [System.Text.UTF8Encoding]::new($false))
+          node scripts/build-toc.mjs
+      - name: Commit normalized documentation
+        run: |
+          $ErrorActionPreference = "Stop"
+          Remove-Item ".github/workflows/ui-03-docs-helper.yml" -Force
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if (git diff --cached --quiet) {
+            throw "Documentation normalization produced no diff"
+          }
+          git commit -m "docs: normalize UI-03 plan metadata"
+          git push origin HEAD:agent/ui-03-game-shell-sandwich-panels
