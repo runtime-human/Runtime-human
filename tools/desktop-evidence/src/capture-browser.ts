@@ -23,22 +23,70 @@ export type BrowserEvidenceEntry = Readonly<{
   durationMicros: number;
 }>;
 
+export type RendererStartupDiagnostics = Readonly<{
+  readyState: string;
+  locationHref: string;
+  title: string;
+  bodyText: string;
+  performanceEntries: readonly Readonly<{ name: string; entryType: string }>[];
+  tauriCoreInvokeAvailable: boolean;
+}>;
+
 export async function waitForFirstMeaningfulPaint(
   browser: EvidenceBrowser,
   timeoutMs = 60_000,
 ): Promise<void> {
-  await browser.waitUntil(
-    async () =>
-      browser.execute(
-        (name) => globalThis.performance.getEntriesByName(name).length > 0,
-        "app.first_meaningful_paint",
-      ),
-    {
-      timeout: timeoutMs,
-      interval: 10,
-      timeoutMsg: "Runtime Human did not publish app.first_meaningful_paint",
-    },
-  );
+  try {
+    await browser.waitUntil(
+      async () =>
+        browser.execute(
+          (name) => globalThis.performance.getEntriesByName(name).length > 0,
+          "app.first_meaningful_paint",
+        ),
+      {
+        timeout: timeoutMs,
+        interval: 100,
+        timeoutMsg: "Runtime Human did not publish app.first_meaningful_paint",
+      },
+    );
+  } catch (error) {
+    const diagnostics = await captureRendererStartupDiagnostics(browser).catch(() => null);
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      diagnostics === null
+        ? reason
+        : `${reason}; rendererDiagnostics=${JSON.stringify(diagnostics)}`,
+      { cause: error },
+    );
+  }
+}
+
+export async function captureRendererStartupDiagnostics(
+  browser: EvidenceBrowser,
+): Promise<RendererStartupDiagnostics> {
+  const diagnostics = await browser.execute(() => {
+    const tauri = Reflect.get(globalThis, "__TAURI__") as
+      | Readonly<{ core?: Readonly<{ invoke?: unknown }> }>
+      | undefined;
+    return {
+      readyState: globalThis.document.readyState,
+      locationHref: globalThis.location.href,
+      title: globalThis.document.title,
+      bodyText: (globalThis.document.body?.innerText ?? "").slice(0, 2_000),
+      performanceEntries: globalThis.performance
+        .getEntries()
+        .slice(0, 100)
+        .map((entry) => ({ name: entry.name, entryType: entry.entryType })),
+      tauriCoreInvokeAvailable: typeof tauri?.core?.invoke === "function",
+    };
+  });
+
+  return Object.freeze({
+    ...diagnostics,
+    performanceEntries: Object.freeze(
+      diagnostics.performanceEntries.map((entry) => Object.freeze({ ...entry })),
+    ),
+  });
 }
 
 export async function captureBrowserEntries(
