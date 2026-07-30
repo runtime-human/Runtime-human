@@ -15,6 +15,8 @@ import type { EvidenceBrowser } from "./wdio-types.js";
 import { writeValidatedCapture } from "./write-capture.js";
 
 const REPOSITORY_ROOT = resolve(import.meta.dirname, "../../..");
+const TEMPORARY_STATE_REMOVE_RETRIES = 20;
+const TEMPORARY_STATE_REMOVE_RETRY_DELAY_MS = 100;
 
 type CaptureLifecycleStage =
   | "options-validated"
@@ -86,10 +88,19 @@ export async function captureStartupShellFmp(arguments_: readonly string[]): Pro
         await cleanupWdioSession(browser);
       }
     } finally {
-      await rm(isolatedDataDirectory, { recursive: true, force: true });
+      await removeTemporaryStateDirectory(isolatedDataDirectory);
       recordStage("cleanup-complete");
     }
   }
+}
+
+export async function removeTemporaryStateDirectory(path: string): Promise<void> {
+  await rm(path, {
+    recursive: true,
+    force: true,
+    maxRetries: TEMPORARY_STATE_REMOVE_RETRIES,
+    retryDelay: TEMPORARY_STATE_REMOVE_RETRY_DELAY_MS,
+  });
 }
 
 function recordStage(stage: CaptureLifecycleStage): void {
