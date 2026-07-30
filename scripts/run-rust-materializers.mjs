@@ -22,7 +22,9 @@ function tripleAssignment(script, name) {
 function indentVariant(text, sourceIndent, targetIndent) {
   return text
     .split("\n")
-    .map((line) => (line.startsWith(sourceIndent) ? `${targetIndent}${line.slice(sourceIndent.length)}` : line))
+    .map((line) =>
+      line.startsWith(sourceIndent) ? `${targetIndent}${line.slice(sourceIndent.length)}` : line,
+    )
     .join("\n");
 }
 
@@ -49,8 +51,8 @@ async function applyMainFifoMaterializer() {
   );
   if (secondReplacementMatch === null) throw new Error("missing normal worker-call replacement");
 
-  const normalIndent = "                        ";
-  const readOnlyIndent = "                            ";
+  const normalIndent = " ".repeat(24);
+  const readOnlyIndent = " ".repeat(32);
   worker = replaceExactly(
     worker,
     manualBlocks[1][1],
