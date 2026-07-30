@@ -10,6 +10,7 @@ export type StartupEvidenceCapabilities = TauriCapabilities &
     "ms:edgeOptions": Readonly<{
       webviewOptions: Readonly<{
         userDataFolder: string;
+        additionalBrowserArguments: readonly string[];
       }>;
     }>;
   }>;
@@ -35,6 +36,7 @@ export function createStartupEvidenceCapabilities(
   capabilities["ms:edgeOptions"] = {
     webviewOptions: {
       userDataFolder: join(isolatedDataDirectory, "webview"),
+      additionalBrowserArguments: ["remote-debugging-port=0"],
     },
   };
 
