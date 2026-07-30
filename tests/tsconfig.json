@@ -6,11 +6,12 @@
     "tsBuildInfoFile": "../.tsbuild/tests.tsbuildinfo",
     "lib": ["ES2024", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
-    "types": ["node", "vite/client", "vitest/globals", "@testing-library/jest-dom"]
+    "types": ["node", "vitest/globals", "@testing-library/jest-dom"]
   },
   "include": [
     "./**/*.ts",
     "./**/*.tsx",
+    "../apps/desktop/css-modules.d.ts",
     "../apps/desktop/src/App.tsx",
     "../apps/desktop/src/RuntimeDesktop.tsx",
     "../apps/desktop/src/january/**/*.ts",
