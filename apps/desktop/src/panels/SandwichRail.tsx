@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { SandwichPanel, type SandwichPanelState } from "./SandwichPanel";
 
@@ -21,11 +21,21 @@ type SandwichRailState = Readonly<Record<string, SandwichPanelState>>;
 
 export function SandwichRail({ ariaLabel, items, promotedId }: SandwichRailProps) {
   const [states, setStates] = useState<SandwichRailState>(() => createInitialStates(items));
+  const itemsRef = useRef(items);
+  itemsRef.current = items;
+  const structureKey = createStructureKey(items);
 
   useEffect(() => {
-    if (promotedId === undefined || !items.some((item) => item.id === promotedId)) return;
-    setStates((current) => expandOnly(current, items, promotedId));
-  }, [items, promotedId]);
+    const currentItems = itemsRef.current;
+    setStates((current) => {
+      const reconciled = reconcileStates(current, currentItems);
+      const next =
+        promotedId !== undefined && currentItems.some((item) => item.id === promotedId)
+          ? expandOnly(reconciled, currentItems, promotedId)
+          : reconciled;
+      return statesEqual(current, next) ? current : next;
+    });
+  }, [promotedId, structureKey]);
 
   return (
     <div aria-label={ariaLabel} className="runtime-sandwich-rail" role="group">
@@ -52,18 +62,32 @@ export function SandwichRail({ ariaLabel, items, promotedId }: SandwichRailProps
   );
 }
 
+function createStructureKey(items: readonly SandwichRailItem[]): string {
+  return JSON.stringify(
+    items.map((item) => [item.id, item.initialState, item.summary === undefined ? 0 : 1]),
+  );
+}
+
 function createInitialStates(items: readonly SandwichRailItem[]): SandwichRailState {
+  return reconcileStates(Object.freeze({}), items);
+}
+
+function reconcileStates(
+  current: SandwichRailState,
+  items: readonly SandwichRailItem[],
+): SandwichRailState {
   let expandedId: string | undefined;
   const states: Record<string, SandwichPanelState> = {};
 
   for (const item of items) {
-    if (item.initialState === "expanded" && expandedId !== undefined) {
-      states[item.id] = item.summary === undefined ? "collapsed" : "summary";
+    const requested = current[item.id] ?? item.initialState;
+    if (requested === "expanded" && expandedId !== undefined) {
+      states[item.id] = demotedState(item);
       continue;
     }
 
-    states[item.id] = item.initialState;
-    if (item.initialState === "expanded") expandedId = item.id;
+    states[item.id] = requested;
+    if (requested === "expanded") expandedId = item.id;
   }
 
   return Object.freeze(states);
@@ -74,7 +98,7 @@ function expandOnly(
   items: readonly SandwichRailItem[],
   expandedId: string,
 ): SandwichRailState {
-  const next: Record<string, SandwichPanelState> = { ...current };
+  const next: Record<string, SandwichPanelState> = {};
 
   for (const item of items) {
     if (item.id === expandedId) {
@@ -82,10 +106,22 @@ function expandOnly(
       continue;
     }
 
-    if (next[item.id] === "expanded") {
-      next[item.id] = item.summary === undefined ? "collapsed" : "summary";
-    }
+    const currentState = current[item.id] ?? item.initialState;
+    next[item.id] = currentState === "expanded" ? demotedState(item) : currentState;
   }
 
   return Object.freeze(next);
+}
+
+function demotedState(item: SandwichRailItem): SandwichPanelState {
+  return item.summary === undefined ? "collapsed" : "summary";
+}
+
+function statesEqual(left: SandwichRailState, right: SandwichRailState): boolean {
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+  return (
+    leftKeys.length === rightKeys.length &&
+    rightKeys.every((key) => left[key] === right[key])
+  );
 }
