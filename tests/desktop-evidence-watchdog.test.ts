@@ -67,7 +67,7 @@ describe("desktop evidence capture watchdog", () => {
     );
   });
 
-  it("kills the child tree at the deadline and removes only new evidence directories", async () => {
+  it("kills the child tree at the deadline and removes only one new evidence directory", async () => {
     const killTree = vi.fn(async () => undefined);
     const listEvidenceDirectories = vi
       .fn<() => Promise<ReadonlySet<string>>>()
@@ -99,6 +99,25 @@ describe("desktop evidence capture watchdog", () => {
     expect(removeEvidenceDirectory).toHaveBeenCalledWith(
       "C:\\Temp\\runtime-human-desktop-evidence-new",
     );
+  });
+
+  it("refuses recursive cleanup when concurrent runs create multiple candidates", async () => {
+    const removeEvidenceDirectory = vi.fn(async () => undefined);
+    const listEvidenceDirectories = vi
+      .fn<() => Promise<ReadonlySet<string>>>()
+      .mockResolvedValueOnce(new Set())
+      .mockResolvedValueOnce(
+        new Set([
+          "C:\\Temp\\runtime-human-desktop-evidence-first",
+          "C:\\Temp\\runtime-human-desktop-evidence-second",
+        ]),
+      );
+    const lifecycle = ports({ listEvidenceDirectories, removeEvidenceDirectory });
+
+    await expect(runBoundedCaptureProcess([], 5_000, lifecycle)).rejects.toThrow(
+      /cleanup is ambiguous; refusing to remove 2 new directories/u,
+    );
+    expect(removeEvidenceDirectory).not.toHaveBeenCalled();
   });
 
   it("allows only a direct prefixed child of the configured temporary root", () => {
