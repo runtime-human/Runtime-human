@@ -35,7 +35,8 @@ function ports(overrides: Partial<CaptureProcessPorts> = {}): CaptureProcessPort
 describe("desktop evidence capture watchdog", () => {
   it("returns after a successful child capture without killing it", async () => {
     const launch = vi.fn(successfulChild);
-    const lifecycle = ports({ launch });
+    const removeEvidenceDirectory = vi.fn(async () => undefined);
+    const lifecycle = ports({ launch, removeEvidenceDirectory });
 
     await expect(
       runBoundedCaptureProcess(["--sample-index=0"], 5_000, lifecycle),
@@ -44,7 +45,7 @@ describe("desktop evidence capture watchdog", () => {
     expect(launch).toHaveBeenCalledWith(["--sample-index=0"]);
     const child = launch.mock.results[0]?.value;
     expect(child?.killTree).not.toHaveBeenCalled();
-    expect(lifecycle.removeEvidenceDirectory).not.toHaveBeenCalled();
+    expect(removeEvidenceDirectory).not.toHaveBeenCalled();
   });
 
   it("surfaces a non-zero child exit code", async () => {
