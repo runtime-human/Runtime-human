@@ -1,6 +1,6 @@
 {
   "_schemaVersion": 1,
-  "updated": "2026-07-29",
+  "updated": "2026-07-31",
   "implementationProfile": "MVP Casual",
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
@@ -634,6 +634,41 @@
         "docsRun": 1241,
         "temporaryWorkflowsRemoved": true
       }
+    },
+    {
+      "id": "rust-persistence-fifo-shutdown",
+      "status": "complete",
+      "issue": 58,
+      "pullRequest": 71,
+      "commit": "fa14c50a4ae6d233e5b805b414db5c68e1ce90c5",
+      "scope": [
+        "typed-fifo-shutdown-marker",
+        "closed-admission-before-shutdown",
+        "accepted-operation-drain-before-close",
+        "blocking-worker-receive",
+        "serialized-idempotent-shutdown",
+        "ordered-drop-and-join",
+        "queue-depth-contract-preserved"
+      ],
+      "evidence": {
+        "queueCapacity": 64,
+        "ordinaryEnqueue": "try-send",
+        "acceptedBeforeMarkerDrained": true,
+        "fullQueueRegressionEntries": 64,
+        "concurrentShutdownCallers": 8,
+        "finalHandleDropAndHealthyReopen": true,
+        "acknowledgementFailureStillJoins": true,
+        "pollingIntervalRemoved": true,
+        "externalShutdownAtomicRemoved": true,
+        "temporaryWorkflowsRemoved": true,
+        "materializerScriptsRemoved": true,
+        "generatedTauriSchemasRemoved": true,
+        "specializedVerificationRun": 30578917926,
+        "foundationRun": 1817,
+        "docsRun": 1417,
+        "sonarNewIssues": 0,
+        "sonarSecurityHotspots": 0
+      }
     }
   ],
   "supersededPullRequests": [
@@ -651,7 +686,7 @@
     "documentationWorkflow": "docs",
     "runner": "self-hosted-windows",
     "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "complete-pr-67-e1",
+    "qualityGate": "rust-01c-complete-pr-71",
     "currentConstraint": "perf-02a-e2-isolated-windows-capture-harness",
     "currentPullRequestMayMerge": false
   }
