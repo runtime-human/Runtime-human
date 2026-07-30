@@ -73,11 +73,6 @@ jobs:
           $ErrorActionPreference = "Stop"
           pnpm install --no-frozen-lockfile --reporter=append-only
           cargo check --manifest-path apps/desktop/src-tauri/Cargo.toml --features performance-evidence
-          git add pnpm-lock.yaml apps/desktop/src-tauri/Cargo.lock
-          if (-not (git diff --cached --quiet)) {
-            git commit -m "build: align embedded WDIO evidence dependencies"
-            git push origin HEAD:agent/perf-02a-windows-capture-harness
-          }
       - name: Materialize closed persistence telemetry contract
         run: |
           $ErrorActionPreference = "Stop"
@@ -97,6 +92,16 @@ jobs:
           pnpm lint:type-aware
           pnpm typecheck
           pnpm evidence:desktop:check
+      - name: Commit the exact measured product tree locally
+        run: |
+          $ErrorActionPreference = "Stop"
+          git add -A
+          if (git diff --cached --quiet) {
+            throw "Evidence materialization produced no measured product diff"
+          }
+          git commit -m "fix: materialize validated Windows evidence runtime"
+          $measuredCommit = git rev-parse HEAD
+          Write-Host "Measured product commit: $measuredCommit"
       - name: Preflight WDIO runtime exports
         run: >-
           pnpm --filter @runtime-human/desktop-evidence exec node --input-type=module
@@ -106,6 +111,9 @@ jobs:
       - name: Capture real Windows startup warmup
         run: |
           $ErrorActionPreference = "Stop"
+          if (-not (git diff --quiet) -or -not (git diff --cached --quiet)) {
+            throw "Measured product tree changed after the local evidence commit"
+          }
           $before = @(
             Get-ChildItem -Path $env:TEMP -Directory -Filter "runtime-human-desktop-evidence-*" -ErrorAction SilentlyContinue |
               ForEach-Object { $_.FullName }
@@ -149,5 +157,8 @@ jobs:
             Remove-Item $_ -Force -ErrorAction SilentlyContinue
           }
           git add -A
+          if (git diff --cached --quiet) {
+            throw "Evidence cleanup produced no finalization diff"
+          }
           git commit -m "chore: finalize E2 Windows capture harness"
           git push origin HEAD:agent/perf-02a-windows-capture-harness
