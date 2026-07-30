@@ -45,7 +45,7 @@ export async function captureBrowserEntries(
   browser: EvidenceBrowser,
 ): Promise<readonly BrowserEvidenceEntry[]> {
   const entries = await browser.execute((allowedNames) => {
-    const allowed = new Set(allowedNames);
+    const allowed = new Set<string>(allowedNames);
     return globalThis.performance
       .getEntries()
       .filter(
