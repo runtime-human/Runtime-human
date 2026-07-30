@@ -1,6 +1,6 @@
 ---
 title: "UI-03 Task 1 Checkpoint"
-type: review
+type: index
 status: accepted
 canon: false
 updated: 2026-07-30
