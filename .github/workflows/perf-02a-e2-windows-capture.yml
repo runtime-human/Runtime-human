@@ -85,11 +85,11 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           pnpm evidence:desktop:driver:install
-          $version = tauri-driver --version
-          if ($version -ne "tauri-driver 2.0.6") {
-            throw "Expected tauri-driver 2.0.6, got: $version"
+          $installed = cargo install --list | Select-String '^tauri-driver v2\.0\.6:$'
+          if ($null -eq $installed) {
+            throw "tauri-driver 2.0.6 is not registered in cargo install --list"
           }
-          Write-Host $version
+          Write-Host $installed.Line
       - name: Build evidence executable
         run: pnpm evidence:desktop:build
       - name: Capture real Windows startup warmup
