@@ -1,3 +1,5 @@
+import { dirname, join, resolve } from "node:path";
+
 import { describe, expect, it, vi } from "vitest";
 
 import {
@@ -6,6 +8,8 @@ import {
   type CaptureProcessPorts,
   type CaptureProcessResult,
 } from "../tools/desktop-evidence/src/run-capture-process";
+
+const EVIDENCE_PREFIX = "runtime-human-desktop-evidence-";
 
 function never(): Promise<void> {
   return new Promise(() => undefined);
@@ -98,22 +102,44 @@ describe("desktop evidence capture watchdog", () => {
   });
 
   it("allows only a direct prefixed child of the configured temporary root", () => {
-    expect(
-      resolveEvidenceDirectoryForRemoval(
-        "C:\\Temp\\runtime-human-desktop-evidence-capture-1",
-        "C:\\Temp",
-      ),
-    ).toBe("C:\\Temp\\runtime-human-desktop-evidence-capture-1");
+    const root = resolve("temporary-evidence-root");
+    const candidate = join(root, `${EVIDENCE_PREFIX}capture-1`);
+
+    expect(resolveEvidenceDirectoryForRemoval(candidate, root)).toBe(candidate);
   });
 
-  it.each([
-    ["temporary root", "C:\\Temp"],
-    ["unprefixed child", "C:\\Temp\\other-directory"],
-    ["nested descendant", "C:\\Temp\\runtime-human-desktop-evidence-safe\\nested"],
-    ["parent escape", "C:\\runtime-human-desktop-evidence-escape"],
-    ["prefix lookalike parent", "C:\\Temp-other\\runtime-human-desktop-evidence-escape"],
-  ])("rejects cleanup outside the exact evidence directory boundary: %s", (_label, candidate) => {
-    expect(() => resolveEvidenceDirectoryForRemoval(candidate, "C:\\Temp")).toThrow(
+  it("rejects the temporary root itself", () => {
+    const root = resolve("temporary-evidence-root");
+    expect(() => resolveEvidenceDirectoryForRemoval(root, root)).toThrow(
+      /not a direct Runtime Human evidence directory/u,
+    );
+  });
+
+  it("rejects an unprefixed direct child", () => {
+    const root = resolve("temporary-evidence-root");
+    expect(() => resolveEvidenceDirectoryForRemoval(join(root, "other-directory"), root)).toThrow(
+      /not a direct Runtime Human evidence directory/u,
+    );
+  });
+
+  it("rejects a nested descendant", () => {
+    const root = resolve("temporary-evidence-root");
+    const nested = join(root, `${EVIDENCE_PREFIX}safe`, "nested");
+    expect(() => resolveEvidenceDirectoryForRemoval(nested, root)).toThrow(
+      /not a direct Runtime Human evidence directory/u,
+    );
+  });
+
+  it("rejects parent and prefix-lookalike escapes", () => {
+    const root = resolve("temporary-evidence-root");
+    const parentEscape = join(dirname(root), `${EVIDENCE_PREFIX}escape`);
+    const lookalikeRoot = `${root}-other`;
+    const lookalikeEscape = join(lookalikeRoot, `${EVIDENCE_PREFIX}escape`);
+
+    expect(() => resolveEvidenceDirectoryForRemoval(parentEscape, root)).toThrow(
+      /not a direct Runtime Human evidence directory/u,
+    );
+    expect(() => resolveEvidenceDirectoryForRemoval(lookalikeEscape, root)).toThrow(
       /not a direct Runtime Human evidence directory/u,
     );
   });
