@@ -30,7 +30,7 @@ describe("SandwichPanel", () => {
 
     const toggle = screen.getByRole("button", { name: /События/u });
     expect(toggle).toHaveAttribute("aria-expanded", "false");
-    expect(toggle).toHaveAttribute("aria-controls", "events-details");
+    expect(toggle).not.toHaveAttribute("aria-controls");
     expect(screen.queryByText("Ближайшее событие через 3 дня")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Подготовиться" })).not.toBeInTheDocument();
   });
@@ -40,10 +40,9 @@ describe("SandwichPanel", () => {
 
     expect(screen.getByText("Ближайшее событие через 3 дня")).toBeVisible();
     expect(screen.queryByRole("button", { name: "Подготовиться" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /События/u })).toHaveAttribute(
-      "aria-expanded",
-      "false",
-    );
+    const toggle = screen.getByRole("button", { name: /События/u });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(toggle).not.toHaveAttribute("aria-controls");
   });
 
   it("renders summary and controlled detail region while expanded", () => {
@@ -51,6 +50,7 @@ describe("SandwichPanel", () => {
 
     const toggle = screen.getByRole("button", { name: /События/u });
     expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(toggle).toHaveAttribute("aria-controls", "events-details");
     expect(screen.getByRole("region", { name: "События" })).toHaveAttribute("id", "events-details");
     expect(screen.getByRole("button", { name: "Подготовиться" })).toBeVisible();
   });
