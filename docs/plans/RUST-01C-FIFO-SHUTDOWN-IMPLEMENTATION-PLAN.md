@@ -1,7 +1,7 @@
 ---
 title: "RUST-01C Typed FIFO Persistence Shutdown Implementation Plan"
 type: plan
-status: active
+status: accepted
 canon: true
 updated: 2026-07-30
 ---
