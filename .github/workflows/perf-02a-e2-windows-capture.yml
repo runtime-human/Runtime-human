@@ -81,7 +81,7 @@ jobs:
       - name: Materialize closed persistence telemetry contract
         run: |
           $ErrorActionPreference = "Stop"
-          python scripts/apply-persistence-telemetry-contract.py
+          node scripts/apply-persistence-telemetry-contract.mjs
           cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml
           cargo test --locked `
             --manifest-path apps/desktop/src-tauri/Cargo.toml `
@@ -138,7 +138,7 @@ jobs:
       - name: Materialize clean product diff
         run: |
           $ErrorActionPreference = "Stop"
-          Remove-Item "scripts/apply-persistence-telemetry-contract.py" -Force
+          Remove-Item "scripts/apply-persistence-telemetry-contract.mjs" -Force
           Remove-Item ".github/workflows/perf-02a-e2-windows-capture.yml" -Force
           @(
             "apps/desktop/src-tauri/gen/schemas/acl-manifests.json",
