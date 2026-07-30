@@ -23,7 +23,7 @@ jobs:
   apply-and-verify:
     if: github.actor != 'github-actions[bot]'
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
@@ -57,19 +57,27 @@ jobs:
           cargo test --locked
           --manifest-path apps/desktop/src-tauri/Cargo.toml
           persistence::worker_shutdown_tests
-          -- --nocapture
+          -- --nocapture --test-threads=1
       - name: Run existing shutdown recovery tests
         run: >-
           cargo test --locked
           --manifest-path apps/desktop/src-tauri/Cargo.toml
           persistence::shutdown_tests
-          -- --nocapture
+          -- --nocapture --test-threads=1
+      - name: Run complete persistence module
+        run: >-
+          cargo test --locked
+          --manifest-path apps/desktop/src-tauri/Cargo.toml
+          persistence::
+          -- --nocapture --test-threads=1
       - name: Check the complete Rust target
         run: cargo check --locked --manifest-path apps/desktop/src-tauri/Cargo.toml --all-targets
       - name: Verify Rust formatting
         run: cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml -- --check
-      - name: Rebuild documentation indexes
-        run: node scripts/build-toc.mjs
+      - name: Rebuild and verify documentation indexes
+        run: |
+          node scripts/build-toc.mjs
+          node scripts/build-toc.mjs --check
       - name: Commit verified product diff
         run: |
           $ErrorActionPreference = "Stop"
