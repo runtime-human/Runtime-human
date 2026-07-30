@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import { App } from "./App.js";
 import "./design/runtime-human-tokens.css";
 import "./shell/desktop-shell.css";
+import "./shell/game-shell.css";
 import "./overview/career-overview.css";
 import "./january/january-runtime.css";
 import { RUNTIME_RENDERER_MILESTONES } from "./performance/renderer-milestones.js";
