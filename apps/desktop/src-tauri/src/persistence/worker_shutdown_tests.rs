@@ -1,4 +1,8 @@
-use std::{sync::mpsc, thread, time::Duration};
+use std::{
+    sync::{Arc, Barrier, mpsc},
+    thread,
+    time::Duration,
+};
 
 use tempfile::TempDir;
 
@@ -42,6 +46,53 @@ fn command_accepted_before_shutdown_marker_completes_before_close() {
 
     assert!(matches!(handle.recovery_status(), Err(PersistenceError::Unavailable)));
     handle.shutdown().expect("idempotent shutdown");
+}
+
+#[test]
+fn concurrent_shutdown_callers_share_one_ordered_worker_close() {
+    const CALLERS: usize = 8;
+
+    let temp = TempDir::new().expect("temporary directory");
+    let database_path = temp.path().join("runtime-human.sqlite3");
+    let handle = PersistenceHandle::start(database_path).expect("start persistence worker");
+
+    let (worker_entered_sender, worker_entered_receiver) = mpsc::sync_channel(1);
+    let (worker_release_sender, worker_release_receiver) = mpsc::sync_channel(1);
+    let worker_response = handle
+        .enqueue_test_barrier(worker_entered_sender, worker_release_receiver)
+        .expect("enqueue worker barrier");
+    worker_entered_receiver
+        .recv_timeout(Duration::from_secs(5))
+        .expect("worker entered barrier");
+
+    let caller_barrier = Arc::new(Barrier::new(CALLERS + 1));
+    let shutdown_callers = (0..CALLERS)
+        .map(|_| {
+            let caller = handle.clone();
+            let caller_barrier = Arc::clone(&caller_barrier);
+            thread::spawn(move || {
+                caller_barrier.wait();
+                caller.shutdown()
+            })
+        })
+        .collect::<Vec<_>>();
+
+    caller_barrier.wait();
+    worker_release_sender.send(()).expect("release worker barrier");
+    worker_response
+        .recv_timeout(Duration::from_secs(5))
+        .expect("receive worker barrier response")
+        .expect("worker barrier completed");
+
+    for caller in shutdown_callers {
+        caller
+            .join()
+            .expect("join shutdown caller")
+            .expect("concurrent shutdown is idempotent");
+    }
+
+    assert!(matches!(handle.recovery_status(), Err(PersistenceError::Unavailable)));
+    handle.shutdown().expect("shutdown remains idempotent after all callers complete");
 }
 
 #[test]
