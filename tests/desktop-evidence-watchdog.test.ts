@@ -3,10 +3,19 @@ import { describe, expect, it, vi } from "vitest";
 import {
   runBoundedCaptureProcess,
   type CaptureProcessPorts,
+  type CaptureProcessResult,
 } from "../tools/desktop-evidence/src/run-capture-process";
 
 function never(): Promise<void> {
   return new Promise(() => undefined);
+}
+
+function successfulChild() {
+  return {
+    pid: 1234,
+    result: Promise.resolve<CaptureProcessResult>({ code: 0, signal: null }),
+    killTree: vi.fn(async () => undefined),
+  };
 }
 
 function ports(overrides: Partial<CaptureProcessPorts> = {}): CaptureProcessPorts {
@@ -15,11 +24,7 @@ function ports(overrides: Partial<CaptureProcessPorts> = {}): CaptureProcessPort
     .mockResolvedValue(new Set<string>());
 
   return {
-    launch: vi.fn(() => ({
-      pid: 1234,
-      result: Promise.resolve({ code: 0, signal: null }),
-      killTree: vi.fn(async () => undefined),
-    })),
+    launch: vi.fn(successfulChild),
     wait: vi.fn(never),
     listEvidenceDirectories,
     removeEvidenceDirectory: vi.fn(async () => undefined),
@@ -29,14 +34,15 @@ function ports(overrides: Partial<CaptureProcessPorts> = {}): CaptureProcessPort
 
 describe("desktop evidence capture watchdog", () => {
   it("returns after a successful child capture without killing it", async () => {
-    const lifecycle = ports();
+    const launch = vi.fn(successfulChild);
+    const lifecycle = ports({ launch });
 
     await expect(
       runBoundedCaptureProcess(["--sample-index=0"], 5_000, lifecycle),
     ).resolves.toBeUndefined();
 
-    expect(lifecycle.launch).toHaveBeenCalledWith(["--sample-index=0"]);
-    const child = vi.mocked(lifecycle.launch).mock.results[0]?.value;
+    expect(launch).toHaveBeenCalledWith(["--sample-index=0"]);
+    const child = launch.mock.results[0]?.value;
     expect(child?.killTree).not.toHaveBeenCalled();
     expect(lifecycle.removeEvidenceDirectory).not.toHaveBeenCalled();
   });
@@ -45,7 +51,7 @@ describe("desktop evidence capture watchdog", () => {
     const lifecycle = ports({
       launch: vi.fn(() => ({
         pid: 1234,
-        result: Promise.resolve({ code: 7, signal: null }),
+        result: Promise.resolve<CaptureProcessResult>({ code: 7, signal: null }),
         killTree: vi.fn(async () => undefined),
       })),
     });
@@ -70,7 +76,7 @@ describe("desktop evidence capture watchdog", () => {
     const lifecycle = ports({
       launch: vi.fn(() => ({
         pid: 4321,
-        result: new Promise(() => undefined),
+        result: new Promise<CaptureProcessResult>(() => undefined),
         killTree,
       })),
       wait: vi.fn(async () => undefined),
