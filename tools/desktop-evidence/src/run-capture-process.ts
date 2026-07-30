@@ -1,5 +1,5 @@
 import { execFile, spawn } from "node:child_process";
-import { readdir, rm } from "node:fs/promises";
+import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, dirname, join, resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
@@ -8,6 +8,7 @@ import { pathToFileURL } from "node:url";
 
 const execFileAsync = promisify(execFile);
 const EVIDENCE_DIRECTORY_PREFIX = "runtime-human-desktop-evidence-";
+export const EVIDENCE_DIRECTORY_ENV = "RUNTIME_HUMAN_EVIDENCE_DATA_DIR";
 const DEFAULT_CAPTURE_DEADLINE_MS = 300_000;
 const CLEANUP_RETRIES = 20;
 const CLEANUP_RETRY_DELAY_MS = 100;
@@ -24,9 +25,9 @@ export type CaptureChildProcess = Readonly<{
 }>;
 
 export type CaptureProcessPorts = Readonly<{
-  launch(arguments_: readonly string[]): CaptureChildProcess;
+  prepareEvidenceDirectory(): Promise<string>;
+  launch(arguments_: readonly string[], evidenceDirectory: string): CaptureChildProcess;
   wait(milliseconds: number): Promise<void>;
-  listEvidenceDirectories(): Promise<ReadonlySet<string>>;
   removeEvidenceDirectory(path: string): Promise<void>;
 }>;
 
@@ -39,46 +40,67 @@ export async function runBoundedCaptureProcess(
     throw new Error("Desktop evidence capture deadline must be a positive safe integer");
   }
 
-  const directoriesBefore = await ports.listEvidenceDirectories();
-  const child = ports.launch(arguments_);
+  const evidenceDirectory = resolveEvidenceDirectoryForRemoval(
+    await ports.prepareEvidenceDirectory(),
+  );
+  let captureFailure: Error | undefined;
 
   try {
+    const child = ports.launch(arguments_, evidenceDirectory);
     const outcome = await Promise.race([
       child.result.then((result) => ({ kind: "exit" as const, result })),
       ports.wait(deadlineMs).then(() => ({ kind: "timeout" as const })),
     ]);
 
     if (outcome.kind === "timeout") {
-      await child.killTree();
-      throw new Error(`Desktop evidence capture exceeded ${deadlineMs} ms and was terminated`);
-    }
-
-    if (outcome.result.code !== 0) {
+      try {
+        await child.killTree();
+        captureFailure = new Error(
+          `Desktop evidence capture exceeded ${deadlineMs} ms and was terminated`,
+        );
+      } catch (error) {
+        captureFailure = new Error(
+          `Desktop evidence capture exceeded ${deadlineMs} ms and process-tree termination failed`,
+          { cause: error },
+        );
+      }
+    } else if (outcome.result.code !== 0) {
       const suffix = outcome.result.signal === null ? "" : ` after signal ${outcome.result.signal}`;
-      throw new Error(
+      captureFailure = new Error(
         `Desktop evidence capture exited with code ${String(outcome.result.code)}${suffix}`,
       );
     }
-  } finally {
-    const directoriesAfter = await ports.listEvidenceDirectories();
-    const newDirectories = [...directoriesAfter]
-      .filter((path) => !directoriesBefore.has(path))
-      .sort((left, right) => left.localeCompare(right));
-
-    if (newDirectories.length > 1) {
-      throw new Error(
-        `Evidence cleanup is ambiguous; refusing to remove ${newDirectories.length} new directories`,
-      );
-    }
-    if (newDirectories.length === 1) {
-      await ports.removeEvidenceDirectory(newDirectories[0]);
-    }
+  } catch (error) {
+    captureFailure = toError(error);
   }
+
+  let cleanupFailure: Error | undefined;
+  try {
+    await ports.removeEvidenceDirectory(evidenceDirectory);
+  } catch (error) {
+    cleanupFailure = toError(error);
+  }
+
+  if (captureFailure !== undefined && cleanupFailure !== undefined) {
+    throw new AggregateError(
+      [captureFailure, cleanupFailure],
+      "Desktop evidence capture and exact-directory cleanup both failed",
+    );
+  }
+  if (captureFailure !== undefined) throw captureFailure;
+  if (cleanupFailure !== undefined) throw cleanupFailure;
 }
 
-function launchCaptureWorker(arguments_: readonly string[]): CaptureChildProcess {
+function launchCaptureWorker(
+  arguments_: readonly string[],
+  evidenceDirectory: string,
+): CaptureChildProcess {
   const workerPath = resolve(import.meta.dirname, "capture-startup.ts");
   const child = spawn(process.execPath, ["--import=tsx", workerPath, ...arguments_], {
+    env: {
+      ...process.env,
+      [EVIDENCE_DIRECTORY_ENV]: evidenceDirectory,
+    },
     stdio: "inherit",
     windowsHide: true,
   });
@@ -113,16 +135,6 @@ function launchCaptureWorker(arguments_: readonly string[]): CaptureChildProcess
   });
 }
 
-async function listEvidenceDirectories(): Promise<ReadonlySet<string>> {
-  const root = tmpdir();
-  const entries = await readdir(root, { withFileTypes: true });
-  return new Set(
-    entries
-      .filter((entry) => entry.isDirectory() && entry.name.startsWith(EVIDENCE_DIRECTORY_PREFIX))
-      .map((entry) => join(root, entry.name)),
-  );
-}
-
 export function resolveEvidenceDirectoryForRemoval(path: string, root = tmpdir()): string {
   const resolvedRoot = resolve(root);
   const resolvedPath = resolve(path);
@@ -142,11 +154,11 @@ export function resolveEvidenceDirectoryForRemoval(path: string, root = tmpdir()
 }
 
 const DEFAULT_PORTS = Object.freeze<CaptureProcessPorts>({
+  prepareEvidenceDirectory: async () => mkdtemp(join(tmpdir(), EVIDENCE_DIRECTORY_PREFIX)),
   launch: launchCaptureWorker,
   wait: async (milliseconds) => {
     await delay(milliseconds, undefined, { ref: false });
   },
-  listEvidenceDirectories,
   removeEvidenceDirectory: async (path) => {
     const safePath = resolveEvidenceDirectoryForRemoval(path);
     await rm(safePath, {
@@ -157,6 +169,10 @@ const DEFAULT_PORTS = Object.freeze<CaptureProcessPorts>({
     });
   },
 });
+
+function toError(value: unknown): Error {
+  return value instanceof Error ? value : new Error(String(value));
+}
 
 function isDirectExecution(moduleUrl: string, scriptPath: string | undefined): boolean {
   return scriptPath !== undefined && moduleUrl === pathToFileURL(resolve(scriptPath)).href;
