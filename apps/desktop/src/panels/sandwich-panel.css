@@ -1,3 +1,11 @@
+.runtime-sandwich-rail {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  align-content: start;
+  gap: var(--space-3);
+}
+
 .runtime-sandwich-panel {
   overflow: hidden;
   border: 1px solid var(--game-border);
