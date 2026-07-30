@@ -23,8 +23,12 @@ fn main() {
     let performance = DesktopPerformanceRecorder::default();
     performance.record_once(DesktopPerformanceEventName::ProcessEntry);
 
+    let builder = tauri::Builder::default();
+    #[cfg(feature = "performance-evidence")]
+    let builder = builder.plugin(tauri_plugin_wdio_webdriver::init());
+
     let setup_performance = performance.clone();
-    let app = tauri::Builder::default()
+    let app = builder
         .setup(move |app| {
             setup_performance.record_once(DesktopPerformanceEventName::TauriSetupStart);
             let data_dir = resolve_desktop_data_directory(app)?;
