@@ -2,8 +2,8 @@ use std::{
     path::{Path, PathBuf},
     sync::{
         Arc, Mutex,
-        atomic::{AtomicBool, AtomicU32, Ordering},
-        mpsc::{self, Receiver, RecvTimeoutError, SyncSender, TrySendError},
+        atomic::{AtomicU32, Ordering},
+        mpsc::{self, Receiver, SyncSender, TrySendError},
     },
     thread::{self, JoinHandle},
     time::{Duration, Instant},
@@ -30,7 +30,6 @@ use super::{
 };
 
 const COMMAND_QUEUE_CAPACITY: usize = 64;
-const SHUTDOWN_POLL_INTERVAL: Duration = Duration::from_millis(100);
 
 type ResponseSender<T> = SyncSender<Result<T, PersistenceError>>;
 type WorkerResult = Result<(), PersistenceError>;
@@ -71,6 +70,12 @@ enum DatabaseCommand {
     RecoveryStatus {
         response: ResponseSender<RecoveryStatusV1>,
     },
+    #[cfg(test)]
+    TestBarrier {
+        entered: SyncSender<()>,
+        release: Receiver<()>,
+        response: ResponseSender<()>,
+    },
 }
 
 impl DatabaseCommand {
@@ -81,6 +86,8 @@ impl DatabaseCommand {
             }
             Self::CreateBackup { .. } => DesktopPerformanceOperationCategory::Backup,
             Self::RecoveryStatus { .. } => DesktopPerformanceOperationCategory::Recovery,
+            #[cfg(test)]
+            Self::TestBarrier { .. } => DesktopPerformanceOperationCategory::Recovery,
             Self::CreateSave { .. }
             | Self::BeginMonthRun { .. }
             | Self::StoreBoundary { .. }
@@ -97,6 +104,17 @@ struct QueuedDatabaseCommand {
     depth_at_enqueue: u32,
 }
 
+enum WorkerMessage {
+    Operation(QueuedDatabaseCommand),
+    Shutdown { closed: SyncSender<()> },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum AdmissionState {
+    Open,
+    Closed,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct PersistenceOperationContext {
     operation_id: u64,
@@ -110,10 +128,11 @@ enum WorkerMode {
 }
 
 struct PersistenceInner {
-    sender: SyncSender<QueuedDatabaseCommand>,
+    sender: SyncSender<WorkerMessage>,
     queue_depth: Arc<AtomicU32>,
     performance: DesktopPerformanceRecorder,
-    shutdown_requested: Arc<AtomicBool>,
+    admission: Mutex<AdmissionState>,
+    shutdown_gate: Mutex<()>,
     worker: Mutex<Option<JoinHandle<WorkerResult>>>,
 }
 
@@ -144,8 +163,6 @@ impl PersistenceHandle {
         let queue_depth = Arc::new(AtomicU32::new(0));
         let worker_queue_depth = Arc::clone(&queue_depth);
         let worker_performance = performance.clone();
-        let shutdown_requested = Arc::new(AtomicBool::new(false));
-        let worker_shutdown = Arc::clone(&shutdown_requested);
         let worker = thread::Builder::new()
             .name("runtime-human-sqlite".to_owned())
             .spawn(move || match Database::open_or_create(&path) {
@@ -162,7 +179,6 @@ impl PersistenceHandle {
                                 return worker_loop(
                                     read_only,
                                     receiver,
-                                    &worker_shutdown,
                                     &worker_queue_depth,
                                     &worker_performance,
                                     &backup_directory,
@@ -182,7 +198,6 @@ impl PersistenceHandle {
                     worker_loop(
                         database,
                         receiver,
-                        &worker_shutdown,
                         &worker_queue_depth,
                         &worker_performance,
                         &backup_directory,
@@ -198,7 +213,6 @@ impl PersistenceHandle {
                             worker_loop(
                                 database,
                                 receiver,
-                                &worker_shutdown,
                                 &worker_queue_depth,
                                 &worker_performance,
                                 &backup_directory,
@@ -224,7 +238,8 @@ impl PersistenceHandle {
                     sender,
                     queue_depth,
                     performance,
-                    shutdown_requested,
+                    admission: Mutex::new(AdmissionState::Open),
+                    shutdown_gate: Mutex::new(()),
                     worker: Mutex::new(Some(worker)),
                 }),
             }),
@@ -424,9 +439,80 @@ impl PersistenceHandle {
         receive(receiver)
     }
 
+    #[cfg(test)]
+    pub(crate) fn enqueue_test_barrier(
+        &self,
+        entered: SyncSender<()>,
+        release: Receiver<()>,
+    ) -> Result<mpsc::Receiver<Result<(), PersistenceError>>, PersistenceError> {
+        let (response, receiver) = response_channel();
+        self.send(
+            DatabaseCommand::TestBarrier {
+                entered,
+                release,
+                response,
+            },
+            self.begin_operation(),
+        )?;
+        Ok(receiver)
+    }
+
+    #[cfg(test)]
+    pub(crate) fn enqueue_test_recovery_status(
+        &self,
+    ) -> Result<mpsc::Receiver<Result<RecoveryStatusV1, PersistenceError>>, PersistenceError> {
+        let (response, receiver) = response_channel();
+        self.send(
+            DatabaseCommand::RecoveryStatus { response },
+            self.begin_operation(),
+        )?;
+        Ok(receiver)
+    }
+
     pub(crate) fn shutdown(&self) -> Result<(), PersistenceError> {
-        self.inner.shutdown_requested.store(true, Ordering::Release);
-        join_worker(&self.inner.worker)
+        let _shutdown_guard = self
+            .inner
+            .shutdown_gate
+            .lock()
+            .map_err(|_| PersistenceError::Unavailable)?;
+        if self
+            .inner
+            .worker
+            .lock()
+            .map_err(|_| PersistenceError::Unavailable)?
+            .is_none()
+        {
+            return Ok(());
+        }
+
+        let (closed_sender, closed_receiver) = mpsc::sync_channel(1);
+        {
+            let mut admission = self
+                .inner
+                .admission
+                .lock()
+                .map_err(|_| PersistenceError::Unavailable)?;
+            if *admission == AdmissionState::Open {
+                *admission = AdmissionState::Closed;
+                if self
+                    .inner
+                    .sender
+                    .send(WorkerMessage::Shutdown {
+                        closed: closed_sender,
+                    })
+                    .is_err()
+                {
+                    return join_worker(&self.inner.worker);
+                }
+            }
+        }
+
+        let acknowledgement = closed_receiver
+            .recv()
+            .map_err(|_| PersistenceError::Unavailable);
+        let worker_result = join_worker(&self.inner.worker);
+        acknowledgement?;
+        worker_result
     }
 
     fn send(
@@ -434,7 +520,12 @@ impl PersistenceHandle {
         command: DatabaseCommand,
         operation: PersistenceOperationContext,
     ) -> Result<(), PersistenceError> {
-        if self.inner.shutdown_requested.load(Ordering::Acquire) {
+        let admission = self
+            .inner
+            .admission
+            .lock()
+            .map_err(|_| PersistenceError::Unavailable)?;
+        if *admission == AdmissionState::Closed {
             return Err(PersistenceError::Unavailable);
         }
 
@@ -450,7 +541,7 @@ impl PersistenceHandle {
             depth_at_enqueue,
         };
 
-        match self.inner.sender.try_send(queued) {
+        match self.inner.sender.try_send(WorkerMessage::Operation(queued)) {
             Ok(()) => Ok(()),
             Err(TrySendError::Full(_)) => {
                 release_queue_depth(&self.inner.queue_depth);
@@ -466,7 +557,29 @@ impl PersistenceHandle {
 
 impl Drop for PersistenceInner {
     fn drop(&mut self) {
-        self.shutdown_requested.store(true, Ordering::Release);
+        let worker_exists = match self.worker.get_mut() {
+            Ok(worker) => worker.is_some(),
+            Err(poisoned) => poisoned.into_inner().is_some(),
+        };
+        if !worker_exists {
+            return;
+        }
+
+        match self.admission.get_mut() {
+            Ok(admission) => *admission = AdmissionState::Closed,
+            Err(poisoned) => *poisoned.into_inner() = AdmissionState::Closed,
+        }
+        let (closed_sender, closed_receiver) = mpsc::sync_channel(1);
+        if self
+            .sender
+            .send(WorkerMessage::Shutdown {
+                closed: closed_sender,
+            })
+            .is_ok()
+        {
+            let _closed = closed_receiver.recv();
+        }
+
         let worker = match self.worker.get_mut() {
             Ok(worker) => worker.take(),
             Err(poisoned) => poisoned.into_inner().take(),
@@ -492,19 +605,15 @@ fn join_worker(worker: &Mutex<Option<JoinHandle<WorkerResult>>>) -> Result<(), P
 
 fn worker_loop(
     mut database: Database,
-    receiver: Receiver<QueuedDatabaseCommand>,
-    shutdown_requested: &AtomicBool,
+    receiver: Receiver<WorkerMessage>,
     queue_depth: &AtomicU32,
     performance: &DesktopPerformanceRecorder,
     backup_directory: &Path,
     mode: WorkerMode,
 ) -> WorkerResult {
     loop {
-        if shutdown_requested.load(Ordering::Acquire) {
-            break;
-        }
-        match receiver.recv_timeout(SHUTDOWN_POLL_INTERVAL) {
-            Ok(queued) => dispatch_observed(
+        match receiver.recv() {
+            Ok(WorkerMessage::Operation(queued)) => dispatch_observed(
                 &mut database,
                 queued,
                 queue_depth,
@@ -512,11 +621,14 @@ fn worker_loop(
                 backup_directory,
                 mode,
             ),
-            Err(RecvTimeoutError::Timeout) => {}
-            Err(RecvTimeoutError::Disconnected) => break,
+            Ok(WorkerMessage::Shutdown { closed }) => {
+                let result = database.close();
+                let _closed = closed.send(());
+                return result;
+            }
+            Err(_) => return database.close(),
         }
     }
-    database.close()
 }
 
 fn dispatch_observed(
@@ -601,6 +713,18 @@ fn dispatch(
             };
             status.backup_available = backup_available(backup_directory);
             send_response(response, Ok(status));
+        }
+        #[cfg(test)]
+        DatabaseCommand::TestBarrier {
+            entered,
+            release,
+            response,
+        } => {
+            let result = entered
+                .send(())
+                .map_err(|_| PersistenceError::Unavailable)
+                .and_then(|()| release.recv().map_err(|_| PersistenceError::Unavailable));
+            send_response(response, result);
         }
     }
 }

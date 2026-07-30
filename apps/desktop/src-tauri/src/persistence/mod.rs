@@ -34,6 +34,8 @@ mod terminal_recovery_tests;
 #[cfg(test)]
 mod tests;
 mod worker;
+#[cfg(test)]
+mod worker_shutdown_tests;
 
 pub(crate) use commands::ManagedPersistence;
 pub(crate) use commit_contract::CommitPersistedMonthRunCommandV1;
