@@ -120,8 +120,5 @@ function demotedState(item: SandwichRailItem): SandwichPanelState {
 function statesEqual(left: SandwichRailState, right: SandwichRailState): boolean {
   const leftKeys = Object.keys(left);
   const rightKeys = Object.keys(right);
-  return (
-    leftKeys.length === rightKeys.length &&
-    rightKeys.every((key) => left[key] === right[key])
-  );
+  return leftKeys.length === rightKeys.length && rightKeys.every((key) => left[key] === right[key]);
 }
