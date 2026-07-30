@@ -108,6 +108,25 @@ jobs:
           -e "await import('@wdio/tauri-service'); console.log('WDIO Tauri service import succeeded')"
       - name: Build evidence executable
         run: pnpm evidence:desktop:build
+      - name: Restore build-generated Tauri schemas
+        run: |
+          $ErrorActionPreference = "Stop"
+          $generatedSchemas = @(
+            "apps/desktop/src-tauri/gen/schemas/acl-manifests.json",
+            "apps/desktop/src-tauri/gen/schemas/capabilities.json",
+            "apps/desktop/src-tauri/gen/schemas/desktop-schema.json",
+            "apps/desktop/src-tauri/gen/schemas/windows-schema.json"
+          )
+          Write-Host "--- tree after evidence build ---"
+          git status --short
+          foreach ($path in $generatedSchemas) {
+            git restore --worktree -- $path
+          }
+          Write-Host "--- tree after generated-schema restore ---"
+          git status --short
+          if (-not (git diff --quiet) -or -not (git diff --cached --quiet)) {
+            throw "Evidence build changed files outside the generated Tauri schema allowlist"
+          }
       - name: Capture real Windows startup warmup
         run: |
           $ErrorActionPreference = "Stop"
