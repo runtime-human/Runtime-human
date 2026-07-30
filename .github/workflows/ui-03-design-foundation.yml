@@ -9,10 +9,15 @@ on:
       - "apps/desktop/.storybook/preview.ts"
       - "apps/desktop/src/main.tsx"
       - "apps/desktop/src/design/runtime-human-tokens.css"
+      - "apps/desktop/src/shell/DesktopShell.tsx"
       - "apps/desktop/src/shell/GameShell.tsx"
       - "apps/desktop/src/shell/game-shell.css"
+      - "apps/desktop/src/panels/SandwichPanel.tsx"
+      - "apps/desktop/src/panels/sandwich-panel.css"
+      - "tests/desktop-shell.test.tsx"
       - "tests/game-shell.test.tsx"
       - "tests/runtime-human-design-tokens.test.ts"
+      - "tests/sandwich-panel.test.tsx"
 
 permissions:
   contents: read
@@ -47,6 +52,8 @@ jobs:
           pnpm exec vitest run
           tests/runtime-human-design-tokens.test.ts
           tests/game-shell.test.tsx
+          tests/desktop-shell.test.tsx
+          tests/sandwich-panel.test.tsx
       - name: Check formatting
         run: pnpm fmt:check
       - name: Run fast lint
