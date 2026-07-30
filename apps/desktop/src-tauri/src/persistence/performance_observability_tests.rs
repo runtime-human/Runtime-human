@@ -39,7 +39,7 @@ fn queue_wait_and_database_spans_share_one_operation_context() {
     assert_eq!(database.operation_id, queue_wait.operation_id);
     assert!(queue_wait.operation_id.is_some());
     assert_eq!(queue_wait.queue_depth, Some(1));
-    assert_eq!(database.queue_depth, Some(0));
+    assert_eq!(database.queue_depth, None);
     assert!(queue_wait.duration_micros.is_some());
     assert!(database.duration_micros.is_some());
 }
@@ -73,6 +73,6 @@ fn sequential_commands_receive_distinct_operation_ids_and_return_to_zero_depth()
     assert!(
         database_events
             .iter()
-            .all(|event| event.queue_depth == Some(0))
+            .all(|event| event.queue_depth.is_none())
     );
 }
