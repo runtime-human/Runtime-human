@@ -9,7 +9,9 @@ on:
       - "apps/desktop/.storybook/preview.ts"
       - "apps/desktop/src/main.tsx"
       - "apps/desktop/src/design/runtime-human-tokens.css"
+      - "apps/desktop/src/shell/GameShell.tsx"
       - "apps/desktop/src/shell/game-shell.css"
+      - "tests/game-shell.test.tsx"
       - "tests/runtime-human-design-tokens.test.ts"
 
 permissions:
@@ -40,8 +42,11 @@ jobs:
           pnpm --version
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-      - name: Run design foundation contract
-        run: pnpm exec vitest run tests/runtime-human-design-tokens.test.ts
+      - name: Run game design contracts
+        run: >-
+          pnpm exec vitest run
+          tests/runtime-human-design-tokens.test.ts
+          tests/game-shell.test.tsx
       - name: Check formatting
         run: pnpm fmt:check
       - name: Run fast lint
