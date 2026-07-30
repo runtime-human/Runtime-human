@@ -8,7 +8,7 @@ publish = false
 
 [features]
 default = []
-performance-evidence = []
+performance-evidence = ["dep:tauri-plugin-wdio-webdriver"]
 
 [build-dependencies]
 tauri-build = "=2.6.3"
@@ -26,6 +26,7 @@ serde = { version = "=1.0.229", features = ["derive"] }
 serde_json = "=1.0.150"
 sha2 = "=0.11.0"
 tauri = "=2.11.5"
+tauri-plugin-wdio-webdriver = { version = "1", optional = true }
 thiserror = "=2.0.19"
 tracing = "=0.1.44"
 tracing-appender = "=0.2.5"
