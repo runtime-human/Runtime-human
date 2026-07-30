@@ -29,6 +29,12 @@ const items = [
 ] as const;
 
 describe("SandwichRail", () => {
+  it("exposes one named semantic rail region", () => {
+    render(<SandwichRail ariaLabel="Контекст игры" items={items} />);
+
+    expect(screen.getByRole("region", { name: "Контекст игры" })).toBeVisible();
+  });
+
   it("expands only one detail layer and demotes the previous panel to summary", () => {
     render(<SandwichRail ariaLabel="Контекст игры" items={items} />);
 
