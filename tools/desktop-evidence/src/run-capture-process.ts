@@ -9,6 +9,8 @@ import { pathToFileURL } from "node:url";
 const execFileAsync = promisify(execFile);
 const EVIDENCE_DIRECTORY_PREFIX = "runtime-human-desktop-evidence-";
 const DEFAULT_CAPTURE_DEADLINE_MS = 300_000;
+const CLEANUP_RETRIES = 20;
+const CLEANUP_RETRY_DELAY_MS = 100;
 
 export type CaptureProcessResult = Readonly<{
   code: number | null;
@@ -124,7 +126,12 @@ const DEFAULT_PORTS = Object.freeze<CaptureProcessPorts>({
   },
   listEvidenceDirectories,
   removeEvidenceDirectory: async (path) => {
-    await rm(path, { recursive: true, force: true });
+    await rm(path, {
+      recursive: true,
+      force: true,
+      maxRetries: CLEANUP_RETRIES,
+      retryDelay: CLEANUP_RETRY_DELAY_MS,
+    });
   },
 });
 
