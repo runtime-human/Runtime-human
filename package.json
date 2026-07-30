@@ -9,7 +9,7 @@
     "content:check": "tsx scripts/build-game-content.ts --check",
     "evidence:january:e2": "node scripts/write-january-e2-fixtures.mjs",
     "evidence:desktop:report": "node scripts/run-desktop-performance-evidence.mjs",
-    "evidence:desktop:check": "vitest run tests/desktop-performance-evidence.test.ts tests/desktop-performance-evidence-cli.test.ts tests/desktop-evidence-harness.test.ts",
+    "evidence:desktop:check": "vitest run tests/desktop-performance-evidence.test.ts tests/desktop-performance-evidence-cli.test.ts tests/desktop-evidence-harness.test.ts tests/desktop-evidence-watchdog.test.ts",
     "evidence:desktop:driver:install": "cargo install tauri-driver --version 2.0.6 --locked",
     "evidence:desktop:build": "pnpm --filter @runtime-human/desktop tauri:build:evidence",
     "evidence:desktop:capture:startup": "pnpm --filter @runtime-human/desktop-evidence capture:startup",
@@ -44,7 +44,7 @@
     "oxlint": "1.74.0",
     "oxlint-tsgolint": "0.24.0",
     "react": "19.2.7",
-    "react-dom": "19.2.7",
+    "react-dom": "19.2.3",
     "tsx": "4.23.1",
     "typescript": "7.0.2",
     "vitest": "4.1.10"
