@@ -51,9 +51,9 @@ export function SandwichPanel({
       {showSummary ? <div className="runtime-sandwich-summary">{summary}</div> : null}
 
       {showDetails ? (
-        <div aria-label={title} className="runtime-sandwich-details" id={detailId} role="region">
+        <section aria-label={title} className="runtime-sandwich-details" id={detailId}>
           {children}
-        </div>
+        </section>
       ) : null}
     </section>
   );
