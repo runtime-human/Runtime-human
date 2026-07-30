@@ -48,7 +48,9 @@ impl RuntimeDiagnostics {
             Some(path) => path,
             None => match app.path().app_log_dir() {
                 Ok(path) => path,
-                Err(_) => return Self::inactive(LoggingInitializationState::LogDirectoryUnavailable),
+                Err(_) => {
+                    return Self::inactive(LoggingInitializationState::LogDirectoryUnavailable);
+                }
             },
         };
 

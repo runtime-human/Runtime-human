@@ -534,7 +534,7 @@ fn dispatch_observed(
         enqueued_at,
         depth_at_enqueue,
     } = queued;
-    let remaining_depth = release_queue_depth(queue_depth);
+    release_queue_depth(queue_depth);
 
     performance.record_duration(
         DesktopPerformanceEventName::PersistenceQueueWait,
@@ -547,7 +547,7 @@ fn dispatch_observed(
         DesktopPerformanceEventName::PersistenceDatabaseOperation,
         Some(category),
         Some(operation_id),
-        Some(remaining_depth),
+        None,
         || dispatch(database, command, backup_directory, mode),
     );
 }

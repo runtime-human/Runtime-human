@@ -54,8 +54,7 @@ export async function runBoundedCaptureProcess(
     }
 
     if (outcome.result.code !== 0) {
-      const suffix =
-        outcome.result.signal === null ? "" : ` after signal ${outcome.result.signal}`;
+      const suffix = outcome.result.signal === null ? "" : ` after signal ${outcome.result.signal}`;
       throw new Error(
         `Desktop evidence capture exited with code ${String(outcome.result.code)}${suffix}`,
       );

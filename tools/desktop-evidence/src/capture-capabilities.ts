@@ -1,7 +1,4 @@
-import {
-  createTauriCapabilities,
-  type TauriCapabilities,
-} from "@wdio/tauri-service";
+import { createTauriCapabilities, type TauriCapabilities } from "@wdio/tauri-service";
 
 export function createStartupEvidenceCapabilities(
   binaryPath: string,
