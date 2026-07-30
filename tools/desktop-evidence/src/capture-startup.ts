@@ -14,11 +14,26 @@ import { writeValidatedCapture } from "./write-capture.js";
 
 const REPOSITORY_ROOT = resolve(import.meta.dirname, "../../..");
 
+type CaptureLifecycleStage =
+  | "options-validated"
+  | "temporary-state-created"
+  | "capabilities-created"
+  | "session-starting"
+  | "session-started"
+  | "fmp-waiting"
+  | "fmp-observed"
+  | "snapshot-captured"
+  | "capture-written"
+  | "cleanup-starting"
+  | "cleanup-complete";
+
 export async function captureStartupShellFmp(arguments_: readonly string[]): Promise<string> {
   const options = parseStartupCaptureArguments(arguments_, REPOSITORY_ROOT);
   await access(options.binaryPath);
+  recordStage("options-validated");
 
   const isolatedDataDirectory = await mkdtemp(join(tmpdir(), "runtime-human-desktop-evidence-"));
+  recordStage("temporary-state-created");
   let browser: EvidenceBrowser | undefined;
   try {
     const capabilities = createTauriCapabilities(options.binaryPath, {
@@ -26,7 +41,7 @@ export async function captureStartupShellFmp(arguments_: readonly string[]): Pro
       autoInstallTauriDriver: false,
       driverProvider: "external",
       logLevel: "warn",
-      startTimeout: 120_000,
+      startTimeout: 30_000,
     });
     capabilities["wdio:tauriServiceOptions"] = {
       ...capabilities["wdio:tauriServiceOptions"],
@@ -34,18 +49,25 @@ export async function captureStartupShellFmp(arguments_: readonly string[]): Pro
       captureBackendLogs: false,
       captureFrontendLogs: false,
     };
+    recordStage("capabilities-created");
 
+    recordStage("session-starting");
     browser = await startWdioSession(capabilities, {
       rootDir: REPOSITORY_ROOT,
       autoDownloadEdgeDriver: true,
       autoInstallTauriDriver: false,
     });
+    recordStage("session-started");
+
+    recordStage("fmp-waiting");
     await waitForFirstMeaningfulPaint(browser);
+    recordStage("fmp-observed");
 
     const [browserEntries, rustSnapshot] = await Promise.all([
       captureBrowserEntries(browser),
       captureRustPerformanceSnapshot(browser),
     ]);
+    recordStage("snapshot-captured");
     await writeValidatedCapture(options.outputPath, {
       schemaVersion: "runtime-human-desktop-performance-capture-v1",
       commit: options.commit,
@@ -62,16 +84,23 @@ export async function captureStartupShellFmp(arguments_: readonly string[]): Pro
       rustSnapshot,
       browserEntries,
     });
+    recordStage("capture-written");
     return options.outputPath;
   } finally {
+    recordStage("cleanup-starting");
     try {
       if (browser !== undefined) {
         await cleanupWdioSession(browser);
       }
     } finally {
       await rm(isolatedDataDirectory, { recursive: true, force: true });
+      recordStage("cleanup-complete");
     }
   }
+}
+
+function recordStage(stage: CaptureLifecycleStage): void {
+  console.log(`RUNTIME_HUMAN_EVIDENCE stage=${stage}`);
 }
 
 function isDirectExecution(moduleUrl: string, scriptPath: string | undefined): boolean {
