@@ -65,8 +65,13 @@ export async function runBoundedCaptureProcess(
       .filter((path) => !directoriesBefore.has(path))
       .sort((left, right) => left.localeCompare(right));
 
-    for (const path of newDirectories) {
-      await ports.removeEvidenceDirectory(path);
+    if (newDirectories.length > 1) {
+      throw new Error(
+        `Evidence cleanup is ambiguous; refusing to remove ${newDirectories.length} new directories`,
+      );
+    }
+    if (newDirectories.length === 1) {
+      await ports.removeEvidenceDirectory(newDirectories[0]);
     }
   }
 }
