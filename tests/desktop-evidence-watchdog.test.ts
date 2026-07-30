@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  resolveEvidenceDirectoryForRemoval,
   runBoundedCaptureProcess,
   type CaptureProcessPorts,
   type CaptureProcessResult,
@@ -93,6 +94,27 @@ describe("desktop evidence capture watchdog", () => {
     expect(removeEvidenceDirectory).toHaveBeenCalledOnce();
     expect(removeEvidenceDirectory).toHaveBeenCalledWith(
       "C:\\Temp\\runtime-human-desktop-evidence-new",
+    );
+  });
+
+  it("allows only a direct prefixed child of the configured temporary root", () => {
+    expect(
+      resolveEvidenceDirectoryForRemoval(
+        "C:\\Temp\\runtime-human-desktop-evidence-capture-1",
+        "C:\\Temp",
+      ),
+    ).toBe("C:\\Temp\\runtime-human-desktop-evidence-capture-1");
+  });
+
+  it.each([
+    ["temporary root", "C:\\Temp"],
+    ["unprefixed child", "C:\\Temp\\other-directory"],
+    ["nested descendant", "C:\\Temp\\runtime-human-desktop-evidence-safe\\nested"],
+    ["parent escape", "C:\\runtime-human-desktop-evidence-escape"],
+    ["prefix lookalike parent", "C:\\Temp-other\\runtime-human-desktop-evidence-escape"],
+  ])("rejects cleanup outside the exact evidence directory boundary: %s", (_label, candidate) => {
+    expect(() => resolveEvidenceDirectoryForRemoval(candidate, "C:\\Temp")).toThrow(
+      /not a direct Runtime Human evidence directory/u,
     );
   });
 });
