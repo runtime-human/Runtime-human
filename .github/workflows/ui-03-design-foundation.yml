@@ -6,8 +6,10 @@ on:
       - main
     paths:
       - ".github/workflows/ui-03-design-foundation.yml"
+      - "apps/desktop/.storybook/preview.ts"
+      - "apps/desktop/src/main.tsx"
       - "apps/desktop/src/design/runtime-human-tokens.css"
-      - "apps/desktop/src/shell/desktop-shell.css"
+      - "apps/desktop/src/shell/game-shell.css"
       - "tests/runtime-human-design-tokens.test.ts"
 
 permissions:
@@ -20,7 +22,7 @@ defaults:
 jobs:
   focused:
     runs-on: self-hosted
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
@@ -40,3 +42,11 @@ jobs:
         run: pnpm install --frozen-lockfile --reporter=silent
       - name: Run design foundation contract
         run: pnpm exec vitest run tests/runtime-human-design-tokens.test.ts
+      - name: Check formatting
+        run: pnpm fmt:check
+      - name: Run fast lint
+        run: pnpm lint
+      - name: Run typecheck
+        run: pnpm typecheck
+      - name: Build renderer
+        run: pnpm --filter @runtime-human/desktop build
