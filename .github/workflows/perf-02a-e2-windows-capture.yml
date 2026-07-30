@@ -111,6 +111,7 @@ jobs:
       - name: Restore build-generated Tauri schemas
         run: |
           $ErrorActionPreference = "Stop"
+          $manifest = "apps/desktop/src-tauri/Cargo.toml"
           $generatedSchemas = @(
             "apps/desktop/src-tauri/gen/schemas/acl-manifests.json",
             "apps/desktop/src-tauri/gen/schemas/capabilities.json",
@@ -119,6 +120,10 @@ jobs:
           )
           Write-Host "--- tree after evidence build ---"
           git status --short
+          if (-not (git diff --quiet -- $manifest)) {
+            Write-Host "--- Cargo.toml mutation produced by evidence build ---"
+            git diff -- $manifest
+          }
           foreach ($path in $generatedSchemas) {
             git restore --worktree -- $path
           }
