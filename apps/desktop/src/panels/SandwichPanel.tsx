@@ -51,12 +51,7 @@ export function SandwichPanel({
       {showSummary ? <div className="runtime-sandwich-summary">{summary}</div> : null}
 
       {showDetails ? (
-        <div
-          aria-label={title}
-          className="runtime-sandwich-details"
-          id={detailId}
-          role="region"
-        >
+        <div aria-label={title} className="runtime-sandwich-details" id={detailId} role="region">
           {children}
         </div>
       ) : null}
@@ -64,10 +59,7 @@ export function SandwichPanel({
   );
 }
 
-function nextPanelState(
-  state: SandwichPanelState,
-  hasSummary: boolean,
-): SandwichPanelState {
+function nextPanelState(state: SandwichPanelState, hasSummary: boolean): SandwichPanelState {
   switch (state) {
     case "collapsed":
       return hasSummary ? "summary" : "expanded";

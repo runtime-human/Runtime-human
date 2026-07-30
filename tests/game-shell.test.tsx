@@ -21,17 +21,13 @@ describe("GameShell", () => {
     expect(screen.getByRole("banner", { name: "Игровой интерфейс" })).toHaveTextContent(
       "HUD content",
     );
-    expect(
-      screen.getByRole("complementary", { name: "Состояние персонажа" }),
-    ).toHaveTextContent("Player content");
-    expect(screen.getByRole("main", { name: "Игровая сцена" })).toHaveTextContent(
-      "Scene content",
+    expect(screen.getByRole("complementary", { name: "Состояние персонажа" })).toHaveTextContent(
+      "Player content",
     );
+    expect(screen.getByRole("main", { name: "Игровая сцена" })).toHaveTextContent("Scene content");
     expect(screen.getByRole("complementary", { name: "Контекст игры" })).toHaveTextContent(
       "Context content",
     );
-    expect(screen.getByRole("region", { name: "Игровой док" })).toHaveTextContent(
-      "Dock content",
-    );
+    expect(screen.getByRole("region", { name: "Игровой док" })).toHaveTextContent("Dock content");
   });
 });

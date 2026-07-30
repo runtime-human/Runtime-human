@@ -3,10 +3,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import {
-  SandwichPanel,
-  type SandwichPanelState,
-} from "../apps/desktop/src/panels/SandwichPanel";
+import { SandwichPanel, type SandwichPanelState } from "../apps/desktop/src/panels/SandwichPanel";
 
 function renderPanel(
   state: SandwichPanelState,
@@ -54,10 +51,7 @@ describe("SandwichPanel", () => {
 
     const toggle = screen.getByRole("button", { name: /События/u });
     expect(toggle).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("region", { name: "События" })).toHaveAttribute(
-      "id",
-      "events-details",
-    );
+    expect(screen.getByRole("region", { name: "События" })).toHaveAttribute("id", "events-details");
     expect(screen.getByRole("button", { name: "Подготовиться" })).toBeVisible();
   });
 

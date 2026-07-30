@@ -8,13 +8,7 @@ export type GameShellProps = Readonly<{
   bottomDock: ReactNode;
 }>;
 
-export function GameShell({
-  topHud,
-  playerRail,
-  scene,
-  contextRail,
-  bottomDock,
-}: GameShellProps) {
+export function GameShell({ topHud, playerRail, scene, contextRail, bottomDock }: GameShellProps) {
   return (
     <div className="runtime-game-shell" data-layout="game-shell">
       <header aria-label="Игровой интерфейс" className="runtime-game-top">

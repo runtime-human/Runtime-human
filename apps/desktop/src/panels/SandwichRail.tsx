@@ -1,9 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 
-import {
-  SandwichPanel,
-  type SandwichPanelState,
-} from "./SandwichPanel";
+import { SandwichPanel, type SandwichPanelState } from "./SandwichPanel";
 
 export type SandwichRailItem = Readonly<{
   id: string;

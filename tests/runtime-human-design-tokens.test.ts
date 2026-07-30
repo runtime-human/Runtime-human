@@ -12,14 +12,7 @@ const TOKENS_PATH = resolve(
   "runtime-human-tokens.css",
 );
 
-const SHELL_PATH = resolve(
-  process.cwd(),
-  "apps",
-  "desktop",
-  "src",
-  "shell",
-  "game-shell.css",
-);
+const SHELL_PATH = resolve(process.cwd(), "apps", "desktop", "src", "shell", "game-shell.css");
 
 const AI_DEFAULT_INDIGO = /#6366f1|#4f46e5|#4338ca|#3730a3|#8b5cf6|#7c3aed|#a855f7/i;
 const OLD_PAPER_VALUES = /#eeece3|#f7f5ed|#d5d8cf|#f1e4d2|#f1ddd7|#dfeeda/i;
