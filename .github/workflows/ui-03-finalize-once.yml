@@ -1,0 +1,97 @@
+name: ui-03-finalize-once
+
+on:
+  push:
+    branches:
+      - agent/ui-03-game-shell-sandwich-panels
+    paths:
+      - ".github/workflows/ui-03-finalize-once.yml"
+
+concurrency:
+  group: ui-03-finalize-once
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  finalize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: self-hosted
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: agent/ui-03-game-shell-sandwich-panels
+          fetch-depth: 0
+          clean: true
+          persist-credentials: true
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          $ErrorActionPreference = "Stop"
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+          pnpm --version
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Restore complete accepted design document
+        run: >-
+          node -e "const {execFileSync}=require('node:child_process');
+          const {writeFileSync}=require('node:fs');
+          const path='docs/superpowers/specs/2026-07-30-game-shell-selective-sandwich-panels-design.md';
+          let text=execFileSync('git',['show','31096dc029379719b7537e133e95faf0e235f606:'+path],{encoding:'utf8'});
+          const matches=text.match(/^type: spec$/gm)??[];
+          if(matches.length!==1) throw new Error('accepted design metadata did not contain exactly one type: spec');
+          text=text.replace(/^type: spec$/m,'type: plan');
+          if(!text.includes('## Acceptance criteria')||text.split('\n').length<400) throw new Error('accepted design document is incomplete');
+          writeFileSync(path,text,{encoding:'utf8'});"
+      - name: Run focused game-shell contracts
+        run: >-
+          pnpm exec vitest run
+          tests/runtime-human-design-tokens.test.ts
+          tests/game-shell.test.tsx
+          tests/game-shell-window-contract.test.ts
+          tests/desktop-content-csp.test.ts
+          tests/desktop-shell.test.tsx
+          tests/sandwich-panel.test.tsx
+          tests/sandwich-rail.test.tsx
+          tests/sandwich-rail-reconciliation.test.tsx
+      - name: Materialize canonical formatting
+        run: pnpm exec oxfmt apps/desktop/src/panels/SandwichRail.tsx
+      - name: Verify TypeScript and renderer
+        run: |
+          $ErrorActionPreference = "Stop"
+          pnpm fmt:check
+          pnpm lint
+          pnpm lint:type-aware
+          pnpm typecheck
+          node scripts/build-toc.mjs
+          pnpm docs:check
+          pnpm --filter @runtime-human/desktop build
+      - name: Commit clean UI foundation
+        run: |
+          $ErrorActionPreference = "Stop"
+          Remove-Item ".github/workflows/ui-03-design-foundation.yml" -Force
+          Remove-Item ".github/workflows/ui-03-finalize-once.yml" -Force
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet
+          $stagedDiffExit = $LASTEXITCODE
+          if ($stagedDiffExit -eq 0) {
+            throw "UI-03 finalization produced no clean-head diff"
+          }
+          if ($stagedDiffExit -ne 1) {
+            throw "Unable to inspect UI-03 finalization diff; git exited with $stagedDiffExit"
+          }
+          git diff --cached --check
+          git commit -m "chore: finalize UI-03 foundation"
+          git push origin HEAD:agent/ui-03-game-shell-sandwich-panels
