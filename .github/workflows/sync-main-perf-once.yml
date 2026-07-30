@@ -39,7 +39,25 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin main
-          git merge --no-edit origin/main
+          git merge --no-edit --no-commit origin/main
+          $mergeExit = $LASTEXITCODE
+          if ($mergeExit -ne 0) {
+            $conflicts = @(git diff --name-only --diff-filter=U)
+            $allowed = @("docs/CATALOG.md", "docs/MANIFEST.jsonc")
+            $unexpected = @($conflicts | Where-Object { $_ -notin $allowed })
+            if ($unexpected.Count -gt 0) {
+              git merge --abort
+              throw "Product conflicts require manual resolution: $($unexpected -join ', ')"
+            }
+            foreach ($path in $conflicts) {
+              git checkout --theirs -- $path
+              git add -- $path
+            }
+          }
+          git diff --name-only --diff-filter=U | ForEach-Object {
+            throw "Unresolved merge conflict remains: $_"
+          }
+          git commit --no-edit
           Remove-Item ".github/workflows/sync-main-perf-once.yml" -Force
           git add -A
           git diff --cached --check
