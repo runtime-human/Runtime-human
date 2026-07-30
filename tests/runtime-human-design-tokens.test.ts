@@ -18,7 +18,7 @@ const SHELL_PATH = resolve(
   "desktop",
   "src",
   "shell",
-  "desktop-shell.css",
+  "game-shell.css",
 );
 
 const AI_DEFAULT_INDIGO = /#6366f1|#4f46e5|#4338ca|#3730a3|#8b5cf6|#7c3aed|#a855f7/i;
