@@ -22,9 +22,10 @@ const SHELL_PATH = resolve(
 );
 
 const AI_DEFAULT_INDIGO = /#6366f1|#4f46e5|#4338ca|#3730a3|#8b5cf6|#7c3aed|#a855f7/i;
+const OLD_PAPER_VALUES = /#eeece3|#f7f5ed|#d5d8cf|#f1e4d2|#f1ddd7|#dfeeda/i;
 
 describe("Runtime Human game design foundation", () => {
-  it("defines the cold game palette and excludes old paper and AI-default roles", async () => {
+  it("defines the cold game palette and excludes beige and AI-default values", async () => {
     const css = await readFile(TOKENS_PATH, "utf8");
 
     for (const token of [
@@ -45,10 +46,17 @@ describe("Runtime Human game design foundation", () => {
       expect(css).toContain(token);
     }
 
-    expect(css).not.toContain("--surface-paper:");
-    expect(css).not.toContain("--surface-paper-raised:");
-    expect(css).not.toContain("--border-paper:");
+    expect(css).not.toMatch(OLD_PAPER_VALUES);
     expect(css).not.toMatch(AI_DEFAULT_INDIGO);
+  });
+
+  it("keeps temporary paper aliases dark and explicitly deprecated", async () => {
+    const css = await readFile(TOKENS_PATH, "utf8");
+
+    expect(css).toContain("Deprecated migration aliases");
+    expect(css).toContain("--surface-paper: var(--game-surface-2);");
+    expect(css).toContain("--surface-paper-raised: var(--game-surface-3);");
+    expect(css).toContain("--border-paper: var(--game-border);");
   });
 
   it("keeps game panel radii below generic dashboard-card proportions", async () => {
