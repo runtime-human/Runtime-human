@@ -29,7 +29,9 @@ fn command_accepted_before_shutdown_marker_completes_before_close() {
     let shutdown_handle = handle.clone();
     let shutdown = thread::spawn(move || shutdown_handle.shutdown());
 
-    barrier_release_sender.send(()).expect("release worker barrier");
+    barrier_release_sender
+        .send(())
+        .expect("release worker barrier");
     barrier_response
         .recv_timeout(Duration::from_secs(5))
         .expect("receive barrier response")
@@ -38,13 +40,19 @@ fn command_accepted_before_shutdown_marker_completes_before_close() {
     let query_result = query_response
         .recv_timeout(Duration::from_secs(5))
         .expect("receive queued query response");
-    assert!(query_result.is_ok(), "accepted query was lost during shutdown: {query_result:?}");
+    assert!(
+        query_result.is_ok(),
+        "accepted query was lost during shutdown: {query_result:?}"
+    );
     shutdown
         .join()
         .expect("join shutdown caller")
         .expect("shutdown worker");
 
-    assert!(matches!(handle.recovery_status(), Err(PersistenceError::Unavailable)));
+    assert!(matches!(
+        handle.recovery_status(),
+        Err(PersistenceError::Unavailable)
+    ));
     handle.shutdown().expect("idempotent shutdown");
 }
 
@@ -86,7 +94,9 @@ fn shutdown_marker_waits_behind_a_full_accepted_queue() {
         Err(mpsc::RecvTimeoutError::Timeout)
     ));
 
-    worker_release_sender.send(()).expect("release worker barrier");
+    worker_release_sender
+        .send(())
+        .expect("release worker barrier");
     worker_response
         .recv_timeout(Duration::from_secs(5))
         .expect("receive worker barrier response")
@@ -104,7 +114,10 @@ fn shutdown_marker_waits_behind_a_full_accepted_queue() {
         .expect("shutdown after full queue drain");
     shutdown.join().expect("join full-queue shutdown caller");
 
-    assert!(matches!(handle.recovery_status(), Err(PersistenceError::Unavailable)));
+    assert!(matches!(
+        handle.recovery_status(),
+        Err(PersistenceError::Unavailable)
+    ));
 }
 
 #[test]
@@ -137,7 +150,9 @@ fn concurrent_shutdown_callers_share_one_ordered_worker_close() {
         .collect::<Vec<_>>();
 
     caller_barrier.wait();
-    worker_release_sender.send(()).expect("release worker barrier");
+    worker_release_sender
+        .send(())
+        .expect("release worker barrier");
     worker_response
         .recv_timeout(Duration::from_secs(5))
         .expect("receive worker barrier response")
@@ -150,8 +165,13 @@ fn concurrent_shutdown_callers_share_one_ordered_worker_close() {
             .expect("concurrent shutdown is idempotent");
     }
 
-    assert!(matches!(handle.recovery_status(), Err(PersistenceError::Unavailable)));
-    handle.shutdown().expect("shutdown remains idempotent after all callers complete");
+    assert!(matches!(
+        handle.recovery_status(),
+        Err(PersistenceError::Unavailable)
+    ));
+    handle
+        .shutdown()
+        .expect("shutdown remains idempotent after all callers complete");
 }
 
 #[test]
