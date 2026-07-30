@@ -1,6 +1,7 @@
 import { access, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import type { Writable } from "node:stream";
 import { pathToFileURL } from "node:url";
 
 import { cleanupWdioSession, startWdioSession } from "@wdio/tauri-service";
@@ -99,13 +100,21 @@ function isDirectExecution(moduleUrl: string, scriptPath: string | undefined): b
   return scriptPath !== undefined && moduleUrl === pathToFileURL(resolve(scriptPath)).href;
 }
 
-if (isDirectExecution(import.meta.url, process.argv[1])) {
-  captureStartupShellFmp(process.argv.slice(2))
-    .then((outputPath) => {
-      console.log(`Wrote startup-shell-fmp capture to ${outputPath}`);
-    })
-    .catch((error) => {
-      console.error(error instanceof Error ? error.message : String(error));
-      process.exitCode = 1;
+async function writeAndExit(stream: Writable, message: string, exitCode: number): Promise<never> {
+  await new Promise<void>((resolveWrite, reject) => {
+    stream.write(`${message}\n`, (error) => {
+      if (error) reject(error);
+      else resolveWrite();
     });
+  });
+  process.exit(exitCode);
+}
+
+if (isDirectExecution(import.meta.url, process.argv[1])) {
+  captureStartupShellFmp(process.argv.slice(2)).then(
+    (outputPath) =>
+      writeAndExit(process.stdout, `Wrote startup-shell-fmp capture to ${outputPath}`, 0),
+    (error) =>
+      writeAndExit(process.stderr, error instanceof Error ? error.message : String(error), 1),
+  );
 }
