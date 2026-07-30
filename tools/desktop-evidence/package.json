@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "capture:startup": "tsx src/capture-startup.ts",
+    "capture:startup": "tsx src/run-capture-process.ts",
+    "capture:startup:worker": "tsx src/capture-startup.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
