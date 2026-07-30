@@ -13,6 +13,7 @@ export type StartupCaptureOptions = Readonly<{
 
 const CACHE_CLASSES = new Set<StartupCaptureOptions["osCache"]>(["cold-os-cache", "warm-os-cache"]);
 const SAMPLE_ROLES = new Set<StartupCaptureOptions["sampleRole"]>(["warmup", "measurement"]);
+const EVIDENCE_BINARY_PATH = "apps/desktop/src-tauri/target/release/runtime-human-desktop.exe";
 
 export function parseStartupCaptureArguments(
   arguments_: readonly string[],
@@ -20,7 +21,6 @@ export function parseStartupCaptureArguments(
 ): StartupCaptureOptions {
   const values = new Map<string, string>();
   const allowed = new Set([
-    "--binary",
     "--commit",
     "--output",
     "--process",
@@ -55,10 +55,7 @@ export function parseStartupCaptureArguments(
     SAMPLE_ROLES,
     "--sample-role",
   );
-  const binaryPath = resolve(
-    repositoryRoot,
-    values.get("--binary") ?? "apps/desktop/src-tauri/target/release/runtime-human-desktop.exe",
-  );
+  const binaryPath = resolve(repositoryRoot, EVIDENCE_BINARY_PATH);
   const rawOutputRoot = resolve(repositoryRoot, "artifacts/performance/raw");
   const defaultOutputName = [
     "startup-shell-fmp",
