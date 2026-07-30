@@ -54,6 +54,23 @@ jobs:
           clean: true
           persist-credentials: true
           show-progress: false
+      - name: Synchronize with current main
+        run: |
+          $ErrorActionPreference = "Stop"
+          git config --local core.autocrlf false
+          git config --local core.eol lf
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          $before = git rev-parse HEAD
+          git merge --no-edit origin/main
+          $after = git rev-parse HEAD
+          if ($after -ne $before) {
+            git push origin HEAD:agent/ui-03-game-shell-sandwich-panels
+            Write-Host "Synchronized UI foundation branch with main at $after"
+          } else {
+            Write-Host "UI foundation branch already contains current main"
+          }
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: "24"
