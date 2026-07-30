@@ -1,0 +1,114 @@
+.runtime-sandwich-panel {
+  overflow: hidden;
+  border: 1px solid var(--game-border);
+  border-radius: var(--game-radius-panel);
+  background: var(--game-surface-1);
+  box-shadow: var(--game-shadow-panel);
+}
+
+.runtime-sandwich-toggle {
+  display: grid;
+  width: 100%;
+  min-height: 2.75rem;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  color: var(--game-fg);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--game-motion-fast) var(--game-ease-standard);
+}
+
+.runtime-sandwich-toggle:hover {
+  background: var(--game-surface-hover);
+}
+
+.runtime-sandwich-toggle:focus-visible {
+  outline: 0;
+  box-shadow: inset var(--game-shadow-focus);
+}
+
+.runtime-sandwich-title {
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--game-text-small);
+  font-weight: 700;
+  letter-spacing: var(--game-tracking-label);
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.runtime-sandwich-badge {
+  min-width: 1.5rem;
+  padding: 0.12rem 0.4rem;
+  border: 1px solid var(--game-border);
+  border-radius: var(--game-radius-pill);
+  color: var(--game-fg-2);
+  background: var(--game-surface-2);
+  font-size: var(--game-text-caption);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.runtime-sandwich-chevron {
+  display: grid;
+  width: 1.5rem;
+  height: 1.5rem;
+  place-items: center;
+  color: var(--game-accent);
+  font-size: var(--game-text-control);
+  line-height: 1;
+}
+
+.runtime-sandwich-summary {
+  padding: 0 var(--space-4) var(--space-3);
+  border-top: 1px solid var(--game-border-soft);
+  color: var(--game-muted);
+  font-size: var(--game-text-small);
+  line-height: var(--game-leading-body);
+}
+
+.runtime-sandwich-summary > :first-child {
+  margin-top: var(--space-3);
+}
+
+.runtime-sandwich-summary > :last-child {
+  margin-bottom: 0;
+}
+
+.runtime-sandwich-details {
+  max-height: min(22rem, 44vh);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-4);
+  border-top: 1px solid var(--game-border-soft);
+  color: var(--game-fg-2);
+  scrollbar-gutter: stable;
+  animation: runtime-sandwich-enter var(--game-motion-enter) var(--game-ease-standard);
+}
+
+@keyframes runtime-sandwich-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-0.25rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .runtime-sandwich-toggle {
+    transition: none;
+  }
+
+  .runtime-sandwich-details {
+    animation: none;
+  }
+}
