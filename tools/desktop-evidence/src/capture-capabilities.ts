@@ -10,13 +10,14 @@ export function createStartupEvidenceCapabilities(
   const capabilities = createTauriCapabilities(binaryPath, {
     appArgs: [`--runtime-human-evidence-data-dir=${isolatedDataDirectory}`],
     driverProvider: "embedded",
-    embeddedPort: 4445,
     logLevel: "warn",
     startTimeout: 30_000,
   });
 
   capabilities["wdio:tauriServiceOptions"] = {
     ...capabilities["wdio:tauriServiceOptions"],
+    driverProvider: "embedded",
+    embeddedPort: 4445,
     captureBackendLogs: false,
     captureFrontendLogs: false,
   };
