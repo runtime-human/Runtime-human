@@ -1,6 +1,5 @@
-import { access, mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { access, rm } from "node:fs/promises";
+import { resolve } from "node:path";
 import type { Writable } from "node:stream";
 import { pathToFileURL } from "node:url";
 
@@ -10,7 +9,10 @@ import { captureBrowserEntries, waitForFirstMeaningfulPaint } from "./capture-br
 import { createStartupEvidenceCapabilities } from "./capture-capabilities.js";
 import { captureWindowsHostProfile } from "./capture-host.js";
 import { parseStartupCaptureArguments } from "./capture-options.js";
-import { resolveEvidenceDirectoryForRemoval } from "./run-capture-process.js";
+import {
+  EVIDENCE_DIRECTORY_ENV,
+  resolveEvidenceDirectoryForRemoval,
+} from "./run-capture-process.js";
 import { captureRustPerformanceSnapshot } from "./capture-rust.js";
 import type { EvidenceBrowser } from "./wdio-types.js";
 import { writeValidatedCapture } from "./write-capture.js";
@@ -37,7 +39,8 @@ export async function captureStartupShellFmp(arguments_: readonly string[]): Pro
   await access(options.binaryPath);
   recordStage("options-validated");
 
-  const isolatedDataDirectory = await mkdtemp(join(tmpdir(), "runtime-human-desktop-evidence-"));
+  const isolatedDataDirectory = requiredPreparedEvidenceDirectory();
+  await access(isolatedDataDirectory);
   recordStage("temporary-state-created");
   let browser: EvidenceBrowser | undefined;
   try {
@@ -93,6 +96,16 @@ export async function captureStartupShellFmp(arguments_: readonly string[]): Pro
       recordStage("cleanup-complete");
     }
   }
+}
+
+export function requiredPreparedEvidenceDirectory(
+  environment: Readonly<NodeJS.ProcessEnv> = process.env,
+): string {
+  const path = environment[EVIDENCE_DIRECTORY_ENV];
+  if (path === undefined || path.length === 0) {
+    throw new Error(`${EVIDENCE_DIRECTORY_ENV} is required for desktop evidence capture`);
+  }
+  return resolveEvidenceDirectoryForRemoval(path);
 }
 
 export async function removeTemporaryStateDirectory(path: string): Promise<void> {
