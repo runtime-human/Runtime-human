@@ -2,6 +2,7 @@ import { execFile, spawn } from "node:child_process";
 import { readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
 import { promisify } from "node:util";
 import { pathToFileURL } from "node:url";
 
@@ -119,7 +120,7 @@ async function listEvidenceDirectories(): Promise<ReadonlySet<string>> {
 const DEFAULT_PORTS = Object.freeze<CaptureProcessPorts>({
   launch: launchCaptureWorker,
   wait: async (milliseconds) => {
-    await new Promise<void>((resolveWait) => setTimeout(resolveWait, milliseconds));
+    await delay(milliseconds, undefined, { ref: false });
   },
   listEvidenceDirectories,
   removeEvidenceDirectory: async (path) => {
