@@ -165,6 +165,20 @@ describe("desktop evidence harness", () => {
     ).toThrow(/must be new-database/u);
   });
 
+  it("rejects an executable override instead of becoming a generic process launcher", () => {
+    expect(() =>
+      parseStartupCaptureArguments([
+        `--commit=${COMMIT}`,
+        "--process=cold-process",
+        "--os-cache=warm-os-cache",
+        "--database=new-database",
+        "--sample-role=warmup",
+        "--sample-index=0",
+        "--binary=C:\\Windows\\System32\\notepad.exe",
+      ]),
+    ).toThrow(/Unknown startup capture option: --binary/u);
+  });
+
   it("keeps output inside the ignored raw evidence directory", () => {
     expect(() =>
       parseStartupCaptureArguments([
