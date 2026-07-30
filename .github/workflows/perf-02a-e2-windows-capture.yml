@@ -96,8 +96,13 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           git add -A
-          if (git diff --cached --quiet) {
+          git diff --cached --quiet
+          $stagedDiffExit = $LASTEXITCODE
+          if ($stagedDiffExit -eq 0) {
             throw "Evidence materialization produced no measured product diff"
+          }
+          if ($stagedDiffExit -ne 1) {
+            throw "Unable to inspect the staged evidence diff; git exited with $stagedDiffExit"
           }
           git commit -m "fix: materialize validated Windows evidence runtime"
           $measuredCommit = git rev-parse HEAD
@@ -120,22 +125,46 @@ jobs:
           )
           Write-Host "--- tree after evidence build ---"
           git status --short
-          if (-not (git diff --quiet -- $manifest)) {
+          git diff --quiet -- $manifest
+          $manifestDiffExit = $LASTEXITCODE
+          if ($manifestDiffExit -eq 1) {
             Write-Host "--- Cargo.toml mutation produced by evidence build ---"
             git diff -- $manifest
+          } elseif ($manifestDiffExit -ne 0) {
+            throw "Unable to inspect Cargo.toml after evidence build; git exited with $manifestDiffExit"
           }
           foreach ($path in $generatedSchemas) {
             git restore --worktree -- $path
           }
           Write-Host "--- tree after generated-schema restore ---"
           git status --short
-          if (-not (git diff --quiet) -or -not (git diff --cached --quiet)) {
+          git diff --quiet
+          $worktreeDiffExit = $LASTEXITCODE
+          git diff --cached --quiet
+          $indexDiffExit = $LASTEXITCODE
+          if ($worktreeDiffExit -ne 0 -and $worktreeDiffExit -ne 1) {
+            throw "Unable to inspect the evidence worktree; git exited with $worktreeDiffExit"
+          }
+          if ($indexDiffExit -ne 0 -and $indexDiffExit -ne 1) {
+            throw "Unable to inspect the evidence index; git exited with $indexDiffExit"
+          }
+          if ($worktreeDiffExit -eq 1 -or $indexDiffExit -eq 1) {
             throw "Evidence build changed files outside the generated Tauri schema allowlist"
           }
       - name: Capture real Windows startup warmup
         run: |
           $ErrorActionPreference = "Stop"
-          if (-not (git diff --quiet) -or -not (git diff --cached --quiet)) {
+          git diff --quiet
+          $worktreeDiffExit = $LASTEXITCODE
+          git diff --cached --quiet
+          $indexDiffExit = $LASTEXITCODE
+          if ($worktreeDiffExit -ne 0 -and $worktreeDiffExit -ne 1) {
+            throw "Unable to inspect the measured worktree; git exited with $worktreeDiffExit"
+          }
+          if ($indexDiffExit -ne 0 -and $indexDiffExit -ne 1) {
+            throw "Unable to inspect the measured index; git exited with $indexDiffExit"
+          }
+          if ($worktreeDiffExit -eq 1 -or $indexDiffExit -eq 1) {
             throw "Measured product tree changed after the local evidence commit"
           }
           $before = @(
@@ -181,8 +210,13 @@ jobs:
             Remove-Item $_ -Force -ErrorAction SilentlyContinue
           }
           git add -A
-          if (git diff --cached --quiet) {
+          git diff --cached --quiet
+          $stagedDiffExit = $LASTEXITCODE
+          if ($stagedDiffExit -eq 0) {
             throw "Evidence cleanup produced no finalization diff"
+          }
+          if ($stagedDiffExit -ne 1) {
+            throw "Unable to inspect the evidence finalization diff; git exited with $stagedDiffExit"
           }
           git commit -m "chore: finalize E2 Windows capture harness"
           git push origin HEAD:agent/perf-02a-windows-capture-harness
