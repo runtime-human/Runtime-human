@@ -1,0 +1,42 @@
+name: ui-03-design-foundation
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/ui-03-design-foundation.yml"
+      - "apps/desktop/src/design/runtime-human-tokens.css"
+      - "apps/desktop/src/shell/desktop-shell.css"
+      - "tests/runtime-human-design-tokens.test.ts"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  focused:
+    runs-on: self-hosted
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          clean: true
+          persist-credentials: false
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          $ErrorActionPreference = "Stop"
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+          pnpm --version
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Run design foundation contract
+        run: pnpm exec vitest run tests/runtime-human-design-tokens.test.ts
