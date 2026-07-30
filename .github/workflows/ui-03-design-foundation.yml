@@ -8,6 +8,7 @@ on:
       - ".github/workflows/ui-03-design-foundation.yml"
       - "apps/desktop/.storybook/preview.ts"
       - "apps/desktop/src/main.tsx"
+      - "apps/desktop/src-tauri/tauri.conf.json"
       - "apps/desktop/src/design/runtime-human-tokens.css"
       - "apps/desktop/src/shell/DesktopShell.tsx"
       - "apps/desktop/src/shell/GameShell.tsx"
@@ -17,6 +18,7 @@ on:
       - "apps/desktop/src/panels/sandwich-panel.css"
       - "tests/desktop-shell.test.tsx"
       - "tests/game-shell.test.tsx"
+      - "tests/game-shell-window-contract.test.ts"
       - "tests/runtime-human-design-tokens.test.ts"
       - "tests/sandwich-panel.test.tsx"
       - "tests/sandwich-rail.test.tsx"
@@ -54,6 +56,7 @@ jobs:
           pnpm exec vitest run
           tests/runtime-human-design-tokens.test.ts
           tests/game-shell.test.tsx
+          tests/game-shell-window-contract.test.ts
           tests/desktop-shell.test.tsx
           tests/sandwich-panel.test.tsx
           tests/sandwich-rail.test.tsx
@@ -61,6 +64,8 @@ jobs:
         run: pnpm fmt:check
       - name: Run fast lint
         run: pnpm lint
+      - name: Run type-aware lint
+        run: pnpm lint:type-aware
       - name: Run typecheck
         run: pnpm typecheck
       - name: Build renderer
