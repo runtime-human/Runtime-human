@@ -31,7 +31,7 @@ export function SandwichPanel({
   return (
     <section className={`runtime-sandwich-panel runtime-sandwich-panel--${state}`}>
       <button
-        aria-controls={detailId}
+        aria-controls={showDetails ? detailId : undefined}
         aria-expanded={showDetails}
         className="runtime-sandwich-toggle"
         onClick={() => onStateChange(nextPanelState(state, hasSummary))}
