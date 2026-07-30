@@ -8,6 +8,7 @@ on:
       - "scripts/apply-rust-01c.py"
       - "scripts/apply-rust-01c-join-fix.py"
       - "scripts/apply-persistence-telemetry-contract.py"
+      - "scripts/run-rust-materializers.mjs"
       - ".github/workflows/rust-01c-apply.yml"
   pull_request:
     branches:
@@ -16,6 +17,7 @@ on:
       - "scripts/apply-rust-01c.py"
       - "scripts/apply-rust-01c-join-fix.py"
       - "scripts/apply-persistence-telemetry-contract.py"
+      - "scripts/run-rust-materializers.mjs"
       - ".github/workflows/rust-01c-apply.yml"
       - "apps/desktop/src-tauri/src/persistence/worker.rs"
       - "apps/desktop/src-tauri/src/persistence/worker_shutdown_tests.rs"
@@ -50,9 +52,6 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: "24"
-      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
-        with:
-          python-version: "3.13"
       - name: Restore Rust toolchain path
         run: |
           $ErrorActionPreference = "Stop"
@@ -68,10 +67,7 @@ jobs:
           rustc --version
           cargo --version
       - name: Apply typed FIFO shutdown implementation
-        run: |
-          python scripts/apply-rust-01c.py
-          python scripts/apply-rust-01c-join-fix.py
-          python scripts/apply-persistence-telemetry-contract.py
+        run: node scripts/run-rust-materializers.mjs
       - name: Format Rust sources
         run: cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml
       - name: Run focused FIFO shutdown tests
@@ -106,6 +102,7 @@ jobs:
           Remove-Item "scripts/apply-rust-01c.py" -Force
           Remove-Item "scripts/apply-rust-01c-join-fix.py" -Force
           Remove-Item "scripts/apply-persistence-telemetry-contract.py" -Force
+          Remove-Item "scripts/run-rust-materializers.mjs" -Force
           Remove-Item ".github/workflows/rust-01c-apply.yml" -Force
           Remove-Item ".github/workflows/rust-01c-tdd.yml" -Force -ErrorAction SilentlyContinue
           git config user.name "github-actions[bot]"
