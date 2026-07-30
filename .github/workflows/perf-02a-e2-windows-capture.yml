@@ -72,9 +72,10 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           pnpm install --no-frozen-lockfile --reporter=append-only
-          git add pnpm-lock.yaml
+          cargo check --manifest-path apps/desktop/src-tauri/Cargo.toml --features performance-evidence
+          git add pnpm-lock.yaml apps/desktop/src-tauri/Cargo.lock
           if (-not (git diff --cached --quiet)) {
-            git commit -m "build: align WDIO native runtime dependencies"
+            git commit -m "build: align embedded WDIO evidence dependencies"
             git push origin HEAD:agent/perf-02a-windows-capture-harness
           }
       - name: Materialize and verify evidence sources
@@ -91,37 +92,6 @@ jobs:
         run: >-
           pnpm --filter @runtime-human/desktop-evidence exec node --input-type=module
           -e "await import('@wdio/tauri-service'); console.log('WDIO Tauri service import succeeded')"
-      - name: Install pinned Tauri driver
-        run: |
-          $ErrorActionPreference = "Stop"
-          pnpm evidence:desktop:driver:install
-          $installed = cargo install --list | Select-String '^tauri-driver v2\.0\.6:$'
-          if ($null -eq $installed) {
-            throw "tauri-driver 2.0.6 is not registered in cargo install --list"
-          }
-          Write-Host $installed.Line
-      - name: Verify Edge remote-debugging policy
-        run: |
-          $ErrorActionPreference = "Stop"
-          $policyPaths = @(
-            "HKLM:\SOFTWARE\Policies\Microsoft\Edge",
-            "HKCU:\SOFTWARE\Policies\Microsoft\Edge"
-          )
-          $configured = $false
-          foreach ($path in $policyPaths) {
-            if (-not (Test-Path $path)) { continue }
-            $policy = Get-ItemProperty -Path $path -Name RemoteDebuggingAllowed -ErrorAction SilentlyContinue
-            if ($null -eq $policy) { continue }
-            $configured = $true
-            $value = [int]$policy.RemoteDebuggingAllowed
-            Write-Host "RemoteDebuggingAllowed=$value at $path"
-            if ($value -eq 0) {
-              throw "Microsoft Edge policy explicitly disables remote debugging on this runner"
-            }
-          }
-          if (-not $configured) {
-            Write-Host "RemoteDebuggingAllowed is not explicitly configured by HKLM/HKCU Edge policy"
-          }
       - name: Build evidence executable
         run: pnpm evidence:desktop:build
       - name: Capture real Windows startup warmup
