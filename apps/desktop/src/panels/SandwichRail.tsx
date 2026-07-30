@@ -38,7 +38,7 @@ export function SandwichRail({ ariaLabel, items, promotedId }: SandwichRailProps
   }, [promotedId, structureKey]);
 
   return (
-    <div aria-label={ariaLabel} className="runtime-sandwich-rail" role="group">
+    <section aria-label={ariaLabel} className="runtime-sandwich-rail">
       {items.map((item) => (
         <SandwichPanel
           badge={item.badge}
@@ -58,7 +58,7 @@ export function SandwichRail({ ariaLabel, items, promotedId }: SandwichRailProps
           {item.content}
         </SandwichPanel>
       ))}
-    </div>
+    </section>
   );
 }
 
