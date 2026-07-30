@@ -19,7 +19,7 @@ jobs:
   apply-and-verify:
     if: github.actor != 'github-actions[bot]'
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
@@ -27,6 +27,9 @@ jobs:
           clean: true
           persist-credentials: true
           show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
       - name: Restore Rust toolchain path
         run: |
           $ErrorActionPreference = "Stop"
@@ -51,8 +54,18 @@ jobs:
           --manifest-path apps/desktop/src-tauri/Cargo.toml
           persistence::shutdown_tests
           -- --nocapture
+      - name: Run complete persistence test module
+        run: >-
+          cargo test --locked
+          --manifest-path apps/desktop/src-tauri/Cargo.toml
+          persistence::
+          -- --nocapture
       - name: Check the complete Rust target
         run: cargo check --locked --manifest-path apps/desktop/src-tauri/Cargo.toml --all-targets
+      - name: Verify Rust formatting
+        run: cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml -- --check
+      - name: Rebuild documentation indexes
+        run: node scripts/build-toc.mjs
       - name: Commit verified product diff
         run: |
           $ErrorActionPreference = "Stop"
