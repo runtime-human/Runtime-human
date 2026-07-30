@@ -8,6 +8,7 @@ import {
   captureBrowserEntries,
   waitForFirstMeaningfulPaint,
 } from "../tools/desktop-evidence/src/capture-browser";
+import { createStartupEvidenceCapabilities } from "../tools/desktop-evidence/src/capture-capabilities";
 import { parseStartupCaptureArguments } from "../tools/desktop-evidence/src/capture-options";
 import { captureRustPerformanceSnapshot } from "../tools/desktop-evidence/src/capture-rust";
 import type { EvidenceBrowser } from "../tools/desktop-evidence/src/wdio-types";
@@ -104,6 +105,24 @@ describe("desktop evidence harness", () => {
       database: "new-database",
       sampleRole: "warmup",
       sampleIndex: 7,
+    });
+  });
+
+  it("uses one isolated WebView2 folder for both the app and EdgeDriver", () => {
+    const isolatedRoot = resolve("temporary-evidence-root");
+    const capabilities = createStartupEvidenceCapabilities(
+      resolve("runtime-human-desktop.exe"),
+      isolatedRoot,
+    ) as Record<string, unknown>;
+
+    expect(capabilities["tauri:options"]).toEqual({
+      application: resolve("runtime-human-desktop.exe"),
+      args: [`--runtime-human-evidence-data-dir=${isolatedRoot}`],
+    });
+    expect(capabilities["ms:edgeOptions"]).toEqual({
+      webviewOptions: {
+        userDataFolder: join(isolatedRoot, "webview"),
+      },
     });
   });
 
