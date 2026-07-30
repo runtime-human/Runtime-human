@@ -77,6 +77,8 @@ jobs:
             git commit -m "build: align WDIO native runtime dependencies"
             git push origin HEAD:agent/perf-02a-windows-capture-harness
           }
+      - name: Run evidence lifecycle contracts
+        run: pnpm evidence:desktop:check
       - name: Preflight WDIO runtime exports
         run: >-
           pnpm --filter @runtime-human/desktop-evidence exec node --input-type=module
