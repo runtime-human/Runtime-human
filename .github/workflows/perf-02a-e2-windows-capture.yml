@@ -78,6 +78,15 @@ jobs:
             git commit -m "build: align embedded WDIO evidence dependencies"
             git push origin HEAD:agent/perf-02a-windows-capture-harness
           }
+      - name: Materialize closed persistence telemetry contract
+        run: |
+          $ErrorActionPreference = "Stop"
+          python scripts/apply-persistence-telemetry-contract.py
+          cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml
+          cargo test --locked `
+            --manifest-path apps/desktop/src-tauri/Cargo.toml `
+            persistence::performance_observability_tests `
+            -- --nocapture --test-threads=1
       - name: Materialize and verify evidence sources
         run: |
           $ErrorActionPreference = "Stop"
@@ -129,6 +138,7 @@ jobs:
       - name: Materialize clean product diff
         run: |
           $ErrorActionPreference = "Stop"
+          Remove-Item "scripts/apply-persistence-telemetry-contract.py" -Force
           Remove-Item ".github/workflows/perf-02a-e2-windows-capture.yml" -Force
           @(
             "apps/desktop/src-tauri/gen/schemas/acl-manifests.json",
