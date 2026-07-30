@@ -1,0 +1,61 @@
+name: docs-rust-01c-closure
+
+on:
+  push:
+    branches:
+      - agent/docs-rust-01c-closure
+    paths:
+      - ".github/workflows/docs-rust-01c-closure.yml"
+      - "scripts/apply-rust-01c-closure.mjs"
+
+concurrency:
+  group: docs-rust-01c-closure
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  materialize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: agent/docs-rust-01c-closure
+          clean: true
+          persist-credentials: true
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Materialize execution ledger
+        run: |
+          $ErrorActionPreference = "Stop"
+          node scripts/apply-rust-01c-closure.mjs
+          node scripts/build-toc.mjs
+          pnpm docs:check
+      - name: Commit clean closure
+        run: |
+          $ErrorActionPreference = "Stop"
+          Remove-Item "scripts/apply-rust-01c-closure.mjs" -Force
+          Remove-Item ".github/workflows/docs-rust-01c-closure.yml" -Force
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet
+          $stagedDiffExit = $LASTEXITCODE
+          if ($stagedDiffExit -eq 0) {
+            throw "RUST-01C closure produced no ledger diff"
+          }
+          if ($stagedDiffExit -ne 1) {
+            throw "Unable to inspect RUST-01C closure diff; git exited with $stagedDiffExit"
+          }
+          git diff --cached --check
+          git commit -m "docs: close RUST-01C execution milestone"
+          git push origin HEAD:agent/docs-rust-01c-closure
