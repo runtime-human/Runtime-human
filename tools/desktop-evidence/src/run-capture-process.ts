@@ -1,7 +1,7 @@
 import { execFile, spawn } from "node:child_process";
 import { readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { promisify } from "node:util";
 import { pathToFileURL } from "node:url";
@@ -119,6 +119,24 @@ async function listEvidenceDirectories(): Promise<ReadonlySet<string>> {
   );
 }
 
+export function resolveEvidenceDirectoryForRemoval(path: string, root = tmpdir()): string {
+  const resolvedRoot = resolve(root);
+  const resolvedPath = resolve(path);
+  const name = basename(resolvedPath);
+  const expectedPath = join(resolvedRoot, name);
+
+  if (
+    name.length <= EVIDENCE_DIRECTORY_PREFIX.length ||
+    !name.startsWith(EVIDENCE_DIRECTORY_PREFIX) ||
+    dirname(resolvedPath) !== resolvedRoot ||
+    resolvedPath !== expectedPath
+  ) {
+    throw new Error("Cleanup target is not a direct Runtime Human evidence directory");
+  }
+
+  return expectedPath;
+}
+
 const DEFAULT_PORTS = Object.freeze<CaptureProcessPorts>({
   launch: launchCaptureWorker,
   wait: async (milliseconds) => {
@@ -126,7 +144,8 @@ const DEFAULT_PORTS = Object.freeze<CaptureProcessPorts>({
   },
   listEvidenceDirectories,
   removeEvidenceDirectory: async (path) => {
-    await rm(path, {
+    const safePath = resolveEvidenceDirectoryForRemoval(path);
+    await rm(safePath, {
       recursive: true,
       force: true,
       maxRetries: CLEANUP_RETRIES,
