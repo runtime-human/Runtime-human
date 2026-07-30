@@ -7,9 +7,17 @@ on:
     paths:
       - "scripts/apply-rust-01c.py"
       - ".github/workflows/rust-01c-apply.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "scripts/apply-rust-01c.py"
+      - ".github/workflows/rust-01c-apply.yml"
+      - "apps/desktop/src-tauri/src/persistence/worker.rs"
+      - "apps/desktop/src-tauri/src/persistence/worker_shutdown_tests.rs"
 
 concurrency:
-  group: rust-01c-apply-${{ github.ref_name }}
+  group: rust-01c-apply-agent-rust-01c-fifo-shutdown
   cancel-in-progress: true
 
 permissions:
@@ -21,7 +29,10 @@ defaults:
 
 jobs:
   apply-and-verify:
-    if: github.actor != 'github-actions[bot]'
+    if: >-
+      github.actor != 'github-actions[bot]' &&
+      (github.event_name == 'push' ||
+       github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: self-hosted
     timeout-minutes: 45
     steps:
