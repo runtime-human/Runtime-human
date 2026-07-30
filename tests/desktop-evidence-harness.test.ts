@@ -108,7 +108,7 @@ describe("desktop evidence harness", () => {
     });
   });
 
-  it("uses one isolated WebView2 folder for both the app and EdgeDriver", () => {
+  it("uses one isolated WebView2 folder and an explicit debug endpoint", () => {
     const isolatedRoot = resolve("temporary-evidence-root");
     const capabilities = createStartupEvidenceCapabilities(
       resolve("runtime-human-desktop.exe"),
@@ -122,6 +122,7 @@ describe("desktop evidence harness", () => {
     expect(capabilities["ms:edgeOptions"]).toEqual({
       webviewOptions: {
         userDataFolder: join(isolatedRoot, "webview"),
+        additionalBrowserArguments: ["remote-debugging-port=0"],
       },
     });
   });
