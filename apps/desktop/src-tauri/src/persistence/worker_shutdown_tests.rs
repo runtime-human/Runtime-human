@@ -1,8 +1,4 @@
-use std::{
-    sync::mpsc,
-    thread,
-    time::Duration,
-};
+use std::{sync::mpsc, thread, time::Duration};
 
 use tempfile::TempDir;
 
@@ -23,10 +19,9 @@ fn command_accepted_before_shutdown_marker_completes_before_close() {
         .recv_timeout(Duration::from_secs(5))
         .expect("worker entered barrier");
 
-    let query_handle = handle.clone();
-    let query = thread::spawn(move || query_handle.recovery_status());
-
-    thread::sleep(Duration::from_millis(20));
+    let query_response = handle
+        .enqueue_test_recovery_status()
+        .expect("enqueue recovery query before shutdown");
     let shutdown_handle = handle.clone();
     let shutdown = thread::spawn(move || shutdown_handle.shutdown());
 
@@ -36,7 +31,9 @@ fn command_accepted_before_shutdown_marker_completes_before_close() {
         .expect("receive barrier response")
         .expect("barrier completed");
 
-    let query_result = query.join().expect("join queued query");
+    let query_result = query_response
+        .recv_timeout(Duration::from_secs(5))
+        .expect("receive queued query response");
     assert!(query_result.is_ok(), "accepted query was lost during shutdown: {query_result:?}");
     shutdown
         .join()
