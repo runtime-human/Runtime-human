@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { SandwichPanel, type SandwichPanelState } from "./SandwichPanel";
 
@@ -21,18 +21,24 @@ type SandwichRailState = Readonly<Record<string, SandwichPanelState>>;
 
 export function SandwichRail({ ariaLabel, items, promotedId }: SandwichRailProps) {
   const [states, setStates] = useState<SandwichRailState>(() => createInitialStates(items));
+  const itemsRef = useRef(items);
   const structureKey = createStructureKey(items);
 
   useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
+
+  useEffect(() => {
+    const currentItems = itemsRef.current;
     setStates((current) => {
-      const reconciled = reconcileStates(current, items);
+      const reconciled = reconcileStates(current, currentItems);
       const next =
-        promotedId !== undefined && items.some((item) => item.id === promotedId)
-          ? expandOnly(reconciled, items, promotedId)
+        promotedId !== undefined && currentItems.some((item) => item.id === promotedId)
+          ? expandOnly(reconciled, currentItems, promotedId)
           : reconciled;
       return statesEqual(current, next) ? current : next;
     });
-  }, [items, promotedId, structureKey]);
+  }, [promotedId, structureKey]);
 
   return (
     <section aria-label={ariaLabel} className="runtime-sandwich-rail">
