@@ -19,6 +19,13 @@ function tripleAssignment(script, name) {
   return match[1];
 }
 
+function indentVariant(text, sourceIndent, targetIndent) {
+  return text
+    .split("\n")
+    .map((line) => (line.startsWith(sourceIndent) ? `${targetIndent}${line.slice(sourceIndent.length)}` : line))
+    .join("\n");
+}
+
 async function applyMainFifoMaterializer() {
   const script = await readFile("scripts/apply-rust-01c.py", "utf8");
   let worker = await readFile(workerPath, "utf8");
@@ -41,12 +48,22 @@ async function applyMainFifoMaterializer() {
     /text\.replace\(old_call,\s*'''([\s\S]*?)'''\)/,
   );
   if (secondReplacementMatch === null) throw new Error("missing normal worker-call replacement");
+
+  const normalIndent = "                        ";
+  const readOnlyIndent = "                            ";
   worker = replaceExactly(
     worker,
     manualBlocks[1][1],
     secondReplacementMatch[1],
-    2,
-    "normal/read-only worker calls",
+    1,
+    "normal worker call",
+  );
+  worker = replaceExactly(
+    worker,
+    indentVariant(manualBlocks[1][1], normalIndent, readOnlyIndent),
+    indentVariant(secondReplacementMatch[1], normalIndent, readOnlyIndent),
+    1,
+    "newer-schema read-only worker call",
   );
 
   await writeFile(workerPath, worker, "utf8");
