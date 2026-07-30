@@ -49,6 +49,67 @@ fn command_accepted_before_shutdown_marker_completes_before_close() {
 }
 
 #[test]
+fn shutdown_marker_waits_behind_a_full_accepted_queue() {
+    const QUEUE_CAPACITY: usize = 64;
+
+    let temp = TempDir::new().expect("temporary directory");
+    let database_path = temp.path().join("runtime-human.sqlite3");
+    let handle = PersistenceHandle::start(database_path).expect("start persistence worker");
+
+    let (worker_entered_sender, worker_entered_receiver) = mpsc::sync_channel(1);
+    let (worker_release_sender, worker_release_receiver) = mpsc::sync_channel(1);
+    let worker_response = handle
+        .enqueue_test_barrier(worker_entered_sender, worker_release_receiver)
+        .expect("enqueue worker barrier");
+    worker_entered_receiver
+        .recv_timeout(Duration::from_secs(5))
+        .expect("worker entered barrier");
+
+    let queued_responses = (0..QUEUE_CAPACITY)
+        .map(|_| {
+            handle
+                .enqueue_test_recovery_status()
+                .expect("fill every bounded queue slot")
+        })
+        .collect::<Vec<_>>();
+    let shutdown_handle = handle.clone();
+    let (shutdown_result_sender, shutdown_result_receiver) = mpsc::sync_channel(1);
+    let shutdown = thread::spawn(move || {
+        let result = shutdown_handle.shutdown();
+        shutdown_result_sender
+            .send(result)
+            .expect("publish shutdown result");
+    });
+
+    assert!(
+        shutdown_result_receiver
+            .recv_timeout(Duration::from_millis(100))
+            .is_err(),
+        "shutdown completed while the worker and every queue slot were still blocked",
+    );
+
+    worker_release_sender.send(()).expect("release worker barrier");
+    worker_response
+        .recv_timeout(Duration::from_secs(5))
+        .expect("receive worker barrier response")
+        .expect("worker barrier completed");
+
+    for response in queued_responses {
+        response
+            .recv_timeout(Duration::from_secs(5))
+            .expect("receive accepted full-queue command")
+            .expect("accepted full-queue command completed before close");
+    }
+    shutdown_result_receiver
+        .recv_timeout(Duration::from_secs(5))
+        .expect("receive shutdown result after queue drain")
+        .expect("shutdown after full queue drain");
+    shutdown.join().expect("join full-queue shutdown caller");
+
+    assert!(matches!(handle.recovery_status(), Err(PersistenceError::Unavailable)));
+}
+
+#[test]
 fn concurrent_shutdown_callers_share_one_ordered_worker_close() {
     const CALLERS: usize = 8;
 
