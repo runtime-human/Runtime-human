@@ -13,11 +13,13 @@ on:
       - "apps/desktop/src/shell/GameShell.tsx"
       - "apps/desktop/src/shell/game-shell.css"
       - "apps/desktop/src/panels/SandwichPanel.tsx"
+      - "apps/desktop/src/panels/SandwichRail.tsx"
       - "apps/desktop/src/panels/sandwich-panel.css"
       - "tests/desktop-shell.test.tsx"
       - "tests/game-shell.test.tsx"
       - "tests/runtime-human-design-tokens.test.ts"
       - "tests/sandwich-panel.test.tsx"
+      - "tests/sandwich-rail.test.tsx"
 
 permissions:
   contents: read
@@ -54,6 +56,7 @@ jobs:
           tests/game-shell.test.tsx
           tests/desktop-shell.test.tsx
           tests/sandwich-panel.test.tsx
+          tests/sandwich-rail.test.tsx
       - name: Check formatting
         run: pnpm fmt:check
       - name: Run fast lint
