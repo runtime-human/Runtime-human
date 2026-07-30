@@ -7,9 +7,17 @@ on:
     paths:
       - "scripts/apply-rust-01c.py"
       - ".github/workflows/rust-01c-apply.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "scripts/apply-rust-01c.py"
+      - ".github/workflows/rust-01c-apply.yml"
+      - "apps/desktop/src-tauri/src/persistence/worker.rs"
+      - "apps/desktop/src-tauri/src/persistence/worker_shutdown_tests.rs"
 
 concurrency:
-  group: rust-01c-apply-${{ github.ref }}
+  group: rust-01c-apply-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
 permissions:
