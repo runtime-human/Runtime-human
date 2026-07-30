@@ -10,6 +10,7 @@ import { captureBrowserEntries, waitForFirstMeaningfulPaint } from "./capture-br
 import { createStartupEvidenceCapabilities } from "./capture-capabilities.js";
 import { captureWindowsHostProfile } from "./capture-host.js";
 import { parseStartupCaptureArguments } from "./capture-options.js";
+import { resolveEvidenceDirectoryForRemoval } from "./run-capture-process.js";
 import { captureRustPerformanceSnapshot } from "./capture-rust.js";
 import type { EvidenceBrowser } from "./wdio-types.js";
 import { writeValidatedCapture } from "./write-capture.js";
@@ -95,7 +96,8 @@ export async function captureStartupShellFmp(arguments_: readonly string[]): Pro
 }
 
 export async function removeTemporaryStateDirectory(path: string): Promise<void> {
-  await rm(path, {
+  const safePath = resolveEvidenceDirectoryForRemoval(path);
+  await rm(safePath, {
     recursive: true,
     force: true,
     maxRetries: TEMPORARY_STATE_REMOVE_RETRIES,
