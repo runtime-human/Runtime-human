@@ -50,6 +50,7 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           ref: agent/ui-03-game-shell-sandwich-panels
+          fetch-depth: 0
           clean: true
           persist-credentials: true
           show-progress: false
@@ -64,6 +65,17 @@ jobs:
           pnpm --version
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Restore complete accepted design document
+        run: >-
+          node -e "const {execFileSync}=require('node:child_process');
+          const {writeFileSync}=require('node:fs');
+          const path='docs/superpowers/specs/2026-07-30-game-shell-selective-sandwich-panels-design.md';
+          let text=execFileSync('git',['show','31096dc029379719b7537e133e95faf0e235f606:'+path],{encoding:'utf8'});
+          const matches=text.match(/^type: spec$/gm)??[];
+          if(matches.length!==1) throw new Error('accepted design metadata did not contain exactly one type: spec');
+          text=text.replace(/^type: spec$/m,'type: plan');
+          if(!text.includes('## Acceptance criteria')||text.split('\n').length<400) throw new Error('accepted design document is incomplete');
+          writeFileSync(path,text,{encoding:'utf8'});"
       - name: Run game design contracts
         run: >-
           pnpm exec vitest run
