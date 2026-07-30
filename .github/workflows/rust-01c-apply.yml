@@ -6,12 +6,14 @@ on:
       - agent/rust-01c-fifo-shutdown
     paths:
       - "scripts/apply-rust-01c.py"
+      - "scripts/apply-rust-01c-join-fix.py"
       - ".github/workflows/rust-01c-apply.yml"
   pull_request:
     branches:
       - main
     paths:
       - "scripts/apply-rust-01c.py"
+      - "scripts/apply-rust-01c-join-fix.py"
       - ".github/workflows/rust-01c-apply.yml"
       - "apps/desktop/src-tauri/src/persistence/worker.rs"
       - "apps/desktop/src-tauri/src/persistence/worker_shutdown_tests.rs"
@@ -60,7 +62,9 @@ jobs:
           rustc --version
           cargo --version
       - name: Apply typed FIFO shutdown implementation
-        run: python scripts/apply-rust-01c.py
+        run: |
+          python scripts/apply-rust-01c.py
+          python scripts/apply-rust-01c-join-fix.py
       - name: Format Rust sources
         run: cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml
       - name: Run focused FIFO shutdown tests
@@ -93,6 +97,7 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           Remove-Item "scripts/apply-rust-01c.py" -Force
+          Remove-Item "scripts/apply-rust-01c-join-fix.py" -Force
           Remove-Item ".github/workflows/rust-01c-apply.yml" -Force
           Remove-Item ".github/workflows/rust-01c-tdd.yml" -Force -ErrorAction SilentlyContinue
           git config user.name "github-actions[bot]"
