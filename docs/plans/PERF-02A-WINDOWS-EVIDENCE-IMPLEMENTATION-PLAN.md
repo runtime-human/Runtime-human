@@ -1,9 +1,9 @@
 ---
 title: "PERF-02A Windows Evidence Collection Implementation Plan"
 type: plan
-status: active
+status: accepted
 canon: true
-updated: 2026-07-29
+updated: 2026-07-30
 ---
 
 # PERF-02A Windows Evidence Collection Implementation Plan
@@ -42,27 +42,33 @@ Use only:
 
 - `@wdio/tauri-service 1.2.0` in the isolated `tools/desktop-evidence` workspace;
 - its standalone `createTauriCapabilities`, `startWdioSession` and `cleanupWdioSession` API;
-- canonical `driverProvider: external`;
+- the embedded WebDriver provider exposed only by the `performance-evidence` Cargo feature;
+- optional Rust dependency `tauri-plugin-wdio-webdriver` in evidence builds only;
+- an evidence-only Tauri capability containing `core:default` and `wdio-webdriver:default`;
 - standard WebDriver `browser.execute()` for renderer User Timing;
 - evidence-only `window.__TAURI__.core.invoke` for the existing read-only Rust snapshot.
+
+The first external-driver attempt was rejected after a real Windows run repeatedly failed before application attach with `DevToolsActivePort file doesn't exist`, even after removing custom Edge options. The embedded provider removes the separate `tauri-driver` and EdgeDriver process boundary while preserving the same application binary and WebDriver protocol.
 
 Do not add in E2a:
 
 - `@wdio/cli`, Mocha or runner packages;
-- `tauri-plugin-wdio`;
+- `tauri-plugin-wdio` or its frontend bridge;
 - a new Rust IPC command;
-- a production capability or dependency;
+- a capability in the normal production config;
+- a non-optional production dependency;
 - renderer-to-Rust telemetry writes;
 - network upload or analytics storage.
 
-`browser.tauri.execute()` and a Rust plugin bridge may be introduced later only if standard WebDriver execution cannot reach a required read-only surface.
+`browser.tauri.execute()` and the richer WDIO Rust/frontend plugin bridge may be introduced later only if standard WebDriver execution cannot reach a required read-only surface.
 
 ## Phase E2a — isolated startup capture
 
 ### Build isolation
 
 - compile an explicit Cargo feature `performance-evidence`;
-- use a separate Tauri config with `withGlobalTauri: true` and no bundle;
+- register the embedded WebDriver plugin only under that feature;
+- use a separate Tauri config with `withGlobalTauri: true`, evidence-only capability and no bundle;
 - keep the normal production config and default Cargo feature set unchanged;
 - require exactly one absolute `--runtime-human-evidence-data-dir` argument in evidence builds;
 - fail closed when the argument is missing, empty, relative or duplicated;
@@ -85,14 +91,14 @@ Default filenames include the complete classification and sample index so groups
 
 ### Browser and Rust data
 
-1. Start the evidence executable through the standalone Tauri service.
+1. Start the evidence executable through the standalone Tauri service and embedded WebDriver server.
 2. Wait for `app.first_meaningful_paint`.
 3. Read the closed browser mark/measure set.
 4. Invoke `desktop_get_performance_snapshot_v1` through evidence-only global Tauri.
 5. Join the two independent timelines without subtracting their origins.
 6. Validate the complete object through `runtime-human-desktop-performance-capture-v1`.
 7. Write one immutable raw capture.
-8. Close WebDriver/app processes and remove temporary application data even when capture fails.
+8. Close the WebDriver/app process and remove temporary application data even when capture fails.
 
 ### E2a completion gates
 
@@ -104,7 +110,9 @@ Default filenames include the complete classification and sample index so groups
 - [x] immutable raw file write;
 - [x] pure harness contract tests;
 - [x] self-hosted Rust PATH bootstrap made restart-safe;
-- [ ] materialized pnpm lockfile;
+- [x] external-driver failure reproduced and rejected;
+- [x] embedded provider isolated behind the evidence feature;
+- [ ] materialized Cargo and pnpm lockfiles;
 - [ ] formatter, lint, type-aware lint and TypeScript build green;
 - [ ] default and evidence-feature Rust checks/tests green;
 - [ ] evidence executable built without bundle;
@@ -123,7 +131,7 @@ Reported timelines:
 3. browser end-to-end measures: content/session/month operations;
 4. external harness timeline: OS process launch → observed milestone, only after an app-process-only clock exists.
 
-Calling `startWdioSession()` is not an app process timestamp because it includes driver preparation, Edge-driver checks and WebDriver session creation. E2a therefore leaves external durations empty rather than publishing a false process-to-FMP value.
+Calling `startWdioSession()` is not an app process timestamp because it includes provider preparation and WebDriver session creation. E2a therefore leaves external durations empty rather than publishing a false process-to-FMP value.
 
 ## Phase E2b — exact external process timing
 
@@ -140,7 +148,7 @@ Required outputs:
 - `processToShellFmpMicros`;
 - `processToJanuaryReadyMicros`.
 
-Do not infer these values from driver/session setup time.
+Do not infer these values from provider/session setup time.
 
 ## Phase E2c — remaining real scenarios
 
@@ -173,13 +181,12 @@ Compare user-visible contributions:
 - Tauri dispatch, queue wait and SQLite duration;
 - shutdown/idle resources only when PERF-02B evidence exists.
 
-Select exactly one next action:
+Select exactly one next performance action:
 
 - renderer/WebView startup optimization;
 - persistence startup optimization;
 - IPC/queue optimization;
 - SQLite-path optimization;
-- typed FIFO shutdown from issue #58;
 - `collect-more-evidence`.
 
-Issue #58 remains deferred until evidence shows idle polling or shutdown ordering is the highest-value next slice.
+Issue #58 is handled independently as RUST-01C because FIFO shutdown ordering is a correctness invariant and the existing 100 ms polling loop is statically proven unnecessary. PERF-02B must still measure its resource effect before claiming a CPU percentage or ranking it against user-visible startup work.
