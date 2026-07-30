@@ -3,9 +3,10 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { cleanupWdioSession, createTauriCapabilities, startWdioSession } from "@wdio/tauri-service";
+import { cleanupWdioSession, startWdioSession } from "@wdio/tauri-service";
 
 import { captureBrowserEntries, waitForFirstMeaningfulPaint } from "./capture-browser.js";
+import { createStartupEvidenceCapabilities } from "./capture-capabilities.js";
 import { captureWindowsHostProfile } from "./capture-host.js";
 import { parseStartupCaptureArguments } from "./capture-options.js";
 import { captureRustPerformanceSnapshot } from "./capture-rust.js";
@@ -36,19 +37,10 @@ export async function captureStartupShellFmp(arguments_: readonly string[]): Pro
   recordStage("temporary-state-created");
   let browser: EvidenceBrowser | undefined;
   try {
-    const capabilities = createTauriCapabilities(options.binaryPath, {
-      appArgs: [`--runtime-human-evidence-data-dir=${isolatedDataDirectory}`],
-      autoInstallTauriDriver: false,
-      driverProvider: "external",
-      logLevel: "warn",
-      startTimeout: 30_000,
-    });
-    capabilities["wdio:tauriServiceOptions"] = {
-      ...capabilities["wdio:tauriServiceOptions"],
-      autoDownloadEdgeDriver: true,
-      captureBackendLogs: false,
-      captureFrontendLogs: false,
-    };
+    const capabilities = createStartupEvidenceCapabilities(
+      options.binaryPath,
+      isolatedDataDirectory,
+    );
     recordStage("capabilities-created");
 
     recordStage("session-starting");
