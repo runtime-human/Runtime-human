@@ -45,6 +45,7 @@ jobs:
           }
           node scripts/build-toc.mjs
           node scripts/build-toc.mjs --check
+          git diff --check
       - name: Commit normalized documentation
         run: |
           $ErrorActionPreference = "Stop"
