@@ -75,6 +75,8 @@ jobs:
           tests/sandwich-panel.test.tsx
           tests/sandwich-rail.test.tsx
           tests/sandwich-rail-reconciliation.test.tsx
+      - name: Materialize canonical panel formatting
+        run: pnpm exec oxfmt apps/desktop/src/panels/SandwichRail.tsx
       - name: Check formatting
         run: pnpm fmt:check
       - name: Run fast lint
