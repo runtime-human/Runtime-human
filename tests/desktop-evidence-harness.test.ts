@@ -1,6 +1,6 @@
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { resolve } from "node:path";
 
 import { describe, expect, it, vi } from "vitest";
 
@@ -108,7 +108,7 @@ describe("desktop evidence harness", () => {
     });
   });
 
-  it("uses one isolated WebView2 folder and an explicit debug endpoint", () => {
+  it("delegates the transient WebView2 profile and debug endpoint to EdgeDriver", () => {
     const isolatedRoot = resolve("temporary-evidence-root");
     const capabilities = createStartupEvidenceCapabilities(
       resolve("runtime-human-desktop.exe"),
@@ -119,12 +119,7 @@ describe("desktop evidence harness", () => {
       application: resolve("runtime-human-desktop.exe"),
       args: [`--runtime-human-evidence-data-dir=${isolatedRoot}`],
     });
-    expect(capabilities["ms:edgeOptions"]).toEqual({
-      webviewOptions: {
-        userDataFolder: join(isolatedRoot, "webview"),
-        additionalBrowserArguments: ["remote-debugging-port=0"],
-      },
-    });
+    expect(capabilities).not.toHaveProperty("ms:edgeOptions");
   });
 
   it("rejects guessed, duplicate, malformed and false startup classifications", () => {
@@ -230,9 +225,9 @@ describe("desktop evidence harness", () => {
   });
 
   it("validates and writes every raw capture exactly once", async () => {
-    const directory = await mkdtemp(join(tmpdir(), "runtime-human-evidence-harness-"));
+    const directory = await mkdtemp(resolve(tmpdir(), "runtime-human-evidence-harness-"));
     try {
-      const outputPath = join(directory, "raw", "capture.json");
+      const outputPath = resolve(directory, "raw", "capture.json");
 
       const written = await writeValidatedCapture(outputPath, validCapture());
       const disk = JSON.parse(await readFile(outputPath, "utf8")) as {
@@ -249,7 +244,7 @@ describe("desktop evidence harness", () => {
       });
 
       await expect(
-        writeValidatedCapture(join(directory, "invalid.json"), {
+        writeValidatedCapture(resolve(directory, "invalid.json"), {
           ...validCapture(),
           scenario: "invented-scenario",
         }),
