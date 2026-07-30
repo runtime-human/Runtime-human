@@ -6,6 +6,12 @@ on:
       - agent/ui-03-game-shell-sandwich-panels
     paths:
       - ".github/workflows/ui-03-docs-helper.yml"
+      - "docs/plans/UI-03-GAME-SHELL-SANDWICH-PANELS-IMPLEMENTATION-PLAN.md"
+      - "docs/reviews/UI-03-TASK-1-CHECKPOINT.md"
+
+concurrency:
+  group: ui-03-docs-helper
+  cancel-in-progress: true
 
 permissions:
   contents: write
@@ -29,17 +35,16 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: "24"
-      - name: Accept implementation plan and rebuild docs indexes
+      - name: Verify accepted plan and rebuild docs indexes
         run: |
           $ErrorActionPreference = "Stop"
           $path = "docs/plans/UI-03-GAME-SHELL-SANDWICH-PANELS-IMPLEMENTATION-PLAN.md"
           $text = Get-Content $path -Raw
-          $updated = $text -replace '(?m)^status: active$', 'status: accepted'
-          if ($updated -eq $text) {
-            throw "UI-03 plan status was not updated"
+          if ($text -notmatch '(?m)^status: accepted$') {
+            throw "UI-03 implementation plan must be accepted before index generation"
           }
-          [System.IO.File]::WriteAllText((Resolve-Path $path), $updated, [System.Text.UTF8Encoding]::new($false))
           node scripts/build-toc.mjs
+          node scripts/build-toc.mjs --check
       - name: Commit normalized documentation
         run: |
           $ErrorActionPreference = "Stop"
