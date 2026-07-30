@@ -11,7 +11,7 @@ default = []
 performance-evidence = ["dep:tauri-plugin-wdio-webdriver"]
 
 [build-dependencies]
-tauri-build = "=2.6.3"
+tauri-build = { version = "=2.6.3", features = [] }
 
 [dependencies]
 rusqlite = { version = "=0.40.1", default-features = false, features = [
@@ -25,7 +25,7 @@ rusqlite_migration = "=2.6.0"
 serde = { version = "=1.0.229", features = ["derive"] }
 serde_json = "=1.0.150"
 sha2 = "=0.11.0"
-tauri = "=2.11.5"
+tauri = { version = "=2.11.5", features = [] }
 tauri-plugin-wdio-webdriver = { version = "1", optional = true }
 thiserror = "=2.0.19"
 tracing = "=0.1.44"
