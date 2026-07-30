@@ -22,6 +22,7 @@ on:
       - "tests/runtime-human-design-tokens.test.ts"
       - "tests/sandwich-panel.test.tsx"
       - "tests/sandwich-rail.test.tsx"
+      - "tests/sandwich-rail-reconciliation.test.tsx"
 
 permissions:
   contents: read
@@ -60,6 +61,7 @@ jobs:
           tests/desktop-shell.test.tsx
           tests/sandwich-panel.test.tsx
           tests/sandwich-rail.test.tsx
+          tests/sandwich-rail-reconciliation.test.tsx
       - name: Check formatting
         run: pnpm fmt:check
       - name: Run fast lint
