@@ -1,0 +1,69 @@
+name: rust-01c-apply
+
+on:
+  push:
+    branches:
+      - agent/rust-01c-fifo-shutdown
+    paths:
+      - "scripts/apply-rust-01c.py"
+      - ".github/workflows/rust-01c-apply.yml"
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  apply-and-verify:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: self-hosted
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: agent/rust-01c-fifo-shutdown
+          clean: true
+          persist-credentials: true
+          show-progress: false
+      - name: Restore Rust toolchain path
+        run: |
+          $ErrorActionPreference = "Stop"
+          $cargoBin = Join-Path $env:USERPROFILE ".cargo\bin"
+          $cargoBin | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          $env:PATH = "$cargoBin;$env:PATH"
+          rustc --version
+          cargo --version
+      - name: Apply typed FIFO shutdown implementation
+        run: python scripts/apply-rust-01c.py
+      - name: Format Rust sources
+        run: cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml
+      - name: Run focused FIFO shutdown tests
+        run: >-
+          cargo test --locked
+          --manifest-path apps/desktop/src-tauri/Cargo.toml
+          persistence::worker_shutdown_tests
+          -- --nocapture
+      - name: Run existing shutdown recovery tests
+        run: >-
+          cargo test --locked
+          --manifest-path apps/desktop/src-tauri/Cargo.toml
+          persistence::shutdown_tests
+          -- --nocapture
+      - name: Check the complete Rust target
+        run: cargo check --locked --manifest-path apps/desktop/src-tauri/Cargo.toml --all-targets
+      - name: Commit verified product diff
+        run: |
+          $ErrorActionPreference = "Stop"
+          Remove-Item "scripts/apply-rust-01c.py" -Force
+          Remove-Item ".github/workflows/rust-01c-apply.yml" -Force
+          Remove-Item ".github/workflows/rust-01c-tdd.yml" -Force -ErrorAction SilentlyContinue
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if (git diff --cached --quiet) {
+            throw "RUST-01C produced no product diff"
+          }
+          git commit -m "fix: serialize persistence shutdown through FIFO"
+          git push origin HEAD:agent/rust-01c-fifo-shutdown
