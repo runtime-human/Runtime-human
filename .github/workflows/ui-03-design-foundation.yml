@@ -16,6 +16,7 @@ on:
       - "apps/desktop/src/panels/SandwichPanel.tsx"
       - "apps/desktop/src/panels/SandwichRail.tsx"
       - "apps/desktop/src/panels/sandwich-panel.css"
+      - "tests/desktop-content-csp.test.ts"
       - "tests/desktop-shell.test.tsx"
       - "tests/game-shell.test.tsx"
       - "tests/game-shell-window-contract.test.ts"
@@ -58,6 +59,7 @@ jobs:
           tests/runtime-human-design-tokens.test.ts
           tests/game-shell.test.tsx
           tests/game-shell-window-contract.test.ts
+          tests/desktop-content-csp.test.ts
           tests/desktop-shell.test.tsx
           tests/sandwich-panel.test.tsx
           tests/sandwich-rail.test.tsx
