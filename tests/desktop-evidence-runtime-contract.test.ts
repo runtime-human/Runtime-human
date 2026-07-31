@@ -63,9 +63,7 @@ describe("desktop evidence runtime contract", () => {
       expect(workflow).toContain('$env:Path = "$nodeDirectory;$env:Path"');
       expect(workflow).toContain("Get-Command cmd.exe -ErrorAction Stop");
       expect(workflow).toContain('& $cmdCommand.Source /d /c "node --version"');
-      expect(workflow).toContain(
-        "$nodeDirectory | Out-File -FilePath $env:GITHUB_PATH",
-      );
+      expect(workflow).toContain("$nodeDirectory | Out-File -FilePath $env:GITHUB_PATH");
       expect(workflow).not.toContain('"PATH=$nodeDirectory;$workspaceBin;$env:PATH"');
       expect(workflow).not.toContain("node.cmd");
       expect(workflow).not.toContain("Create runner-local Node shim");
