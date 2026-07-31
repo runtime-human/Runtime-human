@@ -185,7 +185,7 @@ updated: 2026-07-30
 - [OPT-00 Performance Baseline Implementation Plan](superpowers/plans/2026-07-26-performance-baseline.md) — `completed`, `canon`
 - [OPT-00B File-backed SQLite Baseline Plan](superpowers/plans/2026-07-26-sqlite-performance-baseline.md) — `completed`, `canon`
 - [PERF-02A Renderer and First Meaningful Paint Implementation Plan](plans/PERF-02A-RENDERER-FMP-IMPLEMENTATION-PLAN.md) — `completed`, `canon`
-- [PERF-02A Windows Evidence Collection Implementation Plan](plans/PERF-02A-WINDOWS-EVIDENCE-IMPLEMENTATION-PLAN.md) — `draft`, `canon`
+- [PERF-02A Windows Evidence Collection Implementation Plan](plans/PERF-02A-WINDOWS-EVIDENCE-IMPLEMENTATION-PLAN.md) — `accepted`, `canon`
 - [PERF-02A Windows Evidence Completion Plan](plans/PERF-02A-WINDOWS-EVIDENCE-COMPLETION-PLAN.md) — `draft`, `canon`
 - [Phase 0 entry criteria](plans/PHASE-0-ENTRY-CRITERIA.md) — `draft`, `canon`
 - [Plans](plans/README.md) — `draft`, `canon`

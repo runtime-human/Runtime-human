@@ -1329,10 +1329,10 @@
       "file": "docs/plans/PERF-02A-WINDOWS-EVIDENCE-IMPLEMENTATION-PLAN.md",
       "title": "PERF-02A Windows Evidence Collection Implementation Plan",
       "type": "plan",
-      "status": "draft",
+      "status": "accepted",
       "canon": true,
       "dependsOn": [],
-      "updated": "2026-07-29"
+      "updated": "2026-07-30"
     },
     {
       "file": "docs/plans/PHASE-0-ENTRY-CRITERIA.md",
