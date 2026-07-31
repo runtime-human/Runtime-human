@@ -1,4 +1,11 @@
-import { useId, useRef, type KeyboardEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 
 export type BottomGameDockItem = Readonly<{
   id: string;
@@ -23,8 +30,19 @@ export function BottomGameDock({
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const activeIndex = items.findIndex((item) => item.id === activeId);
   const activeItem = activeIndex >= 0 ? items[activeIndex] : undefined;
+  const [focusedId, setFocusedId] = useState<string | undefined>(
+    activeItem?.id ?? items[0]?.id,
+  );
+
+  useEffect(() => {
+    setFocusedId(activeItem?.id ?? items[0]?.id);
+  }, [activeItem?.id, items]);
 
   function focusTab(index: number): void {
+    const item = items[index];
+    if (item === undefined) return;
+
+    setFocusedId(item.id);
     tabRefs.current[index]?.focus();
   }
 
@@ -77,13 +95,17 @@ export function BottomGameDock({
               className="runtime-bottom-game-dock__tab"
               id={tabId}
               key={item.id}
-              onClick={() => onActiveChange(item.id)}
+              onClick={() => {
+                setFocusedId(item.id);
+                onActiveChange(item.id);
+              }}
+              onFocus={() => setFocusedId(item.id)}
               onKeyDown={(event) => handleKeyDown(event, item, index)}
               ref={(element) => {
                 tabRefs.current[index] = element;
               }}
               role="tab"
-              tabIndex={selected ? 0 : -1}
+              tabIndex={item.id === focusedId ? 0 : -1}
               type="button"
             >
               {item.label}
