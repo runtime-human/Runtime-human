@@ -60,6 +60,7 @@ jobs:
           $nodeDirectory | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           $workspaceBin | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           "NODE_EXECUTABLE=$($nodeCommand.Source)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "PATH=$nodeDirectory;$workspaceBin;$env:PATH" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           Write-Host "Persisted Node directory: $nodeDirectory"
           Write-Host "Persisted workspace bin: $workspaceBin"
       - name: Restore Rust toolchain path
@@ -93,6 +94,9 @@ jobs:
             "`"$env:NODE_EXECUTABLE`" %*"
           )
           & $shim --version
+          where.exe node
+          node --version
+          pnpm exec node --version
       - name: Check evidence Rust feature graph
         run: cargo check --locked --manifest-path apps/desktop/src-tauri/Cargo.toml --features performance-evidence
       - name: Verify persistence telemetry contract
