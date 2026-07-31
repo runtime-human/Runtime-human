@@ -1,0 +1,86 @@
+name: perf-e2-format-finalize-once
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+concurrency:
+  group: perf-e2-format-finalize-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  finalize:
+    if: >-
+      github.actor != 'github-actions[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/perf-02a-windows-capture-harness'
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          clean: true
+          persist-credentials: true
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          $ErrorActionPreference = "Stop"
+          $PSNativeCommandUseErrorActionPreference = $true
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+          pnpm --version
+      - name: Install frozen dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Materialize canonical test formatting
+        run: >-
+          pnpm exec oxfmt
+          tests/desktop-evidence-directory-contract.test.ts
+          tests/desktop-evidence-runtime-contract.test.ts
+      - name: Verify canonical test formatting
+        run: >-
+          pnpm exec oxfmt --check
+          tests/desktop-evidence-directory-contract.test.ts
+          tests/desktop-evidence-runtime-contract.test.ts
+      - name: Commit only formatted tests and remove helper
+        run: |
+          $ErrorActionPreference = "Stop"
+          $PSNativeCommandUseErrorActionPreference = $true
+          Remove-Item ".github/workflows/perf-e2-format-finalize-once.yml" -Force
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- `
+            tests/desktop-evidence-directory-contract.test.ts `
+            tests/desktop-evidence-runtime-contract.test.ts `
+            .github/workflows/perf-e2-format-finalize-once.yml
+          $staged = @(git diff --name-only --cached)
+          $allowed = @(
+            "tests/desktop-evidence-directory-contract.test.ts",
+            "tests/desktop-evidence-runtime-contract.test.ts",
+            ".github/workflows/perf-e2-format-finalize-once.yml"
+          )
+          $unexpected = @($staged | Where-Object { $_ -notin $allowed })
+          if ($unexpected.Count -gt 0) {
+            throw "Unexpected formatter changes: $($unexpected -join ', ')"
+          }
+          if ($staged.Count -eq 0) {
+            throw "Formatter finalizer produced no test or helper-removal diff"
+          }
+          git diff --cached --check
+          git commit -m "style: format PERF evidence contracts"
+          git push origin HEAD:agent/perf-02a-windows-capture-harness
