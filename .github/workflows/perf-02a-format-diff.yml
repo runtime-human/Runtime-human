@@ -1,0 +1,45 @@
+name: perf-02a-format-diff
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/perf-02a-format-diff.yml"
+      - "tests/desktop-evidence-runtime-contract.test.ts"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  diff:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          clean: true
+          persist-credentials: false
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+          $pwsh = (Get-Command pwsh -ErrorAction Stop).Source
+          "PNPM_CONFIG_SCRIPT_SHELL=$pwsh" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Install frozen dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Print canonical formatter diff
+        run: |
+          pnpm fmt
+          git diff --no-ext-diff --no-color -- tests/desktop-evidence-runtime-contract.test.ts
+          throw "Canonical formatter diff printed above"
