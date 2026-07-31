@@ -93,6 +93,7 @@ jobs:
           $workspaceBin = Join-Path $env:GITHUB_WORKSPACE "node_modules\.bin"
           $nodeDirectory | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           $workspaceBin | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          "NODE_EXECUTABLE=$($nodeCommand.Source)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           Write-Host "Persisted Node directory: $nodeDirectory"
           Write-Host "Persisted workspace bin: $workspaceBin"
       - name: Install Rust 1.97.1
@@ -111,6 +112,20 @@ jobs:
           cargo --version
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Create runner-local Node shim
+        run: |
+          $ErrorActionPreference = "Stop"
+          if (-not (Test-Path $env:NODE_EXECUTABLE)) {
+            throw "NODE_EXECUTABLE does not resolve to setup-node's node.exe"
+          }
+          $workspaceBin = Join-Path $env:GITHUB_WORKSPACE "node_modules\.bin"
+          New-Item -ItemType Directory -Path $workspaceBin -Force | Out-Null
+          $shim = Join-Path $workspaceBin "node.cmd"
+          Set-Content -LiteralPath $shim -Encoding ascii -Value @(
+            "@echo off",
+            "`"$env:NODE_EXECUTABLE`" %*"
+          )
+          & $shim --version
       - name: Check documentation
         run: pnpm docs:check
       - name: Check formatting
