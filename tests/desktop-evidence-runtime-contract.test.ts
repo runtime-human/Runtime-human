@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 const MAIN_PATH = resolve("apps/desktop/src-tauri/src/main.rs");
 const DIAGNOSTICS_PATH = resolve("apps/desktop/src-tauri/src/diagnostics.rs");
 const CAPTURE_WORKFLOW_PATH = resolve(".github/workflows/perf-02a-e2-windows-capture.yml");
+const FOUNDATION_WORKFLOW_PATH = resolve(".github/workflows/foundation.yml");
 
 describe("desktop evidence runtime contract", () => {
   it("records process entry before evidence-only setup", async () => {
@@ -43,5 +44,28 @@ describe("desktop evidence runtime contract", () => {
     expect(workflow).not.toContain("pnpm fmt\n");
     expect(workflow).not.toContain("git commit -m \"fix: materialize validated Windows evidence runtime\"");
     expect(workflow).not.toContain("git push origin HEAD:agent/perf-02a-windows-capture-harness");
+  });
+
+  it("keeps Node available to pnpm child scripts after Rust setup", async () => {
+    const [capture, foundation] = await Promise.all([
+      readFile(CAPTURE_WORKFLOW_PATH, "utf8"),
+      readFile(FOUNDATION_WORKFLOW_PATH, "utf8"),
+    ]);
+
+    for (const workflow of [capture, foundation]) {
+      expect(workflow).toContain("NODE_EXECUTABLE");
+      expect(workflow).toContain("node_modules\\.bin");
+      expect(workflow).toContain("node.cmd");
+      expect(workflow).toContain("Create runner-local Node shim");
+    }
+  });
+
+  it("removes only allowlisted generated schemas and detects untracked build mutations", async () => {
+    const workflow = await readFile(CAPTURE_WORKFLOW_PATH, "utf8");
+
+    expect(workflow).toContain("git ls-files --error-unmatch");
+    expect(workflow).toContain("Remove-Item $path -Force");
+    expect(workflow).toContain("git status --porcelain --untracked-files=all");
+    expect(workflow).not.toContain("git restore --worktree -- $path\n");
   });
 });
