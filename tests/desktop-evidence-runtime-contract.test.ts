@@ -49,7 +49,7 @@ describe("desktop evidence runtime contract", () => {
     expect(workflow).not.toContain("git push origin HEAD:agent/perf-02a-windows-capture-harness");
   });
 
-  it("uses an explicit PowerShell script shell for pnpm child processes", async () => {
+  it("preserves Node resolution across PowerShell and cmd.exe child processes", async () => {
     const [capture, foundation] = await Promise.all([
       readFile(CAPTURE_WORKFLOW_PATH, "utf8"),
       readFile(FOUNDATION_WORKFLOW_PATH, "utf8"),
@@ -60,6 +60,10 @@ describe("desktop evidence runtime contract", () => {
       expect(workflow).toContain("PNPM_CONFIG_SCRIPT_SHELL");
       expect(workflow).toContain("Get-Command pwsh");
       expect(workflow).toContain("pnpm config get scriptShell");
+      expect(workflow).toContain("Get-Command cmd.exe");
+      expect(workflow).toContain('where node && node --version');
+      expect(workflow).toContain("$nodeDirectory | Out-File -FilePath $env:GITHUB_PATH");
+      expect(workflow).not.toContain('"PATH=$nodeDirectory;$workspaceBin;$env:PATH"');
       expect(workflow).not.toContain("node.cmd");
       expect(workflow).not.toContain("Create runner-local Node shim");
       expect(workflow).not.toContain("pnpm exec node --version");
