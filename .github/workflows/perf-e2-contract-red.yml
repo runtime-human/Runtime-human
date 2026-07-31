@@ -37,7 +37,8 @@ jobs:
           $PSNativeCommandUseErrorActionPreference = $true
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
+          pnpm --version
       - name: Install frozen dependencies
-        run: pnpm install --frozen-lockfile --reporter=silent
+        run: pnpm install --frozen-lockfile --reporter=append-only
       - name: Run immutable evidence workflow contract
-        run: pnpm exec vitest run tests/desktop-evidence-runtime-contract.test.ts
+        run: pnpm test -- tests/desktop-evidence-runtime-contract.test.ts
