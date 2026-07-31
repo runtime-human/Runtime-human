@@ -50,19 +50,21 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
           pnpm --version
-      - name: Persist Node and workspace command paths
+      - name: Persist Node and pnpm script shell
         run: |
           $ErrorActionPreference = "Stop"
           $PSNativeCommandUseErrorActionPreference = $true
           $nodeCommand = Get-Command node -ErrorAction Stop
+          $pwshCommand = Get-Command pwsh -ErrorAction Stop
           $nodeDirectory = Split-Path $nodeCommand.Source -Parent
           $workspaceBin = Join-Path $env:GITHUB_WORKSPACE "node_modules\.bin"
           $nodeDirectory | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           $workspaceBin | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           "NODE_EXECUTABLE=$($nodeCommand.Source)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "PNPM_CONFIG_SCRIPT_SHELL=$($pwshCommand.Source)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "PATH=$nodeDirectory;$workspaceBin;$env:PATH" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           Write-Host "Persisted Node directory: $nodeDirectory"
-          Write-Host "Persisted workspace bin: $workspaceBin"
+          Write-Host "Configured pnpm script shell: $($pwshCommand.Source)"
       - name: Restore Rust toolchain path
         run: |
           $ErrorActionPreference = "Stop"
@@ -80,23 +82,19 @@ jobs:
           cargo --version
       - name: Install frozen dependencies
         run: pnpm install --frozen-lockfile --reporter=append-only
-      - name: Create runner-local Node shim
+      - name: Verify pnpm script shell
         run: |
           $ErrorActionPreference = "Stop"
-          if (-not (Test-Path $env:NODE_EXECUTABLE)) {
-            throw "NODE_EXECUTABLE does not resolve to setup-node's node.exe"
+          $PSNativeCommandUseErrorActionPreference = $true
+          $configuredShell = (pnpm config get scriptShell).Trim()
+          if ([string]::IsNullOrWhiteSpace($configuredShell) -or $configuredShell -eq "undefined") {
+            throw "pnpm did not load PNPM_CONFIG_SCRIPT_SHELL"
           }
-          $workspaceBin = Join-Path $env:GITHUB_WORKSPACE "node_modules\.bin"
-          New-Item -ItemType Directory -Path $workspaceBin -Force | Out-Null
-          $shim = Join-Path $workspaceBin "node.cmd"
-          Set-Content -LiteralPath $shim -Encoding ascii -Value @(
-            "@echo off",
-            "`"$env:NODE_EXECUTABLE`" %*"
-          )
-          & $shim --version
-          where.exe node
-          node --version
-          pnpm exec node --version
+          if (-not (Test-Path $configuredShell)) {
+            throw "Configured pnpm script shell does not exist: $configuredShell"
+          }
+          & $env:NODE_EXECUTABLE --version
+          Write-Host "pnpm script shell: $configuredShell"
       - name: Check evidence Rust feature graph
         run: cargo check --locked --manifest-path apps/desktop/src-tauri/Cargo.toml --features performance-evidence
       - name: Verify persistence telemetry contract
@@ -141,9 +139,15 @@ jobs:
           "MEASURED_COMMIT=$measuredCommit" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           Write-Host "Measured product commit: $measuredCommit"
       - name: Preflight WDIO runtime exports
-        run: >-
-          pnpm --filter @runtime-human/desktop-evidence exec node --input-type=module
-          -e "await import('@wdio/tauri-service'); console.log('WDIO Tauri service import succeeded')"
+        run: |
+          $ErrorActionPreference = "Stop"
+          $PSNativeCommandUseErrorActionPreference = $true
+          Push-Location tools/desktop-evidence
+          try {
+            & $env:NODE_EXECUTABLE --input-type=module -e "await import('@wdio/tauri-service'); console.log('WDIO Tauri service import succeeded')"
+          } finally {
+            Pop-Location
+          }
       - name: Build evidence executable
         run: pnpm evidence:desktop:build
       - name: Restore only build-generated Tauri schemas
