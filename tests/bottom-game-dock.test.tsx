@@ -45,18 +45,25 @@ describe("BottomGameDock", () => {
     status.focus();
     fireEvent.keyDown(status, { key: "ArrowLeft" });
     expect(log).toHaveFocus();
+    expect(log).toHaveAttribute("tabindex", "0");
+    expect(status).toHaveAttribute("tabindex", "-1");
 
     fireEvent.keyDown(log, { key: "ArrowRight" });
     expect(status).toHaveFocus();
+    expect(status).toHaveAttribute("tabindex", "0");
 
     fireEvent.keyDown(status, { key: "End" });
     expect(log).toHaveFocus();
+    expect(log).toHaveAttribute("tabindex", "0");
 
     fireEvent.keyDown(log, { key: "Home" });
     expect(status).toHaveFocus();
+    expect(status).toHaveAttribute("tabindex", "0");
 
     fireEvent.keyDown(status, { key: "ArrowRight" });
     expect(events).toHaveFocus();
+    expect(events).toHaveAttribute("tabindex", "0");
+    expect(status).toHaveAttribute("tabindex", "-1");
     expect(onActiveChange).not.toHaveBeenCalled();
     expect(screen.getByRole("tabpanel")).toHaveTextContent("Сохранение завершено");
   });
@@ -69,13 +76,14 @@ describe("BottomGameDock", () => {
     const log = screen.getByRole("tab", { name: "Журнал" });
 
     fireEvent.click(events);
+    expect(events).toHaveAttribute("tabindex", "0");
     fireEvent.keyDown(events, { key: "Enter" });
     fireEvent.keyDown(log, { key: " " });
 
     expect(onActiveChange.mock.calls).toEqual([["events"], ["events"], ["log"]]);
   });
 
-  it("updates the selected tab and panel only when controlled state changes", () => {
+  it("updates the selected tab, roving focus and panel when controlled state changes", () => {
     const { rerender } = render(
       <BottomGameDock activeId="status" items={ITEMS} onActiveChange={() => undefined} />,
     );
@@ -85,6 +93,7 @@ describe("BottomGameDock", () => {
     rerender(<BottomGameDock activeId="log" items={ITEMS} onActiveChange={() => undefined} />);
 
     expect(screen.getByRole("tab", { name: "Журнал" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Журнал" })).toHaveAttribute("tabindex", "0");
     expect(screen.getByRole("tabpanel")).toHaveTextContent("Журнал сеанса");
     expect(screen.queryByText("Сохранение завершено")).not.toBeInTheDocument();
   });
