@@ -105,10 +105,21 @@ jobs:
           $ErrorActionPreference = "Stop"
           $PSNativeCommandUseErrorActionPreference = $true
           $nodeDirectory = Split-Path $env:NODE_EXECUTABLE -Parent
-          $env:Path = "$nodeDirectory;$env:Path"
-          $cmdCommand = Get-Command cmd.exe -ErrorAction Stop
-          & $cmdCommand.Source /d /c "node --version"
-          pnpm lint:type-aware
+          $workspaceBin = Join-Path $env:GITHUB_WORKSPACE "node_modules\.bin"
+          $pnpmCommand = Join-Path $nodeDirectory "pnpm.cmd"
+          $cmdCommand = Join-Path $env:SystemRoot "System32\cmd.exe"
+          if (-not (Test-Path $pnpmCommand)) {
+            throw "pnpm.cmd was not found at $pnpmCommand"
+          }
+          if (-not (Test-Path $cmdCommand)) {
+            throw "cmd.exe was not found at $cmdCommand"
+          }
+          $lintCommand = 'set "PATH={0};{1};%PATH%" && node --version && call "{2}" lint:type-aware' -f `
+            $nodeDirectory, $workspaceBin, $pnpmCommand
+          & $cmdCommand /d /s /c $lintCommand
+          if ($LASTEXITCODE -ne 0) {
+            throw "Type-aware lint failed with exit code $LASTEXITCODE"
+          }
       - name: Run typecheck
         run: pnpm typecheck
       - name: Verify evidence contracts
