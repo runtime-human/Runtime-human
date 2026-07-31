@@ -57,6 +57,8 @@ describe("desktop evidence runtime contract", () => {
       expect(workflow).toContain("node_modules\\.bin");
       expect(workflow).toContain("node.cmd");
       expect(workflow).toContain("Create runner-local Node shim");
+      expect(workflow).toContain('"PATH=$nodeDirectory;$workspaceBin;$env:PATH"');
+      expect(workflow).toContain("pnpm exec node --version");
     }
   });
 
