@@ -1,7 +1,7 @@
 import { execFile, spawn } from "node:child_process";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { basename, dirname, join, resolve } from "node:path";
+import { basename, dirname, join, resolve, win32 } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { promisify } from "node:util";
 import { pathToFileURL } from "node:url";
@@ -12,6 +12,10 @@ export const EVIDENCE_DIRECTORY_ENV = "RUNTIME_HUMAN_EVIDENCE_DATA_DIR";
 const DEFAULT_CAPTURE_DEADLINE_MS = 300_000;
 const CLEANUP_RETRIES = 20;
 const CLEANUP_RETRY_DELAY_MS = 100;
+
+type WindowsDirectoryEnvironment = Readonly<
+  Pick<NodeJS.ProcessEnv, "SystemRoot" | "WINDIR">
+>;
 
 export type CaptureProcessResult = Readonly<{
   code: number | null;
@@ -120,7 +124,7 @@ function launchCaptureWorker(
     killTree: async () => {
       if (process.platform === "win32") {
         try {
-          await execFileAsync("taskkill", ["/PID", String(pid), "/T", "/F"], {
+          await execFileAsync(resolveWindowsTaskkillPath(), ["/PID", String(pid), "/T", "/F"], {
             timeout: 10_000,
             windowsHide: true,
           });
@@ -133,6 +137,20 @@ function launchCaptureWorker(
       child.kill("SIGKILL");
     },
   });
+}
+
+export function resolveWindowsTaskkillPath(
+  environment: WindowsDirectoryEnvironment = process.env,
+): string {
+  const systemDirectory = environment.SystemRoot ?? environment.WINDIR;
+  if (systemDirectory === undefined || systemDirectory.trim().length === 0) {
+    throw new Error("Windows system directory is unavailable for taskkill resolution");
+  }
+  if (!win32.isAbsolute(systemDirectory)) {
+    throw new Error("Taskkill resolution requires an absolute Windows system directory");
+  }
+
+  return win32.resolve(systemDirectory, "System32", "taskkill.exe");
 }
 
 export function resolveEvidenceDirectoryForRemoval(path: string, root = tmpdir()): string {
