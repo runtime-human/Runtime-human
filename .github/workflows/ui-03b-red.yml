@@ -9,6 +9,10 @@ on:
       - "apps/desktop/src/shell/BottomGameDock.tsx"
       - "tests/bottom-game-dock.test.tsx"
 
+concurrency:
+  group: ui-03b-red-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -30,11 +34,17 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: "24"
-      - name: Activate pnpm
+      - name: Activate pnpm and pin Node
         run: |
+          $ErrorActionPreference = "Stop"
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
+          $nodeExecutable = (Get-Command node -ErrorAction Stop).Source
+          "NODE_EXECUTABLE=$nodeExecutable" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       - name: Install frozen dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
       - name: Run BottomGameDock contract
-        run: pnpm exec vitest run tests/bottom-game-dock.test.tsx
+        run: >-
+          & $env:NODE_EXECUTABLE
+          node_modules/vitest/vitest.mjs
+          run tests/bottom-game-dock.test.tsx
