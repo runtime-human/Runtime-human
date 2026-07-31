@@ -46,7 +46,7 @@ describe("desktop evidence runtime contract", () => {
     expect(workflow).not.toContain("git push origin HEAD:agent/perf-02a-windows-capture-harness");
   });
 
-  it("keeps Node available to pnpm child scripts after Rust setup", async () => {
+  it("uses an explicit PowerShell script shell for pnpm child processes", async () => {
     const [capture, foundation] = await Promise.all([
       readFile(CAPTURE_WORKFLOW_PATH, "utf8"),
       readFile(FOUNDATION_WORKFLOW_PATH, "utf8"),
@@ -54,12 +54,16 @@ describe("desktop evidence runtime contract", () => {
 
     for (const workflow of [capture, foundation]) {
       expect(workflow).toContain("NODE_EXECUTABLE");
-      expect(workflow).toContain("node_modules\\.bin");
-      expect(workflow).toContain("node.cmd");
-      expect(workflow).toContain("Create runner-local Node shim");
-      expect(workflow).toContain('"PATH=$nodeDirectory;$workspaceBin;$env:PATH"');
-      expect(workflow).toContain("pnpm exec node --version");
+      expect(workflow).toContain("PNPM_CONFIG_SCRIPT_SHELL");
+      expect(workflow).toContain("Get-Command pwsh");
+      expect(workflow).toContain("pnpm config get scriptShell");
+      expect(workflow).not.toContain("node.cmd");
+      expect(workflow).not.toContain("Create runner-local Node shim");
+      expect(workflow).not.toContain("pnpm exec node --version");
     }
+
+    expect(capture).toContain("Push-Location tools/desktop-evidence");
+    expect(capture).toContain("& $env:NODE_EXECUTABLE --input-type=module");
   });
 
   it("removes only allowlisted generated schemas and detects untracked build mutations", async () => {
