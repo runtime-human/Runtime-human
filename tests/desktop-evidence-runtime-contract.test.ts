@@ -66,6 +66,6 @@ describe("desktop evidence runtime contract", () => {
     expect(workflow).toContain("git ls-files --error-unmatch");
     expect(workflow).toContain("Remove-Item $path -Force");
     expect(workflow).toContain("git status --porcelain --untracked-files=all");
-    expect(workflow).not.toContain("git restore --worktree -- $path\n");
+    expect(workflow).toContain("Evidence build changed reviewed sources outside the generated Tauri schema allowlist");
   });
 });
