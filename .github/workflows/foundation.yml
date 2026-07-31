@@ -96,7 +96,6 @@ jobs:
           $workspaceBin | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           "NODE_EXECUTABLE=$($nodeCommand.Source)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "PNPM_CONFIG_SCRIPT_SHELL=$($pwshCommand.Source)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "PATH=$nodeDirectory;$workspaceBin;$env:PATH" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           Write-Host "Persisted Node directory: $nodeDirectory"
           Write-Host "Configured pnpm script shell: $($pwshCommand.Source)"
       - name: Install Rust 1.97.1
@@ -127,6 +126,11 @@ jobs:
             throw "Configured pnpm script shell does not exist: $configuredShell"
           }
           & $env:NODE_EXECUTABLE --version
+          $cmdCommand = Get-Command cmd.exe -ErrorAction Stop
+          & $cmdCommand.Source /d /s /c "where node && node --version"
+          if ($LASTEXITCODE -ne 0) {
+            throw "Node is not resolvable from cmd.exe child processes"
+          }
           Write-Host "pnpm script shell: $configuredShell"
       - name: Check documentation
         run: pnpm docs:check
