@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   resolveEvidenceDirectoryForRemoval,
+  resolveWindowsTaskkillPath,
   runBoundedCaptureProcess,
   type CaptureProcessPorts,
   type CaptureProcessResult,
@@ -110,6 +111,22 @@ describe("desktop evidence capture watchdog", () => {
         expect.objectContaining({ message: "cleanup failed" }),
       ],
     });
+  });
+
+  it("resolves taskkill from the trusted Windows system directory, not PATH", () => {
+    expect(resolveWindowsTaskkillPath({ SystemRoot: String.raw`C:\Windows` })).toBe(
+      String.raw`C:\Windows\System32\taskkill.exe`,
+    );
+    expect(resolveWindowsTaskkillPath({ WINDIR: String.raw`D:\Windows` })).toBe(
+      String.raw`D:\Windows\System32\taskkill.exe`,
+    );
+  });
+
+  it("fails closed when the Windows system directory is missing or relative", () => {
+    expect(() => resolveWindowsTaskkillPath({})).toThrow(/system directory/u);
+    expect(() => resolveWindowsTaskkillPath({ SystemRoot: "Windows" })).toThrow(
+      /absolute Windows system directory/u,
+    );
   });
 
   it("rejects an unsafe prepared path before launching a child", async () => {
