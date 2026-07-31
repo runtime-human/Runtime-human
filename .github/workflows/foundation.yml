@@ -126,11 +126,6 @@ jobs:
             throw "Configured pnpm script shell does not exist: $configuredShell"
           }
           & $env:NODE_EXECUTABLE --version
-          $cmdCommand = Get-Command cmd.exe -ErrorAction Stop
-          & $cmdCommand.Source /d /s /c "where node && node --version"
-          if ($LASTEXITCODE -ne 0) {
-            throw "Node is not resolvable from cmd.exe child processes"
-          }
           Write-Host "pnpm script shell: $configuredShell"
       - name: Check documentation
         run: pnpm docs:check
@@ -147,7 +142,14 @@ jobs:
       - name: Run focused test suite
         run: pnpm test
       - name: Run type-aware lint
-        run: pnpm lint:type-aware
+        run: |
+          $ErrorActionPreference = "Stop"
+          $PSNativeCommandUseErrorActionPreference = $true
+          $nodeDirectory = Split-Path $env:NODE_EXECUTABLE -Parent
+          $env:Path = "$nodeDirectory;$env:Path"
+          $cmdCommand = Get-Command cmd.exe -ErrorAction Stop
+          & $cmdCommand.Source /d /c "node --version"
+          pnpm lint:type-aware
       - name: Build renderer
         run: pnpm build
       - name: Build Storybook
