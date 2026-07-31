@@ -1,0 +1,71 @@
+name: perf-e2-docs-finalize-once
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+concurrency:
+  group: perf-e2-docs-finalize-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  finalize:
+    if: >-
+      github.actor != 'github-actions[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'agent/perf-02a-windows-capture-harness'
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          clean: true
+          persist-credentials: true
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Rebuild canonical documentation indexes
+        run: |
+          $ErrorActionPreference = "Stop"
+          $PSNativeCommandUseErrorActionPreference = $true
+          node scripts/build-toc.mjs
+          node scripts/build-toc.mjs --check
+      - name: Commit only canonical indexes and remove helper
+        run: |
+          $ErrorActionPreference = "Stop"
+          $PSNativeCommandUseErrorActionPreference = $true
+          Remove-Item ".github/workflows/perf-e2-docs-finalize-once.yml" -Force
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- docs/CATALOG.md docs/MANIFEST.jsonc .github/workflows/perf-e2-docs-finalize-once.yml
+          $unexpected = @(git diff --name-only --cached | Where-Object {
+            $_ -notin @(
+              "docs/CATALOG.md",
+              "docs/MANIFEST.jsonc",
+              ".github/workflows/perf-e2-docs-finalize-once.yml"
+            )
+          })
+          if ($unexpected.Count -gt 0) {
+            throw "Unexpected docs finalizer changes: $($unexpected -join ', ')"
+          }
+          git diff --cached --check
+          git diff --cached --quiet
+          if ($LASTEXITCODE -eq 0) {
+            throw "Docs finalizer produced no canonical index or helper-removal diff"
+          }
+          git commit -m "docs: rebuild PERF evidence indexes"
+          git push origin HEAD:agent/perf-02a-windows-capture-harness
