@@ -49,7 +49,7 @@ describe("desktop evidence runtime contract", () => {
     expect(workflow).not.toContain("git push origin HEAD:agent/perf-02a-windows-capture-harness");
   });
 
-  it("normalizes Node only at the type-aware lint child-process boundary", async () => {
+  it("normalizes Node only inside the type-aware lint cmd process", async () => {
     const [capture, foundation] = await Promise.all([
       readFile(CAPTURE_WORKFLOW_PATH, "utf8"),
       readFile(FOUNDATION_WORKFLOW_PATH, "utf8"),
@@ -60,10 +60,12 @@ describe("desktop evidence runtime contract", () => {
       expect(workflow).toContain("PNPM_CONFIG_SCRIPT_SHELL");
       expect(workflow).toContain("Get-Command pwsh");
       expect(workflow).toContain("pnpm config get scriptShell");
-      expect(workflow).toContain('$env:Path = "$nodeDirectory;$env:Path"');
-      expect(workflow).toContain("Get-Command cmd.exe -ErrorAction Stop");
-      expect(workflow).toContain('& $cmdCommand.Source /d /c "node --version"');
+      expect(workflow).toContain('$pnpmCommand = Join-Path $nodeDirectory "pnpm.cmd"');
+      expect(workflow).toContain('$cmdCommand = Join-Path $env:SystemRoot "System32\\cmd.exe"');
+      expect(workflow).toContain('set "PATH={0};{1};%PATH%"');
+      expect(workflow).toContain("& $cmdCommand /d /s /c $lintCommand");
       expect(workflow).toContain("$nodeDirectory | Out-File -FilePath $env:GITHUB_PATH");
+      expect(workflow).not.toContain('$env:Path = "$nodeDirectory;$env:Path"');
       expect(workflow).not.toContain('"PATH=$nodeDirectory;$workspaceBin;$env:PATH"');
       expect(workflow).not.toContain("node.cmd");
       expect(workflow).not.toContain("Create runner-local Node shim");
