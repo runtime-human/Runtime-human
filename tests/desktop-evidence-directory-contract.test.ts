@@ -26,8 +26,8 @@ describe("desktop evidence prepared directory contract", () => {
     join(tmpdir(), `${PREFIX}prepared`, "nested"),
     join(dirname(tmpdir()), `${PREFIX}escape`),
   ])("rejects an unsafe prepared path: %s", (path) => {
-    expect(() =>
-      requiredPreparedEvidenceDirectory({ [EVIDENCE_DIRECTORY_ENV]: path }),
-    ).toThrow(/not a direct Runtime Human evidence directory/u);
+    expect(() => requiredPreparedEvidenceDirectory({ [EVIDENCE_DIRECTORY_ENV]: path })).toThrow(
+      /not a direct Runtime Human evidence directory/u,
+    );
   });
 });

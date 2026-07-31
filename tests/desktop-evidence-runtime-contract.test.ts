@@ -42,7 +42,9 @@ describe("desktop evidence runtime contract", () => {
     expect(workflow).not.toContain("apply-persistence-telemetry-contract.mjs");
     expect(workflow).not.toContain("pnpm install --no-frozen-lockfile");
     expect(workflow).not.toContain("pnpm fmt\n");
-    expect(workflow).not.toContain("git commit -m \"fix: materialize validated Windows evidence runtime\"");
+    expect(workflow).not.toContain(
+      'git commit -m "fix: materialize validated Windows evidence runtime"',
+    );
     expect(workflow).not.toContain("git push origin HEAD:agent/perf-02a-windows-capture-harness");
   });
 
@@ -72,6 +74,8 @@ describe("desktop evidence runtime contract", () => {
     expect(workflow).toContain("git ls-files --error-unmatch");
     expect(workflow).toContain("Remove-Item $path -Force");
     expect(workflow).toContain("git status --porcelain --untracked-files=all");
-    expect(workflow).toContain("Evidence build changed reviewed sources outside the generated Tauri schema allowlist");
+    expect(workflow).toContain(
+      "Evidence build changed reviewed sources outside the generated Tauri schema allowlist",
+    );
   });
 });
