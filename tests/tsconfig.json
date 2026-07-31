@@ -42,6 +42,7 @@
     { "path": "../packages/game-content-compiler" },
     { "path": "../packages/game-persistence-contracts" },
     { "path": "../packages/game-ui" },
-    { "path": "../packages/game-ui-fixtures" }
+    { "path": "../packages/game-ui-fixtures" },
+    { "path": "../tools/desktop-evidence" }
   ]
 }
