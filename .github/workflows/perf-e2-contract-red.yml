@@ -1,0 +1,43 @@
+name: perf-e2-contract-red
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/perf-e2-contract-red.yml"
+      - ".github/workflows/perf-02a-e2-windows-capture.yml"
+      - "tests/desktop-evidence-runtime-contract.test.ts"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  contract:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: self-hosted
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          clean: true
+          persist-credentials: false
+          show-progress: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Activate pnpm
+        run: |
+          $ErrorActionPreference = "Stop"
+          $PSNativeCommandUseErrorActionPreference = $true
+          corepack enable
+          corepack prepare pnpm@11.11.0 --activate
+      - name: Install frozen dependencies
+        run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Run immutable evidence workflow contract
+        run: pnpm exec vitest run tests/desktop-evidence-runtime-contract.test.ts
