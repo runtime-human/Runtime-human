@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 
 const MAIN_PATH = resolve("apps/desktop/src-tauri/src/main.rs");
 const DIAGNOSTICS_PATH = resolve("apps/desktop/src-tauri/src/diagnostics.rs");
+const CAPTURE_WORKFLOW_PATH = resolve(".github/workflows/perf-02a-e2-windows-capture.yml");
 
 describe("desktop evidence runtime contract", () => {
   it("records process entry before evidence-only setup", async () => {
@@ -27,5 +28,20 @@ describe("desktop evidence runtime contract", () => {
     expect(source).toContain("fn release_filter_ignores_rust_log()");
     expect(source).toContain("fn debug_filter_accepts_only_closed_crate_levels()");
     expect(source).not.toContain("EnvFilter::try_new(rust_log.unwrap_or(fallback))");
+  });
+
+  it("measures the reviewed branch head without mutating product sources in CI", async () => {
+    const workflow = await readFile(CAPTURE_WORKFLOW_PATH, "utf8");
+
+    expect(workflow).toContain("pnpm install --frozen-lockfile");
+    expect(workflow).toContain("cargo check --locked");
+    expect(workflow).toContain("pnpm fmt:check");
+    expect(workflow).toContain("MEASURED_COMMIT");
+    expect(workflow).toContain("git rev-parse HEAD");
+    expect(workflow).not.toContain("apply-persistence-telemetry-contract.mjs");
+    expect(workflow).not.toContain("pnpm install --no-frozen-lockfile");
+    expect(workflow).not.toContain("pnpm fmt\n");
+    expect(workflow).not.toContain("git commit -m \"fix: materialize validated Windows evidence runtime\"");
+    expect(workflow).not.toContain("git push origin HEAD:agent/perf-02a-windows-capture-harness");
   });
 });
