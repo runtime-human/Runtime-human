@@ -11,13 +11,14 @@ updated: 2026-07-30
 > Сгенерировано `node scripts/build-toc.mjs` из metadata документов. Не редактировать вручную.
 > Канонический навигационный вход и порядок источников истины: [INDEX.md](INDEX.md).
 
-Всего документов: **198**.
+Всего документов: **201**.
 
 ## Навигация
 
 - [Documentation metadata convention](STYLE.md) — `draft`, `canon`
 - [Runtime Human — индекс документации](INDEX.md) — `draft`, `canon`
 - [Runtime Human documentation](README.md) — `draft`, `canon`
+- [UI-03 Task 1 Checkpoint](reviews/UI-03-TASK-1-CHECKPOINT.md) — `accepted`, `non-canon`
 
 ## Architecture Decision Records
 
@@ -200,6 +201,7 @@ updated: 2026-07-30
 - [Repository Foundation Implementation Plan](superpowers/plans/2026-07-19-repository-foundation.md) — `completed`, `canon`
 - [Roadmap](plans/ROADMAP.md) — `draft`, `canon`
 - [Runtime Human execution status and next gates](superpowers/plans/2026-07-22-runtime-human-execution-status.md) — `superseded`, `non-canon`
+- [Runtime Human Game Shell and Selective Sandwich Panels Design](superpowers/specs/2026-07-30-game-shell-selective-sandwich-panels-design.md) — `accepted`, `canon`
 - [Runtime Human integrated implementation roadmap](superpowers/plans/2026-07-22-runtime-human-integrated-roadmap.md) — `superseded`, `non-canon`
 - [Runtime Human source adaptation register](superpowers/plans/2026-07-22-runtime-human-source-adaptation-register.md) — `completed`, `non-canon`
 - [RUST-01B Production Logging Implementation Plan](plans/RUST-01B-PRODUCTION-LOGGING-IMPLEMENTATION-PLAN.md) — `completed`, `canon`
@@ -211,6 +213,7 @@ updated: 2026-07-30
 - [UI-02A Desktop Shell Extraction Implementation Plan](superpowers/plans/2026-07-27-ui-02a-desktop-shell-extraction.md) — `completed`, `canon`
 - [UI-02B Desktop Routing Implementation Plan](superpowers/plans/2026-07-27-ui-02b-desktop-routing.md) — `completed`, `canon`
 - [UI-02C Career Overview Implementation Plan](superpowers/plans/2026-07-27-ui-02c-career-overview.md) — `completed`, `canon`
+- [UI-03 Game Shell and Selective Sandwich Panels Implementation Plan](plans/UI-03-GAME-SHELL-SANDWICH-PANELS-IMPLEMENTATION-PLAN.md) — `accepted`, `canon`
 - [Vertical Slice Plan](plans/VERTICAL-SLICE-PLAN.md) — `draft`, `canon`
 
 ## Исследования

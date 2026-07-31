@@ -14,10 +14,10 @@
       {
         "label": "main",
         "title": "Runtime Human",
-        "width": 1100,
-        "height": 720,
-        "minWidth": 960,
-        "minHeight": 640,
+        "width": 1280,
+        "height": 800,
+        "minWidth": 1180,
+        "minHeight": 720,
         "resizable": true
       }
     ],
