@@ -94,6 +94,7 @@ jobs:
           $nodeDirectory | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           $workspaceBin | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           "NODE_EXECUTABLE=$($nodeCommand.Source)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "PATH=$nodeDirectory;$workspaceBin;$env:PATH" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           Write-Host "Persisted Node directory: $nodeDirectory"
           Write-Host "Persisted workspace bin: $workspaceBin"
       - name: Install Rust 1.97.1
@@ -126,6 +127,9 @@ jobs:
             "`"$env:NODE_EXECUTABLE`" %*"
           )
           & $shim --version
+          where.exe node
+          node --version
+          pnpm exec node --version
       - name: Check documentation
         run: pnpm docs:check
       - name: Check formatting
