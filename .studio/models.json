@@ -32,6 +32,26 @@
       "provider": "opencode-go",
       "model": "opencode-go/deepseek-v4-flash"
     },
+    "lunaTester": {
+      "provider": "codex",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "xhigh",
+      "freshContext": true,
+      "readOnly": true
+    },
+    "lunaReviewer": {
+      "provider": "codex",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "xhigh",
+      "freshContext": true,
+      "readOnly": true
+    },
+    "crossFamilyReviewer": {
+      "provider": "opencode-go",
+      "model": "opencode-go/glm-5.3",
+      "freshContext": true,
+      "readOnly": true
+    },
     "escalation": {
       "provider": "opencode-go",
       "model": "opencode-go/glm-5.3"
@@ -39,11 +59,6 @@
     "cheapAux": {
       "provider": "opencode-go",
       "model": "opencode-go/mimo-v2.5"
-    },
-    "r2Reviewer": {
-      "provider": "opencode-go",
-      "model": "opencode-go/glm-5.3",
-      "readOnly": true
     },
     "r3Reviewer": {
       "provider": "codex",
@@ -60,6 +75,20 @@
     "CONTENT": "content",
     "QA": "qa",
     "R3": "riskR3"
+  },
+  "reviewRouting": {
+    "R1": "lunaReviewer",
+    "R2": "lunaReviewer",
+    "R2_COMPLEX": "lunaReviewer",
+    "R3": "r3Reviewer",
+    "CROSS_FAMILY": "crossFamilyReviewer"
+  },
+  "testRouting": {
+    "default": "lunaTester",
+    "R1": "lunaTester",
+    "R2": "lunaTester",
+    "R2_COMPLEX": "lunaTester",
+    "R3": "lunaTester"
   },
   "retryPolicy": {
     "maxTotalAttempts": 3,
