@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "policy": "quality-balanced",
+  "forbiddenModels": [
+    "kimi-k3",
+    "opencode-go/kimi-k3"
+  ],
+  "profiles": {
+    "producer": {
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "reasoningEffort": "high"
+    },
+    "riskR3": {
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "reasoningEffort": "high"
+    },
+    "content": {
+      "provider": "opencode-go",
+      "model": "opencode-go/deepseek-v4-pro"
+    },
+    "r2Complex": {
+      "provider": "opencode-go",
+      "model": "opencode-go/deepseek-v4-pro"
+    },
+    "defaultWorker": {
+      "provider": "opencode-go",
+      "model": "opencode-go/deepseek-v4-flash"
+    },
+    "qa": {
+      "provider": "opencode-go",
+      "model": "opencode-go/deepseek-v4-flash"
+    },
+    "lunaTester": {
+      "provider": "codex",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "xhigh",
+      "freshContext": true,
+      "readOnly": true
+    },
+    "lunaReviewer": {
+      "provider": "codex",
+      "model": "gpt-5.6-luna",
+      "reasoningEffort": "xhigh",
+      "freshContext": true,
+      "readOnly": true
+    },
+    "crossFamilyReviewer": {
+      "provider": "opencode-go",
+      "model": "opencode-go/glm-5.3",
+      "freshContext": true,
+      "readOnly": true
+    },
+    "escalation": {
+      "provider": "opencode-go",
+      "model": "opencode-go/glm-5.3"
+    },
+    "cheapAux": {
+      "provider": "opencode-go",
+      "model": "opencode-go/mimo-v2.5"
+    },
+    "r3Reviewer": {
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "reasoningEffort": "high",
+      "freshContext": true,
+      "readOnly": true
+    }
+  },
+  "routing": {
+    "R1": "defaultWorker",
+    "R2": "defaultWorker",
+    "R2_COMPLEX": "r2Complex",
+    "CONTENT": "content",
+    "QA": "qa",
+    "R3": "riskR3"
+  },
+  "reviewRouting": {
+    "R1": "lunaReviewer",
+    "R2": "lunaReviewer",
+    "R2_COMPLEX": "lunaReviewer",
+    "R3": "r3Reviewer",
+    "CROSS_FAMILY": "crossFamilyReviewer"
+  },
+  "testRouting": {
+    "default": "lunaTester",
+    "R1": "lunaTester",
+    "R2": "lunaTester",
+    "R2_COMPLEX": "lunaTester",
+    "R3": "lunaTester"
+  },
+  "retryPolicy": {
+    "maxTotalAttempts": 3,
+    "maxSemanticRetriesPerProfile": 1,
+    "escalateAfterSemanticFailure": true,
+    "doNotEscalatePureToolFailure": true
+  }
+}

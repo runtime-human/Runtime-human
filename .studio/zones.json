@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "zones": [
+    {
+      "id": "core",
+      "paths": ["packages/game-core/**", "packages/game-schema/**", "packages/shared-kernel/**"],
+      "minimumRisk": "R2",
+      "promoteToR3On": ["authoritative state", "MonthRun", "PRNG", "fixed-point arithmetic", "public schema contract", "idempotency"]
+    },
+    {
+      "id": "persistence",
+      "paths": ["packages/game-persistence-contracts/**", "packages/game-platform-contracts/**", "apps/desktop/src-tauri/**"],
+      "minimumRisk": "R3",
+      "promoteToR3On": ["SQLite schema", "migration", "save compatibility", "CAS", "IPC", "Tauri capability", "crash recovery"]
+    },
+    {
+      "id": "content",
+      "paths": ["content/**", "packages/game-content/**", "packages/game-content-compiler/**"],
+      "minimumRisk": "R2",
+      "preferredProfile": "content",
+      "promoteToR3On": ["stable content ID", "canonical historical fact", "content-to-state authority"]
+    },
+    {
+      "id": "application",
+      "paths": ["packages/game-application/**"],
+      "minimumRisk": "R2",
+      "promoteToR3On": ["transaction boundary", "resume/replay semantics", "authoritative command sequencing"]
+    },
+    {
+      "id": "ui",
+      "paths": ["packages/game-ui/**", "packages/game-ui-fixtures/**", "apps/desktop/src/**", "apps/desktop/.storybook/**"],
+      "minimumRisk": "R1",
+      "promoteToR3On": ["session lifetime", "authoritative state mutation", "Tauri permission"]
+    },
+    {
+      "id": "qa-performance",
+      "paths": ["tests/**", "scripts/performance/**", "scripts/run-*-performance-*.mjs", "docs/performance/**"],
+      "minimumRisk": "R1",
+      "preferredProfile": "qa"
+    },
+    {
+      "id": "canon",
+      "paths": ["docs/**", "AGENTS.md", "GAME.md"],
+      "minimumRisk": "R2",
+      "ownerReview": true,
+      "promoteToR3On": ["accepted ADR", "product invariant", "architecture authority", "MVP scope"]
+    }
+  ],
+  "exclusiveWriteGroups": [
+    ["core", "persistence"],
+    ["canon", "core"],
+    ["canon", "persistence"]
+  ]
+}

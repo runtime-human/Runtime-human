@@ -1,0 +1,5 @@
+scripts:
+  setup: |
+    corepack enable
+    corepack prepare pnpm@11.11.0 --activate
+    pnpm install --frozen-lockfile --reporter=silent

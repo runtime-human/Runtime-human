@@ -5,6 +5,8 @@ on:
     branches:
       - main
     paths:
+      - "AGENTS.md"
+      - "GAME.md"
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
@@ -20,11 +22,19 @@ on:
       - "rust-toolchain.toml"
       - ".ox*.json"
       - ".gitattributes"
+      - ".studio/**"
+      - ".agents/**"
+      - ".opencode/**"
+      - "gamestudio/**"
+      - "opencode.json"
+      - "orca.yaml"
       - ".github/workflows/foundation.yml"
   pull_request:
     branches:
       - main
     paths:
+      - "AGENTS.md"
+      - "GAME.md"
       - "package.json"
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
@@ -40,6 +50,12 @@ on:
       - "rust-toolchain.toml"
       - ".ox*.json"
       - ".gitattributes"
+      - ".studio/**"
+      - ".agents/**"
+      - ".opencode/**"
+      - "gamestudio/**"
+      - "opencode.json"
+      - "orca.yaml"
       - ".github/workflows/foundation.yml"
 
 concurrency:
@@ -97,6 +113,8 @@ jobs:
           cargo --version
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
+      - name: Check AI studio configuration
+        run: pnpm studio:check
       - name: Check documentation
         run: pnpm docs:check
       - name: Check formatting

@@ -148,4 +148,8 @@ apps/desktop/src-tauri/target/
 # Performance outputs
 artifacts/performance/
 
+# AI Studio local state
+.worktrees/
+.studio/runtime/
+
 .DS_Store
