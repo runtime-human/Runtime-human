@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "policy": {
+    "load": "lazy",
+    "maxInitialDocs": 5,
+    "maxInitialFiles": 8,
+    "followReferencesOnlyWhenNeeded": true,
+    "neverBulkLoad": ["docs/MANIFEST.jsonc", "docs/CATALOG.md"]
+  },
+  "base": ["AGENTS.md", "GAME.md", "docs/INDEX.md"],
+  "zones": {
+    "core": {
+      "agentGuide": "docs/agents/CORE-AGENT.md",
+      "docs": ["docs/architecture/**", "docs/game-design/**", "docs/adr/**"],
+      "code": ["packages/game-core/**", "packages/game-schema/**", "packages/shared-kernel/**"]
+    },
+    "persistence": {
+      "agentGuide": "docs/agents/ARCHITECT-AGENT.md",
+      "docs": ["docs/persistence/**", "docs/architecture/**", "docs/adr/**"],
+      "code": ["packages/game-persistence-contracts/**", "packages/game-platform-contracts/**", "apps/desktop/src-tauri/**"]
+    },
+    "content": {
+      "agentGuide": "docs/agents/CONTENT-AGENT.md",
+      "docs": ["docs/content/**", "docs/game-design/**", "docs/adr/**"],
+      "code": ["content/**", "packages/game-content/**", "packages/game-content-compiler/**"]
+    },
+    "application": {
+      "agentGuide": "docs/agents/ARCHITECT-AGENT.md",
+      "docs": ["docs/architecture/**", "docs/game-design/**", "docs/adr/**"],
+      "code": ["packages/game-application/**"]
+    },
+    "ui": {
+      "agentGuide": "docs/agents/UI-AGENT.md",
+      "docs": ["docs/game-design/**", "docs/architecture/**", "docs/adr/**"],
+      "code": ["packages/game-ui/**", "packages/game-ui-fixtures/**", "apps/desktop/src/**"]
+    },
+    "qa-performance": {
+      "agentGuide": "docs/agents/QA-AGENT.md",
+      "docs": ["docs/performance/**", "docs/engineering/**"],
+      "code": ["tests/**", "scripts/performance/**"]
+    },
+    "canon": {
+      "agentGuide": "docs/agents/ARCHITECT-AGENT.md",
+      "docs": ["docs/adr/**", "docs/game-design/**", "docs/architecture/**", "docs/plans/**"],
+      "code": []
+    }
+  }
+}

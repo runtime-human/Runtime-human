@@ -1,0 +1,31 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "opencode-go/deepseek-v4-flash",
+  "small_model": "opencode-go/mimo-v2.5",
+  "subagent_depth": 0,
+  "permission": {
+    "task": "deny",
+    "external_directory": "deny",
+    "skill": "allow",
+    "question": "allow",
+    "webfetch": "ask",
+    "websearch": "ask",
+    "bash": {
+      "*": "ask",
+      "git status*": "allow",
+      "git diff*": "allow",
+      "git log*": "allow",
+      "git show*": "allow",
+      "git rev-parse*": "allow",
+      "git merge-base*": "allow",
+      "pnpm *": "allow",
+      "node *": "allow",
+      "cargo *": "allow",
+      "git commit*": "deny",
+      "git push*": "deny",
+      "git merge*": "deny",
+      "git rebase*": "deny",
+      "gh pr merge*": "deny"
+    }
+  }
+}

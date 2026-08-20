@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "project": "Runtime Human",
+  "defaultBranch": "main",
+  "platform": "windows-first",
+  "packageManager": "pnpm@11.11.0",
+  "commands": {
+    "setup": "pnpm install --frozen-lockfile --reporter=silent",
+    "studioCheck": "pnpm studio:check",
+    "fastGate": "pnpm check:fast",
+    "fullGate": "pnpm verify",
+    "releaseGate": "pnpm verify:release"
+  },
+  "concurrency": {
+    "maxWorkers": 3,
+    "fullGateSlots": 1,
+    "maxDependencyDepth": 4
+  },
+  "batching": {
+    "initialWeightMin": 8,
+    "initialWeightMax": 12,
+    "preferSingleZone": true,
+    "splitOnAuthorityBoundary": true
+  },
+  "producer": {
+    "persistent": true,
+    "interactive": true,
+    "ownerGate": true,
+    "mayImplementProductCode": false
+  }
+}

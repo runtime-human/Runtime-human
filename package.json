@@ -12,9 +12,11 @@
     "evidence:desktop:check": "vitest run tests/desktop-performance-evidence.test.ts tests/desktop-performance-evidence-cli.test.ts",
     "perf:january:baseline": "node scripts/run-january-performance-baseline.mjs",
     "perf:january:sqlite": "node scripts/run-january-sqlite-performance-baseline.mjs",
-    "fmt": "oxfmt --no-error-on-unmatched-pattern package.json pnpm-workspace.yaml tsconfig.base.json tsconfig.json vitest.config.ts tests apps packages content scripts/build-toc.mjs scripts/docs-metadata.mjs scripts/docs-metadata.d.mts scripts/build-game-content.ts scripts/write-january-e2-fixtures.mjs scripts/run-january-performance-baseline.mjs scripts/run-january-sqlite-performance-baseline.mjs scripts/run-desktop-performance-evidence.mjs scripts/run-desktop-performance-evidence.d.mts scripts/performance scripts/tsconfig.json scripts/check-boundaries.mjs scripts/check-build-only-dependencies.mjs .github/workflows/foundation.yml",
-    "fmt:check": "oxfmt --check --no-error-on-unmatched-pattern package.json pnpm-workspace.yaml tsconfig.base.json tsconfig.json vitest.config.ts tests apps packages content scripts/build-toc.mjs scripts/docs-metadata.mjs scripts/docs-metadata.d.mts scripts/build-game-content.ts scripts/write-january-e2-fixtures.mjs scripts/run-january-performance-baseline.mjs scripts/run-january-sqlite-performance-baseline.mjs scripts/run-desktop-performance-evidence.mjs scripts/run-desktop-performance-evidence.d.mts scripts/performance scripts/tsconfig.json scripts/check-boundaries.mjs scripts/check-build-only-dependencies.mjs .github/workflows/foundation.yml",
-    "lint": "oxlint --no-error-on-unmatched-pattern scripts/build-toc.mjs scripts/docs-metadata.mjs scripts/build-game-content.ts scripts/write-january-e2-fixtures.mjs scripts/run-january-performance-baseline.mjs scripts/run-january-sqlite-performance-baseline.mjs scripts/run-desktop-performance-evidence.mjs scripts/performance scripts/check-boundaries.mjs scripts/check-build-only-dependencies.mjs tests apps packages",
+    "studio:check": "node scripts/studio/check-config.mjs",
+    "studio:doctor": "node scripts/studio/doctor.mjs",
+    "fmt": "oxfmt --no-error-on-unmatched-pattern package.json pnpm-workspace.yaml tsconfig.base.json tsconfig.json vitest.config.ts tests apps packages content scripts/build-toc.mjs scripts/docs-metadata.mjs scripts/docs-metadata.d.mts scripts/build-game-content.ts scripts/write-january-e2-fixtures.mjs scripts/run-january-performance-baseline.mjs scripts/run-january-sqlite-performance-baseline.mjs scripts/run-desktop-performance-evidence.mjs scripts/run-desktop-performance-evidence.d.mts scripts/performance scripts/studio scripts/tsconfig.json scripts/check-boundaries.mjs scripts/check-build-only-dependencies.mjs .github/workflows/foundation.yml",
+    "fmt:check": "oxfmt --check --no-error-on-unmatched-pattern package.json pnpm-workspace.yaml tsconfig.base.json tsconfig.json vitest.config.ts tests apps packages content scripts/build-toc.mjs scripts/docs-metadata.mjs scripts/docs-metadata.d.mts scripts/build-game-content.ts scripts/write-january-e2-fixtures.mjs scripts/run-january-performance-baseline.mjs scripts/run-january-sqlite-performance-baseline.mjs scripts/run-desktop-performance-evidence.mjs scripts/run-desktop-performance-evidence.d.mts scripts/performance scripts/studio scripts/tsconfig.json scripts/check-boundaries.mjs scripts/check-build-only-dependencies.mjs .github/workflows/foundation.yml",
+    "lint": "oxlint --no-error-on-unmatched-pattern scripts/build-toc.mjs scripts/docs-metadata.mjs scripts/build-game-content.ts scripts/write-january-e2-fixtures.mjs scripts/run-january-performance-baseline.mjs scripts/run-january-sqlite-performance-baseline.mjs scripts/run-desktop-performance-evidence.mjs scripts/performance scripts/studio scripts/check-boundaries.mjs scripts/check-build-only-dependencies.mjs tests apps packages",
     "lint:type-aware": "oxlint --type-aware --no-error-on-unmatched-pattern scripts/build-game-content.ts scripts/performance tests apps packages",
     "typecheck": "tsc -b --pretty false",
     "boundaries:check": "node scripts/check-boundaries.mjs && node scripts/check-build-only-dependencies.mjs",
@@ -25,8 +27,9 @@
     "rust:fmt:check": "cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all -- --check",
     "rust:check": "cargo check --locked --manifest-path apps/desktop/src-tauri/Cargo.toml",
     "rust:test": "cargo test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml",
-    "check:fast": "pnpm docs:check && pnpm fmt:check && pnpm lint && pnpm typecheck && pnpm content:check && pnpm boundaries:check && pnpm test",
-    "verify": "pnpm check:fast && pnpm lint:type-aware && pnpm build && pnpm storybook:build && pnpm rust:fmt:check && pnpm rust:check && pnpm rust:test"
+    "check:fast": "pnpm studio:check && pnpm docs:check && pnpm fmt:check && pnpm lint && pnpm typecheck && pnpm content:check && pnpm boundaries:check && pnpm test",
+    "verify": "pnpm check:fast && pnpm lint:type-aware && pnpm build && pnpm storybook:build && pnpm rust:fmt:check && pnpm rust:check && pnpm rust:test",
+    "verify:release": "pnpm verify && pnpm --filter @runtime-human/desktop tauri build --no-bundle --ci"
   },
   "devDependencies": {
     "@runtime-human/game-content-compiler": "workspace:*",
