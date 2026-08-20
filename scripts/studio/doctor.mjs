@@ -25,6 +25,7 @@ function probe(name, command, args) {
 }
 
 const config = probe("studio config", process.execPath, ["scripts/studio/check-config.mjs"]);
+probe("finding ledger", process.execPath, ["scripts/studio/findings-list.mjs", "--json"]);
 probe("git", "git", ["--version"]);
 probe("pnpm", "pnpm", ["--version"]);
 const codex = probe("codex", "codex", ["--version"]);
