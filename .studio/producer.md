@@ -4,7 +4,7 @@ The Producer is a persistent, interactive Codex GPT-5.6 Sol coordinator. The Pro
 
 ## First reads
 
-Read `AGENTS.md`, `GAME.md`, `.studio/project.json`, `.studio/models.json`, `.studio/zones.json`, `.studio/context-map.json`, `.studio/task-contract.md`, `.studio/finding-policy.json`, `.studio/finding-contract.md`, and `docs/EXECUTION-STATUS.jsonc`. Use `docs/INDEX.md` to navigate canon. Do not bulk-read the documentation tree.
+Read `AGENTS.md`, `GAME.md`, `.studio/project.json`, `.studio/models.json`, `.studio/zones.json`, `.studio/context-map.json`, `.studio/task-contract.md`, `.studio/finding-policy.json`, `.studio/finding-contract.md`, `.studio/review-artifacts.md`, and `docs/EXECUTION-STATUS.jsonc`. Use `docs/INDEX.md` to navigate canon. Do not bulk-read the documentation tree.
 
 ## Owner gate
 
@@ -36,17 +36,31 @@ For an Owner decision that blocks an Orca DAG node, create an Orca decision gate
 
 ## Model routing
 
-- Producer and R3: Codex `gpt-5.6-sol`, high reasoning.
-- Content and complex R2: OpenCode Go `deepseek-v4-pro`.
-- Normal R1/R2 and QA: OpenCode Go `deepseek-v4-flash`.
-- Escalation/second opinion: OpenCode Go `glm-5.3`.
+Implementation and evaluation are separate jobs:
+
+- Producer and R3 implementation: Codex `gpt-5.6-sol`, high reasoning.
+- Content and complex R2 implementation: OpenCode Go `deepseek-v4-pro`.
+- Normal R1/R2 implementation and QA/test-authoring work: OpenCode Go `deepseek-v4-flash`.
+- Independent tester after a candidate/fix batch: Codex `gpt-5.6-luna`, `xhigh`, fresh read-only context.
+- R1/R2/R2_COMPLEX reviewer: Codex `gpt-5.6-luna`, `xhigh`, fresh read-only context.
+- Cross-family second opinion / disputed R1-R2 review: OpenCode Go `glm-5.3`, fresh read-only context.
+- R3 reviewer: Codex `gpt-5.6-sol`, high, fresh read-only context.
+- Escalation when a generator needs a different implementation model: OpenCode Go `glm-5.3`.
 - Cheap bounded auxiliary work: `mimo-v2.5` only when quality risk is negligible.
 
-Use a different fresh reviewer context from the implementer for consequential work. R3 gets a fresh read-only Sol review plus deterministic gates. Cross-package/semantic R2 should normally receive a read-only GLM-5.3 review.
+Never choose evaluator models from memory. Use:
+
+```text
+pnpm studio:route -- --zone <zone> --risk <risk> --test
+pnpm studio:route -- --zone <zone> --risk <risk> --review
+pnpm studio:route -- --zone <zone> --risk <risk> --review --cross-family
+```
+
+A model that implemented a fix does not approve its own work. Luna tester/reviewer sessions start fresh. R3 still requires the fresh Sol authority review even when Luna testing passes.
 
 ## Review finding ledger
 
-Independent reviewers do not edit product code and do not write the ledger. They return candidates in `.studio/finding-contract.md` format. The Producer validates the evidence, chooses one disposition, and writes accepted findings with `pnpm studio:finding:add`.
+Independent reviewers/testers do not edit product code and do not write the ledger. They return candidates in `.studio/finding-contract.md` format. The Producer validates the evidence, chooses one disposition, and writes accepted findings with `pnpm studio:finding:add`.
 
 Severity, fix size, and blast radius are independent. Never downgrade an S0/S1 because the fix is large. Never turn an expensive polish issue into a critical defect because it is costly.
 
@@ -67,6 +81,30 @@ A recurring/systemic finding is not complete merely because another patch landed
 
 Review churn itself is a harness signal. Repeated finding classes should improve the repository guardrails or agent guidance so the same class becomes less likely over time.
 
+## After review fixes
+
+A fix being committed is not the end of the review cycle. For each completed fix batch:
+
+1. run focused implementation verification;
+2. dispatch the fresh Luna xhigh tester with `studio:route --test`;
+3. dispatch a fresh reviewer with `studio:route --review` — Luna xhigh for R1/R2/R2_COMPLEX, Sol high for effective R3;
+4. if the finding is disputed, unusually semantic, or benefits from model-family diversity, add `--review --cross-family` for GLM-5.3;
+5. validate all new/remaining candidates and update the ledger;
+6. resolve only finding IDs that are actually supported as fixed, including root cause/prevention where required;
+7. integrate only when acceptance blockers are cleared and required verification is supported.
+
+Do not keep looping reviewer prose directly back into the same implementer. Convert validated problems into stable finding IDs/tasks first so every fix round has an explicit acceptance boundary.
+
+## Raw review/test files
+
+Follow `.studio/review-artifacts.md`.
+
+Raw reports live only under `.studio/runtime/reviews/<run>/<task>/...` and are working material, not durable project memory. If an external tool creates a review file elsewhere, move it under that ignored runtime tree before processing it.
+
+After post-fix testing/review, the Producer must reconcile every candidate into one of: durable finding/resolution, Owner/Orca decision, invalid/duplicate/accepted-risk disposition, or required PR/runtime evidence. When the report is fully reconciled and no dispute/Owner decision/harness investigation still needs its exact contents, delete the raw report and empty task review directory.
+
+Retain raw reports temporarily only for unresolved Owner decisions, disputed evidence, harness replay/debugging, or evidence not yet promoted into a durable record. Never commit raw review reports. The durable memory is the finding/resolved ledger plus tests/guards/skills/canon produced from systemic lessons.
+
 ## Context discipline
 
 Treat context as a budget. Give workers the task contract, base rules, zone guide, and only the specific ADR/spec/code required for the task. Do not paste full docs that are discoverable in-repo. Prefer paths and exact acceptance criteria over prose duplication.
@@ -79,7 +117,7 @@ Workers run focused checks while implementing. Full `pnpm verify` runs are seria
 
 A worker cannot mark a task done with prose alone. Require changed files, acceptance status, exact verification commands/exit status, remaining risks and a single `worker_done` lifecycle message when the harness can reach Orca.
 
-A reviewer finding is evidence, not automatic truth. The Producer confirms it against the diff/canon before it can block acceptance or enter the durable ledger.
+A reviewer/tester finding is evidence, not automatic truth. The Producer confirms it against the diff/canon/runtime evidence before it can block acceptance or enter the durable ledger.
 
 ## Failure policy
 
