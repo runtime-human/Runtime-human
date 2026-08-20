@@ -33,6 +33,9 @@ const required = [
   ".studio/task-contract.md",
   ".studio/finding-contract.md",
   ".studio/finding-policy.json",
+  ".studio/review-artifacts.md",
+  ".agents/skills/runtime-test/SKILL.md",
+  ".agents/skills/runtime-review/SKILL.md",
   OPEN_LEDGER,
   RESOLVED_LEDGER,
   "scripts/studio/route.mjs",
@@ -68,12 +71,38 @@ if (models) {
   assert(models.profiles?.riskR3?.model === "gpt-5.6-sol", "R3 must use gpt-5.6-sol");
   assert(models.profiles?.content?.model === "opencode-go/deepseek-v4-pro", "Content must use DeepSeek V4 Pro");
   assert(models.profiles?.defaultWorker?.model === "opencode-go/deepseek-v4-flash", "Default worker must use DeepSeek V4 Flash");
+  assert(models.profiles?.lunaTester?.model === "gpt-5.6-luna", "Independent tester must use gpt-5.6-luna");
+  assert(models.profiles?.lunaTester?.reasoningEffort === "xhigh", "Luna tester must use xhigh reasoning");
+  assert(models.profiles?.lunaTester?.readOnly === true, "Luna tester must be read-only");
+  assert(models.profiles?.lunaTester?.freshContext === true, "Luna tester must use fresh context");
+  assert(models.profiles?.lunaReviewer?.model === "gpt-5.6-luna", "R1/R2 reviewer must use gpt-5.6-luna");
+  assert(models.profiles?.lunaReviewer?.reasoningEffort === "xhigh", "Luna reviewer must use xhigh reasoning");
+  assert(models.profiles?.lunaReviewer?.readOnly === true, "Luna reviewer must be read-only");
+  assert(models.profiles?.lunaReviewer?.freshContext === true, "Luna reviewer must use fresh context");
+  assert(models.profiles?.crossFamilyReviewer?.model === "opencode-go/glm-5.3", "Cross-family reviewer must use GLM-5.3");
+  assert(models.profiles?.crossFamilyReviewer?.readOnly === true, "Cross-family reviewer must be read-only");
+  assert(models.profiles?.crossFamilyReviewer?.freshContext === true, "Cross-family reviewer must use fresh context");
+  assert(models.profiles?.r3Reviewer?.model === "gpt-5.6-sol", "R3 reviewer must use gpt-5.6-sol");
+  assert(models.profiles?.r3Reviewer?.readOnly === true, "R3 reviewer must be read-only");
+  assert(models.profiles?.r3Reviewer?.freshContext === true, "R3 reviewer must use fresh context");
   assert(models.profiles?.escalation?.model === "opencode-go/glm-5.3", "Escalation must use GLM-5.3");
   assert(profileModels.every((model) => !model.includes("kimi")), "Kimi is forbidden in every active model profile");
   assert((models.forbiddenModels ?? []).some((model) => String(model).includes("kimi-k3")), "Kimi K3 must remain explicitly forbidden");
   for (const [risk, profileKey] of Object.entries(models.routing ?? {})) {
     assert(Boolean(models.profiles?.[profileKey]), `routing ${risk} references missing profile ${profileKey}`);
   }
+  for (const [risk, profileKey] of Object.entries(models.reviewRouting ?? {})) {
+    assert(Boolean(models.profiles?.[profileKey]), `reviewRouting ${risk} references missing profile ${profileKey}`);
+  }
+  for (const [risk, profileKey] of Object.entries(models.testRouting ?? {})) {
+    assert(Boolean(models.profiles?.[profileKey]), `testRouting ${risk} references missing profile ${profileKey}`);
+  }
+  assert(models.reviewRouting?.R1 === "lunaReviewer", "R1 review must route to Luna");
+  assert(models.reviewRouting?.R2 === "lunaReviewer", "R2 review must route to Luna");
+  assert(models.reviewRouting?.R2_COMPLEX === "lunaReviewer", "R2_COMPLEX review must route to Luna");
+  assert(models.reviewRouting?.R3 === "r3Reviewer", "R3 review must stay on Sol");
+  assert(models.reviewRouting?.CROSS_FAMILY === "crossFamilyReviewer", "Cross-family review routing mismatch");
+  assert(models.testRouting?.default === "lunaTester", "Default independent testing must route to Luna");
 }
 
 if (opencode) {
