@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { OPEN_LEDGER, RESOLVED_LEDGER, readJsonl } from "./findings-lib.mjs";
 
 const root = process.cwd();
 const errors = [];
@@ -30,7 +31,16 @@ const required = [
   "gamestudio/ORCA.md",
   ".studio/producer.md",
   ".studio/task-contract.md",
+  ".studio/finding-contract.md",
+  ".studio/finding-policy.json",
+  OPEN_LEDGER,
+  RESOLVED_LEDGER,
   "scripts/studio/route.mjs",
+  "scripts/studio/finding-add.mjs",
+  "scripts/studio/findings-list.mjs",
+  "scripts/studio/findings-cluster.mjs",
+  "scripts/studio/findings-promote.mjs",
+  "scripts/studio/finding-resolve.mjs",
   "orca.yaml",
   "opencode.json",
 ];
@@ -40,7 +50,9 @@ const project = readJson(".studio/project.json");
 const models = readJson(".studio/models.json");
 const zones = readJson(".studio/zones.json");
 const context = readJson(".studio/context-map.json");
+const findingPolicy = readJson(".studio/finding-policy.json");
 const opencode = readJson("opencode.json");
+const packageJson = readJson("package.json");
 
 if (project) {
   assert(project.schemaVersion === 1, "project schemaVersion must be 1");
@@ -91,6 +103,47 @@ if (zones && context) {
   }
   for (const group of zones.exclusiveWriteGroups ?? []) {
     for (const zoneId of group) assert(zoneIds.includes(zoneId), `exclusiveWriteGroups references unknown zone ${zoneId}`);
+  }
+}
+
+if (findingPolicy) {
+  assert(findingPolicy.schemaVersion === 1, "finding policy schemaVersion must be 1");
+  assert(
+    ["S0", "S1", "S2", "S3", "S4"].every((severity) => findingPolicy.severity?.[severity]),
+    "finding policy must define S0-S4",
+  );
+  assert(
+    ["XS", "S", "M", "L", "XL"].every((size) => Number.isFinite(findingPolicy.sizeWeights?.[size])),
+    "finding policy must define XS-XL size weights",
+  );
+  assert(findingPolicy.severity?.S0?.blocksAcceptance === true, "S0 must block acceptance");
+  assert(findingPolicy.severity?.S1?.blocksAcceptance === true, "S1 must block acceptance");
+  assert(findingPolicy.batch?.clusterMinFindings >= 2, "finding clusterMinFindings must be >= 2");
+  assert(findingPolicy.batch?.readyScore > 0, "finding readyScore must be positive");
+  assert(findingPolicy.promotion?.systemicOccurrenceThreshold >= 2, "systemic occurrence threshold must be >= 2");
+  const open = new Set(findingPolicy.openDispositions ?? []);
+  const closed = new Set(findingPolicy.closedDispositions ?? []);
+  assert([...open].every((value) => !closed.has(value)), "open and closed finding dispositions must be disjoint");
+}
+
+for (const ledger of [OPEN_LEDGER, RESOLVED_LEDGER]) {
+  if (!existsSync(resolve(root, ledger))) continue;
+  try {
+    readJsonl(resolve(root, ledger));
+  } catch (error) {
+    errors.push(error.message);
+  }
+}
+
+if (packageJson) {
+  for (const command of [
+    "studio:finding:add",
+    "studio:findings",
+    "studio:findings:cluster",
+    "studio:findings:promote",
+    "studio:finding:resolve",
+  ]) {
+    assert(Boolean(packageJson.scripts?.[command]), `package.json missing ${command}`);
   }
 }
 
