@@ -5,6 +5,7 @@
 - **Owner** — product judgment and irreversible trade-offs.
 - **Producer** — persistent Codex Sol coordinator; decomposes, routes, asks owner questions, supervises and integrates.
 - **Worker** — fresh task context in an isolated worktree when filesystem conflicts or independent branches require it.
+- **Tester** — fresh read-only Luna xhigh context; independently executes acceptance/runtime/negative-path checks without implementing the fix.
 - **Reviewer/Evaluator** — fresh read-only context; grades the result against the task and repository invariants rather than continuing implementation.
 
 The Producer does not become a general implementation worker. Keeping coordination context clean is more valuable than saving one worker launch.
@@ -29,13 +30,34 @@ R3: authoritative game state, MonthRun/resume/idempotency, RNG, fixed-point arit
 
 Do not select a model by recollection. Run `pnpm studio:route -- --zone <zone> --risk <risk>`; the router enforces zone minimum risk and `.studio/models.json`. Kimi K3 is forbidden.
 
-## Generator/evaluator separation
+## Generator / tester / evaluator separation
 
-Consequential changes are not accepted solely because their implementer reports success. Use a fresh reviewer context with edit permissions disabled. The reviewer receives the original acceptance criteria, relevant canon, and the diff—not the implementer's long narrative.
+Consequential changes are not accepted solely because their implementer reports success. Testing and review are separate fresh-context jobs.
 
-R1 can be reviewed in a batch by the Producer unless UI behavior or accessibility warrants QA. Semantic/cross-package R2 normally gets GLM-5.3 review. R3 gets fresh Sol review plus deterministic gates.
+Implementation routing:
 
-The evaluator reports candidate findings in `.studio/finding-contract.md` format. It never edits the implementation or the finding ledger. The Producer validates/dispositions findings; this preserves reviewer independence and gives the ledger one normal writer.
+- R1/R2 and QA/test-authoring: DeepSeek V4 Flash;
+- content and R2_COMPLEX: DeepSeek V4 Pro;
+- R3: Codex Sol high.
+
+Evaluation routing:
+
+- independent tester for every candidate/fix batch: Codex Luna xhigh, fresh read-only context;
+- R1/R2/R2_COMPLEX review: Codex Luna xhigh, fresh read-only context;
+- R3 review: fresh Codex Sol high, read-only;
+- disputed/high-semantic second opinion: GLM-5.3 cross-family read-only review.
+
+Use the mechanical router:
+
+```text
+pnpm studio:route -- --zone <zone> --risk <risk> --test
+pnpm studio:route -- --zone <zone> --risk <risk> --review
+pnpm studio:route -- --zone <zone> --risk <risk> --review --cross-family
+```
+
+The tester reads `docs/agents/QA-AGENT.md`, the task acceptance criteria and relevant canon, then executes/reproduces. The reviewer receives the original acceptance criteria, relevant canon and actual diff—not the implementer's long narrative. Neither tester nor reviewer edits product code or the finding ledger.
+
+R3 therefore gets two independent evaluation surfaces by default: Luna xhigh testing and Sol authority review. A passing Luna test does not replace the Sol R3 review.
 
 ## Review Finding Ledger
 
@@ -57,6 +79,36 @@ Recurring classes at the policy threshold become `systemic` and must trigger pre
 
 A finding moves to the resolved archive only after verification and a recorded root cause. Patch existence alone is not resolution evidence.
 
+## Post-fix review loop
+
+After a finding batch is implemented:
+
+1. worker runs focused checks;
+2. fresh Luna xhigh tester executes acceptance and negative/runtime paths;
+3. fresh reviewer runs: Luna xhigh for effective R1/R2/R2_COMPLEX, Sol high for R3;
+4. Producer validates any new/remaining candidates and updates the ledger;
+5. disputed/ambiguous findings may get GLM-5.3 `--cross-family` review;
+6. only verified fixed finding IDs are resolved with root cause/prevention;
+7. integrated candidate runs the required gate before acceptance.
+
+Do not loop an unstructured review document back to an implementer. Convert validated defects to finding IDs/task acceptance first; this makes every fix wave bounded and measurable.
+
+## Review/test artifacts
+
+Raw tester/reviewer reports are temporary working evidence. Follow `.studio/review-artifacts.md`.
+
+Normal path:
+
+```text
+.studio/runtime/reviews/<run-id>/<task-id>/<round>-<profile>.<md|json>
+```
+
+The runtime directory is ignored. Raw reports are never the durable memory and are never committed by default.
+
+After fixes and post-fix evaluation, the Producer reconciles every candidate into the finding/resolved ledger, Owner/Orca decision state, invalid/duplicate/accepted-risk disposition, or required PR/runtime evidence. Once fully reconciled, delete the raw report and empty task review directory.
+
+Keep a raw report temporarily only for an unresolved Owner decision, disputed evidence, harness replay/debugging, or evidence not yet promoted to a durable record. Delete it after that exception is resolved.
+
 ## Context engineering
 
 Repository knowledge is the system of record. Workers get a map, not a pasted manual. Use `.studio/context-map.json`; load the base rules, the zone guide and only the relevant ADR/spec/code. Do not bulk-load `docs/MANIFEST.jsonc` or `docs/CATALOG.md` unless the task explicitly needs them.
@@ -73,7 +125,7 @@ A review finding with disposition `OWNER_DECISION` follows the same gate: the fi
 
 Use focused tests during implementation. Serialize heavy full gates through one slot. Never run several Storybook/Rust/full verification jobs concurrently on the same PC just because workers are parallel.
 
-Acceptance evidence is exact: commands, exit codes, tests/results, diff and unresolved risk. "Looks good" is not evidence. A reviewer comment without repository/runtime evidence is not automatically a durable finding.
+Acceptance evidence is exact: commands, exit codes, tests/results, diff and unresolved risk. "Looks good" is not evidence. A reviewer/tester comment without repository/runtime evidence is not automatically a durable finding.
 
 ## Failure and retries
 
@@ -98,4 +150,4 @@ The project OpenCode config intentionally disables nested subagents and conversa
 
 ## Metrics
 
-For each dispatch retain: model/profile, zone, risk, weighted work, wall time, retries, verification time, review findings, rework and accepted outcome. For findings retain recurrence, time-to-resolution, reopened classes and prevention type. Optimize accepted weighted work per cost/usage after rework—not raw tokens or raw task count.
+For each dispatch retain: model/profile, zone, risk, weighted work, wall time, retries, verification time, review findings, rework and accepted outcome. For findings retain recurrence, time-to-resolution, reopened classes and prevention type. Track tester-detected vs reviewer-detected defects separately so model/harness quality can be calibrated. Optimize accepted weighted work per cost/usage after rework—not raw tokens or raw task count.
