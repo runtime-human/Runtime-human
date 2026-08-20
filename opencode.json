@@ -5,6 +5,29 @@
   "default_agent": "worker",
   "subagent_depth": 0,
   "share": "disabled",
+  "mcp": {
+    "github": {
+      "type": "local",
+      "command": [
+        "cmd",
+        "/c",
+        ".studio\\runtime\\mcp\\github-mcp.cmd",
+        "--read-only",
+        "--toolsets=issues,pull_requests,repos,users",
+        "stdio"
+      ],
+      "enabled": true,
+      "environment": {}
+    },
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "-y", "@playwright/mcp"],
+      "enabled": true,
+      "environment": {
+        "BROWSER": "chromium"
+      }
+    }
+  },
   "compaction": {
     "auto": true,
     "prune": true
