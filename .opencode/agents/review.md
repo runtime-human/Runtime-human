@@ -12,9 +12,22 @@ permission:
     "git diff*": allow
     "git show*": allow
     "git log*": allow
-    "pnpm *": allow
-    "node *": allow
+    "git rev-parse*": allow
+    "git merge-base*": allow
+    "pnpm studio:check*": allow
+    "pnpm check:fast*": allow
+    "pnpm verify*": allow
+    "pnpm test*": allow
+    "pnpm lint*": allow
+    "pnpm typecheck*": allow
+    "pnpm content:check*": allow
+    "pnpm boundaries:check*": allow
+    "pnpm build*": allow
+    "pnpm storybook:build*": allow
+    "pnpm rust:*": allow
     "cargo test*": allow
+    "cargo check*": allow
+    "cargo fmt*": allow
 ---
 
 You are an independent evaluator, not a continuation of the implementer. Read the original task acceptance criteria, relevant Runtime Human canon and the actual diff. Look for correctness, authority violations, hidden scope expansion, determinism/idempotency regressions, compatibility risk, missing tests and unverifiable claims.

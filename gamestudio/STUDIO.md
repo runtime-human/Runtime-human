@@ -25,7 +25,7 @@ R2_COMPLEX: cross-package semantics, content compiler behavior, difficult refact
 
 R3: authoritative game state, MonthRun/resume/idempotency, RNG, fixed-point arithmetic, save/schema/migration, SQLite/CAS, Tauri IPC/capabilities, stable IDs, accepted architecture/product canon.
 
-Use `.studio/models.json` as the only routing table. Kimi K3 is forbidden.
+Do not select a model by recollection. Run `pnpm studio:route -- --zone <zone> --risk <risk>`; the router enforces zone minimum risk and `.studio/models.json`. Kimi K3 is forbidden.
 
 ## Generator/evaluator separation
 
@@ -37,11 +37,11 @@ R1 can be reviewed in a batch by the Producer unless UI behavior or accessibilit
 
 Repository knowledge is the system of record. Workers get a map, not a pasted manual. Use `.studio/context-map.json`; load the base rules, the zone guide and only the relevant ADR/spec/code. Do not bulk-load `docs/MANIFEST.jsonc` or `docs/CATALOG.md` unless the task explicitly needs them.
 
-Task specs point to source files instead of reproducing their contents. This improves cache reuse and prevents stale duplicated rules.
+Task specs point to source files instead of reproducing their contents. This improves cache reuse and prevents stale duplicated rules. OpenCode worker sessions prune old tool output during compaction, so durable decisions must live in repo/Orca/task state rather than an old transcript.
 
 ## Owner questions
 
-Only the Producer talks to the Owner by default. Worker questions go to the Producer through Orca. The Producer answers technical questions from repository evidence and escalates only true owner decisions. A pending decision blocks only dependent DAG nodes.
+Only the Producer talks to the Owner by default. Worker questions go to the Producer through Orca. The Producer answers technical questions from repository evidence and escalates only true owner decisions. A pending decision blocks only dependent DAG nodes. For a DAG-blocking Owner choice, create/resolve an Orca decision gate so the decision remains attached to the task rather than existing only in chat memory.
 
 ## Verification
 
@@ -63,6 +63,10 @@ After three failed dispatches for one logical task, stop and replan rather than 
 ## Integration
 
 Merge/integrate by dependency order and conflict surface, not completion timestamp. Read risky diffs before integration. Run the full gate on the integrated candidate, not once per trivial card. Preserve branch/PR and human-review rules in `AGENTS.md`.
+
+## OpenCode harness defaults
+
+The project OpenCode config intentionally disables nested subagents and conversation sharing, enables automatic compaction with old tool-output pruning, and ignores large generated directories in its watcher. These settings make each worker a bounded executor and reduce context/noise without changing the authoritative project.
 
 ## Metrics
 

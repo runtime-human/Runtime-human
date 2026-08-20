@@ -30,6 +30,7 @@ const required = [
   "gamestudio/ORCA.md",
   ".studio/producer.md",
   ".studio/task-contract.md",
+  "scripts/studio/route.mjs",
   "orca.yaml",
   "opencode.json",
 ];
@@ -58,23 +59,38 @@ if (models) {
   assert(models.profiles?.escalation?.model === "opencode-go/glm-5.3", "Escalation must use GLM-5.3");
   assert(profileModels.every((model) => !model.includes("kimi")), "Kimi is forbidden in every active model profile");
   assert((models.forbiddenModels ?? []).some((model) => String(model).includes("kimi-k3")), "Kimi K3 must remain explicitly forbidden");
+  for (const [risk, profileKey] of Object.entries(models.routing ?? {})) {
+    assert(Boolean(models.profiles?.[profileKey]), `routing ${risk} references missing profile ${profileKey}`);
+  }
 }
 
 if (opencode) {
   assert(opencode.model === "opencode-go/deepseek-v4-flash", "OpenCode default model mismatch");
   assert(opencode.small_model === "opencode-go/mimo-v2.5", "OpenCode small_model mismatch");
+  assert(opencode.default_agent === "worker", "OpenCode default_agent must be worker");
   assert(opencode.subagent_depth === 0, "OpenCode subagent_depth must be 0 because Orca is the orchestrator");
+  assert(opencode.share === "disabled", "OpenCode conversation sharing must stay disabled for this private project");
+  assert(opencode.compaction?.auto === true, "OpenCode automatic compaction must be enabled");
+  assert(opencode.compaction?.prune === true, "OpenCode old tool output pruning must be enabled for scoped workers");
   assert(opencode.permission?.task === "deny", "OpenCode task/subagent permission must be denied");
 }
 
 if (zones && context) {
+  const validRisks = new Set(["R1", "R2", "R2_COMPLEX", "R3"]);
   const zoneIds = (zones.zones ?? []).map((zone) => zone.id);
   assert(new Set(zoneIds).size === zoneIds.length, "zone ids must be unique");
-  for (const zoneId of zoneIds) {
-    assert(context.zones?.[zoneId], `context-map missing zone ${zoneId}`);
+  for (const zone of zones.zones ?? []) {
+    assert(validRisks.has(zone.minimumRisk), `zone ${zone.id} has invalid minimumRisk ${zone.minimumRisk}`);
+    assert(context.zones?.[zone.id], `context-map missing zone ${zone.id}`);
+    if (zone.preferredProfile && models) {
+      assert(Boolean(models.profiles?.[zone.preferredProfile]), `zone ${zone.id} references missing profile ${zone.preferredProfile}`);
+    }
   }
   for (const zoneId of Object.keys(context.zones ?? {})) {
     assert(zoneIds.includes(zoneId), `context-map has unknown zone ${zoneId}`);
+  }
+  for (const group of zones.exclusiveWriteGroups ?? []) {
+    for (const zoneId of group) assert(zoneIds.includes(zoneId), `exclusiveWriteGroups references unknown zone ${zoneId}`);
   }
 }
 

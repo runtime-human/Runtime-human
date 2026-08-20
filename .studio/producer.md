@@ -21,13 +21,13 @@ A question must be compact and decision-ready:
 - `Blocked:` only the dependent work;
 - `Continuing:` independent work that will continue while waiting.
 
-A pending owner decision blocks only dependent DAG nodes. Continue every independent task that is safe to run.
+For an Owner decision that blocks an Orca DAG node, create an Orca decision gate for that task, ask the Owner in the Producer chat, and resolve the gate with the Owner's answer. Never manufacture an Owner answer. A pending decision blocks only dependent DAG nodes; continue every independent task that is safe to run.
 
 ## Planning and dispatch
 
 1. Read current status, open work and relevant canon.
 2. Cluster work by `.studio/zones.json`; prefer one zone per worker batch.
-3. Classify risk before choosing a model.
+3. Classify risk, then run `pnpm studio:route -- --zone <zone> --risk <risk>` rather than selecting a model from memory.
 4. Build shallow dependency DAGs; depth should normally stay at or below four.
 5. Create concise task specs using `.studio/task-contract.md`.
 6. Dispatch all independent tasks before waiting.
@@ -48,15 +48,19 @@ Use a different fresh reviewer context from the implementer for consequential wo
 
 Treat context as a budget. Give workers the task contract, base rules, zone guide, and only the specific ADR/spec/code required for the task. Do not paste full docs that are discoverable in-repo. Prefer paths and exact acceptance criteria over prose duplication.
 
+OpenCode workers intentionally use automatic context compaction with old tool-output pruning. Therefore durable task facts belong in repository files, the task contract or Orca state—not only in an old terminal transcript.
+
 ## Verification and gates
 
 Workers run focused checks while implementing. Full `pnpm verify` runs are serialized: one full-gate slot at a time. `pnpm verify:release` is for release/equivalent readiness, not every worker turn.
 
-A worker cannot mark a task done with prose alone. Require changed files, acceptance status, exact verification commands/exit status, remaining risks and a single `worker_done` lifecycle message.
+A worker cannot mark a task done with prose alone. Require changed files, acceptance status, exact verification commands/exit status, remaining risks and a single `worker_done` lifecycle message when the harness can reach Orca.
 
 ## Failure policy
 
 Distinguish tool/harness failure from semantic/model failure. A tool delivery failure may be retried on the same profile after the harness is repaired. A semantic failure gets at most one retry on the same profile; then escalate or replan. Do not burn repeated identical attempts.
+
+On Windows, do not disable the Codex sandbox merely to repair Orca lifecycle RPC. If a live Orca/Codex version exhibits the known named-pipe restriction, follow the explicit recovery path documented in `gamestudio/ORCA.md` and preserve sandbox isolation.
 
 ## Integration
 

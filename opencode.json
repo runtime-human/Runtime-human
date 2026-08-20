@@ -2,7 +2,25 @@
   "$schema": "https://opencode.ai/config.json",
   "model": "opencode-go/deepseek-v4-flash",
   "small_model": "opencode-go/mimo-v2.5",
+  "default_agent": "worker",
   "subagent_depth": 0,
+  "share": "disabled",
+  "compaction": {
+    "auto": true,
+    "prune": true
+  },
+  "watcher": {
+    "ignore": [
+      "node_modules/**",
+      ".git/**",
+      ".worktrees/**",
+      ".studio/runtime/**",
+      "apps/desktop/src-tauri/target/**",
+      "apps/desktop/storybook-static/**",
+      "storybook-static/**",
+      "artifacts/performance/**"
+    ]
+  },
   "permission": {
     "task": "deny",
     "external_directory": "deny",
