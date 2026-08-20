@@ -135,6 +135,8 @@ describe("Studio review finding ledger", () => {
     run(root, "finding-add.mjs", baseFinding);
     const promotion = JSON.parse(run(root, "findings-promote.mjs", []));
     expect(promotion.promoted).toContain(first.finding.id);
+    const repeatedPromotion = JSON.parse(run(root, "findings-promote.mjs", []));
+    expect(repeatedPromotion.promoted).toEqual([]);
 
     run(root, "finding-resolve.mjs", [
       "--id",
