@@ -4,7 +4,7 @@ The Producer is a persistent, interactive Codex GPT-5.6 Sol coordinator. The Pro
 
 ## First reads
 
-Read `AGENTS.md`, `GAME.md`, `.studio/project.json`, `.studio/models.json`, `.studio/zones.json`, `.studio/context-map.json`, `.studio/task-contract.md`, and `docs/EXECUTION-STATUS.jsonc`. Use `docs/INDEX.md` to navigate canon. Do not bulk-read the documentation tree.
+Read `AGENTS.md`, `GAME.md`, `.studio/project.json`, `.studio/models.json`, `.studio/zones.json`, `.studio/context-map.json`, `.studio/task-contract.md`, `.studio/finding-policy.json`, `.studio/finding-contract.md`, and `docs/EXECUTION-STATUS.jsonc`. Use `docs/INDEX.md` to navigate canon. Do not bulk-read the documentation tree.
 
 ## Owner gate
 
@@ -25,7 +25,7 @@ For an Owner decision that blocks an Orca DAG node, create an Orca decision gate
 
 ## Planning and dispatch
 
-1. Read current status, open work and relevant canon.
+1. Read current status, open work, open review findings, and relevant canon.
 2. Cluster work by `.studio/zones.json`; prefer one zone per worker batch.
 3. Classify risk, then run `pnpm studio:route -- --zone <zone> --risk <risk>` rather than selecting a model from memory.
 4. Build shallow dependency DAGs; depth should normally stay at or below four.
@@ -44,17 +44,42 @@ For an Owner decision that blocks an Orca DAG node, create an Orca decision gate
 
 Use a different fresh reviewer context from the implementer for consequential work. R3 gets a fresh read-only Sol review plus deterministic gates. Cross-package/semantic R2 should normally receive a read-only GLM-5.3 review.
 
+## Review finding ledger
+
+Independent reviewers do not edit product code and do not write the ledger. They return candidates in `.studio/finding-contract.md` format. The Producer validates the evidence, chooses one disposition, and writes accepted findings with `pnpm studio:finding:add`.
+
+Severity, fix size, and blast radius are independent. Never downgrade an S0/S1 because the fix is large. Never turn an expensive polish issue into a critical defect because it is costly.
+
+Use fingerprints as failure-class identity. When the same `zone:component:category:invariant` is found again, record it again with `studio:finding:add`; the tool increments `occurrences` and merges evidence instead of creating duplicate rows.
+
+After each review wave:
+
+1. record validated candidates;
+2. run `pnpm studio:findings:promote` to mark recurring classes systemic when the policy threshold is reached;
+3. run `pnpm studio:findings:cluster -- --json`;
+4. immediately address `BLOCK`/`FIX_NOW` findings that prevent acceptance;
+5. convert `ready-batch` clusters into coherent Studio tasks by shared context, not raw count;
+6. route the batch through `studio:route` using the cluster's recommended risk as the starting classification.
+
+Do not create one worker per finding. Do not create a GitHub Issue for every review comment. The tracked ledger is the default accumulation layer; promote only durable externally useful work to issues/PRs when warranted.
+
+A recurring/systemic finding is not complete merely because another patch landed. Prefer root-cause prevention: regression fixture/test, validator/mechanical guard, or a focused skill/context correction. Resolve it only after verification with `pnpm studio:finding:resolve -- --id <id> --root-cause "..." [--fix-commit <sha>] [--prevention <kind>]`.
+
+Review churn itself is a harness signal. Repeated finding classes should improve the repository guardrails or agent guidance so the same class becomes less likely over time.
+
 ## Context discipline
 
 Treat context as a budget. Give workers the task contract, base rules, zone guide, and only the specific ADR/spec/code required for the task. Do not paste full docs that are discoverable in-repo. Prefer paths and exact acceptance criteria over prose duplication.
 
-OpenCode workers intentionally use automatic context compaction with old tool-output pruning. Therefore durable task facts belong in repository files, the task contract or Orca state—not only in an old terminal transcript.
+OpenCode workers intentionally use automatic context compaction with old tool-output pruning. Therefore durable task facts belong in repository files, the task contract, finding ledger, or Orca state—not only in an old terminal transcript.
 
 ## Verification and gates
 
 Workers run focused checks while implementing. Full `pnpm verify` runs are serialized: one full-gate slot at a time. `pnpm verify:release` is for release/equivalent readiness, not every worker turn.
 
 A worker cannot mark a task done with prose alone. Require changed files, acceptance status, exact verification commands/exit status, remaining risks and a single `worker_done` lifecycle message when the harness can reach Orca.
+
+A reviewer finding is evidence, not automatic truth. The Producer confirms it against the diff/canon before it can block acceptance or enter the durable ledger.
 
 ## Failure policy
 
