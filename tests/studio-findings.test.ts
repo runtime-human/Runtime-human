@@ -14,6 +14,10 @@ function createFindingRepo() {
     join(root, ".studio", "finding-policy.json"),
     readFileSync(join(repoRoot, ".studio", "finding-policy.json"), "utf8"),
   );
+  writeFileSync(
+    join(root, ".studio", "zones.json"),
+    readFileSync(join(repoRoot, ".studio", "zones.json"), "utf8"),
+  );
   writeFileSync(join(root, ".studio", "findings", "ledger.jsonl"), "");
   writeFileSync(join(root, ".studio", "findings", "resolved.jsonl"), "");
   return root;
@@ -30,7 +34,7 @@ function run(root: string, script: string, args: string[]) {
 
 const baseFinding = [
   "--zone",
-  "desktop-ui",
+  "ui",
   "--severity",
   "S2",
   "--size",
@@ -84,7 +88,7 @@ describe("Studio review finding ledger", () => {
     const first = JSON.parse(run(root, "finding-add.mjs", baseFinding));
     run(root, "finding-add.mjs", [
       "--zone",
-      "desktop-ui",
+      "ui",
       "--severity",
       "S3",
       "--size",
@@ -102,7 +106,7 @@ describe("Studio review finding ledger", () => {
     ]);
     run(root, "finding-add.mjs", [
       "--zone",
-      "desktop-ui",
+      "ui",
       "--severity",
       "S3",
       "--size",
