@@ -45,15 +45,40 @@ orca orchestration worker-read --dispatch <dispatch-id> --limit 20 --json
 orca orchestration check --wait --types worker_done,escalation,question --timeout-ms 900000 --json
 ```
 
-Use `--agent content --model opencode-go/deepseek-v4-pro` for content, and `--agent review --model opencode-go/glm-5.3` for the read-only R2 evaluator. Target only the agent handle returned by terminal creation; a bare worktree create may leave a fallback shell when custom argv is required.
+Use `--agent content --model opencode-go/deepseek-v4-pro` for content. GLM-5.3 remains available as the explicit cross-family reviewer/second opinion. Target only the agent handle returned by terminal creation; a bare worktree create may leave a fallback shell when custom argv is required.
 
 Do not treat terminal bytes as semantic success: inspect the dispatch receipt and, after any suspicious cold start, confirm `worker-read` has a real turn/transcript before assuming the worker is progressing.
+
+## Luna xhigh tester and reviewer
+
+The default independent tester and R1/R2/R2_COMPLEX reviewer are Codex GPT-5.6 Luna with `xhigh` reasoning. They are fresh read-only evaluator contexts: they execute/read evidence but do not implement product changes or write the finding ledger.
+
+Select the profile through the Studio router first:
+
+```text
+pnpm studio:route -- --zone <zone> --risk <risk> --test
+pnpm studio:route -- --zone <zone> --risk <risk> --review
+```
+
+When a low-level Codex launch is needed, use the version-matched Orca lifecycle and the Luna command:
+
+```text
+orca worktree create --name <task-name> --no-parent --setup run --json
+orca terminal create --worktree id:<full-worktree-id> --title <task-name> --command "codex --model gpt-5.6-luna -c model_reasoning_effort=xhigh" --json
+orca terminal wait --terminal <handle> --for tui-idle --timeout-ms 300000 --json
+orca orchestration dispatch --task <task-id> --to <handle> --inject --json
+orca orchestration worker-read --dispatch <dispatch-id> --limit 20 --json
+```
+
+Tester task specs should invoke `.agents/skills/runtime-test/SKILL.md`; reviewer task specs should invoke `.agents/skills/runtime-review/SKILL.md`. Store raw reports only under `.studio/runtime/reviews/...`; the Producer reconciles and later deletes them according to `.studio/review-artifacts.md`.
+
+Because Luna is launched through Codex, the Codex startup/named-pipe cautions below apply to Luna evaluator terminals too. Do not weaken sandbox isolation merely to make evaluator lifecycle RPC succeed.
 
 ## Codex R3 workers on Windows
 
 The Claude-specific cold-composer bug reported as Orca #13488 was fixed upstream on 2026-08-13 and the issue was closed on 2026-08-14. Do not keep a permanent workaround for that closed bug.
 
-However, as of 2026-08-20 Orca #13439 (Codex prompt/MCP startup race) remains open. For fresh Codex R3 workers, especially when MCP startup is heavy, use the explicit readiness path unless the installed version-matched guide/receipt proves a stronger turn-start contract:
+However, as of 2026-08-20 Orca #13439 (Codex prompt/MCP startup race) remains open. For fresh Codex workers, especially when MCP startup is heavy, use the explicit readiness path unless the installed version-matched guide/receipt proves a stronger turn-start contract:
 
 ```text
 orca worktree create --name <task-name> --no-parent --setup run --json
@@ -65,7 +90,7 @@ orca orchestration worker-read --dispatch <dispatch-id> --limit 20 --json
 
 If a prompt is visibly present but no turn started, retry only submission/Enter according to the current Orca recovery receipt; never paste the task body a second time.
 
-There is also an open Windows issue (#13539) where a sandboxed Codex process cannot write to Orca's named pipe. If the Codex worker finishes its repository work but cannot emit `worker_done` with an EPERM/`runtime starting` symptom, do **not** disable the Codex sandbox just to restore lifecycle RPC. The Producer should verify `worker-read`, the actual diff and required gates, record the outcome with an explicit Orca task recovery/update, then release/clean up according to the current skill. Treat this as harness recovery, not a model failure.
+There is also an open Windows issue (#13539) where a sandboxed Codex process cannot write to Orca's named pipe. If a Codex worker/evaluator finishes its repository work but cannot emit `worker_done` with an EPERM/`runtime starting` symptom, do **not** disable the Codex sandbox just to restore lifecycle RPC. The Producer should verify `worker-read`, the actual diff/evidence and required gates, record the outcome with an explicit Orca task recovery/update, then release/clean up according to the current skill. Treat this as harness recovery, not a model failure.
 
 ## Setup on Windows
 
