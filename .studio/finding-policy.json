@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "severity": {
+    "S0": {"rank": 0, "label": "catastrophic", "blocksAcceptance": true},
+    "S1": {"rank": 1, "label": "critical", "blocksAcceptance": true},
+    "S2": {"rank": 2, "label": "important", "blocksAcceptance": false},
+    "S3": {"rank": 3, "label": "normal", "blocksAcceptance": false},
+    "S4": {"rank": 4, "label": "polish", "blocksAcceptance": false}
+  },
+  "sizeWeights": {"XS": 0.5, "S": 1, "M": 3, "L": 6, "XL": 10},
+  "scopes": ["local", "zone", "cross-zone", "systemic"],
+  "openDispositions": ["BLOCK", "FIX_NOW", "LEDGER", "OWNER_DECISION"],
+  "closedDispositions": ["DUPLICATE", "INVALID", "ACCEPTED_RISK"],
+  "batch": {
+    "clusterMinFindings": 3,
+    "readyScore": 8,
+    "coefficients": {"recurrence": 2, "context": 3, "severity": 4},
+    "maxRecurrencePressure": 3
+  },
+  "promotion": {
+    "systemicOccurrenceThreshold": 4,
+    "defaultCandidates": ["regression-test", "mechanical-guard", "skill-update"]
+  }
+}
