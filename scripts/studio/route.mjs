@@ -4,11 +4,21 @@ import { resolve } from "node:path";
 const args = process.argv.slice(2);
 const values = new Map();
 let review = false;
+let test = false;
+let crossFamily = false;
 
 for (let index = 0; index < args.length; index += 1) {
   const arg = args[index];
   if (arg === "--review") {
     review = true;
+    continue;
+  }
+  if (arg === "--test") {
+    test = true;
+    continue;
+  }
+  if (arg === "--cross-family") {
+    crossFamily = true;
     continue;
   }
   if (arg?.startsWith("--")) {
@@ -22,10 +32,21 @@ for (let index = 0; index < args.length; index += 1) {
   }
 }
 
+if (review && test) {
+  console.error("Choose only one evaluation mode: --review or --test");
+  process.exit(2);
+}
+if (crossFamily && !review) {
+  console.error("--cross-family is only valid with --review");
+  process.exit(2);
+}
+
 const zoneId = values.get("zone");
 const requestedRisk = values.get("risk");
 if (!zoneId || !requestedRisk) {
-  console.error("Usage: pnpm studio:route -- --zone <zone> --risk <R1|R2|R2_COMPLEX|R3> [--review]");
+  console.error(
+    "Usage: pnpm studio:route -- --zone <zone> --risk <R1|R2|R2_COMPLEX|R3> [--review [--cross-family]|--test]",
+  );
   process.exit(2);
 }
 
@@ -56,9 +77,15 @@ if (!riskRank.has(zone.minimumRisk)) {
 const effectiveRisk =
   riskRank.get(requestedRisk) >= riskRank.get(zone.minimumRisk) ? requestedRisk : zone.minimumRisk;
 
+const mode = review ? "review" : test ? "test" : "implement";
 let profileKey;
+
 if (review) {
-  profileKey = effectiveRisk === "R3" ? "r3Reviewer" : "r2Reviewer";
+  profileKey = crossFamily
+    ? models.reviewRouting?.CROSS_FAMILY
+    : models.reviewRouting?.[effectiveRisk];
+} else if (test) {
+  profileKey = models.testRouting?.[effectiveRisk] ?? models.testRouting?.default;
 } else if (effectiveRisk === "R3") {
   profileKey = "riskR3";
 } else if (zone.preferredProfile) {
@@ -86,12 +113,16 @@ console.log(
       requestedRisk,
       effectiveRisk,
       elevated: effectiveRisk !== requestedRisk,
+      mode,
       review,
+      test,
+      crossFamily,
       profile: profileKey,
       provider: profile.provider,
       model: profile.model,
       reasoningEffort: profile.reasoningEffort ?? null,
       readOnly: profile.readOnly ?? false,
+      freshContext: profile.freshContext ?? false,
     },
     null,
     2,
