@@ -10,4 +10,10 @@ Use a fresh context. Read the original task, relevant canon and the diff; do not
 
 Prioritize: authority/state ownership, deterministic replay/idempotency, save/schema compatibility, stable IDs/provenance, dependency boundaries, security/Tauri permissions, missing negative-path tests, UI accessibility and scope expansion.
 
-Report only actionable findings with severity and exact paths/evidence. Finish with acceptance criteria marked supported/not-supported/uncertain. Do not edit during review.
+Remain read-only. Do not modify product code and do not write `.studio/findings/*`; the Producer is the ledger writer.
+
+For each actionable finding, follow `.studio/finding-contract.md`: provide one stable failure class with severity (`S0..S4`), agent-work size (`XS..XL`), scope, zone, category, component, invariant, exact evidence, suggested disposition and reason. Several manifestations of one root failure class should be one candidate with multiple evidence points, not duplicate findings.
+
+Keep impact and fix cost independent. A difficult fix can still be S0/S1; a large polish change can still be S4.
+
+Finish with acceptance criteria marked supported/not-supported/uncertain. Do not edit during review.
