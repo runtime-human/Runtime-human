@@ -3,7 +3,7 @@ title: "QA Agent"
 type: agent
 status: draft
 canon: true
-updated: 2026-07-18
+updated: 2026-08-24
 ---
 
 # QA Agent
@@ -48,6 +48,34 @@ QA поддерживает:
 - Safe Mode;
 - keyboard/Narrator;
 - 1366×768/1920×1080/200% scale.
+
+## MVP gameplay verification
+
+MVP gameplay acceptance matrix (перенесено из `AGENTS.md`; проверяется на MVP Casual, не требует Extended-систем до их существования):
+
+- player goal/problem/choice comprehension;
+- 10–20 second ordinary decision target;
+- 2–4 approaches with understandable trade-offs;
+- no globally dominant approach in declared fixtures;
+- learning source/access/assistance comprehension;
+- guided vs independent distinction;
+- low-access recovery route;
+- monthly causality;
+- bounded visible concepts;
+- no duplicate/reroll;
+- assisted/partial/failure semantics;
+- one project trade-off;
+- first-month recovery;
+- career opportunity/offer trade-off comprehension;
+- title vs grade comprehension;
+- candidate gap vs employer cancellation comprehension;
+- rejection/layoff/re-entry recovery;
+- salary/referral/credential non-dominance;
+- employment routine aggregation and workplace trust comprehension;
+- accessibility/long RU;
+- desire to continue.
+
+Не требовать тестов Extended-систем до того, как эти системы существуют. Перед scaffold перечислить фактически выполненные documentation/contract checks. Уровни верификации V0–V4 — [`docs/engineering/VERIFICATION-TIERS.md`](../engineering/VERIFICATION-TIERS.md).
 
 ## Запреты
 

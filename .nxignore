@@ -1,0 +1,2 @@
+# Nx project-inference exclusions (.studio/project.json is Studio config, not an Nx project)
+.studio/project.json

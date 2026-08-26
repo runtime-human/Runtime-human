@@ -3,7 +3,7 @@ title: "Workflow ИИ-агентов"
 type: agent
 status: draft
 canon: true
-updated: 2026-07-18
+updated: 2026-08-24
 ---
 
 # Workflow ИИ-агентов
@@ -24,6 +24,8 @@ updated: 2026-07-18
 8. Обновить docs/schema/migrations.
 9. Провести self-review и red-team checklist.
 10. Создать PR с evidence.
+
+Маршрутизация по типу задачи (task → skill → guide → tool): [`docs/agents/README.md`](README.md). Уровни верификации V0–V4 и правило «worker не гоняет полный gate после каждого edit»: [`docs/engineering/VERIFICATION-TIERS.md`](../engineering/VERIFICATION-TIERS.md).
 
 ## Размер задач
 

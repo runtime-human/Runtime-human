@@ -153,3 +153,6 @@ artifacts/performance/
 .studio/runtime/
 
 .DS_Store
+
+# Nx local cache
+.nx/

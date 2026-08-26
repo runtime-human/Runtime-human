@@ -32,14 +32,14 @@ export function DesktopShell({
   return (
     <GameShell
       bottomDock={
-        <footer
+        <div
           aria-label="Состояние сохранения"
           aria-live="polite"
           className="runtime-statusbar"
           role="status"
         >
           {status}
-        </footer>
+        </div>
       }
       contextRail={
         <div className="runtime-context-summary">

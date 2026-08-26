@@ -34,11 +34,22 @@ const required = [
   ".studio/finding-contract.md",
   ".studio/finding-policy.json",
   ".studio/review-artifacts.md",
+  ".studio/skill-map.json",
+  ".studio/verification-policy.json",
+  "docs/architecture/AI-FIRST-GAME-DEVELOPMENT.md",
+  "docs/engineering/VERIFICATION-TIERS.md",
+  "docs/engineering/AGENT-EVALS.md",
   ".agents/skills/runtime-test/SKILL.md",
   ".agents/skills/runtime-review/SKILL.md",
   OPEN_LEDGER,
   RESOLVED_LEDGER,
   "scripts/studio/route.mjs",
+  "scripts/studio/task.mjs",
+  "scripts/studio/context-lib.mjs",
+  "scripts/studio/harness-lib.mjs",
+  "scripts/studio/exec.mjs",
+  "scripts/studio/affected.mjs",
+  "scripts/studio/verify.mjs",
   "scripts/studio/finding-add.mjs",
   "scripts/studio/findings-list.mjs",
   "scripts/studio/findings-cluster.mjs",
@@ -54,6 +65,8 @@ const models = readJson(".studio/models.json");
 const zones = readJson(".studio/zones.json");
 const context = readJson(".studio/context-map.json");
 const findingPolicy = readJson(".studio/finding-policy.json");
+const skillMap = readJson(".studio/skill-map.json");
+const verificationPolicy = readJson(".studio/verification-policy.json");
 const opencode = readJson("opencode.json");
 const packageJson = readJson("package.json");
 
@@ -68,7 +81,7 @@ if (models) {
   const profiles = Object.values(models.profiles ?? {});
   const profileModels = profiles.map((profile) => String(profile.model ?? "").toLowerCase());
   assert(models.profiles?.producer?.model === "gpt-5.6-sol", "Producer must use gpt-5.6-sol");
-  assert(models.profiles?.riskR3?.model === "gpt-5.6-sol", "R3 must use gpt-5.6-sol");
+  assert(models.profiles?.riskR3?.model === "opencode-go/deepseek-v4-pro", "R3 implementation must use DeepSeek V4 Pro");
   assert(models.profiles?.content?.model === "opencode-go/deepseek-v4-pro", "Content must use DeepSeek V4 Pro");
   assert(models.profiles?.defaultWorker?.model === "opencode-go/deepseek-v4-flash", "Default worker must use DeepSeek V4 Flash");
   assert(models.profiles?.lunaTester?.model === "gpt-5.6-luna", "Independent tester must use gpt-5.6-luna");
@@ -76,13 +89,14 @@ if (models) {
   assert(models.profiles?.lunaTester?.readOnly === true, "Luna tester must be read-only");
   assert(models.profiles?.lunaTester?.freshContext === true, "Luna tester must use fresh context");
   assert(models.profiles?.lunaReviewer?.model === "gpt-5.6-luna", "R1/R2 reviewer must use gpt-5.6-luna");
-  assert(models.profiles?.lunaReviewer?.reasoningEffort === "xhigh", "Luna reviewer must use xhigh reasoning");
+  assert(models.profiles?.lunaReviewer?.reasoningEffort === "max", "Luna reviewer must use max reasoning");
   assert(models.profiles?.lunaReviewer?.readOnly === true, "Luna reviewer must be read-only");
   assert(models.profiles?.lunaReviewer?.freshContext === true, "Luna reviewer must use fresh context");
   assert(models.profiles?.crossFamilyReviewer?.model === "opencode-go/glm-5.3", "Cross-family reviewer must use GLM-5.3");
   assert(models.profiles?.crossFamilyReviewer?.readOnly === true, "Cross-family reviewer must be read-only");
   assert(models.profiles?.crossFamilyReviewer?.freshContext === true, "Cross-family reviewer must use fresh context");
   assert(models.profiles?.r3Reviewer?.model === "gpt-5.6-sol", "R3 reviewer must use gpt-5.6-sol");
+  assert(models.profiles?.r3Reviewer?.reasoningEffort === "medium", "R3 reviewer must use medium reasoning");
   assert(models.profiles?.r3Reviewer?.readOnly === true, "R3 reviewer must be read-only");
   assert(models.profiles?.r3Reviewer?.freshContext === true, "R3 reviewer must use fresh context");
   assert(models.profiles?.escalation?.model === "opencode-go/glm-5.3", "Escalation must use GLM-5.3");
@@ -103,6 +117,31 @@ if (models) {
   assert(models.reviewRouting?.R3 === "r3Reviewer", "R3 review must stay on Sol");
   assert(models.reviewRouting?.CROSS_FAMILY === "crossFamilyReviewer", "Cross-family review routing mismatch");
   assert(models.testRouting?.default === "lunaTester", "Default independent testing must route to Luna");
+}
+
+if (skillMap) {
+  const entries = skillMap.skills ?? [];
+  const names = entries.map((entry) => entry?.name);
+  assert(skillMap.schemaVersion === 1, "skill map schemaVersion must be 1");
+  assert(new Set(names).size === names.length, "skill map names must be unique");
+  for (const entry of entries) {
+    assert(["active", "planned"].includes(entry?.status), `skill map ${entry?.name} has invalid status`);
+    if (entry?.status === "active") {
+      assert(existsSync(resolve(root, String(entry.path).replaceAll("\\", "/"), "SKILL.md")), `active skill missing on disk: ${entry.name}`);
+    }
+  }
+}
+
+if (verificationPolicy) {
+  assert(verificationPolicy.schemaVersion === 1, "verification policy schemaVersion must be 1");
+  for (const tier of ["V0", "V1", "V2", "V3", "V4"]) {
+    assert(Boolean(verificationPolicy.tiers?.[tier]), `verification policy missing tier ${tier}`);
+  }
+  if (models) {
+    for (const [role, profileKey] of Object.entries(verificationPolicy.adaptiveReview?.evaluatorProfiles ?? {})) {
+      assert(Boolean(models.profiles?.[profileKey]), `evaluatorProfiles ${role} references missing profile ${profileKey}`);
+    }
+  }
 }
 
 if (opencode) {
@@ -166,6 +205,10 @@ for (const ledger of [OPEN_LEDGER, RESOLVED_LEDGER]) {
 
 if (packageJson) {
   for (const command of [
+    "studio:task",
+    "studio:exec",
+    "studio:affected",
+    "studio:verify",
     "studio:finding:add",
     "studio:findings",
     "studio:findings:cluster",

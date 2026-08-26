@@ -36,6 +36,17 @@ Forbidden:
 - changing canon without explicit task
 ```
 
+## Task envelope
+
+For diff-scoped batches the Producer (or a worker) can generate a machine-readable scope instead of re-deriving it:
+
+```bash
+pnpm studio:task -- --id RH-123 --diff origin/main --json
+pnpm studio:task -- --id RH-124 --task-file <spec.txt>
+```
+
+The envelope is written to `.studio/runtime/tasks/<id>/envelope.json` (`runtime-human-task-envelope-v1`) and contains: zones/primary zone, risk, matching active skills, budgeted `mustRead`/`mayRead`, `allowedWrite`/`forbiddenWrite` globs, up to 3 relevant historical findings, warnings and tier verification commands. It is derived from git diff + `.studio/zones.json` + context-map + skill-map + finding ledger. The envelope does not replace this contract: Task/Objective/Acceptance fields remain authoritative and are supplied by the Producer.
+
 ## Worker completion
 
 Return a compact handoff:

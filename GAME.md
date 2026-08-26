@@ -8,6 +8,27 @@ Runtime Human is a PC-first, Windows-first, offline-first casual programmer-deve
 
 Canonical start: January 1990, age 12. One turn is one month. Ordinary play should present rare, concrete, consequence-bearing decisions rather than daily chores, ticket simulation, generic XP grinding, or an embedded IDE.
 
+## Core loop
+
+```text
+month advances
+→ small number of programmer-development situations
+→ concrete choice
+→ deterministic consequence
+→ learning/project/evidence/career projection
+→ long-lived programmer identity
+```
+
+## Explicit non-goals
+
+```text
+not an embedded IDE
+not a daily ticket simulator
+not a generic life sim with programming as one profession
+not an LLM-judged coding test
+not a live-service backend-dependent game
+```
+
 ## Authority
 
 Use the repository's existing priority order from `AGENTS.md`:

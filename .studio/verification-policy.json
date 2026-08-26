@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "note": "Verification tiers and adaptive evaluation policy. V3/V4 map to existing repository gates; studio:affected/studio:exec tooling for V0-V2 selection is planned (context/execution waves). Evaluator profile keys reference .studio/models.json.",
+  "tiers": {
+    "V0": {
+      "purpose": "edit loop",
+      "when": "while implementing, before completion claims",
+      "evidence": [
+        "one focused test file or --project selection",
+        "content compiler check on touched sources (pnpm content:check)",
+        "formatter/lint on touched paths"
+      ],
+      "notes": [
+        "compact execution wrapper available: pnpm studio:exec -- <command> keeps the full log under .studio/runtime/logs and returns a compact PASS/FAIL block"
+      ]
+    },
+    "V1": {
+      "purpose": "worker completion / affected evidence",
+      "when": "before returning DONE for a task batch",
+      "evidence": [
+        "tests of affected projects/zones derived from .studio/zones.json paths",
+        "affected compiler/schema checks when content or schema inputs changed",
+        "focused Storybook/browser checks when UI changed",
+        "determinism/golden evidence when gameplay rules changed"
+      ],
+      "notes": [
+        "pnpm studio:affected + pnpm studio:verify -- --tier V1 assemble and run this set today; Nx-assisted selection is planned"
+      ]
+    },
+    "V2": {
+      "purpose": "PR candidate",
+      "when": "before requesting merge",
+      "evidence": [
+        "all affected projects: typecheck/lint/tests",
+        "browser UI verification when UI changed",
+        "focused Rust verification when persistence/platform changed",
+        "no duplicated typecheck inside build chains"
+      ],
+      "notes": [
+        "pnpm studio:verify -- --tier V2 assembles this set today; Nx-assisted selection is planned"
+      ]
+    },
+    "V3": {
+      "purpose": "full merge gate",
+      "command": "pnpm verify",
+      "concurrency": "serialized: fullGateSlots=1 (.studio/project.json); one full-gate slot at a time",
+      "notes": [
+        "workers must not run V3 after every small edit"
+      ]
+    },
+    "V4": {
+      "purpose": "release readiness",
+      "command": "pnpm verify:release",
+      "concurrency": "serialized, after V3",
+      "notes": [
+        "release packaging/migration/security/signing evidence requires explicit assignment and human review"
+      ]
+    }
+  },
+  "adaptiveReview": {
+    "evaluatorProfiles": {
+      "tester": "lunaTester",
+      "reviewerR1R2": "lunaReviewer",
+      "reviewerR3": "r3Reviewer",
+      "crossFamily": "crossFamilyReviewer"
+    },
+    "changeClasses": [
+      {
+        "id": "docs-generated-only",
+        "riskMinimum": "R1",
+        "deterministicGate": "required (docs:check/build-toc)",
+        "tester": false,
+        "reviewer": "sampled-lunaReviewer",
+        "crossFamily": false
+      },
+      {
+        "id": "format-config-trivial",
+        "riskMinimum": "R1",
+        "deterministicGate": "required (fmt/lint/check-config)",
+        "tester": false,
+        "reviewer": "lunaReviewer-if-semantics-change",
+        "crossFamily": false
+      },
+      {
+        "id": "ui-style",
+        "riskMinimum": "R1",
+        "deterministicGate": "storybook/browser affected checks",
+        "tester": "optional-lunaTester",
+        "reviewer": "lunaReviewer",
+        "crossFamily": false
+      },
+      {
+        "id": "pure-helper",
+        "riskMinimum": "R1",
+        "deterministicGate": "unit/type/lint focused",
+        "tester": "optional-lunaTester",
+        "reviewer": "lunaReviewer",
+        "crossFamily": false
+      },
+      {
+        "id": "gameplay",
+        "riskMinimum": "R2",
+        "deterministicGate": "focused tests + simulation/property evidence (simulation tooling planned)",
+        "tester": "lunaTester",
+        "reviewer": "lunaReviewer",
+        "crossFamily": "disputed-only-crossFamilyReviewer"
+      },
+      {
+        "id": "complex-cross-domain",
+        "riskMinimum": "R2_COMPLEX",
+        "deterministicGate": "full affected set",
+        "tester": "lunaTester",
+        "reviewer": "lunaReviewer",
+        "crossFamily": "optional-crossFamilyReviewer"
+      },
+      {
+        "id": "persistence-schema-determinism",
+        "riskMinimum": "R3",
+        "deterministicGate": "focused + compatibility + replay evidence",
+        "tester": "lunaTester",
+        "reviewer": "r3Reviewer",
+        "crossFamily": "if-disputed-or-semantic-crossFamilyReviewer"
+      },
+      {
+        "id": "release-signing-security",
+        "riskMinimum": "R3",
+        "deterministicGate": "explicit full gates (V4)",
+        "tester": "specialized",
+        "reviewer": "r3Reviewer+human",
+        "crossFamily": "as-required-crossFamilyReviewer"
+      }
+    ],
+    "neverWeakenReviewFor": [
+      "visual composition",
+      "game feel",
+      "architecture trade-off",
+      "historical semantic fact",
+      "security boundary",
+      "migration semantics"
+    ],
+    "samplingPolicy": {
+      "allowedFor": ["docs-generated-only", "format-config-trivial"],
+      "escalationTrigger": "repeated finding class in a sampled category raises sampling rate to 1-of-1 until two clean review waves pass"
+    }
+  }
+}

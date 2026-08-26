@@ -3,7 +3,7 @@ title: "Runtime Human — полный каталог документации"
 type: index
 status: draft
 canon: false
-updated: 2026-07-30
+updated: 2026-08-24
 ---
 
 # Runtime Human — полный каталог документации
@@ -11,7 +11,7 @@ updated: 2026-07-30
 > Сгенерировано `node scripts/build-toc.mjs` из metadata документов. Не редактировать вручную.
 > Канонический навигационный вход и порядок источников истины: [INDEX.md](INDEX.md).
 
-Всего документов: **201**.
+Всего документов: **204**.
 
 ## Навигация
 
@@ -51,6 +51,7 @@ updated: 2026-07-30
 - [Потоки данных](architecture/DATA-FLOW.md) — `draft`, `canon`
 - [Правила зависимостей](architecture/DEPENDENCY-RULES.md) — `draft`, `canon`
 - [Структура репозитория](architecture/REPOSITORY-STRUCTURE.md) — `draft`, `canon`
+- [AI-First Game Development Harness](architecture/AI-FIRST-GAME-DEVELOPMENT.md) — `draft`, `canon`
 - [Architecture documents](architecture/README.md) — `draft`, `canon`
 - [Architecture review order](architecture/REVIEW-ORDER.md) — `draft`, `canon`
 - [Canon summary](architecture/CANON-SUMMARY.md) — `draft`, `canon`
@@ -85,6 +86,7 @@ updated: 2026-07-30
 - [Совместимость сохранений](persistence/SAVE-COMPATIBILITY.md) — `draft`, `canon`
 - [Тестовая стратегия](engineering/TESTING-STRATEGY.md) — `draft`, `canon`
 - [Технологический стек](engineering/TECH-STACK.md) — `draft`, `canon`
+- [Agent eval suite](engineering/AGENT-EVALS.md) — `draft`, `canon`
 - [Backup и restore](persistence/BACKUP-AND-RESTORE.md) — `draft`, `canon`
 - [Casual Simulation Design](game-design/CASUAL-SIMULATION-DESIGN.md) — `draft`, `canon`
 - [CI/CD](engineering/CI-CD.md) — `draft`, `canon`
@@ -112,6 +114,7 @@ updated: 2026-07-30
 - [Storybook workflow](engineering/STORYBOOK-WORKFLOW.md) — `draft`, `canon`
 - [Technology Context Persistence & Compatibility](persistence/TECHNOLOGY-CONTEXT-COMPATIBILITY.md) — `draft`, `canon`
 - [TypeScript policy](engineering/TYPESCRIPT-POLICY.md) — `draft`, `canon`
+- [Verification tiers V0-V4](engineering/VERIFICATION-TIERS.md) — `draft`, `canon`
 
 ## Симуляция и баланс
 

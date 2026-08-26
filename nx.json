@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "_note": "Minimal Wave-3 adoption: local cache only (no Nx Cloud), root-workspace scripts as targets, terminal-output replay without declared outputs until the real task graph is reviewed. Deliberately not cached: docs:check (current-date dependent), fmt, build, storybook:build, rust tasks, evidence/perf capture, verify/verify:release.",
+  "namedInputs": {
+    "sharedGlobals": [
+      "{workspaceRoot}/.github/workflows/foundation.yml",
+      "{workspaceRoot}/pnpm-lock.yaml"
+    ],
+    "default": ["{workspaceRoot}/**/*", "sharedGlobals"]
+  },
+  "targetDefaults": {
+    "fmt:check": { "cache": true },
+    "lint": { "cache": true },
+    "lint:type-aware": { "cache": true },
+    "typecheck": { "cache": true },
+    "content:build": { "cache": true },
+    "content:check": { "cache": true },
+    "boundaries:check": { "cache": true },
+    "test": { "cache": true }
+  }
+}

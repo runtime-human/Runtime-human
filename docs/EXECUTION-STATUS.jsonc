@@ -1,12 +1,12 @@
 {
   "_schemaVersion": 1,
-  "updated": "2026-07-31",
+  "updated": "2026-08-24",
   "implementationProfile": "MVP Casual",
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "mainHeadAtCurrentSliceStart": "783f54b17cd7bd4b88c5e7aac4719afa1c0dadac",
-  "currentPhase": "performance-windows-capture-harness",
+  "mainHeadAtCurrentSliceStart": "a364fc97b4e0f86c99c850abbfa44b2db1608ff6",
+  "currentPhase": "ai-first-harness-foundation",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -634,6 +634,48 @@
         "docsRun": 1241,
         "temporaryWorkflowsRemoved": true
       }
+    },
+    {
+      "id": "ai-first-harness-wave0",
+      "status": "in-progress",
+      "scope": [
+        "agents-md-compression-with-knowledge-relocation",
+        "skill-map-and-skill-checker",
+        "verification-policy-and-tiers-docs",
+        "new-zones-balance-scenario-simulation-tooling",
+        "ai-first-harness-architecture-doc"
+      ]
+    },
+    {
+      "id": "ai-first-harness-wave1",
+      "status": "in-progress",
+      "scope": [
+        "task-envelope-v1-generator",
+        "context-lib-zone-risk-skill-resolution",
+        "budgeted-must-read-may-read",
+        "historical-finding-injection-cap-3",
+        "windows-path-and-determinism-tests"
+      ]
+    },
+    {
+      "id": "ai-first-harness-wave2",
+      "status": "in-progress",
+      "scope": [
+        "compact-exec-with-runtime-logs",
+        "affected-classification-zones-projects-surfaces",
+        "tiered-verify-v0-v1-v2-runner",
+        "v3-v4-refusal-guard-in-verify-cli"
+      ]
+    },
+    {
+      "id": "ai-first-harness-wave3",
+      "status": "in-progress",
+      "scope": [
+        "nx-23-local-cache-minimal-adoption",
+        "root-project-target-caching-without-output-guessing",
+        "studio-affected-nx-enrichment-flag",
+        "dependency-policy-entry-nx-dev-only-mit"
+      ]
     },
     {
       "id": "rust-persistence-fifo-shutdown",

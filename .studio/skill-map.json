@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "note": "Registry of project skills. active = exists on disk under .agents/skills; planned = approved by the AI-first harness plan, created in a later wave. Validated bidirectionally by scripts/studio/check-skills.mjs.",
+  "skills": [
+    {
+      "name": "runtime-producer",
+      "path": ".agents/skills/runtime-producer",
+      "status": "active",
+      "activation": "Orca coordination: task DAGs, supervision loops, workspace board sync; never product implementation"
+    },
+    {
+      "name": "runtime-architecture",
+      "path": ".agents/skills/runtime-architecture",
+      "status": "active",
+      "activation": "architecture/authority analysis, R3 changes, ADR/spec boundary decisions"
+    },
+    {
+      "name": "runtime-implement",
+      "path": ".agents/skills/runtime-implement",
+      "status": "active",
+      "activation": "bounded generic code implementation tasks (wrapper invoking the matching domain skill)"
+    },
+    {
+      "name": "runtime-content",
+      "path": ".agents/skills/runtime-content",
+      "status": "active",
+      "activation": "historical/game content and compiler inputs: provenance, stable IDs, chronology, validation"
+    },
+    {
+      "name": "runtime-ui",
+      "path": ".agents/skills/runtime-ui",
+      "status": "active",
+      "activation": "React/Storybook UI work: density, accessibility, stories/tests, no renderer state ownership"
+    },
+    {
+      "name": "runtime-qa",
+      "path": ".agents/skills/runtime-qa",
+      "status": "active",
+      "activation": "test authoring/reproduction/fixtures/regression evidence (not final approval)"
+    },
+    {
+      "name": "runtime-test",
+      "path": ".agents/skills/runtime-test",
+      "status": "active",
+      "activation": "independent fresh read-only testing of a candidate against acceptance criteria"
+    },
+    {
+      "name": "runtime-review",
+      "path": ".agents/skills/runtime-review",
+      "status": "active",
+      "activation": "independent fresh read-only review producing finding-contract candidates"
+    },
+    {
+      "name": "runtime-balance",
+      "path": ".agents/skills/runtime-balance",
+      "status": "planned",
+      "activation": "after the balance authoring layer wave: tuning/weights/thresholds with simulation compare"
+    },
+    {
+      "name": "runtime-scenario",
+      "path": ".agents/skills/runtime-scenario",
+      "status": "planned",
+      "activation": "after scenario v1 wave: typed scenario topology, gates, reachability"
+    },
+    {
+      "name": "runtime-simulation",
+      "path": ".agents/skills/runtime-simulation",
+      "status": "planned",
+      "activation": "after simulation wave: deterministic simulate/replay/explain/fixture workflows"
+    },
+    {
+      "name": "runtime-persistence",
+      "path": ".agents/skills/runtime-persistence",
+      "status": "planned",
+      "activation": "after persistence tooling wave: Rust-owned persistence, save compatibility, recovery diagnostics"
+    },
+    {
+      "name": "runtime-harness",
+      "path": ".agents/skills/runtime-harness",
+      "status": "planned",
+      "activation": "after harness tooling waves: Studio/Nx/gamectl/Storybook agent integration changes"
+    }
+  ]
+}

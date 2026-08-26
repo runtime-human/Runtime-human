@@ -129,6 +129,10 @@ jobs:
         run: pnpm boundaries:check
       - name: Run focused test suite
         run: pnpm test
+      - name: Install Playwright Chromium
+        run: pnpm --filter @runtime-human/desktop exec playwright install chromium
+      - name: Run Storybook browser tests
+        run: pnpm test:browser
       - name: Run type-aware lint
         run: pnpm lint:type-aware
       - name: Build renderer

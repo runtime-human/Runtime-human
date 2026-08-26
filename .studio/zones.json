@@ -39,6 +39,27 @@
       "preferredProfile": "qa"
     },
     {
+      "id": "balance",
+      "paths": ["balance/**"],
+      "minimumRisk": "R2",
+      "promoteToR3On": ["authoritative algorithm transfer out of Game Core", "ruleset fingerprint semantics"]
+    },
+    {
+      "id": "scenario",
+      "paths": ["content/**/scenarios/**"],
+      "minimumRisk": "R2"
+    },
+    {
+      "id": "simulation",
+      "paths": ["packages/game-simulation/**", "fixtures/**"],
+      "minimumRisk": "R2"
+    },
+    {
+      "id": "tooling",
+      "paths": [".studio/**", ".agents/skills/**", "scripts/studio/**", "nx.json"],
+      "minimumRisk": "R1"
+    },
+    {
       "id": "canon",
       "paths": ["docs/**", "AGENTS.md", "GAME.md"],
       "minimumRisk": "R2",

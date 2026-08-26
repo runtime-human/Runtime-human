@@ -5,3 +5,4 @@ packages:
 allowBuilds:
   esbuild: true
   "@tauri-apps/cli": true
+  nx: true

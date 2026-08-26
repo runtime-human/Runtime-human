@@ -39,6 +39,26 @@
       "docs": ["docs/performance/**", "docs/engineering/**"],
       "code": ["tests/**", "scripts/performance/**"]
     },
+    "balance": {
+      "agentGuide": "docs/agents/ARCHITECT-AGENT.md",
+      "docs": ["docs/game-design/**", "docs/architecture/AI-FIRST-GAME-DEVELOPMENT.md", "docs/engineering/**"],
+      "code": ["balance/**"]
+    },
+    "scenario": {
+      "agentGuide": "docs/agents/ARCHITECT-AGENT.md",
+      "docs": ["docs/content/**", "docs/architecture/AI-FIRST-GAME-DEVELOPMENT.md"],
+      "code": ["content/**/scenarios/**"]
+    },
+    "simulation": {
+      "agentGuide": "docs/agents/ARCHITECT-AGENT.md",
+      "docs": ["docs/simulation/**", "docs/engineering/**", "docs/architecture/AI-FIRST-GAME-DEVELOPMENT.md"],
+      "code": ["packages/game-simulation/**", "fixtures/**"]
+    },
+    "tooling": {
+      "agentGuide": "docs/agents/ARCHITECT-AGENT.md",
+      "docs": ["docs/architecture/AI-FIRST-GAME-DEVELOPMENT.md", "docs/engineering/**"],
+      "code": [".studio/**", ".agents/skills/**", "scripts/studio/**", "nx.json"]
+    },
     "canon": {
       "agentGuide": "docs/agents/ARCHITECT-AGENT.md",
       "docs": ["docs/adr/**", "docs/game-design/**", "docs/architecture/**", "docs/plans/**"],

@@ -2,6 +2,20 @@ import { fileURLToPath } from "node:url";
 
 import { defineConfig } from "vitest/config";
 
+function nodeProject(name: string, include: string[]) {
+  return {
+    extends: true as const,
+    test: {
+      name,
+      environment: "node",
+      globals: true,
+      clearMocks: true,
+      setupFiles: [],
+      include,
+    },
+  };
+}
+
 export default defineConfig({
   resolve: {
     alias: {
@@ -32,10 +46,93 @@ export default defineConfig({
     },
   },
   test: {
-    environment: "jsdom",
-    globals: true,
-    setupFiles: ["./tests/setup.ts"],
-    include: ["tests/**/*.test.{ts,tsx}"],
-    clearMocks: true,
+    projects: [
+      nodeProject("core-node", [
+        "tests/determinism-golden.test.ts",
+        "tests/determinism-manifest.test.ts",
+        "tests/deterministic-hash.test.ts",
+        "tests/xoshiro256ss.test.ts",
+        "tests/month-run-checkpoint.test.ts",
+        "tests/month-run-idempotency.test.ts",
+        "tests/month-run-runner.test.ts",
+        "tests/month-run-schema.test.ts",
+        "tests/month-run-transition.test.ts",
+        "tests/january-1990-contracts.test.ts",
+        "tests/january-1990-exactly-once.test.ts",
+        "tests/january-1990-month-plan.test.ts",
+        "tests/january-1990-month-run.test.ts",
+        "tests/january-1990-provisional-state.test.ts",
+        "tests/january-1990-result-summary.test.ts",
+        "tests/january-1990-screen-model.test.ts",
+        "tests/january-1990-view-model.test.ts",
+        "tests/january-1990-balance-trace.test.ts",
+        "tests/january-1990-content-projection.test.ts",
+      ]),
+      nodeProject("application-node", [
+        "tests/career-overview-model.test.ts",
+        "tests/persistence-application.test.ts",
+        "tests/persistence-service.test.ts",
+        "tests/persisted-month-run-orchestrator.test.ts",
+        "tests/persisted-month-run-restart.test.ts",
+        "tests/january-1990-application-baseline.perf.test.ts",
+        "tests/january-1990-desktop-bootstrap.test.ts",
+        "tests/january-1990-desktop-concurrency.test.ts",
+        "tests/january-1990-desktop-performance.test.ts",
+        "tests/january-1990-desktop-session.test.ts",
+        "tests/january-1990-persistence-flow.test.ts",
+        "tests/january-1990-persisted-restart.test.ts",
+        "tests/january-1990-persisted-run.test.ts",
+      ]),
+      nodeProject("content-node", [
+        "tests/compiled-content-runtime-loader.test.ts",
+        "tests/content-artifact-writer.test.ts",
+        "tests/content-build-project.test.ts",
+        "tests/content-compiler-bundle-boundary.test.ts",
+        "tests/content-compiler-chronology-boundaries.test.ts",
+        "tests/content-compiler-golden.test.ts",
+        "tests/content-compiler-invariants.test.ts",
+        "tests/content-compiler-ordering.test.ts",
+        "tests/content-compiler-parser-boundary.test.ts",
+        "tests/content-compiler.test.ts",
+        "tests/content-source-loader.test.ts",
+        "tests/january-content-golden.test.ts",
+        "tests/materialize-january-e2-fixtures.test.ts",
+      ]),
+      nodeProject("persistence-contracts-node", [
+        "tests/january-1990-save-snapshot.test.ts",
+        "tests/month-run-persistence-payload.test.ts",
+        "tests/persistence-contract-boundaries.test.ts",
+      ]),
+      nodeProject("tooling-node", [
+        "tests/authoritative-json.test.ts",
+        "tests/check-boundaries.test.ts",
+        "tests/check-build-only-dependencies.test.ts",
+        "tests/desktop-content-csp.test.ts",
+        "tests/desktop-performance-evidence.test.ts",
+        "tests/desktop-performance-evidence-cli.test.ts",
+        "tests/desktop-route.test.ts",
+        "tests/docs-metadata-governance.test.ts",
+        "tests/performance-recorder.test.ts",
+        "tests/performance-summary.test.ts",
+        "tests/renderer-milestones.test.ts",
+        "tests/runtime-human-design-tokens.test.ts",
+        "tests/studio-context.test.ts",
+        "tests/studio-findings.test.ts",
+        "tests/studio-harness.test.ts",
+        "tests/studio-routing.test.ts",
+      ]),
+      {
+        extends: true,
+        test: {
+          name: "ui-jsdom",
+          environment: "jsdom",
+          globals: true,
+          clearMocks: true,
+          setupFiles: ["./tests/setup.ts"],
+          include: ["tests/**/*.test.tsx", "tests/game-shell-window-contract.test.ts"],
+        },
+      },
+      "./apps/desktop/vitest.config.ts",
+    ],
   },
 });
