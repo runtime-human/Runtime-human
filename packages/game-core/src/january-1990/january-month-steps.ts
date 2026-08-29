@@ -16,6 +16,7 @@ import {
   parseJanuaryDefectAnswer,
   parseJanuaryLearningAnswer,
 } from "./january-answers";
+import { deriveJanuaryQualityScoreMaximums, type January1990BalanceV1 } from "./january-balance";
 import type { January1990ContentContext, JanuaryEventDefinition } from "./january-content-context";
 import type { January1990ContentId } from "./january-content-ids";
 import { JANUARY_1990_CONTENT_IDS } from "./january-content-ids";
@@ -48,6 +49,7 @@ const ANSWER_SCHEMA_FINGERPRINTS = Object.freeze({
 
 export function createJanuary1990MonthSteps(
   context: January1990ContentContext,
+  balance: January1990BalanceV1,
 ): readonly MonthRunStep[] {
   requireJanuaryContext(context);
   return Object.freeze([
@@ -58,8 +60,8 @@ export function createJanuary1990MonthSteps(
     (checkpoint) => materializeWork(context, checkpoint),
     (checkpoint) => materializeDefect(context, checkpoint),
     (checkpoint) => suspendForDefect(context, checkpoint),
-    (checkpoint) => materializeProgrammingOutcome(context, checkpoint),
-    (checkpoint) => completeJanuary(context, checkpoint),
+    (checkpoint) => materializeProgrammingOutcome(context, checkpoint, balance),
+    (checkpoint) => completeJanuary(context, checkpoint, balance),
   ] satisfies readonly MonthRunStep[]);
 }
 
@@ -240,6 +242,7 @@ function suspendForDefect(
 function materializeProgrammingOutcome(
   context: January1990ContentContext,
   checkpoint: MonthRunCheckpointV1,
+  balance: January1990BalanceV1,
 ): MonthRunEventV1 {
   const answer = parseJanuaryDefectAnswer(
     JANUARY_1990_DECISION_IDS.defect,
@@ -249,10 +252,15 @@ function materializeProgrammingOutcome(
     parseJanuaryProvisionalState(checkpoint.provisionalState),
     { defectResponse: answer.response },
   );
+  const outcomeRollBounds = balance.quality.outcomeRoll;
   const random = Xoshiro256StarStar.fromState(checkpoint.rngState).fork(
     JANUARY_1990_RNG_SCOPES.outcome,
   );
-  const materialized = materializeJanuaryProgrammingState(stateWithAnswer, random.nextInt(0, 3));
+  const materialized = materializeJanuaryProgrammingState(
+    stateWithAnswer,
+    random.nextInt(outcomeRollBounds.minimum, outcomeRollBounds.maximum + 1),
+    balance,
+  );
   const finalState = updateJanuaryProvisionalState(stateWithAnswer, materialized);
   const programmingOutcome = createJanuaryProgrammingOutcomeFromState(context, finalState);
 
@@ -270,10 +278,13 @@ function materializeProgrammingOutcome(
 function completeJanuary(
   context: January1990ContentContext,
   checkpoint: MonthRunCheckpointV1,
+  balance: January1990BalanceV1,
 ): MonthRunEventV1 {
   const state = parseJanuaryProvisionalState(checkpoint.provisionalState);
   const programmingOutcome = createJanuaryProgrammingOutcomeFromState(context, state);
-  const result = snapshotAuthoritativeValue(createJanuary1990Result(programmingOutcome));
+  const result = snapshotAuthoritativeValue(
+    createJanuary1990Result(programmingOutcome, deriveJanuaryQualityScoreMaximums(balance.quality)),
+  );
   if (result === null) throw new TypeError("January terminal result cannot be null");
   return {
     type: "complete",

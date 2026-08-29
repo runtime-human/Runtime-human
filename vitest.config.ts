@@ -34,6 +34,15 @@ export default defineConfig({
       "@runtime-human/game-content-compiler": fileURLToPath(
         new URL("./packages/game-content-compiler/src/index.ts", import.meta.url),
       ),
+      "@runtime-human/game-devtools": fileURLToPath(
+        new URL("./packages/game-devtools/src/index.ts", import.meta.url),
+      ),
+      "@runtime-human/game-simulation": fileURLToPath(
+        new URL("./packages/game-simulation/src/index.ts", import.meta.url),
+      ),
+      "@runtime-human/game-authoring-schema": fileURLToPath(
+        new URL("./packages/game-authoring-schema/src/index.ts", import.meta.url),
+      ),
       "@runtime-human/game-persistence-contracts": fileURLToPath(
         new URL("./packages/game-persistence-contracts/src/index.ts", import.meta.url),
       ),
@@ -65,8 +74,14 @@ export default defineConfig({
         "tests/january-1990-result-summary.test.ts",
         "tests/january-1990-screen-model.test.ts",
         "tests/january-1990-view-model.test.ts",
+        "tests/january-1990-balance.test.ts",
         "tests/january-1990-balance-trace.test.ts",
         "tests/january-1990-content-projection.test.ts",
+        "tests/january-1990-simulation-properties.test.ts",
+        "tests/january-1990-quality-explain.test.ts",
+        "tests/january-1990-harness-proof.test.ts",
+        "tests/simulation-compare.test.ts",
+        "tests/gameplay-fixture-parser.test.ts",
       ]),
       nodeProject("application-node", [
         "tests/career-overview-model.test.ts",
@@ -87,6 +102,7 @@ export default defineConfig({
         "tests/compiled-content-runtime-loader.test.ts",
         "tests/content-artifact-writer.test.ts",
         "tests/content-build-project.test.ts",
+        "tests/content-catalog-projection.test.ts",
         "tests/content-compiler-bundle-boundary.test.ts",
         "tests/content-compiler-chronology-boundaries.test.ts",
         "tests/content-compiler-golden.test.ts",
@@ -105,6 +121,8 @@ export default defineConfig({
       ]),
       nodeProject("tooling-node", [
         "tests/authoritative-json.test.ts",
+        "tests/authoring-schema-equivalence.test.ts",
+        "tests/balance-authoring-schema-parity.test.ts",
         "tests/check-boundaries.test.ts",
         "tests/check-build-only-dependencies.test.ts",
         "tests/desktop-content-csp.test.ts",
@@ -112,6 +130,10 @@ export default defineConfig({
         "tests/desktop-performance-evidence-cli.test.ts",
         "tests/desktop-route.test.ts",
         "tests/docs-metadata-governance.test.ts",
+        "tests/game-devtools-catalog.test.ts",
+        "tests/gamectl-cli.test.ts",
+        "tests/gamectl-simulation-cli.test.ts",
+        "tests/gamectl-harness-cli.test.ts",
         "tests/performance-recorder.test.ts",
         "tests/performance-summary.test.ts",
         "tests/renderer-milestones.test.ts",

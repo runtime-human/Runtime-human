@@ -1,0 +1,9 @@
+// Gameplay fixture v1: intent, not state. The materializer builds the full run
+// from the compiled January 1990 context, canonical balance and this seed.
+{
+  "schemaVersion": "gameplay-fixture-v1",
+  "id": "january-start",
+  "slice": "january-1990",
+  "seed": 42,
+  "answers": {}
+}

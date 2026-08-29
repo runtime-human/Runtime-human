@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "game-repro-v1",
+  "fixtureId": "january-start",
+  "rulesetFingerprint": "3a0f6d23ef98d8b67035ebdda85083ff612f3f0f5adc36278d7ffa5afe31cb76",
+  "seed": "42",
+  "commands": [
+    {
+      "kind": "answer",
+      "decisionId": "january-1990/access",
+      "value": "home-pc"
+    },
+    {
+      "kind": "answer",
+      "decisionId": "january-1990/learning",
+      "value": "read-and-run"
+    },
+    {
+      "kind": "answer",
+      "decisionId": "january-1990/defect",
+      "value": "inspect-listing"
+    }
+  ],
+  "expected": {
+    "kind": "success",
+    "terminalCheckpointHash": "10a2fbda782646a739e5a54b7c71cd5feee2b815886510fe62be47febd30314f"
+  }
+}

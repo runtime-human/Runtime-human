@@ -14,13 +14,16 @@ export function readJsonl(path) {
   if (!existsSync(path)) return [];
   const text = readFileSync(path, "utf8").trim();
   if (!text) return [];
-  return text.split(/\r?\n/).filter(Boolean).map((line, index) => {
-    try {
-      return JSON.parse(line);
-    } catch (error) {
-      throw new Error(`Invalid JSONL at ${path}:${index + 1}: ${error.message}`);
-    }
-  });
+  return text
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((line, index) => {
+      try {
+        return JSON.parse(line);
+      } catch (error) {
+        throw new Error(`Invalid JSONL at ${path}:${index + 1}: ${error.message}`);
+      }
+    });
 }
 
 export function writeJsonlAtomic(path, rows) {
@@ -42,7 +45,12 @@ function norm(value) {
 export function deriveFingerprint(input) {
   const explicit = String(input.fingerprint ?? "").trim();
   if (explicit) return explicit.toLowerCase();
-  const parts = [input.zone, input.component || "general", input.category, input.invariant || "none"].map(norm);
+  const parts = [
+    input.zone,
+    input.component || "general",
+    input.category,
+    input.invariant || "none",
+  ].map(norm);
   if (parts.some((part) => !part)) {
     throw new Error("Cannot derive fingerprint: zone, category and component/general are required");
   }
@@ -60,9 +68,14 @@ export function validateFindingInput(input, policy) {
   }
   if (!policy.severity?.[input.severity]) throw new Error(`Unknown severity: ${input.severity}`);
   if (!(input.size in (policy.sizeWeights ?? {}))) throw new Error(`Unknown size: ${input.size}`);
-  if (!(policy.scopes ?? []).includes(input.scope)) throw new Error(`Unknown scope: ${input.scope}`);
-  const dispositions = new Set([...(policy.openDispositions ?? []), ...(policy.closedDispositions ?? [])]);
-  if (!dispositions.has(input.disposition)) throw new Error(`Unknown disposition: ${input.disposition}`);
+  if (!(policy.scopes ?? []).includes(input.scope))
+    throw new Error(`Unknown scope: ${input.scope}`);
+  const dispositions = new Set([
+    ...(policy.openDispositions ?? []),
+    ...(policy.closedDispositions ?? []),
+  ]);
+  if (!dispositions.has(input.disposition))
+    throw new Error(`Unknown disposition: ${input.disposition}`);
 }
 
 function unique(values = []) {
@@ -160,10 +173,7 @@ export function clusterFindings(rows, policy) {
         (sum, row) => sum + Math.max((row.occurrences ?? 1) - 1, 0),
         0,
       );
-      const recurrencePressure = Math.min(
-        recurrenceRaw,
-        policy.batch.maxRecurrencePressure ?? 3,
-      );
+      const recurrencePressure = Math.min(recurrenceRaw, policy.batch.maxRecurrencePressure ?? 3);
       const contextPressure = findings.length >= 2 ? 1 : 0;
       const severePressure = severityPressure(findings, policy);
       const score =
@@ -186,11 +196,7 @@ export function clusterFindings(rows, policy) {
           (row.occurrences ?? 1) >= policy.promotion.systemicOccurrenceThreshold,
       );
       const large = findings.some((row) => ["L", "XL"].includes(row.size));
-      const recommendedRisk = blocksAcceptance
-        ? "R3"
-        : systemic || large
-          ? "R2_COMPLEX"
-          : "R2";
+      const recommendedRisk = blocksAcceptance ? "R3" : systemic || large ? "R2_COMPLEX" : "R2";
       return {
         key,
         zone: findings[0].zone,

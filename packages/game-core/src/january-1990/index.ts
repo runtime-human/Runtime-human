@@ -10,8 +10,27 @@ export {
 } from "./january-answers";
 export {
   createJanuary1990RulesFingerprint,
+  createJanuary1990RulesetManifest,
   JANUARY_1990_STEP_TABLE_VERSION,
 } from "./january-compatibility";
+export type { January1990RulesetManifestV1 } from "./january-compatibility";
+export {
+  createJanuary1990BalanceFingerprint,
+  JANUARY_1990_BALANCE_SLICE_ID,
+  JANUARY_1990_BALANCE_SCHEMA_VERSION,
+  JANUARY_1990_DEFAULT_BALANCE,
+  parseJanuary1990Balance,
+} from "./january-balance";
+export type {
+  January1990BalanceV1,
+  JanuaryBalanceAccessRoute,
+  JanuaryBalanceDefectResponse,
+  JanuaryBalanceLearningPractice,
+  JanuaryQualityBalanceV1,
+  JanuaryQualityModifiersV1,
+  JanuarySkillEvidenceBalanceV1,
+} from "./january-balance";
+export { deriveJanuaryQualityScoreMaximums } from "./january-balance";
 export type {
   January1990ContentContext,
   JanuaryAccessRoute,

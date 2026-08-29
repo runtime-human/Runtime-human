@@ -13,6 +13,7 @@ import {
   runUntilBoundary,
   transitionMonthRun,
   Xoshiro256StarStar,
+  type January1990BalanceV1,
   type January1990ContentContext,
   type MonthRunRunResult,
   type MonthRunStep,
@@ -29,6 +30,7 @@ import {
 } from "@runtime-human/game-schema";
 
 import { loadJanuaryTestRegistry } from "./january-1990-runtime-fixture";
+import { loadJanuary1990CompiledBalance } from "./january-1990-balance";
 
 const ACCESS_ROUTES = ["home-pc", "shared-school-pc"] as const;
 const LEARNING_PRACTICES = ["read-and-run", "edit-and-debug"] as const;
@@ -86,9 +88,12 @@ export async function generateJanuary1990BalanceTrace(
   input: Readonly<{ seedStart: number; seedEnd: number }>,
 ): Promise<January1990BalanceTrace> {
   requireSeedRange(input.seedStart, input.seedEnd);
-  const registry = await loadJanuaryTestRegistry();
+  const [registry, balance] = await Promise.all([
+    loadJanuaryTestRegistry(),
+    loadJanuary1990CompiledBalance(),
+  ]);
   const context = projectJanuary1990Content(registry);
-  const steps = createJanuary1990MonthSteps(context);
+  const steps = createJanuary1990MonthSteps(context, balance);
   if (steps.length !== 9) throw new Error(`January step table changed to ${steps.length} steps`);
 
   const vectorCounts = new Map<DefectResponse, Map<string, QualityVector>>(
@@ -104,6 +109,7 @@ export async function generateJanuary1990BalanceTrace(
           const completed = runProfile(
             context,
             steps,
+            balance,
             seed,
             accessRoute,
             learningPractice,
@@ -179,6 +185,7 @@ export async function generateJanuary1990BalanceTrace(
 function runProfile(
   context: January1990ContentContext,
   steps: readonly MonthRunStep[],
+  balance: January1990BalanceV1,
   seed: number,
   accessRoute: AccessRoute,
   learningPractice: LearningPractice,
@@ -192,7 +199,7 @@ function runProfile(
     plan: createJanuary1990MonthPlan(context),
     compatibility: {
       checkpointSchema: "month-run-checkpoint-v1",
-      rulesFingerprint: createJanuary1990RulesFingerprint(),
+      rulesFingerprint: createJanuary1990RulesFingerprint(balance),
       contentFingerprint: context.contentFingerprint,
       saveSchemaFingerprint: JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
       determinismManifest: DETERMINISM_MANIFEST_V1,

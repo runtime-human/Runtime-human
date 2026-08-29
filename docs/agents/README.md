@@ -3,7 +3,7 @@ title: "Agent guides"
 type: agent
 status: draft
 canon: true
-updated: 2026-08-24
+updated: 2026-08-27
 ---
 
 # Agent guides
@@ -14,7 +14,7 @@ updated: 2026-08-24
 |---|---|---|---|
 | architecture / authority / R3 | runtime-architecture | [ARCHITECT-AGENT](ARCHITECT-AGENT.md) | Studio/docs |
 | Game Core | runtime-implement | [CORE-AGENT](CORE-AGENT.md) | tests (gamectl planned) |
-| content | runtime-content | [CONTENT-AGENT](CONTENT-AGENT.md) | content compiler checks (gamectl content planned) |
+| content | runtime-content | [CONTENT-AGENT](CONTENT-AGENT.md) | content compiler checks + `pnpm gamectl content validate`, `pnpm gamectl catalog` |
 | UI | runtime-ui | [UI-AGENT](UI-AGENT.md) | Storybook |
 | test authoring / repro | runtime-qa | [QA-AGENT](QA-AGENT.md) | relevant runner + [VERIFICATION-TIERS](../engineering/VERIFICATION-TIERS.md) |
 | independent testing | runtime-test | [QA-AGENT](QA-AGENT.md) | read-only, `pnpm studio:route --test` |

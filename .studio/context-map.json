@@ -22,7 +22,7 @@
     "content": {
       "agentGuide": "docs/agents/CONTENT-AGENT.md",
       "docs": ["docs/content/**", "docs/game-design/**", "docs/adr/**"],
-      "code": ["content/**", "packages/game-content/**", "packages/game-content-compiler/**"]
+      "code": ["content/**", "packages/game-content/**", "packages/game-content-compiler/**", "packages/game-authoring-schema/**"]
     },
     "application": {
       "agentGuide": "docs/agents/ARCHITECT-AGENT.md",
@@ -57,7 +57,7 @@
     "tooling": {
       "agentGuide": "docs/agents/ARCHITECT-AGENT.md",
       "docs": ["docs/architecture/AI-FIRST-GAME-DEVELOPMENT.md", "docs/engineering/**"],
-      "code": [".studio/**", ".agents/skills/**", "scripts/studio/**", "nx.json"]
+      "code": [".studio/**", ".agents/skills/**", "scripts/studio/**", "scripts/gamectl.ts", "packages/game-devtools/**", "nx.json"]
     },
     "canon": {
       "agentGuide": "docs/agents/ARCHITECT-AGENT.md",

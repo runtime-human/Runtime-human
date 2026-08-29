@@ -15,7 +15,7 @@
     },
     {
       "id": "content",
-      "paths": ["content/**", "packages/game-content/**", "packages/game-content-compiler/**"],
+      "paths": ["content/**", "packages/game-content/**", "packages/game-content-compiler/**", "packages/game-authoring-schema/**"],
       "minimumRisk": "R2",
       "preferredProfile": "content",
       "promoteToR3On": ["stable content ID", "canonical historical fact", "content-to-state authority"]
@@ -56,7 +56,7 @@
     },
     {
       "id": "tooling",
-      "paths": [".studio/**", ".agents/skills/**", "scripts/studio/**", "nx.json"],
+      "paths": [".studio/**", ".agents/skills/**", "scripts/studio/**", "scripts/gamectl.ts", "packages/game-devtools/**", "nx.json"],
       "minimumRisk": "R1"
     },
     {

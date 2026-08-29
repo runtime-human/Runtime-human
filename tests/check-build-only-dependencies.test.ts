@@ -52,6 +52,24 @@ describe("validateBuildOnlyDependencies", () => {
     expect(validateBuildOnlyDependencies(root)).toEqual([]);
   });
 
+  it("allows typebox only in the authoring schema package", () => {
+    const root = createRoot();
+    addPackage(root, "game-authoring-schema", { typebox: "1.3.19" });
+
+    expect(validateBuildOnlyDependencies(root)).toEqual([]);
+  });
+
+  it("rejects typebox in a runtime package", () => {
+    const root = createRoot();
+    addPackage(root, "game-content", { typebox: "1.3.19" });
+
+    expect(validateBuildOnlyDependencies(root)).toContainEqual(
+      expect.stringContaining(
+        "game-content cannot depend on build-only external dependency typebox",
+      ),
+    );
+  });
+
   it("rejects Ajv in a runtime content package", () => {
     const root = createRoot();
     addPackage(root, "game-content", { ajv: "8.20.0" });

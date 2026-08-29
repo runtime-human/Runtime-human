@@ -77,10 +77,7 @@ describe("Studio review finding ledger", () => {
     expect(second.action).toBe("deduplicated");
     expect(second.finding.id).toBe(first.finding.id);
     expect(second.finding.occurrences).toBe(2);
-    expect(second.finding.evidence).toEqual([
-      "apps/desktop/a.ts:10",
-      "tests/a.test.ts:20",
-    ]);
+    expect(second.finding.evidence).toEqual(["apps/desktop/a.ts:10", "tests/a.test.ts:20"]);
   });
 
   it("clusters related findings, promotes recurrence, and archives verified resolution", () => {
@@ -152,10 +149,7 @@ describe("Studio review finding ledger", () => {
     ]);
 
     const open = readFileSync(join(root, ".studio", "findings", "ledger.jsonl"), "utf8");
-    const resolved = readFileSync(
-      join(root, ".studio", "findings", "resolved.jsonl"),
-      "utf8",
-    );
+    const resolved = readFileSync(join(root, ".studio", "findings", "resolved.jsonl"), "utf8");
     expect(open).not.toContain(first.finding.id);
     expect(resolved).toContain("Missing resume state guard");
     expect(resolved).toContain("mechanical-guard");

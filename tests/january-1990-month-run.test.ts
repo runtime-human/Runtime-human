@@ -8,6 +8,7 @@ import {
   fingerprint,
   JANUARY_1990_CONTENT_IDS as C,
   JANUARY_1990_DECISION_IDS,
+  JANUARY_1990_DEFAULT_BALANCE,
   JANUARY_1990_REASON_CODES as R,
   JANUARY_1990_REQUIRED_CHUNK_IDS,
   JANUARY_1990_RNG_CALL_BUDGET,
@@ -169,7 +170,7 @@ function createInitialCheckpoint(seed: bigint): MonthRunCheckpointV1 {
     plan: createJanuary1990MonthPlan(createContext()),
     compatibility: {
       checkpointSchema: "month-run-checkpoint-v1",
-      rulesFingerprint: createJanuary1990RulesFingerprint(),
+      rulesFingerprint: createJanuary1990RulesFingerprint(JANUARY_1990_DEFAULT_BALANCE),
       contentFingerprint,
       saveSchemaFingerprint: fingerprint("january-save-schema-test", { version: 1 }),
       determinismManifest: DETERMINISM_MANIFEST_V1,
@@ -179,7 +180,7 @@ function createInitialCheckpoint(seed: bigint): MonthRunCheckpointV1 {
 }
 
 function createSteps(): readonly MonthRunStep[] {
-  const steps = createJanuary1990MonthSteps(createContext());
+  const steps = createJanuary1990MonthSteps(createContext(), JANUARY_1990_DEFAULT_BALANCE);
   expect(steps).toHaveLength(9);
   return steps;
 }
@@ -436,8 +437,8 @@ describe("January 1990 deterministic MonthRun", () => {
   });
 
   it("keeps the rules fingerprint stable and separate from content", () => {
-    const first = createJanuary1990RulesFingerprint();
-    const second = createJanuary1990RulesFingerprint();
+    const first = createJanuary1990RulesFingerprint(JANUARY_1990_DEFAULT_BALANCE);
+    const second = createJanuary1990RulesFingerprint(JANUARY_1990_DEFAULT_BALANCE);
 
     expect(first).toBe(second);
     expect(first).not.toBe(contentFingerprint);
@@ -473,7 +474,7 @@ describe("January 1990 deterministic MonthRun", () => {
     );
 
     expect({
-      rulesFingerprint: createJanuary1990RulesFingerprint(),
+      rulesFingerprint: createJanuary1990RulesFingerprint(JANUARY_1990_DEFAULT_BALANCE),
       access: {
         checkpointHash: access.checkpointHash,
         rngState: access.rngState,
@@ -496,25 +497,25 @@ describe("January 1990 deterministic MonthRun", () => {
         programCounter: completed.programCounter,
       },
     }).toEqual({
-      rulesFingerprint: "dbc8a2753735120daa5ff111995907e928ce0eb3c6cf84e26f409b1097296869",
+      rulesFingerprint: "3a0f6d23ef98d8b67035ebdda85083ff612f3f0f5adc36278d7ffa5afe31cb76",
       access: {
-        checkpointHash: "f6d0c8aa6995f84b9ae0af393a718aba291711cf2b294bf37e8e1600180d9b71",
+        checkpointHash: "29bf76c024244c21a26e817cf2101a6c3c4e89e16b85ae50fc20efb9bbe8b63b",
         rngState: "956eeb2f2632d7bd03f166b233e3ef28529f0f135767524794e34a0effe11c58",
         programCounter: 2,
       },
       learning: {
-        checkpointHash: "1ebbe332f96a265f3fc2b2522ba46190acbe73dcfa97e6e4bbdd558bf3dbe8a5",
+        checkpointHash: "cf8c1160c518f595b624ce651a72ac25781c6246eb78eeb95434f2869b432655",
         rngState: "956eeb2f2632d7bd03f166b233e3ef28529f0f135767524794e34a0effe11c58",
         programCounter: 4,
       },
       defect: {
-        checkpointHash: "a8f89b470e6ca637b3f023f84f66933cc9fd375367b097b1425c45c9f7f35358",
+        checkpointHash: "2ee66f0e4464cff157b72a57b384069cd3ed8824eb9a22ed644aaa4f9b36cf15",
         rngState: "f11336902952880dbabde489eaef65aaf57e46702fe4080884c640ea7ac72110",
         programCounter: 7,
         eventId: C.logicErrorEvent,
       },
       completed: {
-        checkpointHash: "09fb5a72c270570cb71c6b1918ede862f9e02dc312d0732918a95948a1cbd490",
+        checkpointHash: "b4720ff270beff9a3ba1fd9a027dc01bc71e2b985ea9d4a872ed6588c9d8e50d",
         rngState: "511feebc0cbc4e4fdfa673bd7310bcb6c7e6614ff09696edc072c38b51b2b099",
         programCounter: 9,
       },

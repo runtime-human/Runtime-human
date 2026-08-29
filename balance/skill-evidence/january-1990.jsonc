@@ -1,0 +1,20 @@
+// January 1990 skill evidence balance (closed family: skill-evidence-balance-v1).
+// Tuning data only: evidence amounts per closed enum table. Evidence semantics
+// (which skill, which reason code) stay in game-core (january-outcome).
+{
+  "schemaVersion": "skill-evidence-balance-v1",
+  "sliceId": "january-1990",
+  "programWriting": {
+    "read-and-run": 1,
+    "edit-and-debug": 2,
+  },
+  "debugging": {
+    "inspect-listing": 2,
+    "change-input": 2,
+    "ask-for-guidance": 1,
+  },
+  "toolUse": {
+    "home-pc": 2,
+    "shared-school-pc": 1,
+  },
+}

@@ -1,0 +1,30 @@
+// January 1990 quality balance (closed family: quality-balance-v1).
+// Tuning data only. The score composition algorithm, RNG execution and state
+// transitions stay in game-core (january-outcome). Quality score maxima are
+// never stored here: they are derived from these closed tables.
+{
+  "schemaVersion": "quality-balance-v1",
+  "sliceId": "january-1990",
+  "base": {
+    "clarity": 3,
+    "correctness": 3,
+    "reliability": 3,
+  },
+  "access": {
+    "home-pc": { "clarity": 0, "correctness": 0, "reliability": 2 },
+    "shared-school-pc": { "clarity": 0, "correctness": 0, "reliability": 1 },
+  },
+  "learning": {
+    "read-and-run": { "clarity": 2, "correctness": 2, "reliability": 0 },
+    "edit-and-debug": { "clarity": 3, "correctness": 3, "reliability": 0 },
+  },
+  "defectResponse": {
+    "inspect-listing": { "clarity": 2, "correctness": 3, "reliability": 1 },
+    "change-input": { "clarity": 1, "correctness": 2, "reliability": 2 },
+    "ask-for-guidance": { "clarity": 1, "correctness": 1, "reliability": 1 },
+  },
+  "outcomeRoll": {
+    "minimum": 0,
+    "maximum": 2,
+  },
+}

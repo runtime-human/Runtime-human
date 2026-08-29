@@ -5,8 +5,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const WORKSPACE_PREFIX = "@runtime-human/";
-const BUILD_ONLY_EXTERNAL_DEPENDENCIES = new Set(["ajv", "jsonc-parser"]);
-const BUILD_ONLY_OWNER = "game-content-compiler";
+const BUILD_ONLY_OWNERS = new Map([
+  ["ajv", new Set(["game-content-compiler"])],
+  ["jsonc-parser", new Set(["game-content-compiler"])],
+  ["typebox", new Set(["game-authoring-schema"])],
+]);
 
 function listPackageDirectories(root) {
   return ["packages", "apps"].flatMap((parent) => {
@@ -39,7 +42,8 @@ export function validateBuildOnlyDependencies(root) {
       : packageName;
 
     for (const dependency of dependencyNames(manifest)) {
-      if (BUILD_ONLY_EXTERNAL_DEPENDENCIES.has(dependency) && shortName !== BUILD_ONLY_OWNER) {
+      const owners = BUILD_ONLY_OWNERS.get(dependency);
+      if (owners !== undefined && !owners.has(shortName)) {
         diagnostics.push(
           `${path.relative(root, manifestPath)}: ${shortName} cannot depend on build-only external dependency ${dependency}`,
         );

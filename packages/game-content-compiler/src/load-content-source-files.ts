@@ -25,6 +25,7 @@ export async function loadContentSourceFiles(
       normalizedRoot,
       "Content source root",
     );
+    await rejectMissingSourceRoot(normalizedRoot, absoluteRoot);
     await discoverSourceFiles(repositoryRoot, absoluteRoot, seenPaths, files);
   }
 
@@ -104,7 +105,36 @@ async function addSourceFile(
   }
 
   seenPaths.add(path);
-  files.push({ path, text: await readFile(current, "utf8") });
+  files.push({ path, text: stripByteOrderMark(await readFile(current, "utf8")) });
+}
+
+async function rejectMissingSourceRoot(
+  normalizedRoot: string,
+  absoluteRoot: string,
+): Promise<void> {
+  const metadata = await lstat(absoluteRoot).catch((error: unknown) => {
+    if (hasErrorCode(error, "ENOENT")) return undefined;
+    throw error;
+  });
+  if (metadata === undefined) {
+    throw new TypeError(`Content source root does not exist: ${normalizedRoot}`);
+  }
+  if (!metadata.isDirectory()) {
+    throw new TypeError(`Content source root must be a directory: ${normalizedRoot}`);
+  }
+}
+
+function stripByteOrderMark(text: string): string {
+  return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
+}
+
+function hasErrorCode(error: unknown, code: string): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as Readonly<{ code?: unknown }>).code === code
+  );
 }
 
 function toRepositoryPath(repositoryRoot: string, absolutePath: string): string {

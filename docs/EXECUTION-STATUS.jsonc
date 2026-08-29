@@ -1,6 +1,6 @@
 {
   "_schemaVersion": 1,
-  "updated": "2026-08-24",
+  "updated": "2026-08-27",
   "implementationProfile": "MVP Casual",
   "repository": "MrFr3di/Runtime-human",
   "defaultBranch": "main",
@@ -75,11 +75,11 @@
       "commit": "080d97355f9739a467d941cdcc00cc29c5c8daa4",
       "evidence": {
         "fixedSeed": 42,
-        "rulesFingerprint": "dbc8a2753735120daa5ff111995907e928ce0eb3c6cf84e26f409b1097296869",
-        "accessCheckpointHash": "f6d0c8aa6995f84b9ae0af393a718aba291711cf2b294bf37e8e1600180d9b71",
-        "learningCheckpointHash": "1ebbe332f96a265f3fc2b2522ba46190acbe73dcfa97e6e4bbdd558bf3dbe8a5",
-        "defectCheckpointHash": "a8f89b470e6ca637b3f023f84f66933cc9fd375367b097b1425c45c9f7f35358",
-        "completedCheckpointHash": "09fb5a72c270570cb71c6b1918ede862f9e02dc312d0732918a95948a1cbd490"
+        "rulesFingerprint": "3a0f6d23ef98d8b67035ebdda85083ff612f3f0f5adc36278d7ffa5afe31cb76",
+        "accessCheckpointHash": "29bf76c024244c21a26e817cf2101a6c3c4e89e16b85ae50fc20efb9bbe8b63b",
+        "learningCheckpointHash": "cf8c1160c518f595b624ce651a72ac25781c6246eb78eeb95434f2869b432655",
+        "defectCheckpointHash": "2ee66f0e4464cff157b72a57b384069cd3ed8824eb9a22ed644aaa4f9b36cf15",
+        "completedCheckpointHash": "b4720ff270beff9a3ba1fd9a027dc01bc71e2b985ea9d4a872ed6588c9d8e50d"
       }
     },
     {
@@ -637,7 +637,8 @@
     },
     {
       "id": "ai-first-harness-wave0",
-      "status": "in-progress",
+      "status": "complete",
+      "commit": "42d08b1e6519d402ad742c4583b0f9cf5c217f2b",
       "scope": [
         "agents-md-compression-with-knowledge-relocation",
         "skill-map-and-skill-checker",
@@ -648,7 +649,8 @@
     },
     {
       "id": "ai-first-harness-wave1",
-      "status": "in-progress",
+      "status": "complete",
+      "commit": "42d08b1e6519d402ad742c4583b0f9cf5c217f2b",
       "scope": [
         "task-envelope-v1-generator",
         "context-lib-zone-risk-skill-resolution",
@@ -659,7 +661,8 @@
     },
     {
       "id": "ai-first-harness-wave2",
-      "status": "in-progress",
+      "status": "complete",
+      "commit": "42d08b1e6519d402ad742c4583b0f9cf5c217f2b",
       "scope": [
         "compact-exec-with-runtime-logs",
         "affected-classification-zones-projects-surfaces",
@@ -669,13 +672,120 @@
     },
     {
       "id": "ai-first-harness-wave3",
-      "status": "in-progress",
+      "status": "complete",
+      "commit": "42d08b1e6519d402ad742c4583b0f9cf5c217f2b",
       "scope": [
         "nx-23-local-cache-minimal-adoption",
         "root-project-target-caching-without-output-guessing",
         "studio-affected-nx-enrichment-flag",
         "dependency-policy-entry-nx-dev-only-mit"
       ]
+    },
+    {
+      "id": "ai-first-harness-wave4",
+      "status": "complete",
+      "commit": "42d08b1e6519d402ad742c4583b0f9cf5c217f2b",
+      "scope": [
+        "vitest-projects-node-jsdom-storybook-browser",
+        "storybook-addon-vitest-a11y-mcp",
+        "playwright-chromium-browser-evidence",
+        "global-jsdom-removed-from-pure-projects"
+      ]
+    },
+    {
+      "id": "ai-first-harness-wave5",
+      "status": "complete",
+      "scope": [
+        "game-devtools-catalog-package",
+        "content-catalog-projection-with-source-path",
+        "gamectl-cli-doctor-catalog-content",
+        "structured-diagnostics-runtime-human-diagnostic-v1",
+        "gamectl-doc-and-config-integration",
+        "routing-test-alignment-with-models-json",
+        "review-hardening-shared-validator-pipeline-exit-codes-bom-zones"
+      ]
+    },
+    {
+      "id": "ai-first-harness-wave6",
+      "status": "complete",
+      "scope": [
+        "game-authoring-schema-package-with-typebox-pilot",
+        "content-source-schema-family-equivalence",
+        "generated-json-schema-2020-12-artifacts",
+        "authoring-toolchain-doc"
+      ]
+    },
+    {
+      "id": "ai-first-harness-wave7",
+      "status": "complete",
+      "scope": [
+        "balance-top-level-quality-and-skill-evidence-january-1990",
+        "closed-balance-families-quality-balance-v1-and-skill-evidence-balance-v1",
+        "core-january-composition-takes-immutable-balance-input",
+        "ruleset-manifest-v1-with-balance-fingerprint",
+        "compiler-balance-load-and-validation-bal001-bal002",
+        "authoring-schema-balance-family-parity",
+        "balance-check-gate-and-balance-layer-doc"
+      ],
+      "evidence": {
+        "rulesFingerprintMovedFrom": "dbc8a2753735120daa5ff111995907e928ce0eb3c6cf84e26f409b1097296869",
+        "rulesFingerprintMovedTo": "3a0f6d23ef98d8b67035ebdda85083ff612f3f0f5adc36278d7ffa5afe31cb76",
+        "balanceTraceGoldenUnchanged": true,
+        "qualityScoreMaximaDerived": {
+          "clarity": 10,
+          "correctness": 11,
+          "reliability": 9
+        }
+      }
+    },
+    {
+      "id": "ai-first-harness-wave8",
+      "status": "complete",
+      "scope": [
+        "game-simulation-package-policy-driven-january-simulation",
+        "simulation-report-v1-with-invariants-and-aggregates",
+        "gameplay-fixture-v1-intent-fixtures",
+        "game-repro-v1-parse-and-replay-contract",
+        "gamectl-simulate-run-and-replay-commands",
+        "fast-check-properties-replay-resume-idempotency-soft-lock-bounds"
+      ],
+      "evidence": {
+        "policyRunsPerSeed": 3,
+        "policies": [
+          "always-first-valid",
+          "learning-first",
+          "random-valid-v1"
+        ],
+        "committedRepro": "fixtures/repro/january-1990-first-program.repro.json",
+        "reproduced": true,
+        "remainingForFullWave8": []
+      }
+    },
+    {
+      "id": "ai-first-harness-wave8-remainder",
+      "status": "complete",
+      "scope": [
+        "gamectl-explain-quality-explain-v1-with-repro-and-outcome-modes",
+        "gamectl-simulate-compare-warning-budgets-and-closed-report-parser",
+        "gamectl-replay-decision-and-materialization-trace",
+        "gamectl-fixture-list-and-materialize-with-closed-gameplay-fixture-v1",
+        "end-to-end-intentional-bug-proof-property-shrink-repro-replay-fix"
+      ],
+      "evidence": {
+        "explainSchema": "quality-explain-v1",
+        "compareSchema": "simulation-compare-v1",
+        "traceSchema": "game-replay-trace-v1",
+        "fixtureSchema": "gameplay-fixture-v1-closed-parser",
+        "explainMatchesComposition": "exhaustive 2x2x3x3 cross-check",
+        "intentionalBugProof": "broken maxima property -> fast-check shrink -> exported game-repro-v1 -> replay/finalize detection -> same repro passes after fix",
+        "newTestFiles": [
+          "tests/january-1990-quality-explain.test.ts",
+          "tests/simulation-compare.test.ts",
+          "tests/gameplay-fixture-parser.test.ts",
+          "tests/january-1990-harness-proof.test.ts",
+          "tests/gamectl-harness-cli.test.ts"
+        ]
+      }
     },
     {
       "id": "rust-persistence-fifo-shutdown",

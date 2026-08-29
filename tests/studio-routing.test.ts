@@ -15,14 +15,14 @@ function route(args: string[]) {
 }
 
 describe("Studio model routing", () => {
-  it("routes normal R2 review to a fresh read-only Luna xhigh evaluator", () => {
+  it("routes normal R2 review to a fresh read-only Luna max evaluator", () => {
     expect(route(["--zone", "ui", "--risk", "R2", "--review"])).toMatchObject({
       mode: "review",
       effectiveRisk: "R2",
       profile: "lunaReviewer",
       provider: "codex",
       model: "gpt-5.6-luna",
-      reasoningEffort: "xhigh",
+      reasoningEffort: "max",
       readOnly: true,
       freshContext: true,
     });
@@ -41,9 +41,7 @@ describe("Studio model routing", () => {
   });
 
   it("keeps GLM-5.3 as an explicit cross-family review path", () => {
-    expect(
-      route(["--zone", "ui", "--risk", "R2", "--review", "--cross-family"]),
-    ).toMatchObject({
+    expect(route(["--zone", "ui", "--risk", "R2", "--review", "--cross-family"])).toMatchObject({
       mode: "review",
       crossFamily: true,
       profile: "crossFamilyReviewer",
@@ -62,7 +60,7 @@ describe("Studio model routing", () => {
       elevated: true,
       profile: "r3Reviewer",
       model: "gpt-5.6-sol",
-      reasoningEffort: "high",
+      reasoningEffort: "medium",
       readOnly: true,
       freshContext: true,
     });

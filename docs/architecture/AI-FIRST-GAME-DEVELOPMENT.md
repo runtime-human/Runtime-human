@@ -3,7 +3,7 @@ title: "AI-First Game Development Harness"
 type: architecture
 status: draft
 canon: true
-updated: 2026-08-24
+updated: 2026-08-27
 ---
 
 # AI-First Game Development Harness
@@ -43,7 +43,7 @@ updated: 2026-08-24
 Orca/Producer      — КТО работает (outer orchestrator, maxWorkers=3)
 Studio             — ЧТО нужно прочитать и проверить (zones, context-map, task envelope — planned Wave 1)
 Nx                 — ЧТО затронуто в репозитории (project/task graph, cache, affected — planned)
-gamectl            — ЧТО означает игровая операция (catalog/simulate/replay — planned)
+gamectl            — ЧТО означает игровая операция (catalog v1: list/show/refs/impact, content validate/source — доступен; simulate/replay — planned)
 Content compiler   — КАКИЕ данные легальны (schema → normalize → refs → graph → fingerprint)
 game-simulation    — ЧТО доказано о gameplay (deterministic runs/compare — planned)
 Storybook          — КАК выглядит UI (workshop, browser tests; MCP dev-only, planned)
@@ -75,4 +75,4 @@ apps/desktop → только существующие runtime packages
 
 ## Дорожная карта
 
-Волны внедрения фиксируются в implementation plan и `docs/EXECUTION-STATUS.jsonc`. Текущая фаза: canon/harness alignment (skill-map, verification-policy, верификационные tier'ы); далее context compiler/task envelope, compact exec/affected, Nx minimal, Vitest projects + Storybook browser, Game Catalog + `gamectl`, authoring schema pilot, balance layer, simulation/fast-check/repro, skills v2 + adaptive review, scenario v1, Authoring Studio (GUI после headless API), DTCG tokens, persistence inspector.
+Волны внедрения фиксируются в implementation plan и `docs/EXECUTION-STATUS.jsonc`. Реализовано: canon/harness alignment (skill-map, verification-policy, верификационные tier'ы), context compiler/task envelope, compact exec/affected, Nx minimal, Vitest projects + Storybook browser, Game Catalog + `gamectl` v1. Далее: authoring schema pilot, balance layer, simulation/fast-check/repro, skills v2 + adaptive review, scenario v1, Authoring Studio (GUI после headless API), DTCG tokens, persistence inspector.

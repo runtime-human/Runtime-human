@@ -43,7 +43,12 @@ Domain invariants live in their canonical homes — read the matching home befor
 - persistence: `packages/game-persistence-contracts`, `packages/game-platform-contracts`, `apps/desktop/src-tauri`;
 - UI: `packages/game-ui`, `packages/game-ui-fixtures`, `apps/desktop/src`, `apps/desktop/.storybook`;
 - orchestration/tooling: `.studio/`, `.agents/skills/`, `scripts/studio/`;
-- planned harness additions: `packages/game-authoring-schema`, `packages/game-simulation`, `packages/game-devtools` (`gamectl`), `balance/`, `fixtures/`.
+- game devtools: `packages/game-devtools` (`pnpm gamectl`: doctor, catalog list/show/refs/impact, content validate/source — [GAMECTL](docs/engineering/GAMECTL.md));
+- simulation: `packages/game-simulation` (deterministic policy-driven simulation, repro/replay + trace contracts, quality explain, report compare, gameplay fixture parser, fast-check properties);
+- fixtures: `fixtures/gameplay/` (intent fixtures), `fixtures/repro/` (committed regression repros);
+- authoring schema: `packages/game-authoring-schema` (TypeBox pilot, [AUTHORING-TOOLCHAIN](docs/engineering/AUTHORING-TOOLCHAIN.md));
+- balance: `balance/` (closed tuning families, `pnpm balance:check`, [BALANCE-LAYER](docs/engineering/BALANCE-LAYER.md));
+- planned harness additions: scenario layer, `gamectl balance/*`, save devtools.
 
 Load only your zone from `.studio/context-map.json`; never bulk-read the docs tree.
 
@@ -65,8 +70,9 @@ Never weaken a test or guard to make a gate pass.
 - model/test/review routing: `pnpm studio:route -- --zone <zone> --risk <risk> [--test|--review]`;
 - task scoping/envelope: `pnpm studio:task -- --id <id> [--diff <ref>]` → `.studio/runtime/tasks/<id>/envelope.json`;
 - repo config/docs/skill integrity: `pnpm studio:check`, `pnpm docs:check`;
-- content/schema validation: `pnpm content:check` today; `gamectl catalog/show/refs` (planned);
-- gameplay evidence: deterministic January tests today; `gamectl simulate/replay/explain` (planned);
+- content/schema validation: `pnpm content:check`, `pnpm gamectl content validate`; balance tuning: `pnpm balance:check`;
+- game entities/refs/impact: `pnpm gamectl catalog list|show|refs|impact [--json]` (v1, read-only);
+- gameplay evidence: deterministic January tests + `gamectl simulate run`, `gamectl simulate compare`, `gamectl replay [--trace]`, `gamectl explain`, `gamectl fixture list/materialize` ([GAMECTL](docs/engineering/GAMECTL.md));
 - repository impact: `pnpm studio:affected -- --base <ref> [--nx]` (zones+paths; optional Nx affected graph; local cache via nx.json, no Nx Cloud);
 - focused execution/gates: `pnpm studio:exec -- <command>`, `pnpm studio:verify -- --tier V0|V1|V2`; compact logs under `.studio/runtime/logs/`;
 - MVP gameplay acceptance matrix: [QA-AGENT.md](docs/agents/QA-AGENT.md);

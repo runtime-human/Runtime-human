@@ -8,9 +8,24 @@ importers:
 
   .:
     devDependencies:
+      '@runtime-human/game-application':
+        specifier: workspace:*
+        version: link:packages/game-application
+      '@runtime-human/game-content':
+        specifier: workspace:*
+        version: link:packages/game-content
       '@runtime-human/game-content-compiler':
         specifier: workspace:*
         version: link:packages/game-content-compiler
+      '@runtime-human/game-core':
+        specifier: workspace:*
+        version: link:packages/game-core
+      '@runtime-human/game-devtools':
+        specifier: workspace:*
+        version: link:packages/game-devtools
+      '@runtime-human/game-simulation':
+        specifier: workspace:*
+        version: link:packages/game-simulation
       '@testing-library/dom':
         specifier: 10.4.1
         version: 10.4.1
@@ -29,9 +44,18 @@ importers:
       '@types/react-dom':
         specifier: 19.2.3
         version: 19.2.3(@types/react@19.2.17)
+      ajv:
+        specifier: 8.20.0
+        version: 8.20.0
+      fast-check:
+        specifier: ^4.9.0
+        version: 4.9.0
       jsdom:
         specifier: 29.1.1
         version: 29.1.1(@noble/hashes@2.2.0)
+      jsonc-parser:
+        specifier: 3.3.1
+        version: 3.3.1
       nx:
         specifier: 23.1.1
         version: 23.1.1
@@ -148,6 +172,12 @@ importers:
         specifier: workspace:*
         version: link:../shared-kernel
 
+  packages/game-authoring-schema:
+    dependencies:
+      typebox:
+        specifier: 1.3.19
+        version: 1.3.19
+
   packages/game-content:
     dependencies:
       '@runtime-human/game-schema':
@@ -193,6 +223,12 @@ importers:
         specifier: 8.4.2
         version: 8.4.2
 
+  packages/game-devtools:
+    dependencies:
+      '@runtime-human/game-content-compiler':
+        specifier: workspace:*
+        version: link:../game-content-compiler
+
   packages/game-persistence-contracts:
     dependencies:
       '@runtime-human/game-schema':
@@ -216,6 +252,15 @@ importers:
       '@runtime-human/shared-kernel':
         specifier: workspace:*
         version: link:../shared-kernel
+
+  packages/game-simulation:
+    dependencies:
+      '@runtime-human/game-core':
+        specifier: workspace:*
+        version: link:../game-core
+      '@runtime-human/game-schema':
+        specifier: workspace:*
+        version: link:../game-schema
 
   packages/game-ui:
     dependencies:
@@ -2090,6 +2135,10 @@ packages:
     resolution: {integrity: sha512-KfYbmpRm0VbLjEvVa9yGwCi9GI34xvi7A/HXYWQO65CSD2u3MczUJSuwXKFIxlGsgBQizV9q5J9NHj4VG0n+pA==}
     engines: {node: '>=12.0.0'}
 
+  fast-check@4.9.0:
+    resolution: {integrity: sha512-7ms6T7SybUev/PQITciI0yLM2pOSFy5zpG8Ty7tQofcVaQUvrMXp6CBwqF6fThLCLOrfBtuHAtwq6Yu4XPCllg==}
+    engines: {node: '>=12.17.0'}
+
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
 
@@ -2811,6 +2860,9 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
+  typebox@1.3.19:
+    resolution: {integrity: sha512-OGhGi3JkTMol9QW8Bc6tgSD4ghV8v5WubAi1XeYnlxdocHvgS7TQJ8FcFZrQhVhigQU0z7bRFAEsZ+wpkRdCfg==}
+
   typescript@7.0.2:
     resolution: {integrity: sha512-8FYau96o3NKOhbjKi/qNvG/W5jhzxkbdm5sj9AbZ/5T5sWqn3hJgLfGx27sRKZWTvyzCP8dLRBTf5tBTSRVUNA==}
     engines: {node: '>=16.20.0'}
@@ -3055,7 +3107,7 @@ snapshots:
       '@babel/code-frame': 7.29.7
       '@babel/generator': 7.29.7
       '@babel/helper-compilation-targets': 7.29.7
-      '@babel/helper-module-transforms': 7.29.7(@babel/core@7.29.7)
+      '@babel/helper-module-transforms': 7.29.7(@babel/core@7.29.7(supports-color@7.2.0))
       '@babel/helpers': 7.29.7
       '@babel/parser': 7.29.7
       '@babel/template': 7.29.7
@@ -3095,7 +3147,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@babel/helper-module-transforms@7.29.7(@babel/core@7.29.7)':
+  '@babel/helper-module-transforms@7.29.7(@babel/core@7.29.7(supports-color@7.2.0))':
     dependencies:
       '@babel/core': 7.29.7(supports-color@7.2.0)
       '@babel/helper-module-imports': 7.29.7
@@ -4467,6 +4519,10 @@ snapshots:
 
   expect-type@1.4.0: {}
 
+  fast-check@4.9.0:
+    dependencies:
+      pure-rand: 8.4.2
+
   fast-deep-equal@3.1.3: {}
 
   fast-uri@3.1.4: {}
@@ -5312,6 +5368,8 @@ snapshots:
       esbuild: 0.28.1
     optionalDependencies:
       fsevents: 2.3.3
+
+  typebox@1.3.19: {}
 
   typescript@7.0.2:
     optionalDependencies:

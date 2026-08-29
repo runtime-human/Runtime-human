@@ -1,6 +1,8 @@
 import {
   createJanuary1990MonthPlan,
   createJanuary1990MonthSteps,
+  JANUARY_1990_DEFAULT_BALANCE,
+  type January1990BalanceV1,
   type January1990ContentContext,
   type January1990MonthPlanV1,
 } from "@runtime-human/game-core";
@@ -23,6 +25,7 @@ import { projectJanuary1990Content } from "./project-january-content";
 export type CreateJanuary1990RuntimeInput = Readonly<{
   persistence: PersistenceService;
   contentRegistry: JanuaryContentRegistryPort;
+  balance?: January1990BalanceV1;
 }>;
 
 export type January1990Runtime = Readonly<{
@@ -36,14 +39,16 @@ export type January1990Runtime = Readonly<{
 }>;
 
 export function createJanuary1990Runtime(input: CreateJanuary1990RuntimeInput): January1990Runtime {
+  const balance = input.balance ?? JANUARY_1990_DEFAULT_BALANCE;
   const contentContext = projectJanuary1990Content(input.contentRegistry);
   const plan = createJanuary1990MonthPlan(contentContext);
   const compatibility = createJanuary1990Compatibility({
     contentFingerprint: contentContext.contentFingerprint,
+    balance,
   });
   const orchestrator = createPersistedMonthRunOrchestrator({
     persistence: input.persistence,
-    steps: createJanuary1990MonthSteps(contentContext),
+    steps: createJanuary1990MonthSteps(contentContext, balance),
     expectedCompatibility: compatibility,
     materializeCommit: materializeJanuary1990Commit,
   });

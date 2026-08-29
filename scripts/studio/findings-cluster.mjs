@@ -1,11 +1,5 @@
 import { resolve } from "node:path";
-import {
-  clusterFindings,
-  OPEN_LEDGER,
-  parseArgs,
-  readJsonl,
-  readPolicy,
-} from "./findings-lib.mjs";
+import { clusterFindings, OPEN_LEDGER, parseArgs, readJsonl, readPolicy } from "./findings-lib.mjs";
 
 try {
   const args = parseArgs(process.argv.slice(2));

@@ -3,7 +3,7 @@ title: "Runtime Human — полный каталог документации"
 type: index
 status: draft
 canon: false
-updated: 2026-08-24
+updated: 2026-08-29
 ---
 
 # Runtime Human — полный каталог документации
@@ -11,7 +11,7 @@ updated: 2026-08-24
 > Сгенерировано `node scripts/build-toc.mjs` из metadata документов. Не редактировать вручную.
 > Канонический навигационный вход и порядок источников истины: [INDEX.md](INDEX.md).
 
-Всего документов: **204**.
+Всего документов: **207**.
 
 ## Навигация
 
@@ -87,12 +87,15 @@ updated: 2026-08-24
 - [Тестовая стратегия](engineering/TESTING-STRATEGY.md) — `draft`, `canon`
 - [Технологический стек](engineering/TECH-STACK.md) — `draft`, `canon`
 - [Agent eval suite](engineering/AGENT-EVALS.md) — `draft`, `canon`
+- [Authoring toolchain (TypeBox pilot)](engineering/AUTHORING-TOOLCHAIN.md) — `draft`, `canon`
 - [Backup и restore](persistence/BACKUP-AND-RESTORE.md) — `draft`, `canon`
+- [Balance layer](engineering/BALANCE-LAYER.md) — `draft`, `canon`
 - [Casual Simulation Design](game-design/CASUAL-SIMULATION-DESIGN.md) — `draft`, `canon`
 - [CI/CD](engineering/CI-CD.md) — `draft`, `canon`
 - [Determinism Runtime Integration](engineering/DETERMINISM-RUNTIME-INTEGRATION.md) — `draft`, `canon`
 - [Engineering documents](engineering/README.md) — `draft`, `canon`
 - [Game design documents](game-design/README.md) — `draft`, `canon`
+- [gamectl — headless game development CLI](engineering/GAMECTL.md) — `draft`, `canon`
 - [Historical Technology, Tooling & Ecosystem Engine](game-design/TECHNOLOGY-ECOSYSTEM-ENGINE.md) — `draft`, `canon`
 - [Open-source система](game-design/OPEN-SOURCE-SYSTEM.md) — `draft`, `canon`
 - [Persistence documents](persistence/README.md) — `draft`, `canon`

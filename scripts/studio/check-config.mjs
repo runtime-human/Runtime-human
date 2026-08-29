@@ -39,6 +39,18 @@ const required = [
   "docs/architecture/AI-FIRST-GAME-DEVELOPMENT.md",
   "docs/engineering/VERIFICATION-TIERS.md",
   "docs/engineering/AGENT-EVALS.md",
+  "docs/engineering/GAMECTL.md",
+  "docs/engineering/AUTHORING-TOOLCHAIN.md",
+  "docs/engineering/BALANCE-LAYER.md",
+  "balance/quality/january-1990.jsonc",
+  "balance/skill-evidence/january-1990.jsonc",
+  "fixtures/gameplay/january-start.jsonc",
+  "fixtures/repro/january-1990-first-program.repro.json",
+  "packages/game-devtools/package.json",
+  "packages/game-authoring-schema/package.json",
+  "packages/game-simulation/package.json",
+  "scripts/gamectl.ts",
+  "scripts/validate-balance.ts",
   ".agents/skills/runtime-test/SKILL.md",
   ".agents/skills/runtime-review/SKILL.md",
   OPEN_LEDGER,
@@ -73,7 +85,10 @@ const packageJson = readJson("package.json");
 if (project) {
   assert(project.schemaVersion === 1, "project schemaVersion must be 1");
   assert(project.defaultBranch === "main", "Studio default branch must be main");
-  assert(project.concurrency?.fullGateSlots === 1, "fullGateSlots must stay 1 on the local workstation");
+  assert(
+    project.concurrency?.fullGateSlots === 1,
+    "fullGateSlots must stay 1 on the local workstation",
+  );
   assert(project.producer?.ownerGate === true, "Producer ownerGate must be enabled");
 }
 
@@ -81,42 +96,105 @@ if (models) {
   const profiles = Object.values(models.profiles ?? {});
   const profileModels = profiles.map((profile) => String(profile.model ?? "").toLowerCase());
   assert(models.profiles?.producer?.model === "gpt-5.6-sol", "Producer must use gpt-5.6-sol");
-  assert(models.profiles?.riskR3?.model === "opencode-go/deepseek-v4-pro", "R3 implementation must use DeepSeek V4 Pro");
-  assert(models.profiles?.content?.model === "opencode-go/deepseek-v4-pro", "Content must use DeepSeek V4 Pro");
-  assert(models.profiles?.defaultWorker?.model === "opencode-go/deepseek-v4-flash", "Default worker must use DeepSeek V4 Flash");
-  assert(models.profiles?.lunaTester?.model === "gpt-5.6-luna", "Independent tester must use gpt-5.6-luna");
-  assert(models.profiles?.lunaTester?.reasoningEffort === "xhigh", "Luna tester must use xhigh reasoning");
+  assert(
+    models.profiles?.riskR3?.model === "opencode-go/deepseek-v4-pro",
+    "R3 implementation must use DeepSeek V4 Pro",
+  );
+  assert(
+    models.profiles?.content?.model === "opencode-go/deepseek-v4-pro",
+    "Content must use DeepSeek V4 Pro",
+  );
+  assert(
+    models.profiles?.defaultWorker?.model === "opencode-go/deepseek-v4-flash",
+    "Default worker must use DeepSeek V4 Flash",
+  );
+  assert(
+    models.profiles?.lunaTester?.model === "gpt-5.6-luna",
+    "Independent tester must use gpt-5.6-luna",
+  );
+  assert(
+    models.profiles?.lunaTester?.reasoningEffort === "xhigh",
+    "Luna tester must use xhigh reasoning",
+  );
   assert(models.profiles?.lunaTester?.readOnly === true, "Luna tester must be read-only");
   assert(models.profiles?.lunaTester?.freshContext === true, "Luna tester must use fresh context");
-  assert(models.profiles?.lunaReviewer?.model === "gpt-5.6-luna", "R1/R2 reviewer must use gpt-5.6-luna");
-  assert(models.profiles?.lunaReviewer?.reasoningEffort === "max", "Luna reviewer must use max reasoning");
+  assert(
+    models.profiles?.lunaReviewer?.model === "gpt-5.6-luna",
+    "R1/R2 reviewer must use gpt-5.6-luna",
+  );
+  assert(
+    models.profiles?.lunaReviewer?.reasoningEffort === "max",
+    "Luna reviewer must use max reasoning",
+  );
   assert(models.profiles?.lunaReviewer?.readOnly === true, "Luna reviewer must be read-only");
-  assert(models.profiles?.lunaReviewer?.freshContext === true, "Luna reviewer must use fresh context");
-  assert(models.profiles?.crossFamilyReviewer?.model === "opencode-go/glm-5.3", "Cross-family reviewer must use GLM-5.3");
-  assert(models.profiles?.crossFamilyReviewer?.readOnly === true, "Cross-family reviewer must be read-only");
-  assert(models.profiles?.crossFamilyReviewer?.freshContext === true, "Cross-family reviewer must use fresh context");
+  assert(
+    models.profiles?.lunaReviewer?.freshContext === true,
+    "Luna reviewer must use fresh context",
+  );
+  assert(
+    models.profiles?.crossFamilyReviewer?.model === "opencode-go/glm-5.3",
+    "Cross-family reviewer must use GLM-5.3",
+  );
+  assert(
+    models.profiles?.crossFamilyReviewer?.readOnly === true,
+    "Cross-family reviewer must be read-only",
+  );
+  assert(
+    models.profiles?.crossFamilyReviewer?.freshContext === true,
+    "Cross-family reviewer must use fresh context",
+  );
   assert(models.profiles?.r3Reviewer?.model === "gpt-5.6-sol", "R3 reviewer must use gpt-5.6-sol");
-  assert(models.profiles?.r3Reviewer?.reasoningEffort === "medium", "R3 reviewer must use medium reasoning");
+  assert(
+    models.profiles?.r3Reviewer?.reasoningEffort === "medium",
+    "R3 reviewer must use medium reasoning",
+  );
   assert(models.profiles?.r3Reviewer?.readOnly === true, "R3 reviewer must be read-only");
   assert(models.profiles?.r3Reviewer?.freshContext === true, "R3 reviewer must use fresh context");
-  assert(models.profiles?.escalation?.model === "opencode-go/glm-5.3", "Escalation must use GLM-5.3");
-  assert(profileModels.every((model) => !model.includes("kimi")), "Kimi is forbidden in every active model profile");
-  assert((models.forbiddenModels ?? []).some((model) => String(model).includes("kimi-k3")), "Kimi K3 must remain explicitly forbidden");
+  assert(
+    models.profiles?.escalation?.model === "opencode-go/glm-5.3",
+    "Escalation must use GLM-5.3",
+  );
+  assert(
+    profileModels.every((model) => !model.includes("kimi")),
+    "Kimi is forbidden in every active model profile",
+  );
+  assert(
+    (models.forbiddenModels ?? []).some((model) => String(model).includes("kimi-k3")),
+    "Kimi K3 must remain explicitly forbidden",
+  );
   for (const [risk, profileKey] of Object.entries(models.routing ?? {})) {
-    assert(Boolean(models.profiles?.[profileKey]), `routing ${risk} references missing profile ${profileKey}`);
+    assert(
+      Boolean(models.profiles?.[profileKey]),
+      `routing ${risk} references missing profile ${profileKey}`,
+    );
   }
   for (const [risk, profileKey] of Object.entries(models.reviewRouting ?? {})) {
-    assert(Boolean(models.profiles?.[profileKey]), `reviewRouting ${risk} references missing profile ${profileKey}`);
+    assert(
+      Boolean(models.profiles?.[profileKey]),
+      `reviewRouting ${risk} references missing profile ${profileKey}`,
+    );
   }
   for (const [risk, profileKey] of Object.entries(models.testRouting ?? {})) {
-    assert(Boolean(models.profiles?.[profileKey]), `testRouting ${risk} references missing profile ${profileKey}`);
+    assert(
+      Boolean(models.profiles?.[profileKey]),
+      `testRouting ${risk} references missing profile ${profileKey}`,
+    );
   }
   assert(models.reviewRouting?.R1 === "lunaReviewer", "R1 review must route to Luna");
   assert(models.reviewRouting?.R2 === "lunaReviewer", "R2 review must route to Luna");
-  assert(models.reviewRouting?.R2_COMPLEX === "lunaReviewer", "R2_COMPLEX review must route to Luna");
+  assert(
+    models.reviewRouting?.R2_COMPLEX === "lunaReviewer",
+    "R2_COMPLEX review must route to Luna",
+  );
   assert(models.reviewRouting?.R3 === "r3Reviewer", "R3 review must stay on Sol");
-  assert(models.reviewRouting?.CROSS_FAMILY === "crossFamilyReviewer", "Cross-family review routing mismatch");
-  assert(models.testRouting?.default === "lunaTester", "Default independent testing must route to Luna");
+  assert(
+    models.reviewRouting?.CROSS_FAMILY === "crossFamilyReviewer",
+    "Cross-family review routing mismatch",
+  );
+  assert(
+    models.testRouting?.default === "lunaTester",
+    "Default independent testing must route to Luna",
+  );
 }
 
 if (skillMap) {
@@ -125,9 +203,15 @@ if (skillMap) {
   assert(skillMap.schemaVersion === 1, "skill map schemaVersion must be 1");
   assert(new Set(names).size === names.length, "skill map names must be unique");
   for (const entry of entries) {
-    assert(["active", "planned"].includes(entry?.status), `skill map ${entry?.name} has invalid status`);
+    assert(
+      ["active", "planned"].includes(entry?.status),
+      `skill map ${entry?.name} has invalid status`,
+    );
     if (entry?.status === "active") {
-      assert(existsSync(resolve(root, String(entry.path).replaceAll("\\", "/"), "SKILL.md")), `active skill missing on disk: ${entry.name}`);
+      assert(
+        existsSync(resolve(root, String(entry.path).replaceAll("\\", "/"), "SKILL.md")),
+        `active skill missing on disk: ${entry.name}`,
+      );
     }
   }
 }
@@ -138,8 +222,13 @@ if (verificationPolicy) {
     assert(Boolean(verificationPolicy.tiers?.[tier]), `verification policy missing tier ${tier}`);
   }
   if (models) {
-    for (const [role, profileKey] of Object.entries(verificationPolicy.adaptiveReview?.evaluatorProfiles ?? {})) {
-      assert(Boolean(models.profiles?.[profileKey]), `evaluatorProfiles ${role} references missing profile ${profileKey}`);
+    for (const [role, profileKey] of Object.entries(
+      verificationPolicy.adaptiveReview?.evaluatorProfiles ?? {},
+    )) {
+      assert(
+        Boolean(models.profiles?.[profileKey]),
+        `evaluatorProfiles ${role} references missing profile ${profileKey}`,
+      );
     }
   }
 }
@@ -148,10 +237,19 @@ if (opencode) {
   assert(opencode.model === "opencode-go/deepseek-v4-flash", "OpenCode default model mismatch");
   assert(opencode.small_model === "opencode-go/mimo-v2.5", "OpenCode small_model mismatch");
   assert(opencode.default_agent === "worker", "OpenCode default_agent must be worker");
-  assert(opencode.subagent_depth === 0, "OpenCode subagent_depth must be 0 because Orca is the orchestrator");
-  assert(opencode.share === "disabled", "OpenCode conversation sharing must stay disabled for this private project");
+  assert(
+    opencode.subagent_depth === 0,
+    "OpenCode subagent_depth must be 0 because Orca is the orchestrator",
+  );
+  assert(
+    opencode.share === "disabled",
+    "OpenCode conversation sharing must stay disabled for this private project",
+  );
   assert(opencode.compaction?.auto === true, "OpenCode automatic compaction must be enabled");
-  assert(opencode.compaction?.prune === true, "OpenCode old tool output pruning must be enabled for scoped workers");
+  assert(
+    opencode.compaction?.prune === true,
+    "OpenCode old tool output pruning must be enabled for scoped workers",
+  );
   assert(opencode.permission?.task === "deny", "OpenCode task/subagent permission must be denied");
 }
 
@@ -160,17 +258,24 @@ if (zones && context) {
   const zoneIds = (zones.zones ?? []).map((zone) => zone.id);
   assert(new Set(zoneIds).size === zoneIds.length, "zone ids must be unique");
   for (const zone of zones.zones ?? []) {
-    assert(validRisks.has(zone.minimumRisk), `zone ${zone.id} has invalid minimumRisk ${zone.minimumRisk}`);
+    assert(
+      validRisks.has(zone.minimumRisk),
+      `zone ${zone.id} has invalid minimumRisk ${zone.minimumRisk}`,
+    );
     assert(context.zones?.[zone.id], `context-map missing zone ${zone.id}`);
     if (zone.preferredProfile && models) {
-      assert(Boolean(models.profiles?.[zone.preferredProfile]), `zone ${zone.id} references missing profile ${zone.preferredProfile}`);
+      assert(
+        Boolean(models.profiles?.[zone.preferredProfile]),
+        `zone ${zone.id} references missing profile ${zone.preferredProfile}`,
+      );
     }
   }
   for (const zoneId of Object.keys(context.zones ?? {})) {
     assert(zoneIds.includes(zoneId), `context-map has unknown zone ${zoneId}`);
   }
   for (const group of zones.exclusiveWriteGroups ?? []) {
-    for (const zoneId of group) assert(zoneIds.includes(zoneId), `exclusiveWriteGroups references unknown zone ${zoneId}`);
+    for (const zoneId of group)
+      assert(zoneIds.includes(zoneId), `exclusiveWriteGroups references unknown zone ${zoneId}`);
   }
 }
 
@@ -188,10 +293,16 @@ if (findingPolicy) {
   assert(findingPolicy.severity?.S1?.blocksAcceptance === true, "S1 must block acceptance");
   assert(findingPolicy.batch?.clusterMinFindings >= 2, "finding clusterMinFindings must be >= 2");
   assert(findingPolicy.batch?.readyScore > 0, "finding readyScore must be positive");
-  assert(findingPolicy.promotion?.systemicOccurrenceThreshold >= 2, "systemic occurrence threshold must be >= 2");
+  assert(
+    findingPolicy.promotion?.systemicOccurrenceThreshold >= 2,
+    "systemic occurrence threshold must be >= 2",
+  );
   const open = new Set(findingPolicy.openDispositions ?? []);
   const closed = new Set(findingPolicy.closedDispositions ?? []);
-  assert([...open].every((value) => !closed.has(value)), "open and closed finding dispositions must be disjoint");
+  assert(
+    [...open].every((value) => !closed.has(value)),
+    "open and closed finding dispositions must be disjoint",
+  );
 }
 
 for (const ledger of [OPEN_LEDGER, RESOLVED_LEDGER]) {
@@ -205,6 +316,8 @@ for (const ledger of [OPEN_LEDGER, RESOLVED_LEDGER]) {
 
 if (packageJson) {
   for (const command of [
+    "gamectl",
+    "balance:check",
     "studio:task",
     "studio:exec",
     "studio:affected",

@@ -5,7 +5,11 @@ import {
   type ContentDiagnostic,
 } from "./content-diagnostics";
 import { parseContentSources } from "./parse-content-sources";
-import type { CompileContentResult, ContentSourceFile } from "./content-types";
+import type {
+  CompileContentResult,
+  ContentSourceFile,
+  ParsedContentDocument,
+} from "./content-types";
 import {
   validateOwnChronology,
   validateReachability,
@@ -13,7 +17,11 @@ import {
   validateUniqueIds,
 } from "./validate-content-graph";
 
-export function compileContentSources(files: readonly ContentSourceFile[]): CompileContentResult {
+export type ContentSetValidation =
+  | Readonly<{ kind: "success"; documents: readonly ParsedContentDocument[] }>
+  | Readonly<{ kind: "failure"; diagnostics: readonly ContentDiagnostic[] }>;
+
+export function validateContentSet(files: readonly ContentSourceFile[]): ContentSetValidation {
   const diagnostics: ContentDiagnostic[] = [];
   const parsed = parseContentSources(files, diagnostics);
   const uniqueDocuments = validateUniqueIds(parsed, diagnostics);
@@ -28,8 +36,17 @@ export function compileContentSources(files: readonly ContentSourceFile[]): Comp
     return { kind: "failure", diagnostics: diagnostics.toSorted(compareDiagnostics) };
   }
 
+  return { kind: "success", documents: uniqueDocuments };
+}
+
+export function compileContentSources(files: readonly ContentSourceFile[]): CompileContentResult {
+  const validation = validateContentSet(files);
+  if (validation.kind === "failure") {
+    return { kind: "failure", diagnostics: validation.diagnostics };
+  }
+
   try {
-    return { kind: "success", bundle: buildContentBundle(uniqueDocuments) };
+    return { kind: "success", bundle: buildContentBundle(validation.documents) };
   } catch (error) {
     if (error instanceof RangeError && error.message.startsWith("Authoritative value exceeds ")) {
       return {

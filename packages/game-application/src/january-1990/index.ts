@@ -1,5 +1,7 @@
 export { createJanuary1990Runtime } from "./create-january-runtime";
 export type { CreateJanuary1990RuntimeInput, January1990Runtime } from "./create-january-runtime";
+export { JANUARY_1990_DEFAULT_BALANCE, parseJanuary1990Balance } from "@runtime-human/game-core";
+export type { January1990BalanceV1 } from "@runtime-human/game-core";
 export { createJanuary1990BeginCommand, createJanuary1990ResumeCommand } from "./january-commands";
 export type { January1990BeginInput, January1990ResumeInput } from "./january-commands";
 export { createJanuary1990Compatibility } from "./january-compatibility";

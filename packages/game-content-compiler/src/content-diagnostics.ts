@@ -22,6 +22,7 @@ export type ContentDiagnostic = Readonly<{
   path: string;
   line: number;
   column: number;
+  pointer?: string;
   contentId?: string;
 }>;
 
@@ -33,12 +34,14 @@ export function diagnosticAtNode(
 ): ContentDiagnostic {
   const node = findNodeAtLocation(document.root, [...path]) ?? document.root;
   const location = offsetLocation(document.file.text, node.offset);
+  const pointer = toJsonPointer(path);
   return {
     code,
     message,
     path: document.file.path,
     line: location.line,
     column: location.column,
+    ...(pointer === undefined ? {} : { pointer }),
     contentId: document.source.id,
   };
 }
@@ -84,7 +87,7 @@ export function schemaDiagnostics(
     const node = findNodeAtLocation(root, [...path]) ?? root;
     const location = offsetLocation(file.text, node.offset);
     const suffix = error.message === undefined ? "" : ` ${error.message}`;
-    return withOptionalContentId(
+    return withOptionalFields(
       {
         code: "SCHEMA_INVALID",
         message: `Schema ${error.instancePath || "/"}${suffix}`,
@@ -93,6 +96,7 @@ export function schemaDiagnostics(
         column: location.column,
       },
       contentId,
+      error.instancePath.length > 0 ? error.instancePath : undefined,
     );
   });
 }
@@ -107,11 +111,23 @@ export function compareDiagnostics(left: ContentDiagnostic, right: ContentDiagno
   );
 }
 
-function withOptionalContentId(
-  diagnostic: Omit<ContentDiagnostic, "contentId">,
+function withOptionalFields(
+  diagnostic: Omit<ContentDiagnostic, "contentId" | "pointer">,
   contentId: string | undefined,
+  pointer: string | undefined,
 ): ContentDiagnostic {
-  return contentId === undefined ? diagnostic : { ...diagnostic, contentId };
+  return {
+    ...diagnostic,
+    ...(contentId === undefined ? {} : { contentId }),
+    ...(pointer === undefined ? {} : { pointer }),
+  };
+}
+
+function toJsonPointer(path: readonly (string | number)[]): string | undefined {
+  if (path.length === 0) return undefined;
+  return `/${path
+    .map((segment) => String(segment).replaceAll("~", "~0").replaceAll("/", "~1"))
+    .join("/")}`;
 }
 
 function readContentId(value: unknown): string | undefined {

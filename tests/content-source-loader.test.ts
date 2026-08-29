@@ -82,6 +82,40 @@ describe("content source discovery", () => {
     ).rejects.toThrow("Content source root must not traverse symbolic links");
   });
 
+  it("rejects a missing source root with a semantic error", async () => {
+    const repositoryRoot = await createRepositoryFixture();
+
+    await expect(
+      loadContentSourceFiles({ repositoryRoot, sourceRoots: ["content/ghost"] }),
+    ).rejects.toThrow("Content source root does not exist: content/ghost");
+  });
+
+  it("rejects a file source root that is not a directory", async () => {
+    const repositoryRoot = await createRepositoryFixture();
+    await mkdir(join(repositoryRoot, "content"), { recursive: true });
+    await writeFile(join(repositoryRoot, "content", "not-a-directory.jsonc"), "{}\n");
+
+    await expect(
+      loadContentSourceFiles({
+        repositoryRoot,
+        sourceRoots: ["content/not-a-directory.jsonc"],
+      }),
+    ).rejects.toThrow("Content source root must be a directory");
+  });
+
+  it("strips a UTF-8 byte order mark from discovered sources", async () => {
+    const repositoryRoot = await createRepositoryFixture();
+    await mkdir(join(repositoryRoot, "content"), { recursive: true });
+    await writeFile(join(repositoryRoot, "content", "bom.jsonc"), '\uFEFF{"id":"bom"}\n');
+
+    const files = await loadContentSourceFiles({
+      repositoryRoot,
+      sourceRoots: ["content"],
+    });
+
+    expect(files).toEqual([{ path: "content/bom.jsonc", text: '{"id":"bom"}\n' }]);
+  });
+
   it("rejects duplicate files discovered through repeated roots", async () => {
     const repositoryRoot = await createRepositoryFixture();
     await mkdir(join(repositoryRoot, "content"), { recursive: true });

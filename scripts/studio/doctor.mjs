@@ -32,13 +32,19 @@ const codex = probe("codex", "codex", ["--version"]);
 const opencode = probe("opencode", "opencode", ["--version"]);
 
 if (codex.ok) {
-  const version = codex.text.match(/(\d+)\.(\d+)\.(\d+)/)?.slice(1).map(Number);
+  const version = codex.text
+    .match(/(\d+)\.(\d+)\.(\d+)/)
+    ?.slice(1)
+    .map(Number);
   if (version) {
-    const atLeast0145 = version[0] > 0 || version[1] > 145 || (version[1] === 145 && version[2] >= 0);
+    const atLeast0145 =
+      version[0] > 0 || version[1] > 145 || (version[1] === 145 && version[2] >= 0);
     rows.push({
       name: "codex startup-race baseline",
       ok: atLeast0145,
-      detail: atLeast0145 ? "Codex >= 0.145.0" : "Update Codex to >= 0.145.0 before Orca-supervised Codex workers",
+      detail: atLeast0145
+        ? "Codex >= 0.145.0"
+        : "Update Codex to >= 0.145.0 before Orca-supervised Codex workers",
     });
   }
 }

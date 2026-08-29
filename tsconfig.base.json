@@ -10,6 +10,9 @@
       "@runtime-human/game-application": ["./packages/game-application/src/index.ts"],
       "@runtime-human/game-content": ["./packages/game-content/src/index.ts"],
       "@runtime-human/game-content-compiler": ["./packages/game-content-compiler/src/index.ts"],
+      "@runtime-human/game-devtools": ["./packages/game-devtools/src/index.ts"],
+      "@runtime-human/game-simulation": ["./packages/game-simulation/src/index.ts"],
+      "@runtime-human/game-authoring-schema": ["./packages/game-authoring-schema/src/index.ts"],
       "@runtime-human/game-persistence-contracts": [
         "./packages/game-persistence-contracts/src/index.ts"
       ],

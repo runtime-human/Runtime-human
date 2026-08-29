@@ -2,6 +2,11 @@ import type { January1990ContentContext } from "./january-content-context";
 import type { January1990ContentId } from "./january-content-ids";
 import { JANUARY_1990_CONTENT_IDS } from "./january-content-ids";
 import {
+  JANUARY_1990_DEFAULT_BALANCE,
+  deriveJanuaryQualityScoreMaximums,
+  type January1990BalanceV1,
+} from "./january-balance";
+import {
   parseJanuaryProvisionalState,
   type JanuaryEvidenceV1,
   type JanuaryProvisionalStateV1,
@@ -9,11 +14,15 @@ import {
 } from "./january-provisional-state";
 import { JANUARY_1990_REASON_CODES } from "./january-reason-codes";
 
-export const JANUARY_1990_QUALITY_SCORE_MAXIMUMS = Object.freeze({
-  clarity: 10,
-  correctness: 11,
-  reliability: 9,
-} as const);
+export const JANUARY_1990_QUALITY_SCORE_MAXIMUMS = deriveJanuaryQualityScoreMaximums(
+  JANUARY_1990_DEFAULT_BALANCE.quality,
+);
+
+/**
+ * Stable save-contract maxima used when parsing stored results; materialization
+ * validates against the maxima derived from the active balance instead.
+ */
+const DEFAULT_RESULT_QUALITY_SCORE_MAXIMUMS = JANUARY_1990_QUALITY_SCORE_MAXIMUMS;
 
 export type JanuaryProgrammingOutcomeV1 = Readonly<{
   schemaVersion: "january-1990-programming-outcome-v1";
@@ -59,7 +68,10 @@ const PROGRAMMING_OUTCOME_KEYS = Object.freeze([
   "workPackageId",
 ] as const);
 
-export function parseJanuary1990Result(value: unknown): January1990ResultV1 {
+export function parseJanuary1990Result(
+  value: unknown,
+  qualityScoreMaximums: JanuaryQualityScoresV1 = DEFAULT_RESULT_QUALITY_SCORE_MAXIMUMS,
+): January1990ResultV1 {
   const result = requireRecord(value, RESULT_KEYS, "result");
   if (result.schemaVersion !== "january-1990-result-v1" || result.month !== "1990-01") {
     throw new TypeError("January result schema or month is incompatible");
@@ -87,7 +99,10 @@ export function parseJanuary1990Result(value: unknown): January1990ResultV1 {
     throw new TypeError("January result identity does not match its programming outcome");
   }
 
-  const programmingOutcome = parseJanuaryProgrammingOutcome(programmingOutcomeRecord);
+  const programmingOutcome = parseJanuaryProgrammingOutcome(
+    programmingOutcomeRecord,
+    qualityScoreMaximums,
+  );
   return Object.freeze({
     schemaVersion: "january-1990-result-v1",
     month: "1990-01",
@@ -100,17 +115,24 @@ export function parseJanuary1990Result(value: unknown): January1990ResultV1 {
 export function materializeJanuaryProgrammingState(
   state: JanuaryProvisionalStateV1,
   outcomeRoll: number,
+  balance: January1990BalanceV1,
 ): Readonly<{
   qualityScores: JanuaryQualityScoresV1;
   evidence: readonly JanuaryEvidenceV1[];
 }> {
-  requireOutcomeRoll(outcomeRoll);
+  requireOutcomeRoll(outcomeRoll, balance.quality.outcomeRoll);
   const accessRoute = requireValue(state.accessRoute, "access route");
   const learningPractice = requireValue(state.learningPractice, "learning practice");
   const defectResponse = requireValue(state.defectResponse, "defect response");
   return Object.freeze({
-    qualityScores: createQualityScores(accessRoute, learningPractice, defectResponse, outcomeRoll),
-    evidence: createEvidence(accessRoute, learningPractice, defectResponse),
+    qualityScores: createQualityScores(
+      balance.quality,
+      accessRoute,
+      learningPractice,
+      defectResponse,
+      outcomeRoll,
+    ),
+    evidence: createEvidence(balance.skillEvidence, accessRoute, learningPractice, defectResponse),
   });
 }
 
@@ -153,18 +175,23 @@ export function createJanuaryProgrammingOutcomeFromState(
 
 export function createJanuary1990Result(
   programmingOutcome: JanuaryProgrammingOutcomeV1,
+  qualityScoreMaximums: JanuaryQualityScoresV1 = DEFAULT_RESULT_QUALITY_SCORE_MAXIMUMS,
 ): January1990ResultV1 {
-  return parseJanuary1990Result({
-    schemaVersion: "january-1990-result-v1",
-    month: "1990-01",
-    projectId: programmingOutcome.projectId,
-    outcomeEventId: programmingOutcome.outcomeEventId,
-    programmingOutcome,
-  });
+  return parseJanuary1990Result(
+    {
+      schemaVersion: "january-1990-result-v1",
+      month: "1990-01",
+      projectId: programmingOutcome.projectId,
+      outcomeEventId: programmingOutcome.outcomeEventId,
+      programmingOutcome,
+    },
+    qualityScoreMaximums,
+  );
 }
 
 function parseJanuaryProgrammingOutcome(
   record: Readonly<Record<string, unknown>>,
+  qualityScoreMaximums: JanuaryQualityScoresV1,
 ): JanuaryProgrammingOutcomeV1 {
   if (
     record.schemaVersion !== "january-1990-programming-outcome-v1" ||
@@ -200,7 +227,7 @@ function parseJanuaryProgrammingOutcome(
   if (state.evidence.length === 0) {
     throw new TypeError("January programming evidence must be a non-empty array");
   }
-  requireQualityScoreMaximums(qualityScores);
+  requireQualityScoreMaximums(qualityScores, qualityScoreMaximums);
 
   return freezeProgrammingOutcome({
     schemaVersion: "january-1990-programming-outcome-v1",
@@ -217,18 +244,13 @@ function parseJanuaryProgrammingOutcome(
   });
 }
 
-function requireQualityScoreMaximums(scores: JanuaryQualityScoresV1): void {
-  requireScoreMaximum(scores.clarity, JANUARY_1990_QUALITY_SCORE_MAXIMUMS.clarity, "clarity");
-  requireScoreMaximum(
-    scores.correctness,
-    JANUARY_1990_QUALITY_SCORE_MAXIMUMS.correctness,
-    "correctness",
-  );
-  requireScoreMaximum(
-    scores.reliability,
-    JANUARY_1990_QUALITY_SCORE_MAXIMUMS.reliability,
-    "reliability",
-  );
+function requireQualityScoreMaximums(
+  scores: JanuaryQualityScoresV1,
+  maximums: JanuaryQualityScoresV1,
+): void {
+  requireScoreMaximum(scores.clarity, maximums.clarity, "clarity");
+  requireScoreMaximum(scores.correctness, maximums.correctness, "correctness");
+  requireScoreMaximum(scores.reliability, maximums.reliability, "reliability");
 }
 
 function requireScoreMaximum(value: number, maximum: number, field: string): void {
@@ -274,42 +296,70 @@ function requireRecord(
 }
 
 function createQualityScores(
+  quality: January1990BalanceV1["quality"],
   accessRoute: JanuaryProgrammingOutcomeV1["accessRoute"],
   learningPractice: JanuaryProgrammingOutcomeV1["learningPractice"],
   defectResponse: JanuaryProgrammingOutcomeV1["defectResponse"],
   outcomeRoll: number,
 ): JanuaryQualityScoresV1 {
-  const accessValue = accessRoute === "home-pc" ? 2 : 1;
-  const learningValue = learningPractice === "edit-and-debug" ? 3 : 2;
-  const defectValue =
-    defectResponse === "inspect-listing" ? 3 : defectResponse === "change-input" ? 2 : 1;
+  const accessModifiers = quality.access[accessRoute];
+  const learningModifiers = quality.learning[learningPractice];
+  const defectModifiers = quality.defectResponse[defectResponse];
+  if (
+    accessModifiers === undefined ||
+    learningModifiers === undefined ||
+    defectModifiers === undefined
+  ) {
+    throw new TypeError("January quality balance table is missing an approved enum row");
+  }
 
   return Object.freeze({
-    clarity: 3 + learningValue + (defectResponse === "inspect-listing" ? 2 : 1) + outcomeRoll,
-    correctness: 3 + learningValue + defectValue + outcomeRoll,
-    reliability: 3 + accessValue + (defectResponse === "change-input" ? 2 : 1) + outcomeRoll,
+    clarity:
+      quality.base.clarity + learningModifiers.clarity + defectModifiers.clarity + outcomeRoll,
+    correctness:
+      quality.base.correctness +
+      learningModifiers.correctness +
+      defectModifiers.correctness +
+      outcomeRoll,
+    reliability:
+      quality.base.reliability +
+      accessModifiers.reliability +
+      defectModifiers.reliability +
+      outcomeRoll,
   });
 }
 
 function createEvidence(
+  skillEvidence: January1990BalanceV1["skillEvidence"],
   accessRoute: JanuaryProgrammingOutcomeV1["accessRoute"],
   learningPractice: JanuaryProgrammingOutcomeV1["learningPractice"],
   defectResponse: JanuaryProgrammingOutcomeV1["defectResponse"],
 ): readonly JanuaryEvidenceV1[] {
+  const programWritingAmount = skillEvidence.programWriting[learningPractice];
+  const debuggingAmount = skillEvidence.debugging[defectResponse];
+  const toolUseAmount = skillEvidence.toolUse[accessRoute];
+  if (
+    programWritingAmount === undefined ||
+    debuggingAmount === undefined ||
+    toolUseAmount === undefined
+  ) {
+    throw new TypeError("January skill evidence balance table is missing an approved enum row");
+  }
+
   return Object.freeze([
     Object.freeze({
       skillId: JANUARY_1990_CONTENT_IDS.programWritingSkill,
-      amount: learningPractice === "edit-and-debug" ? 2 : 1,
+      amount: programWritingAmount,
       reasonCode: JANUARY_1990_REASON_CODES.inputOutputProject,
     }),
     Object.freeze({
       skillId: JANUARY_1990_CONTENT_IDS.debuggingSkill,
-      amount: defectResponse === "ask-for-guidance" ? 1 : 2,
+      amount: debuggingAmount,
       reasonCode: JANUARY_1990_REASON_CODES.validationFixProject,
     }),
     Object.freeze({
       skillId: JANUARY_1990_CONTENT_IDS.toolUseSkill,
-      amount: accessRoute === "home-pc" ? 2 : 1,
+      amount: toolUseAmount,
       reasonCode:
         accessRoute === "home-pc"
           ? JANUARY_1990_REASON_CODES.homePcAccess
@@ -328,9 +378,14 @@ function freezeProgrammingOutcome(
   });
 }
 
-function requireOutcomeRoll(value: number): void {
-  if (!Number.isSafeInteger(value) || value < 0 || value > 2) {
-    throw new RangeError("January outcome roll must be a safe integer between 0 and 2");
+function requireOutcomeRoll(
+  value: number,
+  bounds: Readonly<{ minimum: number; maximum: number }>,
+): void {
+  if (!Number.isSafeInteger(value) || value < bounds.minimum || value > bounds.maximum) {
+    throw new RangeError(
+      `January outcome roll must be a safe integer between ${bounds.minimum} and ${bounds.maximum}`,
+    );
   }
 }
 
