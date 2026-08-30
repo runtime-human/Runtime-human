@@ -138,6 +138,8 @@ export default defineConfig({
         "tests/performance-summary.test.ts",
         "tests/renderer-milestones.test.ts",
         "tests/runtime-human-design-tokens.test.ts",
+        "tests/scenario-analyzer.test.ts",
+        "tests/scenario-authoring-schema.test.ts",
         "tests/studio-context.test.ts",
         "tests/studio-evaluator-policy.test.ts",
         "tests/studio-findings.test.ts",
