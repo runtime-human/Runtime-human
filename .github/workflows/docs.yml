@@ -2,49 +2,50 @@ name: docs
 
 on:
   push:
+    branches:
+      - main
     paths:
       - "docs/**"
+      - "AGENTS.md"
+      - "CONTRIBUTING.md"
+      - "SECURITY.md"
       - "scripts/build-toc.mjs"
       - ".github/workflows/docs.yml"
   pull_request:
+    branches:
+      - main
     paths:
       - "docs/**"
+      - "AGENTS.md"
+      - "CONTRIBUTING.md"
+      - "SECURITY.md"
       - "scripts/build-toc.mjs"
       - ".github/workflows/docs.yml"
+  workflow_dispatch:
 
 concurrency:
-  group: docs-${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref_name }}
+  group: docs-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
 
-defaults:
-  run:
-    shell: pwsh
-
 jobs:
   docs-lint:
-    if: >-
-      github.event_name == 'push' ||
-      (github.event.pull_request.head.repo.full_name == github.repository &&
-       github.actor == 'MrFr3di')
-    runs-on: self-hosted
+    name: docs / ubuntu-24.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
-          clean: true
           persist-credentials: false
           show-progress: false
-      - name: Normalize tracked files
-        run: |
-          $ErrorActionPreference = "Stop"
-          git config --local core.autocrlf false
-          git config --local core.eol lf
-          git checkout-index --all --force
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+
+      - name: Set up Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: "24"
+
       - name: Verify docs front-matter and manifest
         run: node scripts/build-toc.mjs --check
