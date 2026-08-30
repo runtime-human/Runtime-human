@@ -59,6 +59,32 @@ PR — каноническая единица изменения. Он долж
 
 Перед merge все `blocking:` threads должны быть закрыты на актуальном head. Старое одобрение не считается доказательством для существенно изменившегося diff; при значимых правках требуется fresh review соответствующей зоны риска.
 
+## Комментарии в коде
+
+Предпочитать ясные имена, типы, API и структуру вместо комментариев, которые просто пересказывают соседнюю строку кода.
+
+Комментарий нужен, когда он сохраняет информацию, которую код сам по себе выражает плохо:
+
+- почему очевидно более простая реализация неверна;
+- deterministic, persistence, concurrency, lifecycle или ordering invariant;
+- security/capability assumption и угрозу, которую предотвращает guard;
+- compatibility/migration constraint;
+- исторический/content provenance constraint;
+- намеренную асимметрию между похожими путями;
+- измеренный performance trade-off, оправдывающий дополнительную сложность.
+
+Не хранить в source comments историю review, переписку с агентом или пошаговый reasoning transcript. Комментарий должен объяснять **текущую причину**, почему код обязан оставаться таким; историю изменений хранит Git.
+
+Для exported/public API документировать неочевидные preconditions, postconditions, ownership/lifecycle, failure semantics и compatibility obligations. Не добавлять церемониальный JSDoc к очевидному API только ради покрытия документацией.
+
+Не использовать бесконтекстные `TODO: fix later` или `FIXME`. Отложенная работа должна ссылаться на Issue и содержать условие удаления/активации, например:
+
+```ts
+// TODO(#123): Remove the compatibility adapter after save schema v2 is no longer supported.
+```
+
+`FIXME` допустим только для известного дефекта, который нельзя принять за обычный future enhancement.
+
 ## Обязательный ADR
 
 Новый ADR требуется для изменения календаря, географии, backend/distribution model, persistence boundary, deterministic primitives, save consistency, content API и других системных решений.
