@@ -1,0 +1,43 @@
+name: Repository governance
+description: Propose changes to CI, contribution rules, automation, security policy, or repository process.
+title: "chore(governance): "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Current problem
+      description: What repository or contributor failure mode does the current process permit?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed rule or process
+      description: State the smallest enforceable change and whether enforcement is documentation, CI, GitHub settings, or code.
+    validations:
+      required: true
+
+  - type: textarea
+    id: surfaces
+    attributes:
+      label: Affected surfaces
+      description: List workflows, templates, permissions, rulesets, contributor docs, release process, or tooling affected.
+    validations:
+      required: true
+
+  - type: textarea
+    id: rollout
+    attributes:
+      label: Rollout and compatibility
+      description: Explain migration, contributor impact, rollback, and whether existing branches or automation need accommodation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification and security
+      description: Define how the rule will be tested. Public evidence must be sanitized and repository-relative where possible.
+    validations:
+      required: true
