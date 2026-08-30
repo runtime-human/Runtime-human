@@ -139,9 +139,11 @@ export default defineConfig({
         "tests/renderer-milestones.test.ts",
         "tests/runtime-human-design-tokens.test.ts",
         "tests/studio-context.test.ts",
+        "tests/studio-evaluator-policy.test.ts",
         "tests/studio-findings.test.ts",
         "tests/studio-harness.test.ts",
         "tests/studio-routing.test.ts",
+        "tests/studio-skill-routing.test.ts",
       ]),
       {
         extends: true,
