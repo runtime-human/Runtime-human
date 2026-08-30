@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
+import { spawnSync } from "node:child_process";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
-import { spawnSync } from "node:child_process";
+import { parse } from "jsonc-parser";
 
 const root = process.cwd();
 const errors = [];
@@ -34,13 +35,11 @@ if (index.includes("github.com/MrFr3di/Runtime-human")) {
   report("docs/INDEX.md", "contains the pre-transfer GitHub repository namespace");
 }
 
-let executionStatus;
-try {
-  executionStatus = JSON.parse(readText("docs/EXECUTION-STATUS.jsonc"));
-} catch {
-  report("docs/EXECUTION-STATUS.jsonc", "must be valid JSON");
-}
-if (executionStatus) {
+const executionStatusErrors = [];
+const executionStatus = parse(readText("docs/EXECUTION-STATUS.jsonc"), executionStatusErrors);
+if (executionStatusErrors.length > 0) {
+  report("docs/EXECUTION-STATUS.jsonc", "must be valid JSONC");
+} else {
   if (executionStatus.repository !== expectedRepository) {
     report(
       "docs/EXECUTION-STATUS.jsonc",
