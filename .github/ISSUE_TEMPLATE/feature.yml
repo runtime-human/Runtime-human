@@ -1,0 +1,51 @@
+name: Feature proposal
+description: Propose a bounded player-facing or developer-facing improvement.
+title: "feat: "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: Describe the concrete player or developer problem before proposing implementation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed outcome
+      description: Describe the smallest useful outcome and how a user would experience it.
+    validations:
+      required: true
+
+  - type: textarea
+    id: simpler
+    attributes:
+      label: Simpler alternative considered
+      description: Runtime Human is casual-first. Explain whether a smaller rule, UI, content, or tooling change solves the same problem.
+    validations:
+      required: true
+
+  - type: textarea
+    id: contracts
+    attributes:
+      label: Contracts and canonical sources
+      description: List relevant ADRs/specifications and any save, content, ruleset, persistence, UI, or public-contract impact. Write "None known" when not applicable.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance and verification
+      description: State observable acceptance criteria and the focused checks or playtest evidence that should prove the change.
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and cost
+      description: Note likely zones, dependencies, migration/recovery work, performance cost, and meaningful risks.
+    validations:
+      required: true
