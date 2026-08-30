@@ -4,62 +4,13 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "AGENTS.md"
-      - "GAME.md"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - "pnpm-workspace.yaml"
-      - "tsconfig*.json"
-      - "vitest.config.ts"
-      - "apps/**"
-      - "packages/**"
-      - "tests/**"
-      - "fixtures/**"
-      - "content/**"
-      - "docs/**"
-      - "scripts/**"
-      - "rust-toolchain.toml"
-      - ".ox*.json"
-      - ".gitattributes"
-      - ".studio/**"
-      - ".agents/**"
-      - ".opencode/**"
-      - "gamestudio/**"
-      - "opencode.json"
-      - "orca.yaml"
-      - ".github/workflows/foundation.yml"
   pull_request:
     branches:
       - main
-    paths:
-      - "AGENTS.md"
-      - "GAME.md"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - "pnpm-workspace.yaml"
-      - "tsconfig*.json"
-      - "vitest.config.ts"
-      - "apps/**"
-      - "packages/**"
-      - "tests/**"
-      - "fixtures/**"
-      - "content/**"
-      - "docs/**"
-      - "scripts/**"
-      - "rust-toolchain.toml"
-      - ".ox*.json"
-      - ".gitattributes"
-      - ".studio/**"
-      - ".agents/**"
-      - ".opencode/**"
-      - "gamestudio/**"
-      - "opencode.json"
-      - "orca.yaml"
-      - ".github/workflows/foundation.yml"
+  workflow_dispatch:
 
 concurrency:
-  group: foundation-${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.head.ref || github.ref_name }}
+  group: foundation-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -71,79 +22,87 @@ defaults:
 
 jobs:
   full-verification:
-    if: >-
-      github.event_name == 'push' ||
-      (github.event.pull_request.head.repo.full_name == github.repository)
-    runs-on: self-hosted
+    name: full verification / windows-2025
+    runs-on: windows-2025
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
-          clean: true
           persist-credentials: false
           show-progress: false
-      - name: Normalize tracked files
-        run: |
-          $ErrorActionPreference = "Stop"
-          git config --local core.autocrlf false
-          git config --local core.eol lf
-          git checkout-index --all --force
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+
+      - name: Set up Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: "24"
+
       - name: Activate pnpm
         run: |
           $ErrorActionPreference = "Stop"
           corepack enable
           corepack prepare pnpm@11.11.0 --activate
           pnpm --version
+
       - name: Install Rust 1.97.1
         run: |
           $ErrorActionPreference = "Stop"
-          $cargoBin = Join-Path $env:USERPROFILE ".cargo\bin"
-          $rustup = Join-Path $cargoBin "rustup.exe"
-          if (-not (Test-Path $rustup)) {
-            throw "rustup.exe was not found at $rustup"
-          }
-          $cargoBin | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          $env:PATH = "$cargoBin;$env:PATH"
-          & $rustup toolchain install 1.97.1 --profile minimal --component rustfmt,clippy
-          & $rustup default 1.97.1
+          rustup toolchain install 1.97.1 --profile minimal --component rustfmt,clippy
+          rustup default 1.97.1
           rustc --version
           cargo --version
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
+
       - name: Check AI studio configuration
         run: pnpm studio:check
+
       - name: Check documentation
         run: pnpm docs:check
+
       - name: Check formatting
         run: pnpm fmt:check
+
       - name: Run fast lint
         run: pnpm lint
+
       - name: Run typecheck
         run: pnpm typecheck
+
       - name: Check compiled content
         run: pnpm content:check
+
+      - name: Check balance data
+        run: pnpm balance:check
+
       - name: Check package boundaries
         run: pnpm boundaries:check
+
       - name: Run focused test suite
         run: pnpm test
+
       - name: Install Playwright Chromium
         run: pnpm --filter @runtime-human/desktop exec playwright install chromium
+
       - name: Run Storybook browser tests
         run: pnpm test:browser
+
       - name: Run type-aware lint
         run: pnpm lint:type-aware
+
       - name: Build renderer
         run: pnpm build
+
       - name: Build Storybook
         run: pnpm storybook:build
+
       - name: Check Rust formatting
         run: pnpm rust:fmt:check
+
       - name: Check Rust workspace
         run: pnpm rust:check
-      - name: Run Rust tests sequentially
+
+      - name: Run Rust tests
         timeout-minutes: 12
-        run: |
-          cargo test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml -- --nocapture --test-threads=1
+        run: cargo test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml -- --test-threads=1
