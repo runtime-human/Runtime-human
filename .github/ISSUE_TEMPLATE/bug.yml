@@ -1,0 +1,77 @@
+name: Bug report
+description: Report a reproducible Runtime Human defect.
+title: "fix: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Keep the report independently reproducible. Public issues and attachments must not contain secrets, private user data, local absolute home paths, runner hostnames, or other machine-identifying information.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Problem
+      description: What is broken, and what player or developer outcome is affected?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Provide the smallest deterministic reproduction you can.
+      placeholder: |
+        1. Start from ...
+        2. Do ...
+        3. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Runtime Human commit/version, OS, and only the environment details needed to reproduce the issue. Do not include usernames or absolute home paths.
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized evidence
+      description: Paste only the minimal relevant, redacted error/output. Prefer repository-relative paths. Do not dump complete logs.
+      render: text
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Save, content, determinism, or security impact
+      description: Note any risk to saves, migrations, deterministic results, content IDs, Tauri capabilities, or security. Write "None known" when not applicable.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Public-report checks
+      options:
+        - label: I searched existing issues for the same problem.
+          required: true
+        - label: I removed secrets, personal data, runner names, usernames, and local absolute paths from the report and attachments.
+          required: true
+        - label: This is not a security vulnerability requiring private disclosure.
+          required: true
