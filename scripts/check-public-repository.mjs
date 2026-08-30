@@ -17,12 +17,16 @@ function readText(path) {
 }
 
 const readme = readText("README.md");
-if (!readme.includes("публичный репозиторий")) report("README.md", "must identify the repository as public");
+if (!readme.includes("публичный репозиторий")) {
+  report("README.md", "must identify the repository as public");
+}
 for (const stale of [
   "Этот приватный репозиторий",
   "Self-hosted Windows workflow является обязательным merge gate",
 ]) {
-  if (readme.includes(stale)) report("README.md", "contains stale private/self-hosted repository guidance");
+  if (readme.includes(stale)) {
+    report("README.md", "contains stale private/self-hosted repository guidance");
+  }
 }
 
 const index = readText("docs/INDEX.md");
@@ -38,10 +42,16 @@ try {
 }
 if (executionStatus) {
   if (executionStatus.repository !== expectedRepository) {
-    report("docs/EXECUTION-STATUS.jsonc", "repository identity does not match the public repository");
+    report(
+      "docs/EXECUTION-STATUS.jsonc",
+      "repository identity does not match the public repository",
+    );
   }
   if (executionStatus.verification?.runner !== "github-hosted-windows-2025") {
-    report("docs/EXECUTION-STATUS.jsonc", "verification runner must describe the GitHub-hosted Windows gate");
+    report(
+      "docs/EXECUTION-STATUS.jsonc",
+      "verification runner must describe the GitHub-hosted Windows gate",
+    );
   }
   if (executionStatus.verification?.qualityGate !== "pnpm verify") {
     report("docs/EXECUTION-STATUS.jsonc", "qualityGate must match the canonical V3 command");
