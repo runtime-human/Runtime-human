@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "note": "Verification tiers and adaptive evaluation policy. V3/V4 map to existing repository gates; studio:affected/studio:exec tooling for V0-V2 selection is planned (context/execution waves). Evaluator profile keys reference .studio/models.json.",
+  "note": "Verification tiers and adaptive evaluation policy. V0-V2 use current Studio affected/verification tooling with Nx assistance; V3/V4 map to the existing serialized repository gates. Evaluator profile roles resolve through .studio/models.json.",
   "tiers": {
     "V0": {
       "purpose": "edit loop",
@@ -18,13 +18,13 @@
       "purpose": "worker completion / affected evidence",
       "when": "before returning DONE for a task batch",
       "evidence": [
-        "tests of affected projects/zones derived from .studio/zones.json paths",
+        "tests of affected projects/zones derived from Studio context plus Nx affected project/task information",
         "affected compiler/schema checks when content or schema inputs changed",
         "focused Storybook/browser checks when UI changed",
-        "determinism/golden evidence when gameplay rules changed"
+        "determinism/golden/simulation evidence when gameplay rules changed"
       ],
       "notes": [
-        "pnpm studio:affected + pnpm studio:verify -- --tier V1 assemble and run this set today; Nx-assisted selection is planned"
+        "pnpm studio:affected + pnpm studio:verify -- --tier V1 assemble and run this set; avoid widening to V3 during the edit loop"
       ]
     },
     "V2": {
@@ -37,7 +37,7 @@
         "no duplicated typecheck inside build chains"
       ],
       "notes": [
-        "pnpm studio:verify -- --tier V2 assembles this set today; Nx-assisted selection is planned"
+        "pnpm studio:verify -- --tier V2 assembles the candidate set using current affected/Nx information"
       ]
     },
     "V3": {
@@ -58,6 +58,7 @@
     }
   },
   "adaptiveReview": {
+    "mode": "shadow",
     "evaluatorProfiles": {
       "tester": "lunaTester",
       "reviewerR1R2": "lunaReviewer",
@@ -69,65 +70,73 @@
         "id": "docs-generated-only",
         "riskMinimum": "R1",
         "deterministicGate": "required (docs:check/build-toc)",
-        "tester": false,
-        "reviewer": "sampled-lunaReviewer",
-        "crossFamily": false
+        "tester": { "mode": "none", "profileRole": null },
+        "reviewer": { "mode": "sampled", "profileRole": "reviewerR1R2" },
+        "crossFamily": { "mode": "none", "profileRole": null },
+        "humanReview": false
       },
       {
         "id": "format-config-trivial",
         "riskMinimum": "R1",
         "deterministicGate": "required (fmt/lint/check-config)",
-        "tester": false,
-        "reviewer": "lunaReviewer-if-semantics-change",
-        "crossFamily": false
+        "tester": { "mode": "none", "profileRole": null },
+        "reviewer": { "mode": "conditional", "profileRole": "reviewerR1R2" },
+        "crossFamily": { "mode": "none", "profileRole": null },
+        "humanReview": false
       },
       {
         "id": "ui-style",
         "riskMinimum": "R1",
         "deterministicGate": "storybook/browser affected checks",
-        "tester": "optional-lunaTester",
-        "reviewer": "lunaReviewer",
-        "crossFamily": false
+        "tester": { "mode": "optional", "profileRole": "tester" },
+        "reviewer": { "mode": "required", "profileRole": "reviewerR1R2" },
+        "crossFamily": { "mode": "none", "profileRole": null },
+        "humanReview": false
       },
       {
         "id": "pure-helper",
         "riskMinimum": "R1",
         "deterministicGate": "unit/type/lint focused",
-        "tester": "optional-lunaTester",
-        "reviewer": "lunaReviewer",
-        "crossFamily": false
+        "tester": { "mode": "optional", "profileRole": "tester" },
+        "reviewer": { "mode": "required", "profileRole": "reviewerR1R2" },
+        "crossFamily": { "mode": "none", "profileRole": null },
+        "humanReview": false
       },
       {
         "id": "gameplay",
         "riskMinimum": "R2",
-        "deterministicGate": "focused tests + simulation/property evidence (simulation tooling planned)",
-        "tester": "lunaTester",
-        "reviewer": "lunaReviewer",
-        "crossFamily": "disputed-only-crossFamilyReviewer"
+        "deterministicGate": "focused tests + deterministic simulation/property/replay evidence as applicable",
+        "tester": { "mode": "required", "profileRole": "tester" },
+        "reviewer": { "mode": "required", "profileRole": "reviewerR1R2" },
+        "crossFamily": { "mode": "conditional", "profileRole": "crossFamily" },
+        "humanReview": false
       },
       {
         "id": "complex-cross-domain",
         "riskMinimum": "R2_COMPLEX",
         "deterministicGate": "full affected set",
-        "tester": "lunaTester",
-        "reviewer": "lunaReviewer",
-        "crossFamily": "optional-crossFamilyReviewer"
+        "tester": { "mode": "required", "profileRole": "tester" },
+        "reviewer": { "mode": "required", "profileRole": "reviewerR1R2" },
+        "crossFamily": { "mode": "optional", "profileRole": "crossFamily" },
+        "humanReview": false
       },
       {
         "id": "persistence-schema-determinism",
         "riskMinimum": "R3",
         "deterministicGate": "focused + compatibility + replay evidence",
-        "tester": "lunaTester",
-        "reviewer": "r3Reviewer",
-        "crossFamily": "if-disputed-or-semantic-crossFamilyReviewer"
+        "tester": { "mode": "required", "profileRole": "tester" },
+        "reviewer": { "mode": "required", "profileRole": "reviewerR3" },
+        "crossFamily": { "mode": "conditional", "profileRole": "crossFamily" },
+        "humanReview": true
       },
       {
         "id": "release-signing-security",
         "riskMinimum": "R3",
         "deterministicGate": "explicit full gates (V4)",
-        "tester": "specialized",
-        "reviewer": "r3Reviewer+human",
-        "crossFamily": "as-required-crossFamilyReviewer"
+        "tester": { "mode": "required", "profileRole": "tester" },
+        "reviewer": { "mode": "required", "profileRole": "reviewerR3" },
+        "crossFamily": { "mode": "conditional", "profileRole": "crossFamily" },
+        "humanReview": true
       }
     ],
     "neverWeakenReviewFor": [
@@ -138,6 +147,12 @@
       "security boundary",
       "migration semantics"
     ],
+    "activationCriteria": {
+      "minimumAcceptedTasks": 30,
+      "maximumEscapedS0S1": 0,
+      "minimumCleanReviewWaves": 2,
+      "requireRecordedTaskMetrics": true
+    },
     "samplingPolicy": {
       "allowedFor": ["docs-generated-only", "format-config-trivial"],
       "escalationTrigger": "repeated finding class in a sampled category raises sampling rate to 1-of-1 until two clean review waves pass"
