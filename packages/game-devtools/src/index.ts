@@ -22,3 +22,5 @@ export { toStructuredContentDiagnostic } from "./diagnostics/gamectl-diagnostics
 export type { StructuredDiagnosticV1 } from "./diagnostics/gamectl-diagnostics";
 export { runDoctor } from "./doctor/doctor";
 export type { DoctorCheckV1, DoctorReportV1 } from "./doctor/doctor";
+export { analyzeScenario } from "./scenario/analyze-scenario";
+export type { AnalyzeScenarioOptions } from "./scenario/analyze-scenario";
