@@ -59,6 +59,8 @@ PR — каноническая единица изменения. Он долж
 
 Перед merge все `blocking:` threads должны быть закрыты на актуальном head. Старое одобрение не считается доказательством для существенно изменившегося diff; при значимых правках требуется fresh review соответствующей зоны риска.
 
+Для solo-maintainer PR требование human review означает: владелец перечитал final diff на текущем head, текущие обязательные gates зелёные, blocking findings отсутствуют или явно dispositioned, а merge является отдельным явным owner decision. Собственное GitHub approval не используется как фиктивная замена независимого review.
+
 ## Комментарии в коде
 
 Предпочитать ясные имена, типы, API и структуру вместо комментариев, которые просто пересказывают соседнюю строку кода.
@@ -102,18 +104,20 @@ GitHub Actions, PRs, issues и вложенная verification evidence в пу�
 Не публиковать и не выводить без необходимости:
 
 - secrets, tokens, cookies, credentials и значения environment secrets;
-- usernames, домашние каталоги и абсолютные локальные пути (`C:\\Users\\...`, `/home/...`);
+- personal usernames, домашние каталоги и personal/self-hosted absolute paths;
 - имена домашних/self-hosted runner-машин и локальные `_work` paths;
-- приватные project paths, реальные пользовательские данные или содержимое сейвов;
+- private project paths, реальные пользовательские данные или содержимое сейвов;
 - полные environment dumps и необрезанные диагностические логи.
 
-Предпочитать repository-relative paths, короткие error excerpts и структурированную redacted evidence. `--nocapture`, verbose/debug tracing и полные log uploads допустимы только когда это действительно требуется для диагностики и вывод предварительно проверен на чувствительные данные.
+Стандартные ephemeral paths GitHub-hosted runner сами по себе не считаются приватной machine identity; всё равно предпочитайте repository-relative paths и минимальную evidence.
+
+`pnpm public:check` механически ловит известные классы repository-identity и personal-path regressions в tracked text. Это дополнительный guard, а не замена secret scanning или review.
 
 Self-hosted runners не используются обычным public CI. Если когда-либо потребуется отдельный физический/evidence runner, он должен быть opt-in, изолирован от стандартного PR workflow и не принимать недоверенный fork-код.
 
 ## Security reports
 
-Потенциальные уязвимости, secrets и sensitive evidence не публикуются в обычных issues. Следовать `SECURITY.md` и использовать приватный security reporting channel.
+Потенциальные уязвимости, secrets и sensitive evidence не публикуются в обычных issues. Следовать `SECURITY.md`; если private reporting недоступен, публично запрашивать только безопасный канал связи без технических деталей уязвимости.
 
 ## Завершение
 

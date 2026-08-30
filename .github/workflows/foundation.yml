@@ -27,22 +27,28 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Checkout
-        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
           show-progress: false
 
-      - name: Set up Node
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+      - name: Set up pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
         with:
-          node-version: "24"
-          package-manager-cache: false
+          version: "11.11.0"
+          run_install: false
 
-      - name: Activate pnpm
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "24.20.0"
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Verify JavaScript toolchain
         run: |
           $ErrorActionPreference = "Stop"
-          corepack enable
-          corepack prepare pnpm@11.11.0 --activate
+          node --version
           pnpm --version
 
       - name: Install Rust 1.97.1
@@ -56,54 +62,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
 
-      - name: Check AI studio configuration
-        run: pnpm studio:check
-
-      - name: Check documentation
-        run: pnpm docs:check
-
-      - name: Check formatting
-        run: pnpm fmt:check
-
-      - name: Run fast lint
-        run: pnpm lint
-
-      - name: Run typecheck
-        run: pnpm typecheck
-
-      - name: Check compiled content
-        run: pnpm content:check
-
-      - name: Check balance data
-        run: pnpm balance:check
-
-      - name: Check package boundaries
-        run: pnpm boundaries:check
-
-      - name: Run focused test suite
-        run: pnpm test
-
       - name: Install Playwright Chromium
         run: pnpm --filter @runtime-human/desktop exec playwright install chromium
 
-      - name: Run Storybook browser tests
-        run: pnpm test:browser
-
-      - name: Run type-aware lint
-        run: pnpm lint:type-aware
-
-      - name: Build renderer
-        run: pnpm build
-
-      - name: Build Storybook
-        run: pnpm storybook:build
-
-      - name: Check Rust formatting
-        run: pnpm rust:fmt:check
-
-      - name: Check Rust workspace
-        run: pnpm rust:check
-
-      - name: Run Rust tests
-        timeout-minutes: 12
-        run: cargo test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml -- --test-threads=1
+      - name: Run canonical V3 verification
+        run: pnpm verify

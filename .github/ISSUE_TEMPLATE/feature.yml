@@ -1,51 +1,46 @@
-name: Feature proposal
-description: Propose a bounded player-facing or developer-facing improvement.
-title: "feat: "
+name: Feature / player idea
+description: Suggest a bounded player-facing or developer-experience improvement.
+title: "feature: "
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Start from the problem or desired experience. You do not need to know Runtime Human's architecture to propose an improvement.
+
   - type: textarea
     id: problem
     attributes:
-      label: Problem to solve
-      description: Describe the concrete player or developer problem before proposing implementation.
+      label: Problem or opportunity
+      description: What is difficult, confusing, missing, repetitive, or worth improving today?
     validations:
       required: true
 
   - type: textarea
-    id: proposal
+    id: outcome
     attributes:
-      label: Proposed outcome
-      description: Describe the smallest useful outcome and how a user would experience it.
+      label: Desired outcome
+      description: What should become possible or noticeably better for the player or contributor?
     validations:
       required: true
 
   - type: textarea
-    id: simpler
+    id: example
     attributes:
-      label: Simpler alternative considered
-      description: Runtime Human is casual-first. Explain whether a smaller rule, UI, content, or tooling change solves the same problem.
-    validations:
-      required: true
+      label: Example or flow
+      description: Optional concrete example, scenario, screenshot description, or user flow.
 
   - type: textarea
-    id: contracts
+    id: constraints
     attributes:
-      label: Contracts and canonical sources
-      description: List relevant ADRs/specifications and any save, content, ruleset, persistence, UI, or public-contract impact. Write "None known" when not applicable.
-    validations:
-      required: true
+      label: Important constraints
+      description: Optional compatibility, accessibility, performance, historical, save, or UX constraints you already know about.
 
-  - type: textarea
-    id: acceptance
+  - type: checkboxes
+    id: checks
     attributes:
-      label: Acceptance and verification
-      description: State observable acceptance criteria and the focused checks or playtest evidence that should prove the change.
-    validations:
-      required: true
-
-  - type: textarea
-    id: scope
-    attributes:
-      label: Scope and cost
-      description: Note likely zones, dependencies, migration/recovery work, performance cost, and meaningful risks.
-    validations:
-      required: true
+      label: Public-report checks
+      options:
+        - label: I searched existing issues for the same idea.
+          required: true
+        - label: I removed secrets, private data and personal machine details from public evidence.
+          required: true

@@ -1,11 +1,11 @@
 name: Bug report
 description: Report a reproducible Runtime Human defect.
-title: "fix: "
+title: "bug: "
 body:
   - type: markdown
     attributes:
       value: |
-        Keep the report independently reproducible. Public issues and attachments must not contain secrets, private user data, local absolute home paths, runner hostnames, or other machine-identifying information.
+        Keep the report independently reproducible. Do not include secrets, private user/save data, personal local paths, self-hosted runner identity, or security exploit details.
 
   - type: textarea
     id: summary
@@ -45,7 +45,7 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: Runtime Human commit/version, OS, and only the environment details needed to reproduce the issue. Do not include usernames or absolute home paths.
+      description: Runtime Human commit/version, OS, and only the environment details needed to reproduce the issue. Do not include personal usernames or home paths.
     validations:
       required: true
 
@@ -71,7 +71,7 @@ body:
       options:
         - label: I searched existing issues for the same problem.
           required: true
-        - label: I removed secrets, personal data, runner names, usernames, and local absolute paths from the report and attachments.
+        - label: I removed secrets, private data, personal local paths and machine-identifying information from the report and attachments.
           required: true
-        - label: This is not a security vulnerability requiring private disclosure.
+        - label: This is not a security vulnerability requiring private disclosure under SECURITY.md.
           required: true

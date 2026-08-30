@@ -3,7 +3,6 @@
 Describe one independently reviewable change and the concrete player/developer problem it solves.
 
 - Related issue:
-- Intended squash title: `<type>(<scope>): <summary>`
 
 ## Architecture and contracts
 
@@ -40,7 +39,7 @@ Mark changes to workflows/GitHub governance, Tauri capabilities, persistence/mig
 
 - [ ] PR title is the intended durable squash commit message.
 - [ ] Documentation/contracts/tests were synchronized where required.
-- [ ] Verification claims match checks actually run.
-- [ ] Public logs, screenshots and pasted evidence contain no secrets, usernames, runner hostnames, private data or local absolute home paths.
+- [ ] Verification claims match checks actually run on the current head.
+- [ ] Public evidence contains no secrets, private data, personal usernames, self-hosted runner identity or personal/local absolute paths.
 - [ ] No test, guard or security boundary was weakened only to make a check pass.
 - [ ] All `blocking:` review threads are resolved on the current head before merge.

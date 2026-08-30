@@ -1,0 +1,36 @@
+name: Question / support
+description: Ask how Runtime Human, its tooling, or contribution workflow is intended to work.
+title: "question: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include vulnerability details, secrets, private user/save data, or personal machine information. Security-sensitive questions follow SECURITY.md.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What are you trying to understand or accomplish?
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Add only the context needed to answer the question.
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: What you already checked
+      description: Optional docs, commands, or approaches already tried.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Public-report checks
+      options:
+        - label: This question contains no vulnerability details, secrets, private data, or personal machine information.
+          required: true

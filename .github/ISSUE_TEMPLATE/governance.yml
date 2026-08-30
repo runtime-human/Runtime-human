@@ -1,6 +1,6 @@
 name: Repository governance
 description: Propose changes to CI, contribution rules, automation, security policy, or repository process.
-title: "chore(governance): "
+title: "governance: "
 body:
   - type: textarea
     id: problem
@@ -22,7 +22,7 @@ body:
     id: surfaces
     attributes:
       label: Affected surfaces
-      description: List workflows, templates, permissions, rulesets, contributor docs, release process, or tooling affected.
+      description: List workflows, templates, permissions, contributor docs, release process, or tooling affected.
     validations:
       required: true
 

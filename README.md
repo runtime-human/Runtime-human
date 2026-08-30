@@ -40,33 +40,24 @@ PC-first бесплатный offline-first казуальный симулят�
 - integer/fixed-point authoritative numerics;
 - focused Vitest/fast-check/Storybook/Playwright/WebdriverIO matrix.
 
-## Документация
+## Документация и участие
 
 - [Индекс документации](docs/INDEX.md)
+- [Machine-readable execution status](docs/EXECUTION-STATUS.jsonc)
+- [Правила для агентов](AGENTS.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security Policy](SECURITY.md)
+- [Архитектурные решения](docs/adr/)
 - [Casual Simulation Design](docs/game-design/CASUAL-SIMULATION-DESIGN.md)
 - [Programmer-First Design](docs/game-design/PROGRAMMER-FIRST-DESIGN.md)
-- [Professional Progression Engine](docs/game-design/PROFESSIONAL-PROGRESSION-ENGINE.md)
-- [Project & Work Package Engine](docs/game-design/PROJECT-WORK-PACKAGE-ENGINE.md)
-- [Архитектурные решения](docs/adr/)
-- [Исследования и design corrections](docs/research/)
-- [Vertical Slice](docs/plans/VERTICAL-SLICE-PLAN.md)
 - [Roadmap](docs/plans/ROADMAP.md)
-- [Machine-readable execution status](docs/EXECUTION-STATUS.jsonc)
 
 ## Источник истины
 
-Этот приватный репозиторий является единственным источником истины. При конфликте действует порядок из [`AGENTS.md`](AGENTS.md).
+Этот публичный репозиторий является источником истины проекта. Порядок authority и правила разрешения конфликтов определены в [`AGENTS.md`](AGENTS.md); curated-навигация по канону начинается с [`docs/INDEX.md`](docs/INDEX.md).
 
-## Актуальный статус
+## Текущее состояние
 
-По состоянию на 24 июля 2026 года завершены и объединены в `main`:
+README намеренно не дублирует быстро меняющийся список завершённых PR, активную фазу или следующий implementation constraint. Актуальное machine-readable состояние находится в [`docs/EXECUTION-STATUS.jsonc`](docs/EXECUTION-STATUS.jsonc).
 
-- Repository Foundation — PR #15;
-- Determinism Kernel — PR #16;
-- crash-safe MonthRun Protocol — PR #17;
-- SQLite Durable MonthRun Store — PR #18;
-- persisted MonthRun application orchestration — PR #20.
-
-Активная работа: **deterministic compiled content foundation** в draft PR #21. Она добавляет build-time JSONC compiler, versioned runtime contracts, schema/reference/chronology/reachability validation, canonical era/domain chunks и byte-golden artifacts, не перенося Ajv или JSONC parsing в игровой runtime.
-
-Первый играбельный январь 1990 года ещё не готов: authored January content, NPC vertical-slice contracts и игровой desktop UI остаются следующими продуктовыми этапами. Self-hosted Windows workflow является обязательным merge gate; изменение не объединяется без зелёного прогона на неизменённом head.
+Обычный PR verification выполняется на GitHub-hosted runners. Канонический полный merge gate проекта — `pnpm verify` (V3); специализированные физические/evidence runners, если они понадобятся, используются только как отдельный opt-in контур и не являются обычным target для недоверенного PR-кода.

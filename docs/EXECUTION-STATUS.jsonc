@@ -1,8 +1,8 @@
 {
   "_schemaVersion": 1,
-  "updated": "2026-08-27",
+  "updated": "2026-08-31",
   "implementationProfile": "MVP Casual",
-  "repository": "MrFr3di/Runtime-human",
+  "repository": "runtime-human/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
   "mainHeadAtCurrentSliceStart": "a364fc97b4e0f86c99c850abbfa44b2db1608ff6",
@@ -88,42 +88,21 @@
       "pullRequest": 30,
       "commit": "445634282dbd6c8984440cdfcb938dea77ffdc52",
       "evidence": {
-        "decisionBoundaries": [
-          2,
-          4,
-          7
-        ],
+        "decisionBoundaries": [2, 4, 7],
         "boundaryMutations": 4,
         "commitMutations": 1,
-        "restartBoundariesCovered": [
-          2,
-          4,
-          7
-        ],
+        "restartBoundariesCovered": [2, 4, 7],
         "duplicateReceiptsCovered": true,
         "requestPayloadConflictCovered": true,
         "saveAndRunRevisionConflictsCovered": true,
-        "acknowledgementLossCovered": [
-          "begin",
-          "boundary",
-          "commit"
-        ],
+        "acknowledgementLossCovered": ["begin", "boundary", "commit"],
         "saveSchemaCompatibilityGuard": true,
         "contentCompatibilityGuard": true,
         "exactlyOnceSaveRevision": 1,
         "saveSnapshotSchema": "january-1990-save-snapshot-v1",
         "initialAndCommittedSnapshotShareSchema": true,
         "storedOutcomePayloadHashesValidated": true,
-        "durableViewKinds": [
-          "idle",
-          "access-decision",
-          "learning-decision",
-          "defect-decision",
-          "committed",
-          "terminal",
-          "blocked",
-          "rejected"
-        ]
+        "durableViewKinds": ["idle", "access-decision", "learning-decision", "defect-decision", "committed", "terminal", "blocked", "rejected"]
       }
     },
     {
@@ -137,27 +116,10 @@
         "tauriPersistenceAdapter": true,
         "activeRunResume": true,
         "deterministicDesktopRequestIds": true,
-        "decisionChoiceCounts": {
-          "access": 2,
-          "learning": 2,
-          "defect": 3
-        },
-        "storybookStates": [
-          "loading",
-          "idle",
-          "access-decision",
-          "learning-decision",
-          "defect-decision",
-          "committed",
-          "blocked",
-          "retryable-rejected"
-        ],
+        "decisionChoiceCounts": {"access": 2, "learning": 2, "defect": 3},
+        "storybookStates": ["loading", "idle", "access-decision", "learning-decision", "defect-decision", "committed", "blocked", "retryable-rejected"],
         "focusedInteractionTests": 11,
-        "qualityScoreMaximums": {
-          "clarity": 10,
-          "correctness": 11,
-          "reliability": 9
-        },
+        "qualityScoreMaximums": {"clarity": 10, "correctness": 11, "reliability": 9},
         "foundationPlaceholderReplaced": true,
         "desktopCompositionRootBoundary": true
       }
@@ -169,45 +131,25 @@
       "commit": "12c25f7cde70a10fedcf3ecac6361a12ef63c0e8",
       "issue": 22,
       "evidence": {
-        "concurrentDesktopActionsCoalesced": [
-          "start",
-          "decision"
-        ],
+        "concurrentDesktopActionsCoalesced": ["start", "decision"],
         "balanceTrace": {
           "schemaVersion": "january-1990-balance-trace-v1",
-          "seedRange": [
-            1,
-            64
-          ],
+          "seedRange": [1, 64],
           "answerProfiles": 12,
           "totalRuns": 768,
           "decisionBoundariesPerRun": 3,
           "transitionsPerRun": 12,
           "fixedStepsPerRun": 9,
           "materializedOutcomesPerRun": 4,
-          "rngCallBudget": {
-            "content": 0,
-            "narrative": 1,
-            "outcome": 1
-          },
-          "defectEvents": {
-            "logicError": 396,
-            "syntaxError": 372
-          },
+          "rngCallBudget": {"content": 0, "narrative": 1, "outcome": 1},
+          "defectEvents": {"logicError": 396, "syntaxError": 372},
           "failures": 0,
           "softLocks": 0,
-          "programmerActionShare": {
-            "programmerActions": 2,
-            "totalDecisions": 3
-          }
+          "programmerActionShare": {"programmerActions": 2, "totalDecisions": 3}
         },
         "actualJanuarySQLiteReplay": {
           "fileBacked": true,
-          "reopenProgramCounters": [
-            2,
-            4,
-            7
-          ],
+          "reopenProgramCounters": [2, 4, 7],
           "completedProgramCounter": 9,
           "finalSaveRevision": 1,
           "duplicateCommitReceipt": true,
@@ -226,22 +168,8 @@
       "status": "complete",
       "issue": 24,
       "pullRequest": 34,
-      "scope": [
-        "performance-budgets",
-        "profiling-runbook",
-        "published-content-load-baseline",
-        "january-application-in-memory-baseline",
-        "host-profile",
-        "warning-only-targets"
-      ],
-      "exclusions": [
-        "sqlite-latency",
-        "tauri-ipc-latency",
-        "webview2-startup",
-        "first-meaningful-paint",
-        "windows-idle-resources",
-        "compiler-and-ci-optimization"
-      ],
+      "scope": ["performance-budgets", "profiling-runbook", "published-content-load-baseline", "january-application-in-memory-baseline", "host-profile", "warning-only-targets"],
+      "exclusions": ["sqlite-latency", "tauri-ipc-latency", "webview2-startup", "first-meaningful-paint", "windows-idle-resources", "compiler-and-ci-optimization"],
       "evidence": {
         "schemaVersion": "runtime-human-performance-baseline-v1",
         "repositoryCommand": "pnpm perf:january:baseline",
@@ -263,24 +191,8 @@
       "status": "complete",
       "issue": 24,
       "pullRequest": 35,
-      "scope": [
-        "new-and-clean-existing-worker-start",
-        "create-and-load-save",
-        "month-begin",
-        "durable-boundaries-pc-2-4-7-9",
-        "atomic-commit",
-        "duplicate-receipt-replay",
-        "active-run-load-after-reopen",
-        "controlled-shutdown"
-      ],
-      "exclusions": [
-        "tauri-ipc-latency",
-        "webview2-startup",
-        "first-meaningful-paint",
-        "windows-idle-resources",
-        "compiler-and-ci-optimization",
-        "persistence-optimization"
-      ],
+      "scope": ["new-and-clean-existing-worker-start", "create-and-load-save", "month-begin", "durable-boundaries-pc-2-4-7-9", "atomic-commit", "duplicate-receipt-replay", "active-run-load-after-reopen", "controlled-shutdown"],
+      "exclusions": ["tauri-ipc-latency", "webview2-startup", "first-meaningful-paint", "windows-idle-resources", "compiler-and-ci-optimization", "persistence-optimization"],
       "evidence": {
         "schemaVersion": "runtime-human-sqlite-performance-baseline-v1",
         "repositoryCommand": "pnpm perf:january:sqlite",
@@ -296,14 +208,7 @@
         "productionPersistenceHandle": true,
         "productionJanuaryCommandFixture": true,
         "shellFreeLauncher": true,
-        "durabilityPreserved": [
-          "WAL",
-          "synchronous-FULL",
-          "BEGIN-IMMEDIATE",
-          "single-dedicated-worker",
-          "dual-CAS",
-          "durable-receipts"
-        ]
+        "durabilityPreserved": ["WAL", "synchronous-FULL", "BEGIN-IMMEDIATE", "single-dedicated-worker", "dual-CAS", "durable-receipts"]
       },
       "commit": "5958f132376306246cf0895e97d04e4a9c9239d5"
     },
@@ -312,36 +217,11 @@
       "status": "complete",
       "issue": 24,
       "pullRequest": 36,
-      "scope": [
-        "failure-safe-performance-recorder",
-        "browser-user-timing",
-        "january-session-bootstrap",
-        "compiled-content-manifest-chunks-registry",
-        "month-load-begin-resume-commit-retry",
-        "concurrent-action-coalescing"
-      ],
-      "exclusions": [
-        "authoritative-state",
-        "tauri-ipc-latency",
-        "webview2-initialization",
-        "first-meaningful-paint",
-        "windows-idle-resources",
-        "performance-gates",
-        "optimization"
-      ],
+      "scope": ["failure-safe-performance-recorder", "browser-user-timing", "january-session-bootstrap", "compiled-content-manifest-chunks-registry", "month-load-begin-resume-commit-retry", "concurrent-action-coalescing"],
+      "exclusions": ["authoritative-state", "tauri-ipc-latency", "webview2-initialization", "first-meaningful-paint", "windows-idle-resources", "performance-gates", "optimization"],
       "evidence": {
         "schemaVersion": "performance-sample-v1-user-timing",
-        "measureNames": [
-          "app.session_bootstrap",
-          "content.manifest",
-          "content.chunk",
-          "content.registry",
-          "month.load",
-          "month.begin",
-          "month.resume",
-          "month.commit",
-          "month.retry"
-        ],
+        "measureNames": ["app.session_bootstrap", "content.manifest", "content.chunk", "content.registry", "month.load", "month.begin", "month.resume", "month.commit", "month.retry"],
         "uniqueStartMarks": true,
         "marksCleared": true,
         "recorderFailuresIsolated": true,
@@ -357,22 +237,8 @@
       "status": "complete",
       "issue": 37,
       "pullRequest": 38,
-      "scope": [
-        "semantic-design-tokens",
-        "career-desktop-shell",
-        "january-workspace-redesign",
-        "disabled-future-navigation",
-        "responsive-layout",
-        "accessible-live-save-status"
-      ],
-      "exclusions": [
-        "new-gameplay",
-        "npc-implementation",
-        "functional-future-routes",
-        "invented-metrics",
-        "component-framework-migration",
-        "persistence-or-determinism-changes"
-      ],
+      "scope": ["semantic-design-tokens", "career-desktop-shell", "january-workspace-redesign", "disabled-future-navigation", "responsive-layout", "accessible-live-save-status"],
+      "exclusions": ["new-gameplay", "npc-implementation", "functional-future-routes", "invented-metrics", "component-framework-migration", "persistence-or-determinism-changes"],
       "evidence": {
         "designDirection": "archival-workstation",
         "openDesignPrinciplesApplied": true,
@@ -389,26 +255,10 @@
       "status": "complete",
       "issue": 40,
       "pullRequest": 42,
-      "scope": [
-        "typed-desktop-navigation",
-        "reusable-desktop-shell",
-        "shell-style-boundary",
-        "january-feature-composition",
-        "shell-storybook-and-accessibility-contract"
-      ],
-      "exclusions": [
-        "routing",
-        "career-overview-projection",
-        "new-persistence-reads",
-        "new-gameplay",
-        "npc-implementation",
-        "performance-optimization"
-      ],
+      "scope": ["typed-desktop-navigation", "reusable-desktop-shell", "shell-style-boundary", "january-feature-composition", "shell-storybook-and-accessibility-contract"],
+      "exclusions": ["routing", "career-overview-projection", "new-persistence-reads", "new-gameplay", "npc-implementation", "performance-optimization"],
       "evidence": {
-        "navigationKinds": [
-          "route",
-          "planned"
-        ],
+        "navigationKinds": ["route", "planned"],
         "shellImportsJanuaryDomain": false,
         "shellImportsGamePackages": false,
         "futureSectionsNonInteractive": true,
@@ -424,26 +274,10 @@
       "status": "complete",
       "issue": 44,
       "pullRequest": 45,
-      "scope": [
-        "typed-desktop-routes",
-        "history-api-navigation",
-        "safe-overview-fallback",
-        "single-january-controller-lifecycle",
-        "route-aware-desktop-composition",
-        "honest-overview-placeholder"
-      ],
-      "exclusions": [
-        "career-overview-authoritative-projection",
-        "new-persistence-reads",
-        "new-gameplay",
-        "npc-implementation",
-        "performance-optimization"
-      ],
+      "scope": ["typed-desktop-routes", "history-api-navigation", "safe-overview-fallback", "single-january-controller-lifecycle", "route-aware-desktop-composition", "honest-overview-placeholder"],
+      "exclusions": ["career-overview-authoritative-projection", "new-persistence-reads", "new-gameplay", "npc-implementation", "performance-optimization"],
       "evidence": {
-        "routes": [
-          "/",
-          "/month/current"
-        ],
+        "routes": ["/", "/month/current"],
         "unknownPathFallback": "overview",
         "browserBackForward": true,
         "duplicateHistorySuppressed": true,
@@ -461,35 +295,14 @@
       "status": "complete",
       "issue": 46,
       "pullRequest": 48,
-      "scope": [
-        "strict-january-result-summary",
-        "shared-result-parser",
-        "pure-career-overview-projection",
-        "authoritative-overview-screen",
-        "state-specific-overview-storybook"
-      ],
-      "exclusions": [
-        "new-persistence-reads",
-        "second-january-controller",
-        "salary-xp-streak-productivity",
-        "multi-month-chronology",
-        "npc-implementation",
-        "performance-optimization"
-      ],
+      "scope": ["strict-january-result-summary", "shared-result-parser", "pure-career-overview-projection", "authoritative-overview-screen", "state-specific-overview-storybook"],
+      "exclusions": ["new-persistence-reads", "second-january-controller", "salary-xp-streak-productivity", "multi-month-chronology", "npc-implementation", "performance-optimization"],
       "evidence": {
         "additionalPersistenceReads": 0,
         "overviewReadsRawAuthoritativeJson": false,
         "januarySessionKindsMapped": 9,
-        "activeProgressValues": [
-          28,
-          52,
-          76
-        ],
-        "qualityScoreMaximums": {
-          "clarity": 10,
-          "correctness": 11,
-          "reliability": 9
-        },
+        "activeProgressValues": [28, 52, 76],
+        "qualityScoreMaximums": {"clarity": 10, "correctness": 11, "reliability": 9},
         "overviewStoryStates": 9,
         "januaryControllerLifecycles": 1,
         "placeholderRemoved": true
@@ -499,14 +312,7 @@
     {
       "id": "npc-foundation",
       "status": "planned-after-product-facing-performance-baselines",
-      "scope": [
-        "guardian-mentor-peer",
-        "directed-relationships",
-        "bounded-typed-memory",
-        "integer-utility-actions",
-        "storylets",
-        "narrative-director-integration"
-      ]
+      "scope": ["guardian-mentor-peer", "directed-relationships", "bounded-typed-memory", "integer-utility-actions", "storylets", "narrative-director-integration"]
     },
     {
       "id": "performance-desktop-recorder",
@@ -514,12 +320,7 @@
       "issue": 51,
       "pullRequest": 59,
       "commit": "1b79dd01600a91a26a29230df766148d4951a871",
-      "scope": [
-        "bounded-rust-recorder",
-        "closed-desktop-performance-schema",
-        "startup-milestones",
-        "dropped-event-accounting"
-      ]
+      "scope": ["bounded-rust-recorder", "closed-desktop-performance-schema", "startup-milestones", "dropped-event-accounting"]
     },
     {
       "id": "performance-read-only-snapshot",
@@ -527,10 +328,7 @@
       "issue": 51,
       "pullRequest": 60,
       "commit": "057c2fd9146f373f45524ef2c823e4a86d2c69ba",
-      "scope": [
-        "typed-read-only-tauri-command",
-        "bounded-non-destructive-snapshot"
-      ]
+      "scope": ["typed-read-only-tauri-command", "bounded-non-destructive-snapshot"]
     },
     {
       "id": "performance-persistence-queue-spans",
@@ -538,12 +336,7 @@
       "issue": 51,
       "pullRequest": 61,
       "commit": "e2b008bcae110c6aaf7251877199e15bf24f35ee",
-      "scope": [
-        "queue-depth",
-        "queue-wait-duration",
-        "sqlite-operation-duration",
-        "failure-safe-telemetry"
-      ]
+      "scope": ["queue-depth", "queue-wait-duration", "sqlite-operation-duration", "failure-safe-telemetry"]
     },
     {
       "id": "performance-tauri-command-linkage",
@@ -551,11 +344,7 @@
       "issue": 51,
       "pullRequest": 62,
       "commit": "08d35ff2a63755359f85b21d3e03029dfb1bb58b",
-      "scope": [
-        "tauri-dispatch-duration",
-        "shared-operation-context",
-        "command-queue-sqlite-correlation"
-      ]
+      "scope": ["tauri-dispatch-duration", "shared-operation-context", "command-queue-sqlite-correlation"]
     },
     {
       "id": "rust-production-logging",
@@ -563,13 +352,7 @@
       "issue": 57,
       "pullRequest": 63,
       "commit": "961a74a658b2a38a68cfd45eba63c265fee13312",
-      "scope": [
-        "bounded-lossy-jsonl-sink",
-        "daily-rotation-and-retention",
-        "closed-redacted-error-codes",
-        "lifecycle-flush",
-        "read-only-dropped-line-status"
-      ],
+      "scope": ["bounded-lossy-jsonl-sink", "daily-rotation-and-retention", "closed-redacted-error-codes", "lifecycle-flush", "read-only-dropped-line-status"],
       "evidence": {
         "schemaVersion": "runtime-human-logging-status-v1",
         "bufferedLinesLimit": 1024,
@@ -587,21 +370,9 @@
       "issue": 51,
       "pullRequest": 65,
       "commit": "6472f5c3fac508cdc4cf2827aec34dcd15d8916d",
-      "scope": [
-        "renderer-bootstrap-mark",
-        "react-shell-commit-mark",
-        "january-session-ready-mark",
-        "frame-boundary-first-meaningful-paint",
-        "strict-mode-safe-idempotency",
-        "failure-safe-user-timing"
-      ],
+      "scope": ["renderer-bootstrap-mark", "react-shell-commit-mark", "january-session-ready-mark", "frame-boundary-first-meaningful-paint", "strict-mode-safe-idempotency", "failure-safe-user-timing"],
       "evidence": {
-        "milestoneNames": [
-          "app.renderer_bootstrap",
-          "app.react_shell_commit",
-          "app.january_session_ready",
-          "app.first_meaningful_paint"
-        ],
+        "milestoneNames": ["app.renderer_bootstrap", "app.react_shell_commit", "app.january_session_ready", "app.first_meaningful_paint"],
         "rendererWritesRustTelemetry": false,
         "failedBootstrapProducesFmp": false,
         "foundationRun": 1595,
@@ -615,16 +386,7 @@
       "issue": 51,
       "pullRequest": 67,
       "commit": "783f54b17cd7bd4b88c5e7aac4719afa1c0dadac",
-      "scope": [
-        "versioned-capture-schema",
-        "versioned-report-schema",
-        "closed-clock-domains",
-        "lossless-repeated-span-aggregation",
-        "duplicate-capture-rejection",
-        "nearest-rank-percentiles",
-        "warning-only-budgets",
-        "importable-and-direct-report-cli"
-      ],
+      "scope": ["versioned-capture-schema", "versioned-report-schema", "closed-clock-domains", "lossless-repeated-span-aggregation", "duplicate-capture-rejection", "nearest-rank-percentiles", "warning-only-budgets", "importable-and-direct-report-cli"],
       "evidence": {
         "captureSchema": "runtime-human-desktop-performance-capture-v1",
         "reportSchema": "runtime-human-desktop-performance-evidence-v1",
@@ -639,123 +401,60 @@
       "id": "ai-first-harness-wave0",
       "status": "complete",
       "commit": "42d08b1e6519d402ad742c4583b0f9cf5c217f2b",
-      "scope": [
-        "agents-md-compression-with-knowledge-relocation",
-        "skill-map-and-skill-checker",
-        "verification-policy-and-tiers-docs",
-        "new-zones-balance-scenario-simulation-tooling",
-        "ai-first-harness-architecture-doc"
-      ]
+      "scope": ["agents-md-compression-with-knowledge-relocation", "skill-map-and-skill-checker", "verification-policy-and-tiers-docs", "new-zones-balance-scenario-simulation-tooling", "ai-first-harness-architecture-doc"]
     },
     {
       "id": "ai-first-harness-wave1",
       "status": "complete",
       "commit": "42d08b1e6519d402ad742c4583b0f9cf5c217f2b",
-      "scope": [
-        "task-envelope-v1-generator",
-        "context-lib-zone-risk-skill-resolution",
-        "budgeted-must-read-may-read",
-        "historical-finding-injection-cap-3",
-        "windows-path-and-determinism-tests"
-      ]
+      "scope": ["task-envelope-v1-generator", "context-lib-zone-risk-skill-resolution", "budgeted-must-read-may-read", "historical-finding-injection-cap-3", "windows-path-and-determinism-tests"]
     },
     {
       "id": "ai-first-harness-wave2",
       "status": "complete",
       "commit": "42d08b1e6519d402ad742c4583b0f9cf5c217f2b",
-      "scope": [
-        "compact-exec-with-runtime-logs",
-        "affected-classification-zones-projects-surfaces",
-        "tiered-verify-v0-v1-v2-runner",
-        "v3-v4-refusal-guard-in-verify-cli"
-      ]
+      "scope": ["compact-exec-with-runtime-logs", "affected-classification-zones-projects-surfaces", "tiered-verify-v0-v1-v2-runner", "v3-v4-refusal-guard-in-verify-cli"]
     },
     {
       "id": "ai-first-harness-wave3",
       "status": "complete",
       "commit": "42d08b1e6519d402ad742c4583b0f9cf5c217f2b",
-      "scope": [
-        "nx-23-local-cache-minimal-adoption",
-        "root-project-target-caching-without-output-guessing",
-        "studio-affected-nx-enrichment-flag",
-        "dependency-policy-entry-nx-dev-only-mit"
-      ]
+      "scope": ["nx-23-local-cache-minimal-adoption", "root-project-target-caching-without-output-guessing", "studio-affected-nx-enrichment-flag", "dependency-policy-entry-nx-dev-only-mit"]
     },
     {
       "id": "ai-first-harness-wave4",
       "status": "complete",
       "commit": "42d08b1e6519d402ad742c4583b0f9cf5c217f2b",
-      "scope": [
-        "vitest-projects-node-jsdom-storybook-browser",
-        "storybook-addon-vitest-a11y-mcp",
-        "playwright-chromium-browser-evidence",
-        "global-jsdom-removed-from-pure-projects"
-      ]
+      "scope": ["vitest-projects-node-jsdom-storybook-browser", "storybook-addon-vitest-a11y-mcp", "playwright-chromium-browser-evidence", "global-jsdom-removed-from-pure-projects"]
     },
     {
       "id": "ai-first-harness-wave5",
       "status": "complete",
-      "scope": [
-        "game-devtools-catalog-package",
-        "content-catalog-projection-with-source-path",
-        "gamectl-cli-doctor-catalog-content",
-        "structured-diagnostics-runtime-human-diagnostic-v1",
-        "gamectl-doc-and-config-integration",
-        "routing-test-alignment-with-models-json",
-        "review-hardening-shared-validator-pipeline-exit-codes-bom-zones"
-      ]
+      "scope": ["game-devtools-catalog-package", "content-catalog-projection-with-source-path", "gamectl-cli-doctor-catalog-content", "structured-diagnostics-runtime-human-diagnostic-v1", "gamectl-doc-and-config-integration", "routing-test-alignment-with-models-json", "review-hardening-shared-validator-pipeline-exit-codes-bom-zones"]
     },
     {
       "id": "ai-first-harness-wave6",
       "status": "complete",
-      "scope": [
-        "game-authoring-schema-package-with-typebox-pilot",
-        "content-source-schema-family-equivalence",
-        "generated-json-schema-2020-12-artifacts",
-        "authoring-toolchain-doc"
-      ]
+      "scope": ["game-authoring-schema-package-with-typebox-pilot", "content-source-schema-family-equivalence", "generated-json-schema-2020-12-artifacts", "authoring-toolchain-doc"]
     },
     {
       "id": "ai-first-harness-wave7",
       "status": "complete",
-      "scope": [
-        "balance-top-level-quality-and-skill-evidence-january-1990",
-        "closed-balance-families-quality-balance-v1-and-skill-evidence-balance-v1",
-        "core-january-composition-takes-immutable-balance-input",
-        "ruleset-manifest-v1-with-balance-fingerprint",
-        "compiler-balance-load-and-validation-bal001-bal002",
-        "authoring-schema-balance-family-parity",
-        "balance-check-gate-and-balance-layer-doc"
-      ],
+      "scope": ["balance-top-level-quality-and-skill-evidence-january-1990", "closed-balance-families-quality-balance-v1-and-skill-evidence-balance-v1", "core-january-composition-takes-immutable-balance-input", "ruleset-manifest-v1-with-balance-fingerprint", "compiler-balance-load-and-validation-bal001-bal002", "authoring-schema-balance-family-parity", "balance-check-gate-and-balance-layer-doc"],
       "evidence": {
         "rulesFingerprintMovedFrom": "dbc8a2753735120daa5ff111995907e928ce0eb3c6cf84e26f409b1097296869",
         "rulesFingerprintMovedTo": "3a0f6d23ef98d8b67035ebdda85083ff612f3f0f5adc36278d7ffa5afe31cb76",
         "balanceTraceGoldenUnchanged": true,
-        "qualityScoreMaximaDerived": {
-          "clarity": 10,
-          "correctness": 11,
-          "reliability": 9
-        }
+        "qualityScoreMaximaDerived": {"clarity": 10, "correctness": 11, "reliability": 9}
       }
     },
     {
       "id": "ai-first-harness-wave8",
       "status": "complete",
-      "scope": [
-        "game-simulation-package-policy-driven-january-simulation",
-        "simulation-report-v1-with-invariants-and-aggregates",
-        "gameplay-fixture-v1-intent-fixtures",
-        "game-repro-v1-parse-and-replay-contract",
-        "gamectl-simulate-run-and-replay-commands",
-        "fast-check-properties-replay-resume-idempotency-soft-lock-bounds"
-      ],
+      "scope": ["game-simulation-package-policy-driven-january-simulation", "simulation-report-v1-with-invariants-and-aggregates", "gameplay-fixture-v1-intent-fixtures", "game-repro-v1-parse-and-replay-contract", "gamectl-simulate-run-and-replay-commands", "fast-check-properties-replay-resume-idempotency-soft-lock-bounds"],
       "evidence": {
         "policyRunsPerSeed": 3,
-        "policies": [
-          "always-first-valid",
-          "learning-first",
-          "random-valid-v1"
-        ],
+        "policies": ["always-first-valid", "learning-first", "random-valid-v1"],
         "committedRepro": "fixtures/repro/january-1990-first-program.repro.json",
         "reproduced": true,
         "remainingForFullWave8": []
@@ -764,13 +463,7 @@
     {
       "id": "ai-first-harness-wave8-remainder",
       "status": "complete",
-      "scope": [
-        "gamectl-explain-quality-explain-v1-with-repro-and-outcome-modes",
-        "gamectl-simulate-compare-warning-budgets-and-closed-report-parser",
-        "gamectl-replay-decision-and-materialization-trace",
-        "gamectl-fixture-list-and-materialize-with-closed-gameplay-fixture-v1",
-        "end-to-end-intentional-bug-proof-property-shrink-repro-replay-fix"
-      ],
+      "scope": ["gamectl-explain-quality-explain-v1-with-repro-and-outcome-modes", "gamectl-simulate-compare-warning-budgets-and-closed-report-parser", "gamectl-replay-decision-and-materialization-trace", "gamectl-fixture-list-and-materialize-with-closed-gameplay-fixture-v1", "end-to-end-intentional-bug-proof-property-shrink-repro-replay-fix"],
       "evidence": {
         "explainSchema": "quality-explain-v1",
         "compareSchema": "simulation-compare-v1",
@@ -778,13 +471,7 @@
         "fixtureSchema": "gameplay-fixture-v1-closed-parser",
         "explainMatchesComposition": "exhaustive 2x2x3x3 cross-check",
         "intentionalBugProof": "broken maxima property -> fast-check shrink -> exported game-repro-v1 -> replay/finalize detection -> same repro passes after fix",
-        "newTestFiles": [
-          "tests/january-1990-quality-explain.test.ts",
-          "tests/simulation-compare.test.ts",
-          "tests/gameplay-fixture-parser.test.ts",
-          "tests/january-1990-harness-proof.test.ts",
-          "tests/gamectl-harness-cli.test.ts"
-        ]
+        "newTestFiles": ["tests/january-1990-quality-explain.test.ts", "tests/simulation-compare.test.ts", "tests/gameplay-fixture-parser.test.ts", "tests/january-1990-harness-proof.test.ts", "tests/gamectl-harness-cli.test.ts"]
       }
     },
     {
@@ -793,15 +480,7 @@
       "issue": 58,
       "pullRequest": 71,
       "commit": "fa14c50a4ae6d233e5b805b414db5c68e1ce90c5",
-      "scope": [
-        "typed-fifo-shutdown-marker",
-        "closed-admission-before-shutdown",
-        "accepted-operation-drain-before-close",
-        "blocking-worker-receive",
-        "serialized-idempotent-shutdown",
-        "ordered-drop-and-join",
-        "queue-depth-contract-preserved"
-      ],
+      "scope": ["typed-fifo-shutdown-marker", "closed-admission-before-shutdown", "accepted-operation-drain-before-close", "blocking-worker-receive", "serialized-idempotent-shutdown", "ordered-drop-and-join", "queue-depth-contract-preserved"],
       "evidence": {
         "queueCapacity": 64,
         "ordinaryEnqueue": "try-send",
@@ -824,22 +503,14 @@
     }
   ],
   "supersededPullRequests": [
-    {
-      "pullRequest": 27,
-      "reason": "Replaced by PR #28 structural registry port without package or lockfile coupling"
-    },
-    {
-      "pullRequest": 33,
-      "reason": "Superseded by merged PR #34 canonical OPT-00A baseline; unique User Timing instrumentation deferred to a narrow desktop observability slice"
-    }
+    {"pullRequest": 27, "reason": "Replaced by PR #28 structural registry port without package or lockfile coupling"},
+    {"pullRequest": 33, "reason": "Superseded by merged PR #34 canonical OPT-00A baseline; unique User Timing instrumentation deferred to a narrow desktop observability slice"}
   ],
   "verification": {
     "authoritativeWorkflow": "foundation",
     "documentationWorkflow": "docs",
-    "runner": "self-hosted-windows",
-    "mergePolicy": "unchanged-green-head-required",
-    "qualityGate": "rust-01c-complete-pr-71",
-    "currentConstraint": "perf-02a-e2-isolated-windows-capture-harness",
-    "currentPullRequestMayMerge": false
+    "runner": "github-hosted-windows-2025",
+    "mergePolicy": "current-head-green-v3-human-review",
+    "qualityGate": "pnpm verify"
   }
 }

@@ -1,0 +1,43 @@
+name: Engineering proposal
+description: Propose a technical or architectural change with explicit contracts and verification.
+title: "engineering: "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Engineering problem
+      description: What concrete failure mode, maintenance cost, limitation, or developer problem exists today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: Describe the smallest coherent technical change. Prefer extending an existing authority over adding a parallel abstraction.
+    validations:
+      required: true
+
+  - type: textarea
+    id: contracts
+    attributes:
+      label: Contracts and authority
+      description: List affected ADRs/specifications, public/internal APIs, save/content/ruleset contracts, or write "None known".
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance and verification
+      description: State observable acceptance criteria and the focused/full checks that should prove the change.
+    validations:
+      required: true
+
+  - type: textarea
+    id: risk
+    attributes:
+      label: Risk, migration, and recovery
+      description: Note compatibility, migration/rollback, security, performance, platform, or operational risks.
+    validations:
+      required: true
