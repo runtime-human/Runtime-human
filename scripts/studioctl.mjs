@@ -2,7 +2,6 @@
 
 import path from "node:path";
 import { parseArgs } from "node:util";
-import { pathToFileURL } from "node:url";
 
 import { buildStudioCapabilities, inspectChange } from "./studio/control-plane-lib.mjs";
 
@@ -94,14 +93,23 @@ export function runStudioctl(argv = process.argv.slice(2)) {
       }
       return 0;
     } catch (error) {
-      emitError(values.json, "inspection-failed", error instanceof Error ? error.message : String(error));
+      emitError(
+        values.json,
+        "inspection-failed",
+        error instanceof Error ? error.message : String(error),
+      );
       return 1;
     }
   }
 
-  emitError(values.json, "unknown-command", command ? `unknown command ${command}` : "missing command");
+  emitError(
+    values.json,
+    "unknown-command",
+    command ? `unknown command ${command}` : "missing command",
+  );
   return 2;
 }
 
-const entryUrl = process.argv[1] ? pathToFileURL(path.resolve(process.argv[1])).href : null;
-if (entryUrl === import.meta.url) process.exitCode = runStudioctl();
+if (import.meta.url === `file://${process.argv[1]?.replaceAll("\\", "/")}`) {
+  process.exitCode = runStudioctl();
+}
