@@ -57,7 +57,7 @@
     "tooling": {
       "agentGuide": "docs/agents/ARCHITECT-AGENT.md",
       "docs": ["docs/architecture/AI-FIRST-GAME-DEVELOPMENT.md", "docs/engineering/**"],
-      "code": [".studio/**", ".agents/skills/**", ".github/**", "scripts/studio/**", "scripts/studioctl.mjs", "scripts/versioning.mjs", "scripts/versioning.d.mts", "scripts/gamectl.ts", "scripts/gamectl-entry.ts", "packages/game-devtools/**", "nx.json"]
+      "code": [".studio/**", ".agents/skills/**", ".github/**", "scripts/studio/**", "scripts/studioctl.mjs", "scripts/versioning.mjs", "scripts/versioning.d.mts", "scripts/gamectl.ts", "scripts/gamectl-entry.ts", "scripts/gamectl-capabilities.mjs", "scripts/gamectl-capabilities.d.mts", "packages/game-devtools/**", "nx.json"]
     },
     "canon": {
       "agentGuide": "docs/agents/ARCHITECT-AGENT.md",
