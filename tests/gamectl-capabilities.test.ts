@@ -1,12 +1,24 @@
 import { describe, expect, it } from "vitest";
 
-import { runGamectlCli } from "../scripts/gamectl";
+type GamectlIo = Readonly<{ stdout: (line: string) => void; stderr: (line: string) => void }>;
+type GamectlCliModule = Readonly<{
+  runGamectlCli: (argv: readonly string[], io: GamectlIo) => Promise<number>;
+}>;
 
 type Captured = Readonly<{
   stdout: string[];
   stderr: string[];
-  io: Readonly<{ stdout: (line: string) => void; stderr: (line: string) => void }>;
+  io: GamectlIo;
 }>;
+
+const gamectlEntryUrl = new URL("../scripts/gamectl-entry.ts", import.meta.url).href;
+let gamectlEntryModule: Promise<GamectlCliModule> | undefined;
+
+async function runGamectlCli(argv: readonly string[], io: GamectlIo): Promise<number> {
+  gamectlEntryModule ??= import(gamectlEntryUrl) as Promise<GamectlCliModule>;
+  const { runGamectlCli: runCli } = await gamectlEntryModule;
+  return runCli(argv, io);
+}
 
 function capture(): Captured {
   const stdout: string[] = [];
@@ -42,7 +54,7 @@ describe("gamectl capabilities", () => {
     expect(envelope.command).toBe("capabilities");
     expect(envelope.ok).toBe(true);
     expect(envelope.result.schemaVersion).toBe("runtime-human-gamectl-capabilities-v1");
-    expect(Object.keys(envelope.result.commands).length).toBeGreaterThan(0);
+    expect(envelope.result.commands.capabilities).toBe(1);
     expect(envelope.result.commands).toMatchObject({
       doctor: 1,
       "catalog.list": 1,
