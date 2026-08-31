@@ -19,7 +19,7 @@ env:
 
 jobs:
   command:
-    if: ${{ github.event.issue.pull_request && startsWith(github.event.comment.body, '/rh') }}
+    if: ${{ startsWith(github.event.comment.body, '/rh') }}
     name: read-only /rh command / ubuntu-24.04
     runs-on: ubuntu-24.04
     timeout-minutes: 15
