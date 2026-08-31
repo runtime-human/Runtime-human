@@ -1,4 +1,4 @@
-use std::sync::Mutex;
+use std::{path::PathBuf, sync::Mutex};
 
 use serde::Serialize;
 use tauri::{AppHandle, Manager, Runtime, State};
@@ -40,10 +40,18 @@ pub(crate) struct RuntimeLoggingStatusV1 {
 }
 
 impl RuntimeDiagnostics {
-    pub(crate) fn initialize<R: Runtime>(app: &AppHandle<R>) -> Self {
-        let log_directory = match app.path().app_log_dir() {
-            Ok(path) => path,
-            Err(_) => return Self::inactive(LoggingInitializationState::LogDirectoryUnavailable),
+    pub(crate) fn initialize<R: Runtime>(
+        app: &AppHandle<R>,
+        log_directory_override: Option<PathBuf>,
+    ) -> Self {
+        let log_directory = match log_directory_override {
+            Some(path) => path,
+            None => match app.path().app_log_dir() {
+                Ok(path) => path,
+                Err(_) => {
+                    return Self::inactive(LoggingInitializationState::LogDirectoryUnavailable);
+                }
+            },
         };
 
         if std::fs::create_dir_all(&log_directory).is_err() {

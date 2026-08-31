@@ -14,10 +14,10 @@ defaults:
     shell: pwsh
 
 jobs:
-  pnpm-lock:
+  locks:
     if: github.head_ref == 'perf/perf-02a-hosted-e2-reconciliation'
     runs-on: windows-2025
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -38,15 +38,26 @@ jobs:
           node-version: "24.20.0"
           package-manager-cache: false
 
-      - name: Generate pnpm lockfile only
+      - name: Install Rust 1.97.1
+        run: |
+          rustup toolchain install 1.97.1 --profile minimal
+          rustup default 1.97.1
+          rustc --version
+          cargo --version
+
+      - name: Generate lockfiles only
         env:
           CI: "false"
-        run: pnpm install --lockfile-only --ignore-scripts --reporter=silent
+        run: |
+          pnpm install --lockfile-only --ignore-scripts --reporter=silent
+          cargo generate-lockfile --manifest-path apps/desktop/src-tauri/Cargo.toml
 
-      - name: Upload generated pnpm lockfile
+      - name: Upload generated lockfiles
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: perf-02a-pnpm-lock-${{ github.event.pull_request.head.sha }}
-          path: pnpm-lock.yaml
+          name: perf-02a-locks-${{ github.event.pull_request.head.sha }}
+          path: |
+            pnpm-lock.yaml
+            apps/desktop/src-tauri/Cargo.lock
           retention-days: 1
           if-no-files-found: error
