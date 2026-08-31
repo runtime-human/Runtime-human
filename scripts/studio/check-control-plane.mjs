@@ -42,6 +42,8 @@ const requiredFiles = [
   "scripts/versioning.mjs",
   "scripts/versioning.d.mts",
   "scripts/gamectl-entry.ts",
+  "scripts/gamectl-capabilities.mjs",
+  "scripts/gamectl-capabilities.d.mts",
   ".github/workflows/feedback.yml",
   ".github/workflows/remote-command.yml",
 ];
@@ -56,6 +58,8 @@ const packageJson = readJson("package.json");
 const feedback = readText(".github/workflows/feedback.yml");
 const foundation = readText(".github/workflows/foundation.yml");
 const remoteCommand = readText(".github/workflows/remote-command.yml");
+const remoteCommandLib = readText("scripts/studio/remote-command-lib.mjs");
+const gamectlEntry = readText("scripts/gamectl-entry.ts");
 
 if (project) {
   assert(project.commands?.studioCtl === "pnpm studioctl", "project studioCtl command mismatch");
@@ -73,6 +77,8 @@ const toolingPaths = [
   "scripts/versioning.d.mts",
   "scripts/gamectl.ts",
   "scripts/gamectl-entry.ts",
+  "scripts/gamectl-capabilities.mjs",
+  "scripts/gamectl-capabilities.d.mts",
 ];
 if (zones) {
   const tooling = (zones.zones ?? []).find((zone) => zone.id === "tooling");
@@ -107,11 +113,20 @@ if (packageJson) {
     "scripts/studioctl.mjs",
     "scripts/versioning.mjs",
     "scripts/gamectl-entry.ts",
+    "scripts/gamectl-capabilities.mjs",
   ]) {
     assert(String(scripts.fmt ?? "").includes(path), `fmt missing ${path}`);
     assert(String(scripts["fmt:check"] ?? "").includes(path), `fmt:check missing ${path}`);
     assert(String(scripts.lint ?? "").includes(path), `lint missing ${path}`);
   }
+  assert(
+    String(scripts.fmt ?? "").includes("scripts/gamectl-capabilities.d.mts"),
+    "fmt missing scripts/gamectl-capabilities.d.mts",
+  );
+  assert(
+    String(scripts["fmt:check"] ?? "").includes("scripts/gamectl-capabilities.d.mts"),
+    "fmt:check missing scripts/gamectl-capabilities.d.mts",
+  );
   assert(String(scripts.fmt ?? "").includes("scripts/studio"), "fmt must include scripts/studio");
   assert(
     String(scripts["fmt:check"] ?? "").includes("scripts/studio"),
@@ -121,6 +136,24 @@ if (packageJson) {
   assert(
     String(scripts["lint:type-aware"] ?? "").includes("scripts/gamectl-entry.ts"),
     "lint:type-aware missing scripts/gamectl-entry.ts",
+  );
+}
+
+if (gamectlEntry) {
+  assert(
+    gamectlEntry.includes('from "./gamectl-capabilities.mjs"'),
+    "gamectl entrypoint must reuse canonical dependency-free capabilities",
+  );
+}
+
+if (remoteCommandLib) {
+  assert(
+    remoteCommandLib.includes('args: ["scripts/gamectl-capabilities.mjs", "capabilities", "--json"]'),
+    "remote command must use dependency-free gamectl capabilities entry",
+  );
+  assert(
+    !remoteCommandLib.includes('args: ["install", "--frozen-lockfile"'),
+    "remote command must not install target dependencies",
   );
 }
 
