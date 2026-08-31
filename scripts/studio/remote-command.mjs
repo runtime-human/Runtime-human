@@ -79,20 +79,14 @@ function githubRequestOptions(token) {
 }
 
 async function githubJson(endpoint, token, request = fetch) {
-  const response = await request(
-    `https://api.github.com${endpoint}`,
-    githubRequestOptions(token),
-  );
+  const response = await request(`https://api.github.com${endpoint}`, githubRequestOptions(token));
   if (!response.ok) throw new Error(`GitHub API ${response.status} for ${endpoint}`);
   return response.json();
 }
 
 export async function fetchRepositoryPermission(username, token, request = fetch) {
   const endpoint = `/repos/runtime-human/Runtime-human/collaborators/${encodeURIComponent(username)}/permission`;
-  const response = await request(
-    `https://api.github.com${endpoint}`,
-    githubRequestOptions(token),
-  );
+  const response = await request(`https://api.github.com${endpoint}`, githubRequestOptions(token));
   if (response.status === 404) return { permission: "none", role_name: "none" };
   if (!response.ok) throw new Error(`GitHub API ${response.status} for ${endpoint}`);
   return response.json();

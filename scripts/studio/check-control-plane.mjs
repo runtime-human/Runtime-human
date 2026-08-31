@@ -148,7 +148,9 @@ if (gamectlEntry) {
 
 if (remoteCommandLib) {
   assert(
-    remoteCommandLib.includes('args: ["scripts/gamectl-capabilities.mjs", "capabilities", "--json"]'),
+    remoteCommandLib.includes(
+      'args: ["scripts/gamectl-capabilities.mjs", "capabilities", "--json"]',
+    ),
     "remote command must use dependency-free gamectl capabilities entry",
   );
   assert(
