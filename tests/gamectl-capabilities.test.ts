@@ -42,6 +42,7 @@ describe("gamectl capabilities", () => {
     expect(envelope.command).toBe("capabilities");
     expect(envelope.ok).toBe(true);
     expect(envelope.result.schemaVersion).toBe("runtime-human-gamectl-capabilities-v1");
+    expect(Object.keys(envelope.result.commands).length).toBeGreaterThan(0);
     expect(envelope.result.commands).toMatchObject({
       doctor: 1,
       "catalog.list": 1,
