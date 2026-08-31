@@ -67,15 +67,33 @@ function failureAdmission(event, parsed, code, message) {
   };
 }
 
-async function githubJson(endpoint, token) {
-  const response = await fetch(`https://api.github.com${endpoint}`, {
+function githubRequestOptions(token) {
+  return {
     headers: {
       Accept: "application/vnd.github+json",
       Authorization: `Bearer ${token}`,
       "X-GitHub-Api-Version": API_VERSION,
       "User-Agent": "runtime-human-remote-control",
     },
-  });
+  };
+}
+
+async function githubJson(endpoint, token, request = fetch) {
+  const response = await request(
+    `https://api.github.com${endpoint}`,
+    githubRequestOptions(token),
+  );
+  if (!response.ok) throw new Error(`GitHub API ${response.status} for ${endpoint}`);
+  return response.json();
+}
+
+export async function fetchRepositoryPermission(username, token, request = fetch) {
+  const endpoint = `/repos/runtime-human/Runtime-human/collaborators/${encodeURIComponent(username)}/permission`;
+  const response = await request(
+    `https://api.github.com${endpoint}`,
+    githubRequestOptions(token),
+  );
+  if (response.status === 404) return { permission: "none", role_name: "none" };
   if (!response.ok) throw new Error(`GitHub API ${response.status} for ${endpoint}`);
   return response.json();
 }
@@ -116,10 +134,7 @@ async function admit(options) {
         `/repos/runtime-human/Runtime-human/pulls/${prNumber}`,
         token,
       );
-      const permission = await githubJson(
-        `/repos/runtime-human/Runtime-human/collaborators/${encodeURIComponent(requestedBy)}/permission`,
-        token,
-      );
+      const permission = await fetchRepositoryPermission(requestedBy, token);
       admission = admitRemoteCommand({
         event,
         pullRequest,
