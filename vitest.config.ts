@@ -78,6 +78,7 @@ export default defineConfig({
         "tests/january-1990-balance-trace.test.ts",
         "tests/january-1990-content-projection.test.ts",
         "tests/january-1990-simulation-properties.test.ts",
+        "tests/january-1990-rng-shadow.test.ts",
         "tests/january-1990-quality-explain.test.ts",
         "tests/january-1990-harness-proof.test.ts",
         "tests/simulation-compare.test.ts",
