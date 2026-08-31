@@ -1,0 +1,53 @@
+name: format-rh-test
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: ${{ github.event.pull_request.head.repo.full_name == 'runtime-human/Runtime-human' && github.event.pull_request.head.ref == 'feat/remote-rh-readonly-v1' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact integration branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: feat/remote-rh-readonly-v1
+          persist-credentials: true
+          show-progress: false
+          fetch-depth: 1
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          version: "11.11.0"
+          run_install: false
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "24.20.0"
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install formatter
+        run: pnpm install --frozen-lockfile --ignore-scripts --reporter=silent
+
+      - name: Format test only
+        run: pnpm exec oxfmt tests/remote-command.test.ts
+
+      - name: Commit only formatted test
+        run: |
+          git add -- tests/remote-command.test.ts
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "style(test): format rh hardening contract"
+          git push origin HEAD:feat/remote-rh-readonly-v1
