@@ -8,6 +8,7 @@ on:
 permissions:
   contents: read
 
+# Temporary read-only capture; removed after generated outputs are recovered.
 jobs:
   generate:
     runs-on: ubuntu-24.04
