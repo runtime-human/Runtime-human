@@ -39,6 +39,7 @@ const requiredFiles = [
   "scripts/versioning.mjs",
   "scripts/versioning.d.mts",
   "scripts/gamectl-entry.ts",
+  ".github/workflows/feedback.yml",
 ];
 for (const path of requiredFiles) {
   assert(existsSync(resolve(root, path)), `missing ${path}`);
@@ -48,6 +49,7 @@ const project = readJson(".studio/project.json");
 const zones = readJson(".studio/zones.json");
 const context = readJson(".studio/context-map.json");
 const packageJson = readJson("package.json");
+const feedback = readText(".github/workflows/feedback.yml");
 const foundation = readText(".github/workflows/foundation.yml");
 
 if (project) {
@@ -105,17 +107,52 @@ if (packageJson) {
     assert(String(scripts["fmt:check"] ?? "").includes(path), `fmt:check missing ${path}`);
     assert(String(scripts.lint ?? "").includes(path), `lint missing ${path}`);
   }
+  for (const workflow of [".github/workflows/foundation.yml", ".github/workflows/feedback.yml"]) {
+    assert(String(scripts.fmt ?? "").includes(workflow), `fmt missing ${workflow}`);
+    assert(String(scripts["fmt:check"] ?? "").includes(workflow), `fmt:check missing ${workflow}`);
+  }
   assert(
     String(scripts["lint:type-aware"] ?? "").includes("scripts/gamectl-entry.ts"),
     "lint:type-aware missing scripts/gamectl-entry.ts",
   );
 }
 
+if (feedback) {
+  const requiredSnippets = [
+    "name: feedback",
+    "- opened",
+    "- synchronize",
+    "- reopened",
+    "runs-on: windows-2025",
+    "cancel-in-progress: true",
+    "contents: read",
+    "pnpm install --frozen-lockfile --reporter=silent",
+    "pnpm check:fast",
+  ];
+  for (const snippet of requiredSnippets) {
+    assert(feedback.includes(snippet), `feedback wiring missing ${snippet}`);
+  }
+  for (const forbidden of [
+    "pnpm verify",
+    "rustup toolchain install",
+    "playwright install",
+    "pull_request_target",
+    "permissions:\n  contents: write",
+  ]) {
+    assert(!feedback.includes(forbidden), `feedback must not contain ${forbidden}`);
+  }
+}
+
 if (foundation) {
   const requiredSnippets = [
+    "types: [labeled]",
+    "github.event_name != 'pull_request'",
+    "github.event.action == 'labeled'",
+    "github.event.label.name == 'verify:v3'",
     "fetch-depth: 2",
     "id: v3",
     "continue-on-error: true",
+    "pnpm verify",
     "pnpm studioctl evidence",
     "${{ github.event.pull_request.base.sha }}",
     "${{ github.event.pull_request.head.sha }}",
