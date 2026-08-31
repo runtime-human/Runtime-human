@@ -325,6 +325,9 @@ describe("remote /rh command contract", () => {
     expect(workflow).not.toContain("workflow_run");
     expect(workflow).not.toContain("secrets.");
 
+    const workflowHeader = workflow.split(/\njobs:\s*\n/u, 1)[0] ?? workflow;
+    expect(workflowHeader).not.toContain("${{ runner.");
+
     const runBlocks = [
       ...workflow.matchAll(/run:\s*\|([\s\S]*?)(?=\n\s{6,}- name:|\n\s{4,}[a-zA-Z_-]+:|$)/gu),
     ]
