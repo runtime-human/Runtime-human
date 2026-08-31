@@ -139,6 +139,7 @@ export default defineConfig({
         "tests/performance-recorder.test.ts",
         "tests/performance-summary.test.ts",
         "tests/remote-command.test.ts",
+        "tests/remote-command-result.test.ts",
         "tests/renderer-milestones.test.ts",
         "tests/runtime-human-design-tokens.test.ts",
         "tests/studio-context.test.ts",
