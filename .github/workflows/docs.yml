@@ -50,5 +50,18 @@ jobs:
           node-version: "24.20.0"
           package-manager-cache: false
 
-      - name: Verify docs front-matter and manifest
+      - name: Materialize docs outputs
+        run: node scripts/build-toc.mjs
+
+      - name: Verify generated docs
         run: node scripts/build-toc.mjs --check
+
+      - name: Upload generated docs
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: generated-docs-pr-88
+          path: |
+            docs/CATALOG.md
+            docs/MANIFEST.jsonc
+          retention-days: 1
+          if-no-files-found: error
