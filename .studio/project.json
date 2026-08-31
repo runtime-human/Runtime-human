@@ -7,6 +7,8 @@
   "commands": {
     "setup": "pnpm install --frozen-lockfile --reporter=silent",
     "studioCheck": "pnpm studio:check",
+    "studioCtl": "pnpm studioctl",
+    "versionCheck": "pnpm version:check",
     "fastGate": "pnpm check:fast",
     "fullGate": "pnpm verify",
     "releaseGate": "pnpm verify:release"

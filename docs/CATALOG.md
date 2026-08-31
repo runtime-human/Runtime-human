@@ -3,7 +3,7 @@ title: "Runtime Human — полный каталог документации"
 type: index
 status: draft
 canon: false
-updated: 2026-08-29
+updated: 2026-08-31
 ---
 
 # Runtime Human — полный каталог документации
@@ -11,7 +11,7 @@ updated: 2026-08-29
 > Сгенерировано `node scripts/build-toc.mjs` из metadata документов. Не редактировать вручную.
 > Канонический навигационный вход и порядок источников истины: [INDEX.md](INDEX.md).
 
-Всего документов: **207**.
+Всего документов: **208**.
 
 ## Навигация
 
@@ -115,6 +115,7 @@ updated: 2026-08-29
 - [Security architecture](engineering/SECURITY.md) — `draft`, `canon`
 - [SQLite architecture](persistence/SQLITE-ARCHITECTURE.md) — `draft`, `canon`
 - [Storybook workflow](engineering/STORYBOOK-WORKFLOW.md) — `draft`, `canon`
+- [studioctl — repository development control plane](engineering/STUDIOCTL.md) — `draft`, `canon`
 - [Technology Context Persistence & Compatibility](persistence/TECHNOLOGY-CONTEXT-COMPATIBILITY.md) — `draft`, `canon`
 - [TypeScript policy](engineering/TYPESCRIPT-POLICY.md) — `draft`, `canon`
 - [Verification tiers V0-V4](engineering/VERIFICATION-TIERS.md) — `draft`, `canon`
