@@ -4,10 +4,7 @@ export type { RandomSource } from "./determinism/random-source";
 export { deriveRandomSource, deriveRngState } from "./determinism/rng-derivation";
 export { Xoshiro256StarStar } from "./determinism/xoshiro256ss";
 export { RNG_DERIVATION_MANIFEST_V1 } from "@runtime-human/game-schema";
-export type {
-  RngDerivationManifestV1,
-  RngDerivationVersion,
-} from "@runtime-human/game-schema";
+export type { RngDerivationManifestV1, RngDerivationVersion } from "@runtime-human/game-schema";
 export {
   createJanuary1990MonthPlan,
   createJanuary1990MonthSteps,
