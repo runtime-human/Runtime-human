@@ -4,10 +4,10 @@ on:
   pull_request:
     branches:
       - main
-    types: [labeled]
+    types: [labeled, synchronize]
 
 concurrency:
-  group: perf-02a-e2-windows-capture-${{ github.event.pull_request.head.sha }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 permissions:
@@ -20,8 +20,13 @@ defaults:
 jobs:
   capture:
     if: >-
-      github.event.label.name == 'perf:e2-capture' &&
-      github.event.pull_request.head.repo.full_name == github.repository
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      (
+        (github.event.action == 'labeled' &&
+         github.event.label.name == 'perf:e2-capture') ||
+        (github.event.action == 'synchronize' &&
+         contains(github.event.pull_request.labels.*.name, 'perf:e2-capture'))
+      )
     runs-on: windows-2025
     timeout-minutes: 45
     steps:
@@ -180,6 +185,28 @@ jobs:
             throw "Evidence build changed reviewed sources outside the generated Tauri schema allowlist"
           }
 
+      - name: Record bounded runner provenance
+        run: |
+          $ErrorActionPreference = "Stop"
+          New-Item -ItemType Directory -Force -Path "artifacts/performance" | Out-Null
+          $imageOS = if ([string]::IsNullOrWhiteSpace($env:ImageOS)) { "unknown" } else { $env:ImageOS.Trim() }
+          $imageVersion = if ([string]::IsNullOrWhiteSpace($env:ImageVersion)) { "unknown" } else { $env:ImageVersion.Trim() }
+          $provenance = [ordered]@{
+            schemaVersion = "runtime-human-e2-run-provenance-v1"
+            commit = $env:MEASURED_COMMIT
+            runnerOS = "${{ runner.os }}"
+            runnerArch = "${{ runner.arch }}"
+            imageOS = $imageOS
+            imageVersion = $imageVersion
+            nodeVersion = (node --version).Trim()
+            pnpmVersion = (pnpm --version).Trim()
+            rustcVersion = (rustc --version).Trim()
+            cargoVersion = (cargo --version).Trim()
+          }
+          $provenance |
+            ConvertTo-Json -Depth 3 |
+            Set-Content -Path "artifacts/performance/e2-run-provenance.json" -Encoding utf8
+
       - name: Capture real Windows startup warmup
         run: |
           $ErrorActionPreference = "Stop"
@@ -254,7 +281,8 @@ jobs:
           )
           $leaked = @($after | Where-Object { $_ -notin $before })
           if ($leaked.Count -gt 0) {
-            throw "Evidence run leaked temporary app-data directories: $($leaked -join ', ')"
+            $leakedNames = @($leaked | ForEach-Object { Split-Path -Leaf $_ })
+            throw "Evidence run leaked temporary app-data directories (count=$($leaked.Count)): $($leakedNames -join ', ')"
           }
 
       - name: Upload warmup evidence
@@ -264,5 +292,6 @@ jobs:
           path: |
             artifacts/performance/raw/startup-shell-fmp-cold-process-warm-os-cache-new-database-warmup-0.json
             artifacts/performance/e2a-warmup-report.json
+            artifacts/performance/e2-run-provenance.json
           retention-days: 14
           if-no-files-found: error
