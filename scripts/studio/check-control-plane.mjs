@@ -129,8 +129,14 @@ if (foundation) {
   for (const snippet of requiredSnippets) {
     assert(foundation.includes(snippet), `foundation evidence wiring missing ${snippet}`);
   }
-  assert(!foundation.includes("permissions:\n  contents: write"), "foundation must remain read-only");
-  assert(!foundation.includes("pull_request_target"), "foundation must not use pull_request_target");
+  assert(
+    !foundation.includes("permissions:\n  contents: write"),
+    "foundation must remain read-only",
+  );
+  assert(
+    !foundation.includes("pull_request_target"),
+    "foundation must not use pull_request_target",
+  );
 }
 
 if (errors.length > 0) {
