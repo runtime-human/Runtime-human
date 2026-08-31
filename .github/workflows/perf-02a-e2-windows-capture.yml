@@ -6,10 +6,6 @@ on:
       - main
     types: [labeled, synchronize]
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
-
 permissions:
   contents: read
 
@@ -27,6 +23,9 @@ jobs:
         (github.event.action == 'synchronize' &&
          contains(github.event.pull_request.labels.*.name, 'perf:e2-capture'))
       )
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     runs-on: windows-2025
     timeout-minutes: 45
     steps:
