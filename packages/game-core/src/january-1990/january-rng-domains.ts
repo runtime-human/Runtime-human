@@ -14,7 +14,9 @@ export function createJanuary1990RngDomainPathsV1(
     throw new TypeError("January RNG domains require the January 1990 content context");
   }
   if (context.situation.id !== JANUARY_1990_CONTENT_IDS.firstBugSituation) {
-    throw new TypeError("January narrative RNG owner does not match the approved first-bug situation");
+    throw new TypeError(
+      "January narrative RNG owner does not match the approved first-bug situation",
+    );
   }
 
   const outcomeWorkPackage = context.project.workPackages.find(
