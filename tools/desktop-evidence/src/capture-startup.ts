@@ -53,6 +53,8 @@ export async function captureStartupShellFmp(arguments_: readonly string[]): Pro
     recordStage("session-starting");
     browser = await startWdioSession(capabilities, {
       rootDir: REPOSITORY_ROOT,
+      // @wdio/tauri-service 1.2.0 still preflights MSEdgeDriver on Windows before
+      // selecting the embedded provider, so disabling this can fail before session startup.
       autoDownloadEdgeDriver: true,
       autoInstallTauriDriver: false,
     });
