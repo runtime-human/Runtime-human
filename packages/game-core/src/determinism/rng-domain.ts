@@ -41,9 +41,7 @@ export type RngDomainPathV1 = readonly [
 const MONTH_PATTERN = /^[1-9]\d{3}-(?:0[1-9]|1[0-2])$/u;
 const MACHINE_ID_PATTERN = /^[a-z0-9][a-z0-9._:-]{0,255}$/u;
 
-export function createRngDomainPathV1(
-  descriptor: RngDomainDescriptorV1,
-): RngDomainPathV1 {
+export function createRngDomainPathV1(descriptor: RngDomainDescriptorV1): RngDomainPathV1 {
   validateDomainIdentity(
     descriptor.month,
     descriptor.domain,
@@ -99,9 +97,7 @@ function validateDomainIdentity(
     throw new TypeError(`Unknown RNG domain v1: ${domain}`);
   }
   if (!MACHINE_ID_PATTERN.test(entityId)) {
-    throw new TypeError(
-      "RNG entity identity must be a 1-256 character lowercase ASCII machine ID",
-    );
+    throw new TypeError("RNG entity identity must be a 1-256 character lowercase ASCII machine ID");
   }
   const purposes = RNG_DOMAIN_PURPOSES_V1[domain] as readonly string[];
   if (!purposes.includes(purpose)) {
