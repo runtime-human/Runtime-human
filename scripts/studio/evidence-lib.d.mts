@@ -22,20 +22,25 @@ export type PrEvidenceV1 = Readonly<{
   }>;
 }>;
 
-export function buildPrEvidence(input: Readonly<{
-  inspection: ChangeInspection | unknown;
-  testedSha: string;
-  status: PrEvidenceStatus | string;
-  exitCode: number;
-}>): PrEvidenceV1;
+export function buildPrEvidence(
+  input: Readonly<{
+    inspection: ChangeInspection | unknown;
+    testedSha: string;
+    status: PrEvidenceStatus | string;
+    exitCode: number;
+  }>,
+): PrEvidenceV1;
 
-export function collectPrEvidence(root: string, input: Readonly<{
-  base: string;
-  head: string;
-  tested: string;
-  status: PrEvidenceStatus | string;
-  exitCode: number;
-}>): PrEvidenceV1;
+export function collectPrEvidence(
+  root: string,
+  input: Readonly<{
+    base: string;
+    head: string;
+    tested: string;
+    status: PrEvidenceStatus | string;
+    exitCode: number;
+  }>,
+): PrEvidenceV1;
 
 export function serializePrEvidence(value: PrEvidenceV1): string;
 export function renderPrEvidenceSummary(value: PrEvidenceV1): string;
