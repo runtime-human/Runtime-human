@@ -12,11 +12,6 @@ concurrency:
   group: remote-command-${{ github.event.issue.number }}-${{ github.event.comment.id }}
   cancel-in-progress: false
 
-env:
-  RH_ADMISSION_PATH: ${{ runner.temp }}/runtime-human-remote-admission-v1.json
-  RH_RESULT_PATH: ${{ runner.temp }}/runtime-human-remote-result-v1.json
-  RH_SUMMARY_PATH: ${{ runner.temp }}/runtime-human-remote-summary.md
-
 jobs:
   command:
     if: ${{ startsWith(github.event.comment.body, '/rh') }}
@@ -50,6 +45,9 @@ jobs:
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          RH_ADMISSION_PATH: ${{ runner.temp }}/runtime-human-remote-admission-v1.json
+          RH_RESULT_PATH: ${{ runner.temp }}/runtime-human-remote-result-v1.json
+          RH_SUMMARY_PATH: ${{ runner.temp }}/runtime-human-remote-summary.md
         run: |
           node control/scripts/studio/remote-command.mjs admit \
             --event "$GITHUB_EVENT_PATH" \
@@ -71,6 +69,10 @@ jobs:
         id: execute
         if: steps.admit.outputs.admitted == 'true'
         continue-on-error: true
+        env:
+          RH_ADMISSION_PATH: ${{ runner.temp }}/runtime-human-remote-admission-v1.json
+          RH_RESULT_PATH: ${{ runner.temp }}/runtime-human-remote-result-v1.json
+          RH_SUMMARY_PATH: ${{ runner.temp }}/runtime-human-remote-summary.md
         run: |
           node control/scripts/studio/remote-command.mjs execute \
             --admission "$RH_ADMISSION_PATH" \
@@ -80,6 +82,8 @@ jobs:
 
       - name: Render remote command summary
         if: always()
+        env:
+          RH_SUMMARY_PATH: ${{ runner.temp }}/runtime-human-remote-summary.md
         run: |
           if [ -f "$RH_SUMMARY_PATH" ]; then
             cat "$RH_SUMMARY_PATH" >> "$GITHUB_STEP_SUMMARY"
@@ -90,7 +94,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: runtime-human-remote-result-${{ github.run_id }}
-          path: ${{ env.RH_RESULT_PATH }}
+          path: ${{ runner.temp }}/runtime-human-remote-result-v1.json
           retention-days: 3
           if-no-files-found: error
 
