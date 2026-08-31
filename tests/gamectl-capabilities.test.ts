@@ -1,3 +1,6 @@
+import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+
 import { describe, expect, it } from "vitest";
 
 type GamectlIo = Readonly<{ stdout: (line: string) => void; stderr: (line: string) => void }>;
@@ -12,6 +15,9 @@ type Captured = Readonly<{
 }>;
 
 const gamectlEntryUrl = new URL("../scripts/gamectl-entry.ts", import.meta.url).href;
+const dependencyFreeEntry = fileURLToPath(
+  new URL("../scripts/gamectl-capabilities.mjs", import.meta.url),
+);
 let gamectlEntryModule: Promise<GamectlCliModule> | undefined;
 
 async function runGamectlCli(argv: readonly string[], io: GamectlIo): Promise<number> {
@@ -73,5 +79,27 @@ describe("gamectl capabilities", () => {
     expect(envelope.result.commands["catalog.inspect"]).toBeUndefined();
     expect(envelope.result.commands["schema.show"]).toBeUndefined();
     expect(envelope.result.contracts.diagnostic).toBe("runtime-human-diagnostic-v1");
+  });
+
+  it("runs capability discovery directly under node without target dependencies", () => {
+    const stdout = execFileSync(
+      process.execPath,
+      [dependencyFreeEntry, "capabilities", "--json"],
+      { encoding: "utf8" },
+    );
+    const envelope = JSON.parse(stdout) as {
+      schemaVersion: string;
+      command: string;
+      ok: boolean;
+      result: { schemaVersion: string; commands: Record<string, number> };
+    };
+
+    expect(envelope).toMatchObject({
+      schemaVersion: "runtime-human-gamectl-v1",
+      command: "capabilities",
+      ok: true,
+      result: { schemaVersion: "runtime-human-gamectl-capabilities-v1" },
+    });
+    expect(envelope.result.commands.capabilities).toBe(1);
   });
 });
