@@ -1,10 +1,7 @@
 export { canonicalizeAuthoritative } from "./determinism/authoritative-json";
 export { fingerprint, sha256Hex, stableId } from "./determinism/hash";
 export type { RandomSource } from "./determinism/random-source";
-export {
-  RNG_DOMAIN_PURPOSES_V1,
-  createRngDomainPathV1,
-} from "./determinism/rng-domain";
+export { RNG_DOMAIN_PURPOSES_V1, createRngDomainPathV1 } from "./determinism/rng-domain";
 export type {
   RngDomainDescriptorV1,
   RngDomainPathV1,
