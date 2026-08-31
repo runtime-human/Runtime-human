@@ -11,7 +11,7 @@ updated: 2026-08-31
 > Сгенерировано `node scripts/build-toc.mjs` из metadata документов. Не редактировать вручную.
 > Канонический навигационный вход и порядок источников истины: [INDEX.md](INDEX.md).
 
-Всего документов: **209**.
+Всего документов: **210**.
 
 ## Навигация
 
@@ -182,6 +182,7 @@ updated: 2026-08-31
 
 ## Планы
 
+- [Cheap PR Feedback and Candidate V3 Implementation Plan](superpowers/plans/2026-08-31-ci-feedback-candidate-v3.md) — `completed`, `canon`
 - [Compiled content foundation review and completion plan](superpowers/plans/2026-07-23-compiled-content-foundation-review-and-completion.md) — `completed`, `non-canon`
 - [Crash-safe MonthRun protocol design](superpowers/specs/2026-07-20-month-run-protocol-design.md) — `accepted`, `canon`
 - [Determinism Kernel Implementation Plan](superpowers/plans/2026-07-20-determinism-kernel.md) — `completed`, `non-canon`
