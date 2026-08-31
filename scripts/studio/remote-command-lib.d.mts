@@ -40,35 +40,46 @@ export type RemoteResult = Readonly<{
 
 export function parseRemoteCommand(
   body: unknown,
-): Readonly<{ ok: true; normalized: string; command: RemoteCommand }> | Readonly<{ ok: false; normalized?: string; error: RemoteError }>;
+):
+  | Readonly<{ ok: true; normalized: string; command: RemoteCommand }>
+  | Readonly<{ ok: false; normalized?: string; error: RemoteError }>;
 
-export function admitRemoteCommand(input: Readonly<{
-  event: any;
-  pullRequest: any;
-  permission: any;
-  expectedRepository?: string;
-}>): RemoteAdmission;
+export function admitRemoteCommand(
+  input: Readonly<{
+    event: any;
+    pullRequest: any;
+    permission: any;
+    expectedRepository?: string;
+  }>,
+): RemoteAdmission;
 
 export function buildExecutionPlan(
   command: RemoteCommand,
   input: Readonly<{ baseSha: string; headSha: string }>,
 ): readonly RemoteExecutionStep[];
 
-export function buildRemoteResult(input: Readonly<{
-  admission: RemoteAdmission;
-  status: "success" | "rejected" | "failure";
-  payload?: unknown;
-  error?: RemoteError | null;
-  controlSha?: string | null;
-  runId?: string | number | null;
-}>): RemoteResult;
+export function buildRemoteResult(
+  input: Readonly<{
+    admission: RemoteAdmission;
+    status: "success" | "rejected" | "failure";
+    payload?: unknown;
+    error?: RemoteError | null;
+    controlSha?: string | null;
+    runId?: string | number | null;
+  }>,
+): RemoteResult;
 
 export function serializeRemoteResult(result: RemoteResult): string;
 export function renderRemoteSummary(result: RemoteResult): string;
-export function helpPayload(): Readonly<{ schemaVersion: "runtime-human-remote-help-v1"; commands: readonly string[] }>;
-export function executeRemoteCommand(input: Readonly<{
-  admission: RemoteAdmission;
-  targetRoot: string;
-  spawn?: (...args: any[]) => any;
-  environment?: NodeJS.ProcessEnv;
-}>): unknown;
+export function helpPayload(): Readonly<{
+  schemaVersion: "runtime-human-remote-help-v1";
+  commands: readonly string[];
+}>;
+export function executeRemoteCommand(
+  input: Readonly<{
+    admission: RemoteAdmission;
+    targetRoot: string;
+    spawn?: (...args: any[]) => any;
+    environment?: NodeJS.ProcessEnv;
+  }>,
+): unknown;

@@ -215,7 +215,9 @@ if (remoteCommand) {
   ]) {
     assert(!remoteCommand.includes(forbidden), `remote command must not contain ${forbidden}`);
   }
-  const runBlocks = [...remoteCommand.matchAll(/run:\s*\|([\s\S]*?)(?=\n\s{6,}- name:|\n\s{4,}[a-zA-Z_-]+:|$)/gu)]
+  const runBlocks = [
+    ...remoteCommand.matchAll(/run:\s*\|([\s\S]*?)(?=\n\s{6,}- name:|\n\s{4,}[a-zA-Z_-]+:|$)/gu),
+  ]
     .map((match) => match[1])
     .join("\n");
   assert(

@@ -67,12 +67,18 @@ describe("remote /rh command contract", () => {
   it("accepts only the four bounded commands after whitespace normalization", async () => {
     const remote = await loadModule();
 
-    expect(remote.parseRemoteCommand("  /rh   help\n")).toMatchObject({ ok: true, command: "help" });
+    expect(remote.parseRemoteCommand("  /rh   help\n")).toMatchObject({
+      ok: true,
+      command: "help",
+    });
     expect(remote.parseRemoteCommand("/rh capabilities")).toMatchObject({
       ok: true,
       command: "studio-capabilities",
     });
-    expect(remote.parseRemoteCommand("/rh inspect")).toMatchObject({ ok: true, command: "inspect" });
+    expect(remote.parseRemoteCommand("/rh inspect")).toMatchObject({
+      ok: true,
+      command: "inspect",
+    });
     expect(remote.parseRemoteCommand("/rh game capabilities")).toMatchObject({
       ok: true,
       command: "game-capabilities",
@@ -249,7 +255,10 @@ describe("remote /rh command contract", () => {
   });
 
   it("keeps the permanent workflow read-only and routes plain-issue rejection through admission", () => {
-    const workflow = fs.readFileSync(path.join(root, ".github/workflows/remote-command.yml"), "utf8");
+    const workflow = fs.readFileSync(
+      path.join(root, ".github/workflows/remote-command.yml"),
+      "utf8",
+    );
 
     expect(workflow).toMatch(/issue_comment:\s*\n\s*types:\s*\[created\]/u);
     expect(workflow).toContain("if: ${{ startsWith(github.event.comment.body, '/rh') }}");

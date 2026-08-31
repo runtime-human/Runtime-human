@@ -44,7 +44,10 @@ function output(name, value) {
 
 function emitAdmissionOutputs(admission) {
   output("admitted", admission.status === "admitted" ? "true" : "false");
-  output("needs_target", admission.status === "admitted" && admission.command !== "help" ? "true" : "false");
+  output(
+    "needs_target",
+    admission.status === "admitted" && admission.command !== "help" ? "true" : "false",
+  );
   output("command", admission.command ?? "unknown");
   output("pr_number", admission.prNumber ?? "");
   output("base_sha", admission.baseSha ?? "");

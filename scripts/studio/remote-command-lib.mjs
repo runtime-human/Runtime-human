@@ -35,13 +35,20 @@ export function parseRemoteCommand(body) {
     return { ok: false, error: error("invalid-command", "comment body must be text") };
   }
   if (body.length > MAX_COMMAND_LENGTH) {
-    return { ok: false, error: error("command-too-long", `command exceeds ${MAX_COMMAND_LENGTH} characters`) };
+    return {
+      ok: false,
+      error: error("command-too-long", `command exceeds ${MAX_COMMAND_LENGTH} characters`),
+    };
   }
 
   const normalized = body.trim().replace(/\s+/gu, " ");
   const command = COMMANDS.get(normalized);
   if (!command) {
-    return { ok: false, normalized, error: error("unsupported-command", "unsupported /rh command") };
+    return {
+      ok: false,
+      normalized,
+      error: error("unsupported-command", "unsupported /rh command"),
+    };
   }
   return { ok: true, normalized, command };
 }
@@ -67,34 +74,74 @@ export function admitRemoteCommand({
   const parsed = parseRemoteCommand(event?.comment?.body);
 
   if (event?.action !== "created") {
-    return rejected(event, parsed, "unsupported-event-action", "only issue_comment.created is admitted");
+    return rejected(
+      event,
+      parsed,
+      "unsupported-event-action",
+      "only issue_comment.created is admitted",
+    );
   }
   if (event?.repository?.full_name !== expectedRepository) {
-    return rejected(event, parsed, "repository-mismatch", "event repository is not the configured repository");
+    return rejected(
+      event,
+      parsed,
+      "repository-mismatch",
+      "event repository is not the configured repository",
+    );
   }
   if (!event?.issue?.pull_request) {
-    return rejected(event, parsed, "not-pull-request", "remote commands are accepted only on pull requests");
+    return rejected(
+      event,
+      parsed,
+      "not-pull-request",
+      "remote commands are accepted only on pull requests",
+    );
   }
   if (!parsed.ok) {
     return rejected(event, parsed, parsed.error.code, parsed.error.message);
   }
   if (!pullRequest || pullRequest.number !== event.issue.number) {
-    return rejected(event, parsed, "pull-request-mismatch", "pull request metadata does not match the event");
+    return rejected(
+      event,
+      parsed,
+      "pull-request-mismatch",
+      "pull request metadata does not match the event",
+    );
   }
   if (pullRequest?.base?.repo?.full_name !== expectedRepository) {
-    return rejected(event, parsed, "base-repository-mismatch", "pull request base repository is not the configured repository");
+    return rejected(
+      event,
+      parsed,
+      "base-repository-mismatch",
+      "pull request base repository is not the configured repository",
+    );
   }
   if (pullRequest?.head?.repo?.full_name !== expectedRepository) {
-    return rejected(event, parsed, "fork-pull-request", "fork pull requests are not admitted for remote execution");
+    return rejected(
+      event,
+      parsed,
+      "fork-pull-request",
+      "fork pull requests are not admitted for remote execution",
+    );
   }
   if (pullRequest?.base?.ref !== "main") {
-    return rejected(event, parsed, "unsupported-base", "remote command v1 requires base branch main");
+    return rejected(
+      event,
+      parsed,
+      "unsupported-base",
+      "remote command v1 requires base branch main",
+    );
   }
 
   const baseSha = normalizeSha(pullRequest?.base?.sha);
   const headSha = normalizeSha(pullRequest?.head?.sha);
   if (!baseSha || !headSha) {
-    return rejected(event, parsed, "invalid-sha", "pull request base/head must be full commit SHAs");
+    return rejected(
+      event,
+      parsed,
+      "invalid-sha",
+      "pull request base/head must be full commit SHAs",
+    );
   }
   if (!hasWriteEquivalentPermission(permission)) {
     return rejected(
@@ -120,21 +167,15 @@ export function admitRemoteCommand({
 export function buildExecutionPlan(command, { baseSha, headSha }) {
   if (command === "help") return [];
   if (command === "studio-capabilities") {
-    return [{ file: "node", args: ["scripts/studioctl.mjs", "capabilities", "--json"], shell: false }];
+    return [
+      { file: "node", args: ["scripts/studioctl.mjs", "capabilities", "--json"], shell: false },
+    ];
   }
   if (command === "inspect") {
     return [
       {
         file: "node",
-        args: [
-          "scripts/studioctl.mjs",
-          "inspect",
-          "--base",
-          baseSha,
-          "--head",
-          headSha,
-          "--json",
-        ],
+        args: ["scripts/studioctl.mjs", "inspect", "--base", baseSha, "--head", headSha, "--json"],
         shell: false,
       },
     ];
@@ -156,7 +197,14 @@ export function buildExecutionPlan(command, { baseSha, headSha }) {
   throw new Error(`unsupported admitted command: ${command}`);
 }
 
-export function buildRemoteResult({ admission, status, payload = null, error: resultError = null, controlSha, runId }) {
+export function buildRemoteResult({
+  admission,
+  status,
+  payload = null,
+  error: resultError = null,
+  controlSha,
+  runId,
+}) {
   return {
     schemaVersion: REMOTE_RESULT_SCHEMA,
     command: admission?.command ?? "unknown",
@@ -219,7 +267,12 @@ function targetEnvironment(source = process.env) {
   return result;
 }
 
-export function executeRemoteCommand({ admission, targetRoot, spawn = spawnSync, environment = process.env }) {
+export function executeRemoteCommand({
+  admission,
+  targetRoot,
+  spawn = spawnSync,
+  environment = process.env,
+}) {
   if (admission?.status !== "admitted") {
     throw new Error("remote execution requires an admitted request");
   }
@@ -241,7 +294,9 @@ export function executeRemoteCommand({ admission, targetRoot, spawn = spawnSync,
     });
     if (result.error) throw result.error;
     if (result.status !== 0) {
-      const stderr = String(result.stderr ?? "").trim().slice(0, 2000);
+      const stderr = String(result.stderr ?? "")
+        .trim()
+        .slice(0, 2000);
       throw new Error(`${step.file} exited ${result.status}${stderr ? `: ${stderr}` : ""}`);
     }
     finalStdout = String(result.stdout ?? "").trim();
