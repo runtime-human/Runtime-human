@@ -73,6 +73,8 @@ export type {
 } from "./january-provisional-state";
 export { JANUARY_1990_REASON_CODES } from "./january-reason-codes";
 export type { January1990ReasonCode } from "./january-reason-codes";
+export { createJanuary1990RngDomainPathsV1 } from "./january-rng-domains";
+export type { January1990RngDomainPathsV1 } from "./january-rng-domains";
 export { JANUARY_1990_RNG_CALL_BUDGET, JANUARY_1990_RNG_SCOPES } from "./january-rng-scopes";
 export type { January1990RngScope } from "./january-rng-scopes";
 export { createJanuary1990ValidatedMonthSteps as createJanuary1990MonthSteps } from "./january-validated-month-steps";
