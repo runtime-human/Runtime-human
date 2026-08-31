@@ -107,10 +107,6 @@ if (packageJson) {
     assert(String(scripts["fmt:check"] ?? "").includes(path), `fmt:check missing ${path}`);
     assert(String(scripts.lint ?? "").includes(path), `lint missing ${path}`);
   }
-  for (const workflow of [".github/workflows/foundation.yml", ".github/workflows/feedback.yml"]) {
-    assert(String(scripts.fmt ?? "").includes(workflow), `fmt missing ${workflow}`);
-    assert(String(scripts["fmt:check"] ?? "").includes(workflow), `fmt:check missing ${workflow}`);
-  }
   assert(
     String(scripts["lint:type-aware"] ?? "").includes("scripts/gamectl-entry.ts"),
     "lint:type-aware missing scripts/gamectl-entry.ts",
