@@ -95,9 +95,7 @@ describe("hierarchical RNG derivation", () => {
 
     const path = ["month:1990-01", "npc", "guardian", "action-choice"] as const;
     expect(deriveRngState(SEED_42_STATE, path)).toBe(HIERARCHICAL_GUARDIAN_STATE);
-    expect(deriveRandomSource(SEED_42_STATE, path).exportState()).toBe(
-      HIERARCHICAL_GUARDIAN_STATE,
-    );
+    expect(deriveRandomSource(SEED_42_STATE, path).exportState()).toBe(HIERARCHICAL_GUARDIAN_STATE);
   });
 
   it("keeps sibling domains independent of creation and consumption order", () => {
