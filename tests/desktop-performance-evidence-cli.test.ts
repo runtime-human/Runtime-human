@@ -141,7 +141,7 @@ describe("desktop performance evidence CLI", () => {
       tooFewMeasurements,
       `${JSON.stringify([
         ...Array.from({ length: 5 }, (_, index) => capture(index, "warmup")),
-        ...Array.from({ length: 29 }, (_, index) => capture(index),
+        ...Array.from({ length: 29 }, (_, index) => capture(index)),
       ])}\n`,
       "utf8",
     );
@@ -157,7 +157,7 @@ describe("desktop performance evidence CLI", () => {
       tooFewWarmups,
       `${JSON.stringify([
         ...Array.from({ length: 4 }, (_, index) => capture(index, "warmup")),
-        ...Array.from({ length: 30 }, (_, index) => capture(index),
+        ...Array.from({ length: 30 }, (_, index) => capture(index)),
       ])}\n`,
       "utf8",
     );
@@ -173,7 +173,7 @@ describe("desktop performance evidence CLI", () => {
       completeSeries,
       `${JSON.stringify([
         ...Array.from({ length: 5 }, (_, index) => capture(index, "warmup")),
-        ...Array.from({ length: 30 }, (_, index) => capture(index),
+        ...Array.from({ length: 30 }, (_, index) => capture(index)),
       ])}\n`,
       "utf8",
     );
