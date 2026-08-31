@@ -264,13 +264,8 @@ function gameCoreRngDiagnostics(root, file) {
   if (foundMathRandom) {
     diagnostics.push(`${relativeFile}: authoritative game-core cannot call Math.random`);
   }
-  if (
-    foundDirectXoshiro &&
-    !GAME_CORE_DIRECT_XOSHIRO_ALLOWLIST.has(relativeFile)
-  ) {
-    diagnostics.push(
-      `${relativeFile}: authoritative RNG must use the managed derivation API`,
-    );
+  if (foundDirectXoshiro && !GAME_CORE_DIRECT_XOSHIRO_ALLOWLIST.has(relativeFile)) {
+    diagnostics.push(`${relativeFile}: authoritative RNG must use the managed derivation API`);
   }
 
   return diagnostics;
