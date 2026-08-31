@@ -28,6 +28,8 @@ const requiredFiles = [
   "scripts/studioctl.mjs",
   "scripts/studio/control-plane-lib.mjs",
   "scripts/studio/control-plane-lib.d.mts",
+  "scripts/studio/evidence-lib.mjs",
+  "scripts/studio/evidence-lib.d.mts",
   "scripts/versioning.mjs",
   "scripts/versioning.d.mts",
   "scripts/gamectl-entry.ts",

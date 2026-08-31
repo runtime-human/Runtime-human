@@ -17,6 +17,7 @@ import {
 
 export const STUDIO_CAPABILITIES_SCHEMA = "runtime-human-studio-capabilities-v1";
 export const CHANGE_INSPECTION_SCHEMA = "runtime-human-change-inspection-v1";
+export const PR_EVIDENCE_SCHEMA = "runtime-human-pr-evidence-v1";
 
 function git(root, args, options = {}) {
   const result = spawnSync("git", args.map(String), {
@@ -34,10 +35,11 @@ function git(root, args, options = {}) {
   return String(result.stdout ?? "");
 }
 
-function resolveCommit(root, ref) {
+export function resolveCommit(root, ref) {
   const output = git(root, ["rev-parse", "--verify", `${ref}^{commit}`]).trim();
-  if (!/^[0-9a-f]{40}$/u.test(output))
+  if (!/^[0-9a-f]{40}$/u.test(output)) {
     throw new Error(`git ref did not resolve to a full SHA: ${ref}`);
+  }
   return output;
 }
 
@@ -143,10 +145,11 @@ function authorityImpact(changedPaths) {
 export function buildStudioCapabilities() {
   return {
     schemaVersion: STUDIO_CAPABILITIES_SCHEMA,
-    commands: { capabilities: 1, inspect: 1 },
+    commands: { capabilities: 1, inspect: 1, evidence: 1 },
     contracts: {
       inspection: CHANGE_INSPECTION_SCHEMA,
       taskEnvelope: TASK_ENVELOPE_SCHEMA,
+      evidence: PR_EVIDENCE_SCHEMA,
     },
     verification: { v3: "pnpm verify", v4: "pnpm verify:release" },
   };
