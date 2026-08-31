@@ -15,7 +15,10 @@ const execFileAsync = promisify(execFile);
 const CLI_PATH = resolve(process.cwd(), "scripts", "run-desktop-performance-evidence.mjs");
 const COMMIT = "6472f5c3fac508cdc4cf2827aec34dcd15d8916d";
 
-function capture(sampleIndex: number) {
+function capture(
+  sampleIndex: number,
+  sampleRole: "warmup" | "measurement" = "measurement",
+) {
   return {
     schemaVersion: "runtime-human-desktop-performance-capture-v1",
     commit: COMMIT,
@@ -31,7 +34,7 @@ function capture(sampleIndex: number) {
       process: "cold-process",
       osCache: "warm-os-cache",
       database: "existing-clean-database",
-      sampleRole: "measurement",
+      sampleRole,
     },
     sampleIndex,
     externalDurationsMicros: {
@@ -126,6 +129,64 @@ describe("desktop performance evidence CLI", () => {
     expect(report).toEqual(written);
     expect(log).toHaveBeenCalledOnce();
     expect(log).toHaveBeenCalledWith(`Wrote 3 measurement capture(s) to ${output}`);
+  });
+
+  it("enforces E3 series warmup and measurement coverage", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "runtime-human-desktop-e3-series-"));
+    const tooFewMeasurements = join(directory, "too-few-measurements.json");
+    const tooFewWarmups = join(directory, "too-few-warmups.json");
+    const completeSeries = join(directory, "complete-series.json");
+
+    await writeFile(
+      tooFewMeasurements,
+      `${JSON.stringify([
+        ...Array.from({ length: 5 }, (_, index) => capture(index, "warmup")),
+        ...Array.from({ length: 29 }, (_, index) => capture(index),
+      ])}\n`,
+      "utf8",
+    );
+    await expect(
+      runDesktopEvidenceCli([
+        `--input=${tooFewMeasurements}`,
+        `--output=${join(directory, "too-few-measurements-report.json")}`,
+        "--series=e3",
+      ]),
+    ).rejects.toThrow(/at least 30 measurement/iu);
+
+    await writeFile(
+      tooFewWarmups,
+      `${JSON.stringify([
+        ...Array.from({ length: 4 }, (_, index) => capture(index, "warmup")),
+        ...Array.from({ length: 30 }, (_, index) => capture(index),
+      ])}\n`,
+      "utf8",
+    );
+    await expect(
+      runDesktopEvidenceCli([
+        `--input=${tooFewWarmups}`,
+        `--output=${join(directory, "too-few-warmups-report.json")}`,
+        "--series=e3",
+      ]),
+    ).rejects.toThrow(/at least 5 warmup/iu);
+
+    await writeFile(
+      completeSeries,
+      `${JSON.stringify([
+        ...Array.from({ length: 5 }, (_, index) => capture(index, "warmup")),
+        ...Array.from({ length: 30 }, (_, index) => capture(index),
+      ])}\n`,
+      "utf8",
+    );
+    const report = await runDesktopEvidenceCli([
+      `--input=${completeSeries}`,
+      `--output=${join(directory, "complete-report.json")}`,
+      "--series=e3",
+    ]);
+
+    expect(report.warmupCount).toBe(5);
+    expect(report.measurementCount).toBe(30);
+    expect(report.groups).toHaveLength(1);
+    expect(report.groups[0]?.sampleCount).toBe(30);
   });
 
   it("runs as a shell-free Node executable", async () => {
