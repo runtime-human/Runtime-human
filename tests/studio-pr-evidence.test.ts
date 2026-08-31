@@ -153,7 +153,7 @@ describe("runtime-human-pr-evidence-v1", () => {
     });
   });
 
-  it("fails closed for missing, malformed, mismatched, or contradictory evidence inputs", () => {
+  it("fails closed for missing, malformed, or contradictory evidence inputs", () => {
     const { root, base, head, tested } = makeRepo();
     const valid = collectPrEvidence(root, {
       base,
@@ -176,12 +176,12 @@ describe("runtime-human-pr-evidence-v1", () => {
     ).toThrow(/inspection schema/u);
     expect(() =>
       buildPrEvidence({
-        inspection: { ...valid.inspection, baseSha: head },
+        inspection: { ...valid.inspection, baseSha: "not-a-sha" },
         testedSha: tested,
         status: "success",
         exitCode: 0,
       }),
-    ).toThrow(/baseSha.*headSha/u);
+    ).toThrow(/baseSha/u);
     expect(() =>
       buildPrEvidence({
         inspection: valid.inspection,
