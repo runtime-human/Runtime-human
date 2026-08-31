@@ -131,6 +131,7 @@ export default defineConfig({
         "tests/desktop-route.test.ts",
         "tests/docs-metadata-governance.test.ts",
         "tests/game-devtools-catalog.test.ts",
+        "tests/gamectl-capabilities.test.ts",
         "tests/gamectl-cli.test.ts",
         "tests/gamectl-simulation-cli.test.ts",
         "tests/gamectl-harness-cli.test.ts",
@@ -142,6 +143,8 @@ export default defineConfig({
         "tests/studio-findings.test.ts",
         "tests/studio-harness.test.ts",
         "tests/studio-routing.test.ts",
+        "tests/studioctl-cli.test.ts",
+        "tests/versioning.test.ts",
       ]),
       {
         extends: true,
