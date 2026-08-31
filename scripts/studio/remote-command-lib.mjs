@@ -183,13 +183,8 @@ export function buildExecutionPlan(command, { baseSha, headSha }) {
   if (command === "game-capabilities") {
     return [
       {
-        file: "pnpm",
-        args: ["install", "--frozen-lockfile", "--ignore-scripts", "--reporter=silent"],
-        shell: false,
-      },
-      {
-        file: "pnpm",
-        args: ["exec", "tsx", "scripts/gamectl-entry.ts", "capabilities", "--json"],
+        file: "node",
+        args: ["scripts/gamectl-capabilities.mjs", "capabilities", "--json"],
         shell: false,
       },
     ];
