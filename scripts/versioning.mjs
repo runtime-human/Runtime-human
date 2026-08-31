@@ -105,13 +105,17 @@ export function checkVersionState(state) {
   const errors = [];
   const match = VERSION_PATTERN.exec(state.canonical);
   if (!match) {
-    errors.push(`canonical version must match 0.0.N with N >= 1; got ${JSON.stringify(state.canonical)}`);
+    errors.push(
+      `canonical version must match 0.0.N with N >= 1; got ${JSON.stringify(state.canonical)}`,
+    );
   } else if (!Number.isSafeInteger(Number(match[1]))) {
     errors.push(`canonical version component exceeds safe integer range: ${state.canonical}`);
   }
   for (const key of ["rootPackage", "desktopPackage", "cargoPackage", "cargoLockPackage"]) {
     if (state[key] !== state.canonical) {
-      errors.push(`${PATHS[key]} version ${JSON.stringify(state[key])} != canonical ${state.canonical}`);
+      errors.push(
+        `${PATHS[key]} version ${JSON.stringify(state[key])} != canonical ${state.canonical}`,
+      );
     }
   }
   return { ok: errors.length === 0, version: state.canonical, errors };
@@ -157,7 +161,8 @@ export function bumpGameVersion(root = process.cwd(), explicitTarget) {
   fs.writeFileSync(lockPath, replaceVersionLine(findCargoLockPackage(lockText), version), "utf8");
 
   const after = checkVersionState(readVersionState(root));
-  if (!after.ok) throw new Error(`version bump produced invalid mirrors: ${after.errors.join("; ")}`);
+  if (!after.ok)
+    throw new Error(`version bump produced invalid mirrors: ${after.errors.join("; ")}`);
   return { previous: before.canonical, version };
 }
 
