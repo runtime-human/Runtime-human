@@ -49,7 +49,7 @@ function makeRepo() {
   writeJson(root, ".studio/zones.json", {
     schemaVersion: 1,
     zones: [
-      { id: "tooling", paths: ["scripts/studio/**", ".github/**"], minimumRisk: "R1" },
+      { id: "tooling", paths: ["scripts/studio/**", ".github/**", ".studio/**"], minimumRisk: "R1" },
       { id: "canon", paths: ["docs/**", "AGENTS.md", "GAME.md"], minimumRisk: "R2" },
     ],
     exclusiveWriteGroups: [],
@@ -59,7 +59,11 @@ function makeRepo() {
     policy: { maxInitialDocs: 3, maxInitialFiles: 4, neverBulkLoad: [] },
     base: ["AGENTS.md", "GAME.md", "docs/INDEX.md"],
     zones: {
-      tooling: { agentGuide: null, docs: [], code: ["scripts/studio/**", ".github/**"] },
+      tooling: {
+        agentGuide: null,
+        docs: [],
+        code: ["scripts/studio/**", ".github/**", ".studio/**"],
+      },
       canon: { agentGuide: null, docs: ["docs/**"], code: [] },
     },
   });
@@ -160,6 +164,19 @@ describe("studioctl inspect", () => {
     );
     expect(result.verification.requiredTier).toBe("V1");
     expect(result.verification.v3Recommended).toBe(false);
+    expect(result.unmatchedPaths).toEqual([]);
     expect(fs.existsSync(path.join(root, ".studio", "runtime"))).toBe(false);
+  });
+
+  it("fails closed when the findings ledger at the inspected head is invalid", () => {
+    const { root, head } = makeRepo();
+    writeText(root, ".studio/findings/ledger.jsonl", "{ invalid-jsonl\n");
+    git(root, "add", ".studio/findings/ledger.jsonl");
+    git(root, "commit", "-m", "break findings ledger");
+    const invalidHead = git(root, "rev-parse", "HEAD");
+
+    expect(() => inspectChange(root, { base: head, head: invalidHead })).toThrow(
+      /Invalid JSONL.*ledger\.jsonl:1/u,
+    );
   });
 });
