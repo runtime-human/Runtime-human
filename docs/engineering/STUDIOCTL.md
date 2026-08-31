@@ -113,6 +113,35 @@ Evidence artifact предназначен для ChatGPT/reviewer как ком
 
 Game fingerprints в `runtime-human-pr-evidence-v1` пока отсутствуют намеренно: они появятся только после отдельного работающего `gamectl fingerprint` contract.
 
+## Remote PR transport `/rh`
+
+GitHub `issue_comment` используется как bounded read-only transport над уже существующими contract APIs, а не как удалённый shell.
+
+v1 принимает ровно четыре команды:
+
+```text
+/rh help
+/rh capabilities
+/rh inspect
+/rh game capabilities
+```
+
+Другие команды, дополнительные argv, refs, paths, package commands и shell fragments отклоняются.
+
+Transport использует двухконтурную модель:
+
+1. trusted control checkout берётся из default-branch SHA события `issue_comment`;
+2. trusted admission parser читает event JSON и GitHub PR/permission metadata;
+3. до target checkout отклоняются plain issues, fork PR, base не `main`, недостаточная permission, unsupported command и malformed SHA;
+4. после admission отдельно checkout'ится exact same-repository PR `headSha` с `persist-credentials: false`;
+5. trusted runner отображает typed command enum только в фиксированный executable/argv и всегда использует `shell: false`.
+
+Для target subprocess environment используется allowlist. `GITHUB_TOKEN`, Actions runtime credentials и OIDC request tokens target-коду не наследуются. `gamectl capabilities` при необходимости ставит зависимости с frozen lockfile и `--ignore-scripts` перед фиксированным вызовом `tsx`.
+
+Результат сериализуется в `runtime-human-remote-result-v1`, попадает в Actions summary и публикуется как artifact с retention 3 дня. v1 не пишет bot-комментарии и поэтому не требует write permission от workflow token.
+
+`/rh verify` намеренно отсутствует. Authoritative PR V3 пока запускается GitHub-native сигналом `verify:v3` и по-прежнему исполняет только canonical `pnpm verify`.
+
 ## Game version contract
 
 Версия игры начинается с `0.0.1` и изменяется только на единицу в третьем компоненте:
@@ -155,20 +184,23 @@ pnpm version:bump -- 0.0.2
 
 ## Verification authority
 
-`studioctl` не переопределяет verification policy. V3 остаётся только `pnpm verify`, V4 — `pnpm verify:release`. Normal PR V3 исполняется GitHub-hosted `foundation` workflow.
+`studioctl` не переопределяет verification policy. V3 остаётся только `pnpm verify`, V4 — `pnpm verify:release`.
+
+Обычная PR-итерация использует read-only `feedback` workflow с `pnpm check:fast`. Это быстрый non-authoritative feedback loop без установки Rust/Chromium и без полного V3 на каждый micro-commit.
+
+Для PR authoritative `foundation` запускается явным label event `verify:v3`, после чего выполняет полный `pnpm verify` и публикует `runtime-human-pr-evidence-v1`. Push в `main` и manual dispatch также сохраняют полный V3.
 
 Inspection может рекомендовать V3, но inspection сам по себе не является quality verdict или merge approval. Evidence описывает уже выполненный V3 и тоже не является независимым merge authority.
 
-## Deferred после evidence slice
+## Deferred
 
 Пока не реализованы и не должны предполагаться агентом:
 
 - `studioctl verify` facade;
-- cheap-vs-candidate CI split;
-- `/rh ...` remote PR command protocol;
+- `/rh verify` и любые `/rh` write-команды;
 - автоматическое durable checkpoint management;
 - `gamectl catalog inspect/search`;
 - `gamectl schema list/show`;
-- `gamectl fingerprint`.
+- `gamectl fingerprint` / `repro validate`.
 
 Control-plane не требует локального workstation, self-hosted runner, отдельного backend или MCP-wrapper.
