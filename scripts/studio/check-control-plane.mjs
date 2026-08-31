@@ -189,8 +189,7 @@ if (remoteCommand) {
     "types: [created]",
     "contents: read",
     "pull-requests: read",
-    "github.event.issue.pull_request",
-    "startsWith(github.event.comment.body, '/rh')",
+    "if: ${{ startsWith(github.event.comment.body, '/rh') }}",
     "ref: ${{ github.sha }}",
     "path: control",
     "GITHUB_TOKEN: ${{ github.token }}",
@@ -207,6 +206,7 @@ if (remoteCommand) {
     assert(remoteCommand.includes(snippet), `remote command wiring missing ${snippet}`);
   }
   for (const forbidden of [
+    "github.event.issue.pull_request && startsWith(github.event.comment.body, '/rh')",
     "pull_request_target",
     "workflow_run",
     "secrets.",
