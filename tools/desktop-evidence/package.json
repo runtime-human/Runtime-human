@@ -1,0 +1,19 @@
+{
+  "name": "@runtime-human/desktop-evidence",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "capture:startup": "tsx src/run-capture-process.ts",
+    "capture:startup:worker": "tsx src/capture-startup.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@wdio/tauri-service": "1.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "tsx": "4.23.1",
+    "typescript": "7.0.2"
+  }
+}
