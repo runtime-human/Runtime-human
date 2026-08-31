@@ -57,14 +57,21 @@ function readJsonAt(root, sha, relativePath) {
 }
 
 function readJsonlAt(root, sha, relativePath) {
-  try {
-    return readTextAt(root, sha, relativePath)
-      .split(/\r?\n/u)
-      .filter((line) => line.trim() !== "")
-      .map((line) => JSON.parse(line));
-  } catch {
-    return [];
-  }
+  if (!existsAt(root, sha, relativePath)) return [];
+  return readTextAt(root, sha, relativePath)
+    .split(/\r?\n/u)
+    .map((line, index) => ({ line, index }))
+    .filter(({ line }) => line.trim() !== "")
+    .map(({ line, index }) => {
+      try {
+        return JSON.parse(line);
+      } catch (error) {
+        throw new Error(
+          `Invalid JSONL at ${relativePath}:${index + 1}: ${error instanceof Error ? error.message : String(error)}`,
+          { cause: error },
+        );
+      }
+    });
 }
 
 function existsAt(root, sha, relativePath) {
