@@ -54,7 +54,7 @@ export function createRngDomainPathV1(descriptor: RngDomainDescriptorV1): RngDom
     `domain:${descriptor.domain}`,
     `entity:${descriptor.entityId}`,
     `purpose:${descriptor.purpose}`,
-  ]) as RngDomainPathV1;
+  ]) as unknown as RngDomainPathV1;
 }
 
 export function assertRngDomainPathV1(value: unknown): asserts value is RngDomainPathV1 {
