@@ -2,7 +2,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { pathToFileURL } from "node:url";
 
 const VERSION_PATTERN = /^0\.0\.([1-9]\d*)$/u;
 const DESKTOP_PACKAGE = "runtime-human-desktop";
