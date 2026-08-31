@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { parseArgs } from "node:util";
 
 import { buildStudioCapabilities, inspectChange } from "./studio/control-plane-lib.mjs";
@@ -110,6 +111,5 @@ export function runStudioctl(argv = process.argv.slice(2)) {
   return 2;
 }
 
-if (import.meta.url === `file://${process.argv[1]?.replaceAll("\\", "/")}`) {
-  process.exitCode = runStudioctl();
-}
+const entryUrl = process.argv[1] ? pathToFileURL(path.resolve(process.argv[1])).href : null;
+if (entryUrl === import.meta.url) process.exitCode = runStudioctl();
