@@ -21,13 +21,32 @@ type RemoteCommandModule = Readonly<{
   }) => unknown;
 }>;
 
+type RemoteCommandCliModule = Readonly<{
+  fetchRepositoryPermission: (
+    username: string,
+    token: string,
+    request: (url: string, init: Record<string, unknown>) => Promise<{
+      status: number;
+      ok: boolean;
+      json: () => Promise<unknown>;
+    }>,
+  ) => Promise<Record<string, unknown>>;
+}>;
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const moduleUrl = new URL("../scripts/studio/remote-command-lib.mjs", import.meta.url).href;
+const cliModuleUrl = new URL("../scripts/studio/remote-command.mjs", import.meta.url).href;
 let modulePromise: Promise<RemoteCommandModule> | undefined;
+let cliModulePromise: Promise<RemoteCommandCliModule> | undefined;
 
 function loadModule() {
   modulePromise ??= import(moduleUrl) as Promise<RemoteCommandModule>;
   return modulePromise;
+}
+
+function loadCliModule() {
+  cliModulePromise ??= import(cliModuleUrl) as Promise<RemoteCommandCliModule>;
+  return cliModulePromise;
 }
 
 const REPOSITORY = "runtime-human/Runtime-human";
@@ -143,7 +162,7 @@ describe("remote /rh command contract", () => {
     });
   });
 
-  it("maps admitted commands only to fixed shell-free argv", async () => {
+  it("maps admitted commands only to fixed shell-free argv without target dependency install", async () => {
     const remote = await loadModule();
 
     expect(
@@ -176,16 +195,45 @@ describe("remote /rh command contract", () => {
       remote.buildExecutionPlan("game-capabilities", { baseSha: BASE_SHA, headSha: HEAD_SHA }),
     ).toEqual([
       {
-        file: "pnpm",
-        args: ["install", "--frozen-lockfile", "--ignore-scripts", "--reporter=silent"],
-        shell: false,
-      },
-      {
-        file: "pnpm",
-        args: ["exec", "tsx", "scripts/gamectl-entry.ts", "capabilities", "--json"],
+        file: "node",
+        args: ["scripts/gamectl-capabilities.mjs", "capabilities", "--json"],
         shell: false,
       },
     ]);
+  });
+
+  it("maps a missing collaborator permission record to no access", async () => {
+    const cli = await loadCliModule();
+    const requests: string[] = [];
+    const request = async (url: string) => {
+      requests.push(url);
+      return {
+        status: 404,
+        ok: false,
+        json: async () => ({ message: "Not Found" }),
+      };
+    };
+
+    await expect(cli.fetchRepositoryPermission("outsider", "token", request)).resolves.toEqual({
+      permission: "none",
+      role_name: "none",
+    });
+    expect(requests).toEqual([
+      "https://api.github.com/repos/runtime-human/Runtime-human/collaborators/outsider/permission",
+    ]);
+  });
+
+  it("preserves non-404 permission lookup failures as infrastructure failures", async () => {
+    const cli = await loadCliModule();
+    const request = async () => ({
+      status: 503,
+      ok: false,
+      json: async () => ({ message: "Service unavailable" }),
+    });
+
+    await expect(cli.fetchRepositoryPermission("maintainer", "token", request)).rejects.toThrow(
+      "GitHub API 503",
+    );
   });
 
   it("does not expose GitHub or Actions credentials to target subprocesses", async () => {
