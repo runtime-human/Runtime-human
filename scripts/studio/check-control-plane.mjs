@@ -50,6 +50,7 @@ if (project) {
 }
 
 const toolingPaths = [
+  ".github/**",
   "scripts/studio/**",
   "scripts/studioctl.mjs",
   "scripts/versioning.mjs",
