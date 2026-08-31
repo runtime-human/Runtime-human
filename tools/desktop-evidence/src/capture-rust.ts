@@ -20,7 +20,7 @@ export async function captureRustPerformanceSnapshot(
     const globalWithTauri = globalThis as typeof globalThis & {
       __TAURI__?: {
         core?: {
-          invoke<T>(command: string, args?: Record<string, unknown>): Promise<T>;
+          invoke: <T>(command: string, args?: Record<string, unknown>) => Promise<T>;
         };
       };
     };
