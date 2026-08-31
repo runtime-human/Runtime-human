@@ -80,7 +80,9 @@ describe("January 1990 hierarchical RNG shadow evidence", () => {
     narrative.nextUint64();
     narrative.nextUint64();
 
-    expect(deriveRandomSource(rootState, paths.outcomeQualityRoll).exportState()).toBe(outcomeBefore);
+    expect(deriveRandomSource(rootState, paths.outcomeQualityRoll).exportState()).toBe(
+      outcomeBefore,
+    );
   });
 
   it("does not alter authoritative January execution", () => {
@@ -89,11 +91,11 @@ describe("January 1990 hierarchical RNG shadow evidence", () => {
       balance: JANUARY_1990_DEFAULT_BALANCE,
       saveSchemaFingerprint: JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
     });
-    const before = simulation.runOnce({ seed: 42, policyId: "always-first" });
+    const before = simulation.runOnce({ seed: 42, policyId: "always-first-valid" });
 
     createReport();
 
-    const after = simulation.runOnce({ seed: 42, policyId: "always-first" });
+    const after = simulation.runOnce({ seed: 42, policyId: "always-first-valid" });
     expect(after).toEqual(before);
   });
 });
