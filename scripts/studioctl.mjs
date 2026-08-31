@@ -176,7 +176,11 @@ export function runStudioctl(argv = process.argv.slice(2)) {
       else process.stdout.write(summary);
       return 0;
     } catch (error) {
-      emitError(values.json, "evidence-failed", error instanceof Error ? error.message : String(error));
+      emitError(
+        values.json,
+        "evidence-failed",
+        error instanceof Error ? error.message : String(error),
+      );
       return 1;
     }
   }
