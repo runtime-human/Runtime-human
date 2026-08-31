@@ -138,6 +138,7 @@ export default defineConfig({
         "tests/gamectl-harness-cli.test.ts",
         "tests/performance-recorder.test.ts",
         "tests/performance-summary.test.ts",
+        "tests/remote-command.test.ts",
         "tests/renderer-milestones.test.ts",
         "tests/runtime-human-design-tokens.test.ts",
         "tests/studio-context.test.ts",
