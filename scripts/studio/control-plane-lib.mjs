@@ -36,7 +36,8 @@ function git(root, args, options = {}) {
 
 function resolveCommit(root, ref) {
   const output = git(root, ["rev-parse", "--verify", `${ref}^{commit}`]).trim();
-  if (!/^[0-9a-f]{40}$/u.test(output)) throw new Error(`git ref did not resolve to a full SHA: ${ref}`);
+  if (!/^[0-9a-f]{40}$/u.test(output))
+    throw new Error(`git ref did not resolve to a full SHA: ${ref}`);
   return output;
 }
 
@@ -85,14 +86,16 @@ function primaryZone(selected) {
   return (
     selected
       .map((entry, index) => ({ id: entry.id, count: entry.matched.length, index }))
-      .toSorted((a, b) => b.count - a.count || a.index - b.index || a.id.localeCompare(b.id, "en"))[0]
-      ?.id ?? null
+      .toSorted(
+        (a, b) => b.count - a.count || a.index - b.index || a.id.localeCompare(b.id, "en"),
+      )[0]?.id ?? null
   );
 }
 
 function authorityImpact(changedPaths) {
   const paths = changedPaths.map(toPosix);
-  const any = (patterns) => paths.some((candidate) => patterns.some((pattern) => pattern.test(candidate)));
+  const any = (patterns) =>
+    paths.some((candidate) => patterns.some((pattern) => pattern.test(candidate)));
   return {
     canon: any([/^docs\//u, /^AGENTS\.md$/u, /^GAME\.md$/u]),
     gameplay: any([
