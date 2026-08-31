@@ -1,13 +1,14 @@
 export const STUDIO_CAPABILITIES_SCHEMA: "runtime-human-studio-capabilities-v1";
 export const CHANGE_INSPECTION_SCHEMA: "runtime-human-change-inspection-v1";
+export const PR_EVIDENCE_SCHEMA: "runtime-human-pr-evidence-v1";
 
 export type StudioCapabilities = Readonly<{
   schemaVersion: typeof STUDIO_CAPABILITIES_SCHEMA;
-  commands: Readonly<{ capabilities: 1; inspect: 1 }>;
+  commands: Readonly<{ capabilities: 1; inspect: 1; evidence: 1 }>;
   contracts: Readonly<{
     inspection: typeof CHANGE_INSPECTION_SCHEMA;
     taskEnvelope: "runtime-human-task-envelope-v1";
-    evidence?: never;
+    evidence: typeof PR_EVIDENCE_SCHEMA;
   }>;
   verification: Readonly<{ v3: "pnpm verify"; v4: "pnpm verify:release" }>;
 }>;
@@ -43,6 +44,7 @@ export type ChangeInspection = Readonly<{
   ignoredPaths: string[];
 }>;
 
+export function resolveCommit(root: string, ref: string): string;
 export function buildStudioCapabilities(): StudioCapabilities;
 export function inspectChange(
   root: string,

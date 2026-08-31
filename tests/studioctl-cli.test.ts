@@ -115,12 +115,12 @@ describe("studioctl capabilities", () => {
   it("reports only installed control-plane commands and stable contracts", () => {
     const value = buildStudioCapabilities();
     expect(value.schemaVersion).toBe(STUDIO_CAPABILITIES_SCHEMA);
-    expect(value.commands).toEqual({ capabilities: 1, inspect: 1 });
+    expect(value.commands).toEqual({ capabilities: 1, inspect: 1, evidence: 1 });
     expect(value.contracts).toMatchObject({
       inspection: CHANGE_INSPECTION_SCHEMA,
       taskEnvelope: "runtime-human-task-envelope-v1",
+      evidence: "runtime-human-pr-evidence-v1",
     });
-    expect(value.contracts.evidence).toBeUndefined();
     expect(value.verification).toEqual({ v3: "pnpm verify", v4: "pnpm verify:release" });
   });
 
@@ -135,7 +135,7 @@ describe("studioctl capabilities", () => {
     };
 
     expect(value.schemaVersion).toBe(STUDIO_CAPABILITIES_SCHEMA);
-    expect(value.commands).toEqual({ capabilities: 1, inspect: 1 });
+    expect(value.commands).toEqual({ capabilities: 1, inspect: 1, evidence: 1 });
   });
 });
 
