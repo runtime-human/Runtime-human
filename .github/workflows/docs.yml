@@ -1,17 +1,6 @@
 name: docs
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "docs/**"
-      - "AGENTS.md"
-      - "CONTRIBUTING.md"
-      - "README.md"
-      - "SECURITY.md"
-      - "scripts/build-toc.mjs"
-      - ".github/workflows/docs.yml"
   pull_request:
     branches:
       - main
@@ -23,25 +12,25 @@ on:
       - "SECURITY.md"
       - "scripts/build-toc.mjs"
       - ".github/workflows/docs.yml"
-  workflow_dispatch:
 
 concurrency:
-  group: docs-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: docs-pr-88-materialize
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  docs-lint:
-    name: docs / ubuntu-24.04
+  materialize:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'feat/pr-evidence-plane'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - name: Checkout
+      - name: Checkout exact PR head
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: true
           show-progress: false
 
       - name: Set up Node
@@ -50,18 +39,14 @@ jobs:
           node-version: "24.20.0"
           package-manager-cache: false
 
-      - name: Materialize docs outputs
+      - name: Materialize canonical docs outputs
         run: node scripts/build-toc.mjs
 
-      - name: Verify generated docs
-        run: node scripts/build-toc.mjs --check
-
-      - name: Upload generated docs
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: generated-docs-pr-88
-          path: |
-            docs/CATALOG.md
-            docs/MANIFEST.jsonc
-          retention-days: 1
-          if-no-files-found: error
+      - name: Commit only generated docs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/CATALOG.md docs/MANIFEST.jsonc
+          git diff --cached --quiet && exit 0
+          git commit -m "docs: refresh generated catalog"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
