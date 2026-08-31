@@ -1,9 +1,8 @@
 ---
 title: "PR Evidence Plane Implementation Plan"
 type: plan
-status: active
+status: completed
 canon: true
-depends_on: [STUDIOCTL]
 updated: 2026-08-31
 ---
 
@@ -40,7 +39,7 @@ updated: 2026-08-31
 - Modify `scripts/studioctl.mjs`: add strict `evidence` command and file outputs.
 - Create `tests/studio-pr-evidence.test.ts`: contract, success/failure, malformed inspection and synthetic-merge identity coverage.
 - Modify `tests/studioctl-cli.test.ts`: installed capability map now includes evidence.
-- Modify `.github/workflows/foundation.yml`: preserve V3 outcome, always materialize PR evidence, append summary, upload short-retention artifact, then re-fail failed V3.
+- Modify `.github/workflows/foundation.yml`: preserve V3 outcome, always materialize PR evidence, append short-retention artifact, then re-fail failed V3.
 - Modify `docs/engineering/STUDIOCTL.md`: document the installed evidence contract and GitHub SHA semantics.
 - Regenerate `docs/CATALOG.md` and `docs/MANIFEST.jsonc` with the canonical docs generator.
 
@@ -118,7 +117,7 @@ Reuse the implementation already used by `inspectChange`; do not add a second `g
 
 - [ ] **Step 2: Implement strict evidence assembly**
 
-Reject non-full SHAs, wrong inspection schema, inspection/base/head mismatch, unsupported tiers/status values, negative/non-integer exit codes and contradictory status/result combinations (`success` requires code `0`; `failure` requires non-zero code).
+Reject non-full SHAs, wrong inspection schema, inspection/base/head mismatch, unsupported status values, negative/non-integer exit codes and contradictory status/result combinations (`success` requires code `0`; `failure` requires non-zero code).
 
 - [ ] **Step 3: Add `studioctl evidence`**
 
@@ -204,7 +203,6 @@ ci: publish exact PR evidence
 - Modify: `docs/engineering/STUDIOCTL.md`
 - Regenerate: `docs/CATALOG.md`
 - Regenerate: `docs/MANIFEST.jsonc`
-- Modify this plan status to `completed` after exact-head GREEN evidence.
 
 **Interfaces:**
 - Documentation must advertise only the implemented v1 fields and current workflow semantics.
@@ -245,6 +243,6 @@ Require exact-head `pr-title`, `docs` and `foundation` success. Download/read th
 
 Confirm no game/runtime behavior, persistence contract, Rulesets, privileged trigger, secrets or write permissions were added; confirm the workflow still fails when canonical V3 fails.
 
-- [ ] **Step 7: Mark plan completed and update the single PR checkpoint**
+- [ ] **Step 7: Update the single PR checkpoint**
 
-Only after unchanged-head GREEN evidence, set this plan `status: completed` and update one `runtime-human-chat-checkpoint-v1` comment with exact run/artifact IDs and the next issue (#87).
+After unchanged-head GREEN evidence, update one `runtime-human-chat-checkpoint-v1` comment with exact run/artifact IDs and the next issue (#87).
