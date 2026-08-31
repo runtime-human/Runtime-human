@@ -13,7 +13,10 @@ const DEFAULT_CAPTURE_DEADLINE_MS = 300_000;
 const CLEANUP_RETRIES = 20;
 const CLEANUP_RETRY_DELAY_MS = 100;
 
-type WindowsDirectoryEnvironment = Readonly<Pick<NodeJS.ProcessEnv, "SystemRoot" | "WINDIR">>;
+type WindowsDirectoryEnvironment = Readonly<{
+  SystemRoot?: string;
+  WINDIR?: string;
+}>;
 
 export type CaptureProcessResult = Readonly<{
   code: number | null;
