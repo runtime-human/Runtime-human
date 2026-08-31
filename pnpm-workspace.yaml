@@ -1,8 +1,14 @@
 packages:
   - apps/*
   - packages/*
+  - tools/*
+
+overrides:
+  "@wdio/native-utils": 2.5.0
 
 allowBuilds:
   esbuild: true
   "@tauri-apps/cli": true
   nx: true
+  edgedriver: true
+  geckodriver: false

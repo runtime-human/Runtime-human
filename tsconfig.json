@@ -15,6 +15,7 @@
     { "path": "packages/game-ui" },
     { "path": "packages/game-ui-fixtures" },
     { "path": "apps/desktop" },
+    { "path": "tools/desktop-evidence" },
     { "path": "tests" },
     { "path": "scripts" }
   ]
