@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   probe:
-    runs-on: ubuntu-24.04
+    runs-on: windows-2025
     timeout-minutes: 10
     steps:
       - name: Checkout
@@ -32,7 +32,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
       - name: Show canonical formatter diff
-        shell: bash
+        shell: pwsh
         run: |
           pnpm exec oxfmt scripts/studio/check-control-plane.mjs scripts/studio/control-plane-lib.mjs scripts/studioctl.mjs scripts/versioning.mjs
-          git diff -- scripts/studio/check-control-plane.mjs scripts/studio/control-plane-lib.mjs scripts/studioctl.mjs scripts/versioning.mjs
+          git diff --no-ext-diff --text -- scripts/studio/check-control-plane.mjs scripts/studio/control-plane-lib.mjs scripts/studioctl.mjs scripts/versioning.mjs
