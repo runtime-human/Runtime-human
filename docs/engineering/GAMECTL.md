@@ -3,17 +3,18 @@ title: "gamectl — headless game development CLI"
 type: engine
 status: draft
 canon: true
-updated: 2026-08-29
+updated: 2026-08-31
 ---
 
 # gamectl — headless game development CLI
 
 `gamectl` — headless API игры для агентов (P-03 headless parity, P-04 structured output). Это thin CLI shell над `@runtime-human/game-devtools` и `@runtime-human/game-simulation`: CLI не содержит gameplay-логики — только парсинг аргументов, вызовы библиотек, форматирование и exit codes. Без CLI-фреймворков: используется `util.parseArgs` из Node 24 (`strict: true`, `allowPositionals: true`).
 
-Запуск: `pnpm gamectl <command>` (обёртка `tsx scripts/gamectl.ts`). Корень репозитория по умолчанию — репозиторий, содержащий скрипт; переопределяется `--root <path>`.
+Запуск: `pnpm gamectl <command>`. В Slice A package entry указывает на `tsx scripts/gamectl-entry.ts`: entry обрабатывает только exact-target `capabilities`, а все существующие game-semantic команды делегирует в `scripts/gamectl.ts`. Ни entry, ни engine не принимают PR/GitHub semantics. Корень репозитория для существующих game-команд по умолчанию — репозиторий, содержащий engine; переопределяется `--root <path>`.
 
 ## Command tree v1
 
+- `capabilities` — exact-target discovery реализованных команд и versioned game contracts; result schema `runtime-human-gamectl-capabilities-v1`;
 - `doctor` — проверки окружения и контента;
 - `catalog list [--kind <kind>] [--domain <domain>] [--era <era>]`;
 - `catalog show <id>`;
@@ -28,7 +29,15 @@ updated: 2026-08-29
 - `replay <path/*.repro.json> [--trace]` — воспроизведение `game-repro-v1` артефакта поверх активного ruleset (`fixtures/repro/`); `--trace` добавляет в вывод `game-replay-trace-v1` — decisions (requestId/decisionId/answer) и materialized quality scores завершённого прогона; trace не является authoritative state;
 - `explain (--repro <file> | --outcome january-1990 --access <route> --learning <practice> --response <response> --roll <n>)` — structured explanation `quality-explain-v1` (ruleVersion `january-quality-v1`): contributions из таблиц активного баланса (`quality.base`, `quality.access.*`, `quality.learning.*`, `quality.response.*`, `quality.roll`) → result. В режиме `--repro` прогон воспроизводится и объясняется фактический outcome (roll выводится из quality scores); в режиме `--outcome` — явные closed-входы. Trace/explanation не являются authoritative state; reason codes стабильны и локализация строится поверх них.
 
-Planned (не реализовано, не вызывать): семантическое расширение `catalog impact` (risk/owner-слои), `balance`, `scenario`, `save`, `repro validate`.
+### Exact-target capabilities
+
+`pnpm gamectl capabilities --json` использует существующий transport envelope `runtime-human-gamectl-v1`, но result имеет отдельную схему `runtime-human-gamectl-capabilities-v1`.
+
+Capability map содержит только команды, реально реализованные на этом head. В Slice A он включает `capabilities`, `doctor`, текущие `catalog.*`, `content.*`, `simulate.*`, `fixture.*`, `replay` и `explain`. Planned-команды не должны появляться в ответе заранее.
+
+Контракт diagnostic остаётся `runtime-human-diagnostic-v1`.
+
+Planned после Slice A (не реализовано, не вызывать): `catalog inspect`, deterministic `catalog search`, `schema list/show`, `fingerprint`, семантическое расширение `catalog impact` (risk/owner-слои), `balance`, `scenario`, `save`, `repro validate`.
 
 ## Output contract
 
@@ -46,7 +55,7 @@ Planned (не реализовано, не вызывать): семантиче
   }
   ```
 
-  При ошибке: тот же envelope с `"ok": false` и `"error": { "code", "message", "diagnostics"? }` (`diagnostics` — только когда есть). `command` — одно из `doctor`, `catalog.list`, `catalog.show`, `catalog.refs`, `catalog.impact`, `content.validate`, `content.source`, `simulate.run`, `simulate.compare`, `fixture.list`, `fixture.materialize`, `replay`, `explain`; при неизвестной команде или ошибке разбора аргументов — `"unknown"`. Исключения при не-ok: `doctor` и `simulate compare` возвращают `result` с отчётом (без `error`) — отчёт и есть evidence; `simulate compare` с regressions даёт `ok: false`, `exit 1` и полный compare-отчёт.
+  При ошибке: тот же envelope с `"ok": false` и `"error": { "code", "message", "diagnostics"? }` (`diagnostics` — только когда есть). `command` — одно из `capabilities`, `doctor`, `catalog.list`, `catalog.show`, `catalog.refs`, `catalog.impact`, `content.validate`, `content.source`, `simulate.run`, `simulate.compare`, `fixture.list`, `fixture.materialize`, `replay`, `explain`; при неизвестной команде или ошибке разбора аргументов — `"unknown"`. Исключения при non-ok: `doctor` и `simulate compare` возвращают `result` с отчётом (без `error`) — отчёт и есть evidence; `simulate compare` с regressions даёт `ok: false`, `exit 1` и полный compare-отчёт.
 - `--quiet`: минимальный вывод для `catalog list` (только id), `content validate`/`doctor` (итог `OK`/`FAIL`); для `show`/`refs`/`impact`/`source` принимается, но не меняет вывод.
 
 Структурированные диагностики следуют контракту `runtime-human-diagnostic-v1`: `code`, `severity` (`error|warning|info`), `category` (`content|catalog|balance|scenario|environment`), `message` и опциональные `entityId`, `path`, `line`, `column`, `pointer` (JSON Pointer), `invariant`, `fixKind`.
@@ -65,8 +74,8 @@ Planned (не реализовано, не вызывать): семантиче
 ## Замечания об окружении Windows
 
 - `--json` требует «голого» флага: `--json=true` parseArgs отвергает до определения режима (exit 2, envelope не выдаётся).
-- При запуске через `pnpm` на не-нулевом exit pnpm дописывает служебные строки в stdout — машинный парсинг envelope ведите с вызова `node --import tsx scripts/gamectl.ts` напрямую либо парсингом от первого `{`.
-- Транспорт `cmd` (pnpm→tsx) искажает особые argv (переводы строк режут команду, `%VAR%` разворачивается, есть лимит длины строки) — для таких аргументов вызывайте node напрямую.
+- При запуске через `pnpm` на ненулевом exit pnpm дописывает служебные строки в stdout — машинный парсинг legacy game-команд ведите с вызова `node --import tsx scripts/gamectl-entry.ts` напрямую либо парсингом от первого `{`.
+- Transport `cmd` (pnpm→tsx) искажает особые argv (переводы строк режут команду, `%VAR%` разворачивается, есть лимит длины строки) — для таких аргументов вызывайте node напрямую.
 - zones-matcher нормализует `\` → `/` и отбрасывает пустые и `.`-сегменты; сравнение сегментов case-sensitive.
 - tests-скан `catalog impact` пропускает симлинки и нечитаемые файлы без diagnostics.
 
@@ -77,6 +86,7 @@ Planned (не реализовано, не вызывать): семантиче
 ## Примеры
 
 ```sh
+pnpm gamectl capabilities --json
 pnpm gamectl catalog list --json
 pnpm gamectl catalog show core.skill.debugging
 pnpm gamectl catalog refs core.skill.debugging
@@ -97,10 +107,11 @@ pnpm gamectl explain --outcome january-1990 --access home-pc --learning edit-and
 ## Ограничения v1
 
 - read-only: команда не мутирует репозиторий (сборка/запись артефактов — `pnpm content:build`, не `gamectl`);
+- `capabilities` — discovery, а не feature negotiation: отсутствующая команда считается отсутствующей и не должна угадываться агентом;
 - tests-скан для `catalog impact` ищет подстроку id по каталогу `tests/` — без AST-анализа;
 - references-циклы компилятор v1 принимает без диагностики (семантика циклов — решение content-зоны);
 - zones сопоставляются по путям из `.studio/zones.json`;
 - simulate compare принимает только локальные файлы отчётов (git-ref механика — deferred, owner-решение);
 - fixture materialize доступен только для slice `january-1990` (единственный materializer);
 - explain/trace не являются authoritative state и не входят в checkpoint hash;
-- planned: семантическое расширение `catalog impact`, `balance`, `scenario`, `save`.
+- planned: `catalog inspect/search`, schema discovery, fingerprint, семантическое расширение `catalog impact`, `balance`, `scenario`, `save`.
