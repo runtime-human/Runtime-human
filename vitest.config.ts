@@ -125,6 +125,7 @@ export default defineConfig({
         "tests/balance-authoring-schema-parity.test.ts",
         "tests/check-boundaries.test.ts",
         "tests/check-build-only-dependencies.test.ts",
+        "tests/ci-feedback-candidate.test.ts",
         "tests/desktop-content-csp.test.ts",
         "tests/desktop-performance-evidence.test.ts",
         "tests/desktop-performance-evidence-cli.test.ts",
