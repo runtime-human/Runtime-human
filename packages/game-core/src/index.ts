@@ -1,6 +1,16 @@
 export { canonicalizeAuthoritative } from "./determinism/authoritative-json";
 export { fingerprint, sha256Hex, stableId } from "./determinism/hash";
 export type { RandomSource } from "./determinism/random-source";
+export {
+  RNG_DOMAIN_PURPOSES_V1,
+  createRngDomainPathV1,
+} from "./determinism/rng-domain";
+export type {
+  RngDomainDescriptorV1,
+  RngDomainPathV1,
+  RngDomainPurposeV1,
+  RngDomainV1,
+} from "./determinism/rng-domain";
 export { deriveRandomSource, deriveRngState } from "./determinism/rng-derivation";
 export { Xoshiro256StarStar } from "./determinism/xoshiro256ss";
 export { RNG_DERIVATION_MANIFEST_V1 } from "@runtime-human/game-schema";
