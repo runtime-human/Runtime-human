@@ -3,9 +3,14 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import ts from "typescript";
 
 const WORKSPACE_PREFIX = "@runtime-human/";
 const SOURCE_EXTENSIONS = new Set([".js", ".jsx", ".mjs", ".mts", ".ts", ".tsx"]);
+const GAME_CORE_DIRECT_XOSHIRO_ALLOWLIST = new Set([
+  "packages/game-core/src/determinism/rng-derivation.ts",
+  "packages/game-core/src/january-1990/january-month-steps.ts",
+]);
 
 const ALLOWED_WORKSPACE_DEPENDENCIES = new Map([
   ["shared-kernel", new Set()],
@@ -193,6 +198,91 @@ function validateSourceImports(root, directory, shortName, allowed, knownPackage
   );
 }
 
+function repositoryPath(root, file) {
+  return path.relative(root, file).split(path.sep).join("/");
+}
+
+function isMathRandomAccess(node) {
+  if (
+    ts.isPropertyAccessExpression(node) &&
+    ts.isIdentifier(node.expression) &&
+    node.expression.text === "Math" &&
+    node.name.text === "random"
+  ) {
+    return true;
+  }
+
+  return (
+    ts.isElementAccessExpression(node) &&
+    ts.isIdentifier(node.expression) &&
+    node.expression.text === "Math" &&
+    ts.isStringLiteral(node.argumentExpression) &&
+    node.argumentExpression.text === "random"
+  );
+}
+
+function importsDirectXoshiro(node) {
+  if (!ts.isImportDeclaration(node) || !ts.isStringLiteral(node.moduleSpecifier)) {
+    return false;
+  }
+
+  const specifier = node.moduleSpecifier.text;
+  if (/(?:^|\/)determinism\/xoshiro256ss(?:\.js)?$/u.test(specifier)) {
+    return true;
+  }
+
+  const bindings = node.importClause?.namedBindings;
+  return (
+    bindings !== undefined &&
+    ts.isNamedImports(bindings) &&
+    bindings.elements.some(
+      (element) => (element.propertyName ?? element.name).text === "Xoshiro256StarStar",
+    )
+  );
+}
+
+function gameCoreRngDiagnostics(root, file) {
+  const relativeFile = repositoryPath(root, file);
+  const sourceFile = ts.createSourceFile(
+    file,
+    fs.readFileSync(file, "utf8"),
+    ts.ScriptTarget.Latest,
+    true,
+  );
+  const diagnostics = [];
+  let foundMathRandom = false;
+  let foundDirectXoshiro = false;
+
+  function visit(node) {
+    if (!foundMathRandom && isMathRandomAccess(node)) foundMathRandom = true;
+    if (!foundDirectXoshiro && importsDirectXoshiro(node)) foundDirectXoshiro = true;
+    ts.forEachChild(node, visit);
+  }
+
+  visit(sourceFile);
+
+  if (foundMathRandom) {
+    diagnostics.push(`${relativeFile}: authoritative game-core cannot call Math.random`);
+  }
+  if (
+    foundDirectXoshiro &&
+    !GAME_CORE_DIRECT_XOSHIRO_ALLOWLIST.has(relativeFile)
+  ) {
+    diagnostics.push(
+      `${relativeFile}: authoritative RNG must use the managed derivation API`,
+    );
+  }
+
+  return diagnostics;
+}
+
+function validateGameCoreRngAuthority(root, directory, shortName) {
+  if (shortName !== "game-core") return [];
+  return walkSourceFiles(path.join(directory, "src")).flatMap((file) =>
+    gameCoreRngDiagnostics(root, file),
+  );
+}
+
 export function validateWorkspace(root) {
   const diagnostics = [];
   const packageDirectories = [
@@ -226,6 +316,7 @@ export function validateWorkspace(root) {
         knownPackages,
       ),
       ...validateSourceImports(root, directory, shortName, allowed, knownPackages),
+      ...validateGameCoreRngAuthority(root, directory, shortName),
     );
   }
 
