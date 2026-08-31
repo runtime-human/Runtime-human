@@ -26,7 +26,7 @@ export type CaptureProcessResult = Readonly<{
 export type CaptureChildProcess = Readonly<{
   pid: number;
   result: Promise<CaptureProcessResult>;
-  killTree(): Promise<void>;
+  killTree: () => Promise<void>;
 }>;
 
 export type CaptureProcessPorts = Readonly<{
