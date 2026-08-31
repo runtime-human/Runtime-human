@@ -1,0 +1,216 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { describe, expect, it } from "vitest";
+
+type RemoteCommandModule = Readonly<{
+  parseRemoteCommand: (body: string) => Record<string, unknown>;
+  admitRemoteCommand: (input: Record<string, unknown>) => Record<string, unknown>;
+  buildExecutionPlan: (
+    command: string,
+    input: Readonly<{ baseSha: string; headSha: string }>,
+  ) => ReadonlyArray<Readonly<{ file: string; args: readonly string[]; shell: boolean }>>;
+  buildRemoteResult: (input: Record<string, unknown>) => Record<string, unknown>;
+  serializeRemoteResult: (result: Record<string, unknown>) => string;
+}>;
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const moduleUrl = new URL("../scripts/studio/remote-command-lib.mjs", import.meta.url).href;
+let modulePromise: Promise<RemoteCommandModule> | undefined;
+
+function loadModule() {
+  modulePromise ??= import(moduleUrl) as Promise<RemoteCommandModule>;
+  return modulePromise;
+}
+
+const REPOSITORY = "runtime-human/Runtime-human";
+const BASE_SHA = "1".repeat(40);
+const HEAD_SHA = "2".repeat(40);
+
+function admittedInput(overrides: Record<string, unknown> = {}) {
+  const event = {
+    action: "created",
+    repository: { full_name: REPOSITORY },
+    issue: { number: 101, pull_request: { url: "https://api.github.com/pulls/101" } },
+    comment: { body: "/rh inspect", user: { login: "maintainer" } },
+  };
+  const pullRequest = {
+    number: 101,
+    base: { ref: "main", sha: BASE_SHA, repo: { full_name: REPOSITORY } },
+    head: { sha: HEAD_SHA, repo: { full_name: REPOSITORY } },
+  };
+  const permission = { permission: "write", role_name: "write" };
+  return { event, pullRequest, permission, expectedRepository: REPOSITORY, ...overrides };
+}
+
+describe("remote /rh command contract", () => {
+  it("accepts only the four bounded commands after whitespace normalization", async () => {
+    const remote = await loadModule();
+
+    expect(remote.parseRemoteCommand("  /rh   help\n")).toMatchObject({ ok: true, command: "help" });
+    expect(remote.parseRemoteCommand("/rh capabilities")).toMatchObject({
+      ok: true,
+      command: "studio-capabilities",
+    });
+    expect(remote.parseRemoteCommand("/rh inspect")).toMatchObject({ ok: true, command: "inspect" });
+    expect(remote.parseRemoteCommand("/rh game capabilities")).toMatchObject({
+      ok: true,
+      command: "game-capabilities",
+    });
+
+    for (const body of [
+      "/rh inspect; rm -rf /",
+      "/rh inspect && whoami",
+      "/rh game capabilities --root ..",
+      "/rh verify v3",
+      "/rh inspect\nwhoami",
+      `/rh capabilities ${"x".repeat(300)}`,
+    ]) {
+      expect(remote.parseRemoteCommand(body)).toMatchObject({ ok: false });
+    }
+  });
+
+  it("rejects untrusted admission cases before target execution", async () => {
+    const remote = await loadModule();
+
+    expect(remote.admitRemoteCommand(admittedInput())).toMatchObject({
+      schemaVersion: "runtime-human-remote-admission-v1",
+      status: "admitted",
+      command: "inspect",
+      prNumber: 101,
+      requestedBy: "maintainer",
+      baseSha: BASE_SHA,
+      headSha: HEAD_SHA,
+    });
+
+    const plainIssue = admittedInput();
+    plainIssue.event.issue = { number: 101 } as typeof plainIssue.event.issue;
+    expect(remote.admitRemoteCommand(plainIssue)).toMatchObject({
+      status: "rejected",
+      error: { code: "not-pull-request" },
+    });
+
+    const fork = admittedInput();
+    fork.pullRequest = {
+      ...fork.pullRequest,
+      head: { ...fork.pullRequest.head, repo: { full_name: "attacker/fork" } },
+    };
+    expect(remote.admitRemoteCommand(fork)).toMatchObject({
+      status: "rejected",
+      error: { code: "fork-pull-request" },
+    });
+
+    const readOnly = admittedInput({ permission: { permission: "read", role_name: "read" } });
+    expect(remote.admitRemoteCommand(readOnly)).toMatchObject({
+      status: "rejected",
+      error: { code: "insufficient-permission" },
+    });
+
+    const badSha = admittedInput();
+    badSha.pullRequest = {
+      ...badSha.pullRequest,
+      head: { ...badSha.pullRequest.head, sha: "not-a-sha" },
+    };
+    expect(remote.admitRemoteCommand(badSha)).toMatchObject({
+      status: "rejected",
+      error: { code: "invalid-sha" },
+    });
+  });
+
+  it("maps admitted commands only to fixed shell-free argv", async () => {
+    const remote = await loadModule();
+
+    expect(remote.buildExecutionPlan("studio-capabilities", { baseSha: BASE_SHA, headSha: HEAD_SHA })).toEqual([
+      {
+        file: "node",
+        args: ["scripts/studioctl.mjs", "capabilities", "--json"],
+        shell: false,
+      },
+    ]);
+
+    expect(remote.buildExecutionPlan("inspect", { baseSha: BASE_SHA, headSha: HEAD_SHA })).toEqual([
+      {
+        file: "node",
+        args: [
+          "scripts/studioctl.mjs",
+          "inspect",
+          "--base",
+          BASE_SHA,
+          "--head",
+          HEAD_SHA,
+          "--json",
+        ],
+        shell: false,
+      },
+    ]);
+
+    expect(remote.buildExecutionPlan("game-capabilities", { baseSha: BASE_SHA, headSha: HEAD_SHA })).toEqual([
+      {
+        file: "pnpm",
+        args: ["install", "--frozen-lockfile", "--ignore-scripts", "--reporter=silent"],
+        shell: false,
+      },
+      {
+        file: "pnpm",
+        args: ["exec", "tsx", "scripts/gamectl-entry.ts", "capabilities", "--json"],
+        shell: false,
+      },
+    ]);
+  });
+
+  it("serializes deterministic typed remote results", async () => {
+    const remote = await loadModule();
+    const input = {
+      admission: {
+        schemaVersion: "runtime-human-remote-admission-v1",
+        status: "admitted",
+        command: "studio-capabilities",
+        prNumber: 101,
+        requestedBy: "maintainer",
+        baseSha: BASE_SHA,
+        headSha: HEAD_SHA,
+      },
+      status: "success",
+      payload: { schemaVersion: "runtime-human-studio-capabilities-v1" },
+      controlSha: "3".repeat(40),
+      runId: "12345",
+    };
+    const first = remote.buildRemoteResult(input);
+    const second = remote.buildRemoteResult(input);
+
+    expect(first).toEqual(second);
+    expect(first).toMatchObject({
+      schemaVersion: "runtime-human-remote-result-v1",
+      command: "studio-capabilities",
+      status: "success",
+      prNumber: 101,
+      requestedBy: "maintainer",
+      baseSha: BASE_SHA,
+      headSha: HEAD_SHA,
+      targetSha: HEAD_SHA,
+      controlSha: "3".repeat(40),
+      runId: "12345",
+    });
+    expect(remote.serializeRemoteResult(first)).toBe(`${JSON.stringify(first, null, 2)}\n`);
+  });
+
+  it("keeps the permanent workflow read-only and free of comment-to-shell interpolation", () => {
+    const workflow = fs.readFileSync(path.join(root, ".github/workflows/remote-command.yml"), "utf8");
+
+    expect(workflow).toMatch(/issue_comment:\s*\n\s*types:\s*\[created\]/u);
+    expect(workflow).toContain("contents: read");
+    expect(workflow).toContain("pull-requests: read");
+    expect(workflow).toContain("persist-credentials: false");
+    expect(workflow).toContain("fetch-depth: 0");
+    expect(workflow).toContain("runtime-human-remote-result-${{ github.run_id }}");
+    expect(workflow).not.toContain("pull_request_target");
+    expect(workflow).not.toContain("workflow_run");
+    expect(workflow).not.toContain("secrets.");
+
+    const runBlocks = [...workflow.matchAll(/run:\s*\|([\s\S]*?)(?=\n\s{6,}- name:|\n\s{4,}[a-zA-Z_-]+:|$)/gu)]
+      .map((match) => match[1])
+      .join("\n");
+    expect(runBlocks).not.toContain("github.event.comment.body");
+  });
+});
