@@ -7,6 +7,7 @@ import {
 import {
   createJanuary1990RngDomainPathsV1,
   deriveRandomSource,
+  fingerprint,
   JANUARY_1990_CONTENT_IDS,
   JANUARY_1990_DEFAULT_BALANCE,
   RNG_DERIVATION_MANIFEST_V1,
@@ -69,6 +70,12 @@ describe("January 1990 hierarchical RNG shadow evidence", () => {
       expect(stream).not.toHaveProperty("derivedState");
       expect(stream).not.toHaveProperty("postCallsState");
     }
+  });
+
+  it("matches the committed golden report fingerprint", () => {
+    expect(fingerprint("january-1990-rng-shadow-report-golden-v1", createReport())).toBe(
+      "0000000000000000000000000000000000000000000000000000000000000000",
+    );
   });
 
   it("keeps the outcome shadow stream independent from narrative consumption", () => {
