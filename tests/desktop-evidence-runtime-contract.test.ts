@@ -6,7 +6,9 @@ import { describe, expect, it } from "vitest";
 const MAIN_PATH = resolve("apps/desktop/src-tauri/src/main.rs");
 const DIAGNOSTICS_PATH = resolve("apps/desktop/src-tauri/src/diagnostics.rs");
 const CAPTURE_WORKFLOW_PATH = resolve(".github/workflows/perf-02a-e2-windows-capture.yml");
+const CAPTURE_CAPABILITIES_PATH = resolve("tools/desktop-evidence/src/capture-capabilities.ts");
 const CAPTURE_STARTUP_PATH = resolve("tools/desktop-evidence/src/capture-startup.ts");
+const EVIDENCE_PACKAGE_PATH = resolve("tools/desktop-evidence/package.json");
 const PNPM_WORKSPACE_PATH = resolve("pnpm-workspace.yaml");
 const TESTS_TSCONFIG_PATH = resolve("tests/tsconfig.json");
 
@@ -74,16 +76,19 @@ describe("desktop evidence runtime contract", () => {
     expect(workflow).not.toContain("git push");
   });
 
-  it("uses only the embedded Tauri WebDriver transport", async () => {
-    const [captureStartup, workspace] = await Promise.all([
+  it("pins embedded Tauri transport while preserving the WDIO 1.2 Windows preflight workaround", async () => {
+    const [capabilities, captureStartup, evidencePackage, workspace] = await Promise.all([
+      readFile(CAPTURE_CAPABILITIES_PATH, "utf8"),
       readFile(CAPTURE_STARTUP_PATH, "utf8"),
+      readFile(EVIDENCE_PACKAGE_PATH, "utf8"),
       readFile(PNPM_WORKSPACE_PATH, "utf8"),
     ]);
 
-    expect(captureStartup).toContain("autoDownloadEdgeDriver: false");
+    expect(capabilities).toContain('driverProvider: "embedded"');
+    expect(evidencePackage).toContain('"@wdio/tauri-service": "1.2.0"');
+    expect(captureStartup).toContain("autoDownloadEdgeDriver: true");
     expect(captureStartup).toContain("autoInstallTauriDriver: false");
-    expect(workspace).toContain("edgedriver: false");
-    expect(workspace).not.toContain("edgedriver: true");
+    expect(workspace).toContain("edgedriver: true");
   });
 
   it("publishes bounded runner provenance without leaking absolute cleanup paths", async () => {
