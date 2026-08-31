@@ -56,7 +56,7 @@
     },
     {
       "id": "tooling",
-      "paths": [".studio/**", ".agents/skills/**", "scripts/studio/**", "scripts/gamectl.ts", "packages/game-devtools/**", "nx.json"],
+      "paths": [".studio/**", ".agents/skills/**", "scripts/studio/**", "scripts/studioctl.mjs", "scripts/versioning.mjs", "scripts/versioning.d.mts", "scripts/gamectl.ts", "scripts/gamectl-entry.ts", "packages/game-devtools/**", "nx.json"],
       "minimumRisk": "R1"
     },
     {
