@@ -1,0 +1,99 @@
+name: remote-command
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: remote-command-${{ github.event.issue.number }}-${{ github.event.comment.id }}
+  cancel-in-progress: false
+
+env:
+  RH_ADMISSION_PATH: ${{ runner.temp }}/runtime-human-remote-admission-v1.json
+  RH_RESULT_PATH: ${{ runner.temp }}/runtime-human-remote-result-v1.json
+  RH_SUMMARY_PATH: ${{ runner.temp }}/runtime-human-remote-summary.md
+
+jobs:
+  command:
+    if: ${{ startsWith(github.event.comment.body, '/rh') }}
+    name: read-only /rh command / ubuntu-24.04
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout trusted control plane
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          path: control
+          persist-credentials: false
+          show-progress: false
+          fetch-depth: 1
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          version: "11.11.0"
+          run_install: false
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "24.20.0"
+          package-manager-cache: false
+
+      - name: Admit typed remote request
+        id: admit
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          node control/scripts/studio/remote-command.mjs admit \
+            --event "$GITHUB_EVENT_PATH" \
+            --admission-output "$RH_ADMISSION_PATH" \
+            --result-output "$RH_RESULT_PATH" \
+            --summary-output "$RH_SUMMARY_PATH"
+
+      - name: Checkout exact admitted PR head
+        if: steps.admit.outputs.admitted == 'true' && steps.admit.outputs.needs_target == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ steps.admit.outputs.head_sha }}
+          path: target
+          persist-credentials: false
+          show-progress: false
+          fetch-depth: 0
+
+      - name: Execute fixed remote command
+        id: execute
+        if: steps.admit.outputs.admitted == 'true'
+        continue-on-error: true
+        run: |
+          node control/scripts/studio/remote-command.mjs execute \
+            --admission "$RH_ADMISSION_PATH" \
+            --target "${{ github.workspace }}/target" \
+            --result-output "$RH_RESULT_PATH" \
+            --summary-output "$RH_SUMMARY_PATH"
+
+      - name: Render remote command summary
+        if: always()
+        run: |
+          if [ -f "$RH_SUMMARY_PATH" ]; then
+            cat "$RH_SUMMARY_PATH" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload typed remote result
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: runtime-human-remote-result-${{ github.run_id }}
+          path: ${{ env.RH_RESULT_PATH }}
+          retention-days: 3
+          if-no-files-found: error
+
+      - name: Preserve infrastructure or execution failure
+        if: always() && (steps.admit.outcome == 'failure' || (steps.admit.outputs.admitted == 'true' && steps.execute.outcome != 'success'))
+        run: exit 1
