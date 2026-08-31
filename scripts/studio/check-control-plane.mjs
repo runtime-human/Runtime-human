@@ -36,10 +36,14 @@ const requiredFiles = [
   "scripts/studio/control-plane-lib.d.mts",
   "scripts/studio/evidence-lib.mjs",
   "scripts/studio/evidence-lib.d.mts",
+  "scripts/studio/remote-command.mjs",
+  "scripts/studio/remote-command-lib.mjs",
+  "scripts/studio/remote-command-lib.d.mts",
   "scripts/versioning.mjs",
   "scripts/versioning.d.mts",
   "scripts/gamectl-entry.ts",
   ".github/workflows/feedback.yml",
+  ".github/workflows/remote-command.yml",
 ];
 for (const path of requiredFiles) {
   assert(existsSync(resolve(root, path)), `missing ${path}`);
@@ -51,6 +55,7 @@ const context = readJson(".studio/context-map.json");
 const packageJson = readJson("package.json");
 const feedback = readText(".github/workflows/feedback.yml");
 const foundation = readText(".github/workflows/foundation.yml");
+const remoteCommand = readText(".github/workflows/remote-command.yml");
 
 if (project) {
   assert(project.commands?.studioCtl === "pnpm studioctl", "project studioCtl command mismatch");
@@ -107,6 +112,12 @@ if (packageJson) {
     assert(String(scripts["fmt:check"] ?? "").includes(path), `fmt:check missing ${path}`);
     assert(String(scripts.lint ?? "").includes(path), `lint missing ${path}`);
   }
+  assert(String(scripts.fmt ?? "").includes("scripts/studio"), "fmt must include scripts/studio");
+  assert(
+    String(scripts["fmt:check"] ?? "").includes("scripts/studio"),
+    "fmt:check must include scripts/studio",
+  );
+  assert(String(scripts.lint ?? "").includes("scripts/studio"), "lint must include scripts/studio");
   assert(
     String(scripts["lint:type-aware"] ?? "").includes("scripts/gamectl-entry.ts"),
     "lint:type-aware missing scripts/gamectl-entry.ts",
@@ -169,6 +180,47 @@ if (foundation) {
   assert(
     !foundation.includes("pull_request_target"),
     "foundation must not use pull_request_target",
+  );
+}
+
+if (remoteCommand) {
+  const requiredSnippets = [
+    "issue_comment:",
+    "types: [created]",
+    "contents: read",
+    "pull-requests: read",
+    "github.event.issue.pull_request",
+    "startsWith(github.event.comment.body, '/rh')",
+    "ref: ${{ github.sha }}",
+    "path: control",
+    "GITHUB_TOKEN: ${{ github.token }}",
+    "remote-command.mjs admit",
+    "ref: ${{ steps.admit.outputs.head_sha }}",
+    "path: target",
+    "fetch-depth: 0",
+    "remote-command.mjs execute",
+    "runtime-human-remote-result-${{ github.run_id }}",
+    "retention-days: 3",
+    "if-no-files-found: error",
+  ];
+  for (const snippet of requiredSnippets) {
+    assert(remoteCommand.includes(snippet), `remote command wiring missing ${snippet}`);
+  }
+  for (const forbidden of [
+    "pull_request_target",
+    "workflow_run",
+    "secrets.",
+    "contents: write",
+    "persist-credentials: true",
+  ]) {
+    assert(!remoteCommand.includes(forbidden), `remote command must not contain ${forbidden}`);
+  }
+  const runBlocks = [...remoteCommand.matchAll(/run:\s*\|([\s\S]*?)(?=\n\s{6,}- name:|\n\s{4,}[a-zA-Z_-]+:|$)/gu)]
+    .map((match) => match[1])
+    .join("\n");
+  assert(
+    !runBlocks.includes("github.event.comment.body"),
+    "remote command must never interpolate comment.body into shell source",
   );
 }
 
