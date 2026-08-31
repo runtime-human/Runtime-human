@@ -127,6 +127,8 @@ function authorityImpact(changedPaths) {
       /^scripts\/studio\//u,
       /^scripts\/studioctl\.mjs$/u,
       /^scripts\/versioning\.mjs$/u,
+      /^scripts\/gamectl\.ts$/u,
+      /^scripts\/gamectl-entry\.ts$/u,
     ]),
   };
 }
