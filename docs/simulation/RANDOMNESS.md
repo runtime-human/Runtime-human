@@ -3,7 +3,7 @@ title: "Случайность"
 type: simulation
 status: draft
 canon: true
-updated: 2026-08-31
+updated: 2026-07-18
 ---
 
 # Случайность
@@ -29,14 +29,6 @@ Core не зависит от конкретной библиотеки PRNG. Ad
 ## Forking
 
 Fork использует parent state + canonical scope hash. Scope names являются стабильным API и не переименовываются без rules version bump.
-
-### Hierarchical derivation foundation
-
-Для новых изолированных RNG domains Game Core предоставляет additive contract `hierarchical-v1`: child state выводится из immutable root RNG state, versioned derivation manifest и полного canonical domain path. Одинаковые root state + path обязаны давать одинаковый child stream; создание или потребление sibling stream не должно менять результат другого sibling.
-
-Domain path является частью deterministic API и должен строиться из стабильных semantic identities (period/subsystem/entity/purpose), а не из порядка обхода, timestamp или process state.
-
-Этот contract пока не переинтерпретирует существующий `fork(scope)`, January MonthRun или сохранённые checkpoints. Authoritative cutover требует отдельной compatibility/fingerprint смены и evidence; до неё `hierarchical-v1` используется как additive foundation для дальнейшей изоляции RNG domains.
 
 ## Weighted choice
 
