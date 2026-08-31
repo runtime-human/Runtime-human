@@ -207,7 +207,8 @@ export function buildRemoteResult({
     requestedBy: admission?.requestedBy ?? null,
     baseSha: admission?.baseSha ?? null,
     headSha: admission?.headSha ?? null,
-    targetSha: admission?.headSha ?? null,
+    targetSha:
+      admission?.status === "admitted" && admission.command !== "help" ? admission.headSha : null,
     controlSha: normalizeSha(controlSha),
     runId: runId == null ? null : String(runId),
     status,
