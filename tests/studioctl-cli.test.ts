@@ -15,7 +15,9 @@ import {
 const tempRoots: string[] = [];
 
 afterEach(() => {
-  while (tempRoots.length > 0) fs.rmSync(tempRoots.pop()!, { recursive: true, force: true });
+  while (tempRoots.length > 0) {
+    fs.rmSync(tempRoots.pop()!, { recursive: true, force: true });
+  }
 });
 
 function git(root: string, ...args: string[]) {
@@ -62,7 +64,11 @@ function makeRepo() {
   writeJson(root, ".studio/skill-map.json", {
     schemaVersion: 1,
     skills: [
-      { name: "runtime-implement", path: ".agents/skills/runtime-implement", status: "active" },
+      {
+        name: "runtime-implement",
+        path: ".agents/skills/runtime-implement",
+        status: "active",
+      },
     ],
   });
   fs.mkdirSync(path.join(root, ".studio", "findings"), { recursive: true });
@@ -89,9 +95,15 @@ function makeRepo() {
   git(root, "commit", "-m", "base");
   const base = git(root, "rev-parse", "HEAD");
 
-  fs.writeFileSync(path.join(root, "scripts", "studio", "existing.mjs"), "export const changed = true;\n");
+  fs.writeFileSync(
+    path.join(root, "scripts", "studio", "existing.mjs"),
+    "export const changed = true;\n",
+  );
   fs.mkdirSync(path.join(root, ".github", "workflows"), { recursive: true });
-  fs.writeFileSync(path.join(root, ".github", "workflows", "foundation.yml"), "name: foundation\n");
+  fs.writeFileSync(
+    path.join(root, ".github", "workflows", "foundation.yml"),
+    "name: foundation\n",
+  );
   git(root, "add", ".");
   git(root, "commit", "-m", "head");
   const head = git(root, "rev-parse", "HEAD");
@@ -99,15 +111,15 @@ function makeRepo() {
 }
 
 describe("studioctl capabilities", () => {
-  it("reports stable installed control-plane contracts", () => {
+  it("reports only installed control-plane commands and stable contracts", () => {
     const value = buildStudioCapabilities();
     expect(value.schemaVersion).toBe(STUDIO_CAPABILITIES_SCHEMA);
-    expect(value.commands).toEqual({ inspect: 1, verify: 1, evidence: 1 });
+    expect(value.commands).toEqual({ capabilities: 1, inspect: 1 });
     expect(value.contracts).toMatchObject({
       inspection: CHANGE_INSPECTION_SCHEMA,
-      evidence: "runtime-human-pr-evidence-v1",
       taskEnvelope: "runtime-human-task-envelope-v1",
     });
+    expect(value.contracts.evidence).toBeUndefined();
     expect(value.verification).toEqual({ v3: "pnpm verify", v4: "pnpm verify:release" });
   });
 });
