@@ -6,6 +6,8 @@ import { describe, expect, it } from "vitest";
 const MAIN_PATH = resolve("apps/desktop/src-tauri/src/main.rs");
 const DIAGNOSTICS_PATH = resolve("apps/desktop/src-tauri/src/diagnostics.rs");
 const CAPTURE_WORKFLOW_PATH = resolve(".github/workflows/perf-02a-e2-windows-capture.yml");
+const CAPTURE_STARTUP_PATH = resolve("tools/desktop-evidence/src/capture-startup.ts");
+const PNPM_WORKSPACE_PATH = resolve("pnpm-workspace.yaml");
 const TESTS_TSCONFIG_PATH = resolve("tests/tsconfig.json");
 
 describe("desktop evidence runtime contract", () => {
@@ -41,6 +43,22 @@ describe("desktop evidence runtime contract", () => {
     expect(workflow).not.toMatch(/[A-Z]:\\actions-runner/i);
   });
 
+  it("refreshes opt-in capture for every synchronized PR head and cancels stale evidence", async () => {
+    const workflow = await readFile(CAPTURE_WORKFLOW_PATH, "utf8");
+
+    expect(workflow).toContain("types: [labeled, synchronize]");
+    expect(workflow).toContain(
+      "group: ${{ github.workflow }}-${{ github.event.pull_request.number }}",
+    );
+    expect(workflow).toContain("github.event.action == 'labeled'");
+    expect(workflow).toContain("github.event.label.name == 'perf:e2-capture'");
+    expect(workflow).toContain("github.event.action == 'synchronize'");
+    expect(workflow).toContain(
+      "contains(github.event.pull_request.labels.*.name, 'perf:e2-capture')",
+    );
+    expect(workflow).toContain("cancel-in-progress: true");
+  });
+
   it("measures the exact reviewed PR head without mutating product sources", async () => {
     const workflow = await readFile(CAPTURE_WORKFLOW_PATH, "utf8");
 
@@ -54,6 +72,32 @@ describe("desktop evidence runtime contract", () => {
     expect(workflow).not.toContain("pnpm install --no-frozen-lockfile");
     expect(workflow).not.toContain("git commit");
     expect(workflow).not.toContain("git push");
+  });
+
+  it("uses only the embedded Tauri WebDriver transport", async () => {
+    const [captureStartup, workspace] = await Promise.all([
+      readFile(CAPTURE_STARTUP_PATH, "utf8"),
+      readFile(PNPM_WORKSPACE_PATH, "utf8"),
+    ]);
+
+    expect(captureStartup).toContain("autoDownloadEdgeDriver: false");
+    expect(captureStartup).toContain("autoInstallTauriDriver: false");
+    expect(workspace).toContain("edgedriver: false");
+    expect(workspace).not.toContain("edgedriver: true");
+  });
+
+  it("publishes bounded runner provenance without leaking absolute cleanup paths", async () => {
+    const workflow = await readFile(CAPTURE_WORKFLOW_PATH, "utf8");
+
+    expect(workflow).toContain("runtime-human-e2-run-provenance-v1");
+    expect(workflow).toContain("artifacts/performance/e2-run-provenance.json");
+    expect(workflow).toContain("runnerOS");
+    expect(workflow).toContain("runnerArch");
+    expect(workflow).toContain("imageOS");
+    expect(workflow).toContain("imageVersion");
+    expect(workflow).toContain("Split-Path -Leaf");
+    expect(workflow).not.toContain("$($leaked -join ', ')");
+    expect(workflow).not.toContain("Get-ChildItem Env:");
   });
 
   it("keeps the evidence tool as an explicit TypeScript project dependency", async () => {
