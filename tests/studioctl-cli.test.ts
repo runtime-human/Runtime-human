@@ -15,8 +15,8 @@ import {
 const tempRoots: string[] = [];
 
 afterEach(() => {
-  while (tempRoots.length > 0) {
-    fs.rmSync(tempRoots.pop()!, { recursive: true, force: true });
+  for (const root of tempRoots.splice(0)) {
+    fs.rmSync(root, { recursive: true, force: true });
   }
 });
 
@@ -24,10 +24,14 @@ function git(root: string, ...args: string[]) {
   return execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim();
 }
 
+function writeText(root: string, relativePath: string, content: string) {
+  const fullPath = path.join(root, relativePath);
+  fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+  fs.writeFileSync(fullPath, content);
+}
+
 function writeJson(root: string, relativePath: string, value: unknown) {
-  const full = path.join(root, relativePath);
-  fs.mkdirSync(path.dirname(full), { recursive: true });
-  fs.writeFileSync(full, `${JSON.stringify(value, null, 2)}\n`);
+  writeText(root, relativePath, `${JSON.stringify(value, null, 2)}\n`);
 }
 
 function makeRepo() {
@@ -37,12 +41,10 @@ function makeRepo() {
   git(root, "config", "user.name", "Runtime Human Test");
   git(root, "config", "user.email", "test@example.invalid");
 
-  fs.writeFileSync(path.join(root, "AGENTS.md"), "# Agents\n");
-  fs.writeFileSync(path.join(root, "GAME.md"), "# Game\n");
-  fs.mkdirSync(path.join(root, "docs"), { recursive: true });
-  fs.writeFileSync(path.join(root, "docs", "INDEX.md"), "# Index\n");
-  fs.mkdirSync(path.join(root, "scripts", "studio"), { recursive: true });
-  fs.writeFileSync(path.join(root, "scripts", "studio", "existing.mjs"), "export {};\n");
+  writeText(root, "AGENTS.md", "# Agents\n");
+  writeText(root, "GAME.md", "# Game\n");
+  writeText(root, "docs/INDEX.md", "# Index\n");
+  writeText(root, "scripts/studio/existing.mjs", "export {};\n");
 
   writeJson(root, ".studio/zones.json", {
     schemaVersion: 1,
@@ -71,39 +73,30 @@ function makeRepo() {
       },
     ],
   });
-  fs.mkdirSync(path.join(root, ".studio", "findings"), { recursive: true });
-  fs.writeFileSync(
-    path.join(root, ".studio", "findings", "ledger.jsonl"),
-    `${JSON.stringify({
-      id: "RF-TOOLING",
-      fingerprint: "tooling:studio:contract:none",
-      zone: "tooling",
-      severity: "S2",
-      size: "S",
-      scope: "local",
-      category: "contract",
-      component: "studio",
-      invariant: null,
-      summary: "Studio contract regression",
-      disposition: "LEDGER",
-      status: "open",
-      occurrences: 1,
-    })}\n`,
-  );
+
+  const finding = {
+    id: "RF-TOOLING",
+    fingerprint: "tooling:studio:contract:none",
+    zone: "tooling",
+    severity: "S2",
+    size: "S",
+    scope: "local",
+    category: "contract",
+    component: "studio",
+    invariant: null,
+    summary: "Studio contract regression",
+    disposition: "LEDGER",
+    status: "open",
+    occurrences: 1,
+  };
+  writeText(root, ".studio/findings/ledger.jsonl", `${JSON.stringify(finding)}\n`);
 
   git(root, "add", ".");
   git(root, "commit", "-m", "base");
   const base = git(root, "rev-parse", "HEAD");
 
-  fs.writeFileSync(
-    path.join(root, "scripts", "studio", "existing.mjs"),
-    "export const changed = true;\n",
-  );
-  fs.mkdirSync(path.join(root, ".github", "workflows"), { recursive: true });
-  fs.writeFileSync(
-    path.join(root, ".github", "workflows", "foundation.yml"),
-    "name: foundation\n",
-  );
+  writeText(root, "scripts/studio/existing.mjs", "export const changed = true;\n");
+  writeText(root, ".github/workflows/foundation.yml", "name: foundation\n");
   git(root, "add", ".");
   git(root, "commit", "-m", "head");
   const head = git(root, "rev-parse", "HEAD");
