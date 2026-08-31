@@ -3,12 +3,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import * as ts from "typescript";
 
 const WORKSPACE_PREFIX = "@runtime-human/";
 const SOURCE_EXTENSIONS = new Set([".js", ".jsx", ".mjs", ".mts", ".ts", ".tsx"]);
 const GAME_CORE_DIRECT_XOSHIRO_ALLOWLIST = new Set([
   "packages/game-core/src/determinism/rng-derivation.ts",
+  "packages/game-core/src/determinism/xoshiro256ss.ts",
+  "packages/game-core/src/index.ts",
   "packages/game-core/src/january-1990/january-month-steps.ts",
 ]);
 
@@ -202,69 +203,76 @@ function repositoryPath(root, file) {
   return path.relative(root, file).split(path.sep).join("/");
 }
 
-function isMathRandomAccess(node) {
-  if (
-    ts.isPropertyAccessExpression(node) &&
-    ts.isIdentifier(node.expression) &&
-    node.expression.text === "Math" &&
-    node.name.text === "random"
-  ) {
-    return true;
+function maskCommentsAndStrings(source) {
+  const masked = [...source];
+  let index = 0;
+
+  function mask(start, end) {
+    for (let cursor = start; cursor < end; cursor += 1) {
+      if (masked[cursor] !== "\n" && masked[cursor] !== "\r") masked[cursor] = " ";
+    }
   }
 
-  return (
-    ts.isElementAccessExpression(node) &&
-    ts.isIdentifier(node.expression) &&
-    node.expression.text === "Math" &&
-    ts.isStringLiteral(node.argumentExpression) &&
-    node.argumentExpression.text === "random"
-  );
-}
+  while (index < source.length) {
+    const current = source[index];
+    const next = source[index + 1];
 
-function importsDirectXoshiro(node) {
-  if (!ts.isImportDeclaration(node) || !ts.isStringLiteral(node.moduleSpecifier)) {
-    return false;
+    if (current === "/" && next === "/") {
+      const start = index;
+      index += 2;
+      while (index < source.length && source[index] !== "\n") index += 1;
+      mask(start, index);
+      continue;
+    }
+
+    if (current === "/" && next === "*") {
+      const start = index;
+      index += 2;
+      while (index < source.length && !(source[index] === "*" && source[index + 1] === "/")) {
+        index += 1;
+      }
+      index = Math.min(source.length, index + 2);
+      mask(start, index);
+      continue;
+    }
+
+    if (current === '"' || current === "'" || current === "`") {
+      const quote = current;
+      const start = index;
+      index += 1;
+      while (index < source.length) {
+        if (source[index] === "\\") {
+          index += 2;
+          continue;
+        }
+        if (source[index] === quote) {
+          index += 1;
+          break;
+        }
+        index += 1;
+      }
+      mask(start, Math.min(index, source.length));
+      continue;
+    }
+
+    index += 1;
   }
 
-  const specifier = node.moduleSpecifier.text;
-  if (/(?:^|\/)determinism\/xoshiro256ss(?:\.js)?$/u.test(specifier)) {
-    return true;
-  }
-
-  const bindings = node.importClause?.namedBindings;
-  return (
-    bindings !== undefined &&
-    ts.isNamedImports(bindings) &&
-    bindings.elements.some(
-      (element) => (element.propertyName ?? element.name).text === "Xoshiro256StarStar",
-    )
-  );
+  return masked.join("");
 }
 
 function gameCoreRngDiagnostics(root, file) {
   const relativeFile = repositoryPath(root, file);
-  const sourceFile = ts.createSourceFile(
-    file,
-    fs.readFileSync(file, "utf8"),
-    ts.ScriptTarget.Latest,
-    true,
-  );
+  const source = maskCommentsAndStrings(fs.readFileSync(file, "utf8"));
   const diagnostics = [];
-  let foundMathRandom = false;
-  let foundDirectXoshiro = false;
 
-  function visit(node) {
-    if (!foundMathRandom && isMathRandomAccess(node)) foundMathRandom = true;
-    if (!foundDirectXoshiro && importsDirectXoshiro(node)) foundDirectXoshiro = true;
-    ts.forEachChild(node, visit);
-  }
-
-  visit(sourceFile);
-
-  if (foundMathRandom) {
+  if (/\bMath\s*\.\s*random\b/u.test(source)) {
     diagnostics.push(`${relativeFile}: authoritative game-core cannot call Math.random`);
   }
-  if (foundDirectXoshiro && !GAME_CORE_DIRECT_XOSHIRO_ALLOWLIST.has(relativeFile)) {
+  if (
+    /\bXoshiro256StarStar\b/u.test(source) &&
+    !GAME_CORE_DIRECT_XOSHIRO_ALLOWLIST.has(relativeFile)
+  ) {
     diagnostics.push(`${relativeFile}: authoritative RNG must use the managed derivation API`);
   }
 
