@@ -1,8 +1,12 @@
+---
+title: "Remote GitHub Control Plane"
+type: architecture
+status: proposed
+canon: true
+updated: 2026-08-31
+---
+
 # Remote GitHub Control Plane Design
-
-**Status:** proposed-for-implementation
-
-**Date:** 2026-08-31
 
 **Scope:** Runtime Human development workflow when ChatGPT and GitHub are the primary development environment and no local workstation is assumed.
 
