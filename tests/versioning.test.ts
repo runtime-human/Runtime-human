@@ -100,13 +100,12 @@ describe("Runtime Human game version contract", () => {
     const before = readVersionState(root);
     const originalWrite = fs.writeFileSync.bind(fs);
     let writes = 0;
-    vi.spyOn(fs, "writeFileSync").mockImplementation(
-      ((...args: Parameters<typeof fs.writeFileSync>) => {
-        writes += 1;
-        if (writes === 3) throw new Error("simulated write failure");
-        return originalWrite(...args);
-      }) as typeof fs.writeFileSync,
-    );
+    const failThirdWrite: typeof fs.writeFileSync = (...args) => {
+      writes += 1;
+      if (writes === 3) throw new Error("simulated write failure");
+      return originalWrite(...args);
+    };
+    vi.spyOn(fs, "writeFileSync").mockImplementation(failThirdWrite);
 
     expect(() => bumpGameVersion(root, "0.0.10")).toThrow(/simulated write failure/u);
     vi.restoreAllMocks();
