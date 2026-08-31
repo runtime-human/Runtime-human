@@ -21,23 +21,9 @@ Research не становится каноном без ADR/spec synchronizatio
 
 ## Текущее исполнение
 
-- [EXECUTION-STATUS.jsonc](EXECUTION-STATUS.jsonc) — главный текущий execution ledger: завершённые milestones, активная фаза, verification gate и следующий constraint.
-- [RUST-01B production logging](plans/RUST-01B-PRODUCTION-LOGGING-IMPLEMENTATION-PLAN.md) / [issue #57](https://github.com/MrFr3di/Runtime-human/issues/57) — завершён: bounded JSONL sink, closed redaction, rotation, dropped-line status и lifecycle flush.
-- [PERF-02A startup/IPC/queue timeline](https://github.com/MrFr3di/Runtime-human/issues/51) — recorder, snapshot, queue/SQLite spans, Tauri linkage, renderer/FMP и E1 capture/report contract завершены; активный срез — isolated Windows capture harness, затем real evidence и одна рекомендация.
-- [RUST-01C FIFO shutdown](https://github.com/MrFr3di/Runtime-human/issues/58) — отдельный следующий Rust-кандидат, который не смешивается с измерительным baseline до PERF-02A evidence.
-- [UI roadmap](https://github.com/MrFr3di/Runtime-human/issues/37) — UI-02 завершён; Skills, Relationships, Chronology и visual quality остаются отдельными последующими срезами.
-- [PERF master track](https://github.com/MrFr3di/Runtime-human/issues/24) → [product-facing baseline](https://github.com/MrFr3di/Runtime-human/issues/39) → PERF-02A → one measured optimization.
+[EXECUTION-STATUS.jsonc](EXECUTION-STATUS.jsonc) — единственный mutable execution ledger для active phase, завершённых milestones и текущего verification contract. Этот curated index намеренно не копирует быстро меняющийся список активных PR или следующий implementation constraint: такие копии неизбежно расходятся с ledger.
 
-Следующий порядок работ:
-
-```text
-RUST-01B redacted production logging
-→ PERF-02A renderer / React commit / January ready / first meaningful paint
-→ opt-in cold/warm Windows evidence collector
-→ exactly one evidence-backed optimization
-→ PERF-02B idle resources and 100-cycle stabilization
-→ NPC foundation and UI-03 projections
-```
+Канонический публичный repository namespace: `runtime-human/Runtime-human`. Ссылки на Issues/PR должны использовать этот namespace либо repository-relative `#<number>` references.
 
 ## Performance evidence
 

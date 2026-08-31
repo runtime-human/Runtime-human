@@ -1,24 +1,45 @@
 ## Scope
 
-Describe one independently reviewable change.
+Describe one independently reviewable change and the concrete player/developer problem it solves.
 
-## Architecture and ADR
+- Related issue:
+
+## Architecture and contracts
 
 - Relevant ADR/specification:
-- New/changed public contracts:
-- Save/content/rules version impact:
+- New/changed public or internal contracts:
+- Save/content/ruleset/persistence impact:
+- Player/user impact:
 
 ## Verification
+
+Record only checks actually run on the current change. Mark important checks that were not run.
 
 ```text
 command → result
 ```
 
+- Not run / intentionally deferred:
+
 ## Risk and recovery
 
 - Main failure modes:
 - Migration/rollback/recovery:
+- Security/capability implications:
+
+## Review contract
+
+Use `blocking:`, `suggestion:`, `question:` and `nit:` prefixes for actionable review comments. All blocking threads must be resolved before merge.
 
 ## Human review required
 
-Mark changes to workflows, Tauri capabilities, migrations, updater/signing, canonical historical dates, licenses and destructive content IDs.
+Mark changes to workflows/GitHub governance, Tauri capabilities, persistence/migrations, updater/signing, canonical historical dates, licenses and destructive content IDs.
+
+## Public evidence checklist
+
+- [ ] PR title is the intended durable squash commit message.
+- [ ] Documentation/contracts/tests were synchronized where required.
+- [ ] Verification claims match checks actually run on the current head.
+- [ ] Public evidence contains no secrets, private data, personal usernames, self-hosted runner identity or personal/local absolute paths.
+- [ ] No test, guard or security boundary was weakened only to make a check pass.
+- [ ] All `blocking:` review threads are resolved on the current head before merge.

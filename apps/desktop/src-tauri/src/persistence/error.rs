@@ -227,10 +227,10 @@ mod tests {
 
         let io = PersistenceError::io(
             "opening the database",
-            std::io::Error::other(r"C:\Users\Dmitry\private-save.sqlite3"),
+            std::io::Error::other("sensitive-database-path/private-save.sqlite3"),
         );
         assert_eq!(io.diagnostic_code(), "storage_unavailable");
-        assert!(!io.diagnostic_code().contains("Dmitry"));
+        assert!(!io.diagnostic_code().contains("private-save"));
         assert!(!io.diagnostic_code().contains("sqlite3"));
     }
 }

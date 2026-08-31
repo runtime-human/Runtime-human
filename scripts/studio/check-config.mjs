@@ -49,6 +49,7 @@ const required = [
   "packages/game-devtools/package.json",
   "packages/game-authoring-schema/package.json",
   "packages/game-simulation/package.json",
+  "scripts/check-public-repository.mjs",
   "scripts/gamectl.ts",
   "scripts/validate-balance.ts",
   ".agents/skills/runtime-test/SKILL.md",
@@ -243,7 +244,7 @@ if (opencode) {
   );
   assert(
     opencode.share === "disabled",
-    "OpenCode conversation sharing must stay disabled for this private project",
+    "OpenCode conversation sharing must stay disabled by repository policy",
   );
   assert(opencode.compaction?.auto === true, "OpenCode automatic compaction must be enabled");
   assert(
@@ -316,6 +317,7 @@ for (const ledger of [OPEN_LEDGER, RESOLVED_LEDGER]) {
 
 if (packageJson) {
   for (const command of [
+    "public:check",
     "gamectl",
     "balance:check",
     "studio:task",

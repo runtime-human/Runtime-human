@@ -1,0 +1,46 @@
+name: Feature / player idea
+description: Suggest a bounded player-facing or developer-experience improvement.
+title: "feature: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Start from the problem or desired experience. You do not need to know Runtime Human's architecture to propose an improvement.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or opportunity
+      description: What is difficult, confusing, missing, repetitive, or worth improving today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: What should become possible or noticeably better for the player or contributor?
+    validations:
+      required: true
+
+  - type: textarea
+    id: example
+    attributes:
+      label: Example or flow
+      description: Optional concrete example, scenario, screenshot description, or user flow.
+
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Important constraints
+      description: Optional compatibility, accessibility, performance, historical, save, or UX constraints you already know about.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Public-report checks
+      options:
+        - label: I searched existing issues for the same idea.
+          required: true
+        - label: I removed secrets, private data and personal machine details from public evidence.
+          required: true

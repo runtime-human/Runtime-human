@@ -152,6 +152,9 @@ artifacts/performance/
 .worktrees/
 .studio/runtime/
 
+# Ephemeral agent/session handoffs
+.opencode/HANDOFF-*.md
+
 .DS_Store
 
 # Nx local cache

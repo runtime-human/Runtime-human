@@ -1,7 +1,17 @@
 # Human review required for sensitive project surfaces
-/.github/workflows/ @MrFr3di
-/src-tauri/capabilities/ @MrFr3di
-/src-tauri/tauri.conf.json @MrFr3di
-/migrations/ @MrFr3di
+/.github/ @MrFr3di
+/AGENTS.md @MrFr3di
+/CONTRIBUTING.md @MrFr3di
+/README.md @MrFr3di
+/SECURITY.md @MrFr3di
+/.studio/finding-contract.md @MrFr3di
+/.studio/models.json @MrFr3di
+/.studio/project.json @MrFr3di
+/.studio/verification-policy.json @MrFr3di
+/docs/INDEX.md @MrFr3di
+/docs/EXECUTION-STATUS.jsonc @MrFr3di
+/apps/desktop/src-tauri/capabilities/ @MrFr3di
+/apps/desktop/src-tauri/tauri.conf.json @MrFr3di
+/apps/desktop/src-tauri/src/persistence/ @MrFr3di
 /docs/adr/ @MrFr3di
 /docs/sources/ @MrFr3di
