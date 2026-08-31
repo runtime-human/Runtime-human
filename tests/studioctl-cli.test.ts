@@ -115,6 +115,20 @@ describe("studioctl capabilities", () => {
     expect(value.contracts.evidence).toBeUndefined();
     expect(value.verification).toEqual({ v3: "pnpm verify", v4: "pnpm verify:release" });
   });
+
+  it("executes as a real Node CLI entrypoint", () => {
+    const script = path.resolve(import.meta.dirname, "../scripts/studioctl.mjs");
+    const stdout = execFileSync(process.execPath, [script, "capabilities", "--json"], {
+      encoding: "utf8",
+    });
+    const value = JSON.parse(stdout) as {
+      schemaVersion: string;
+      commands: Record<string, number>;
+    };
+
+    expect(value.schemaVersion).toBe(STUDIO_CAPABILITIES_SCHEMA);
+    expect(value.commands).toEqual({ capabilities: 1, inspect: 1 });
+  });
 });
 
 describe("studioctl inspect", () => {
