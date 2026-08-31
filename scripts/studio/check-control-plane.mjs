@@ -73,7 +73,10 @@ if (packageJson) {
   const scripts = packageJson.scripts ?? {};
   assert(scripts.gamectl === "tsx scripts/gamectl-entry.ts", "gamectl entrypoint mismatch");
   assert(scripts.studioctl === "node scripts/studioctl.mjs", "studioctl entrypoint mismatch");
-  assert(scripts["version:check"] === "node scripts/versioning.mjs check", "version:check mismatch");
+  assert(
+    scripts["version:check"] === "node scripts/versioning.mjs check",
+    "version:check mismatch",
+  );
   assert(scripts["version:bump"] === "node scripts/versioning.mjs bump", "version:bump mismatch");
   assert(
     String(scripts["studio:check"] ?? "").includes("node scripts/studio/check-control-plane.mjs"),
@@ -83,7 +86,11 @@ if (packageJson) {
     String(scripts["check:fast"] ?? "").includes("pnpm version:check"),
     "check:fast must enforce version:check",
   );
-  for (const path of ["scripts/studioctl.mjs", "scripts/versioning.mjs", "scripts/gamectl-entry.ts"]) {
+  for (const path of [
+    "scripts/studioctl.mjs",
+    "scripts/versioning.mjs",
+    "scripts/gamectl-entry.ts",
+  ]) {
     assert(String(scripts.fmt ?? "").includes(path), `fmt missing ${path}`);
     assert(String(scripts["fmt:check"] ?? "").includes(path), `fmt:check missing ${path}`);
     assert(String(scripts.lint ?? "").includes(path), `lint missing ${path}`);
