@@ -13,6 +13,12 @@ type RemoteCommandModule = Readonly<{
   ) => ReadonlyArray<Readonly<{ file: string; args: readonly string[]; shell: boolean }>>;
   buildRemoteResult: (input: Record<string, unknown>) => Record<string, unknown>;
   serializeRemoteResult: (result: Record<string, unknown>) => string;
+  executeRemoteCommand: (input: {
+    admission: Record<string, unknown>;
+    targetRoot: string;
+    spawn: (...args: unknown[]) => unknown;
+    environment: Record<string, string>;
+  }) => unknown;
 }>;
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -42,6 +48,19 @@ function admittedInput(overrides: Record<string, unknown> = {}) {
   };
   const permission = { permission: "write", role_name: "write" };
   return { event, pullRequest, permission, expectedRepository: REPOSITORY, ...overrides };
+}
+
+function admitted(command: string) {
+  return {
+    schemaVersion: "runtime-human-remote-admission-v1",
+    status: "admitted",
+    command,
+    prNumber: 101,
+    requestedBy: "maintainer",
+    baseSha: BASE_SHA,
+    headSha: HEAD_SHA,
+    error: null,
+  };
 }
 
 describe("remote /rh command contract", () => {
@@ -121,7 +140,9 @@ describe("remote /rh command contract", () => {
   it("maps admitted commands only to fixed shell-free argv", async () => {
     const remote = await loadModule();
 
-    expect(remote.buildExecutionPlan("studio-capabilities", { baseSha: BASE_SHA, headSha: HEAD_SHA })).toEqual([
+    expect(
+      remote.buildExecutionPlan("studio-capabilities", { baseSha: BASE_SHA, headSha: HEAD_SHA }),
+    ).toEqual([
       {
         file: "node",
         args: ["scripts/studioctl.mjs", "capabilities", "--json"],
@@ -145,7 +166,9 @@ describe("remote /rh command contract", () => {
       },
     ]);
 
-    expect(remote.buildExecutionPlan("game-capabilities", { baseSha: BASE_SHA, headSha: HEAD_SHA })).toEqual([
+    expect(
+      remote.buildExecutionPlan("game-capabilities", { baseSha: BASE_SHA, headSha: HEAD_SHA }),
+    ).toEqual([
       {
         file: "pnpm",
         args: ["install", "--frozen-lockfile", "--ignore-scripts", "--reporter=silent"],
@@ -159,18 +182,40 @@ describe("remote /rh command contract", () => {
     ]);
   });
 
+  it("does not expose GitHub or Actions credentials to target subprocesses", async () => {
+    const remote = await loadModule();
+    const calls: unknown[][] = [];
+    const spawn = (...args: unknown[]) => {
+      calls.push(args);
+      return { status: 0, stdout: '{"schemaVersion":"runtime-human-studio-capabilities-v1"}', stderr: "" };
+    };
+
+    remote.executeRemoteCommand({
+      admission: admitted("studio-capabilities"),
+      targetRoot: "/target",
+      spawn,
+      environment: {
+        PATH: "/bin",
+        PNPM_HOME: "/pnpm",
+        GITHUB_TOKEN: "secret",
+        ACTIONS_RUNTIME_TOKEN: "runtime-secret",
+        ACTIONS_ID_TOKEN_REQUEST_TOKEN: "oidc-secret",
+      },
+    });
+
+    expect(calls).toHaveLength(1);
+    const [, , options] = calls[0] as [unknown, unknown, { shell: boolean; env: Record<string, string> }];
+    expect(options.shell).toBe(false);
+    expect(options.env).toMatchObject({ PATH: "/bin", PNPM_HOME: "/pnpm", CI: "true" });
+    expect(options.env).not.toHaveProperty("GITHUB_TOKEN");
+    expect(options.env).not.toHaveProperty("ACTIONS_RUNTIME_TOKEN");
+    expect(options.env).not.toHaveProperty("ACTIONS_ID_TOKEN_REQUEST_TOKEN");
+  });
+
   it("serializes deterministic typed remote results", async () => {
     const remote = await loadModule();
     const input = {
-      admission: {
-        schemaVersion: "runtime-human-remote-admission-v1",
-        status: "admitted",
-        command: "studio-capabilities",
-        prNumber: 101,
-        requestedBy: "maintainer",
-        baseSha: BASE_SHA,
-        headSha: HEAD_SHA,
-      },
+      admission: admitted("studio-capabilities"),
       status: "success",
       payload: { schemaVersion: "runtime-human-studio-capabilities-v1" },
       controlSha: "3".repeat(40),
@@ -208,7 +253,9 @@ describe("remote /rh command contract", () => {
     expect(workflow).not.toContain("workflow_run");
     expect(workflow).not.toContain("secrets.");
 
-    const runBlocks = [...workflow.matchAll(/run:\s*\|([\s\S]*?)(?=\n\s{6,}- name:|\n\s{4,}[a-zA-Z_-]+:|$)/gu)]
+    const runBlocks = [
+      ...workflow.matchAll(/run:\s*\|([\s\S]*?)(?=\n\s{6,}- name:|\n\s{4,}[a-zA-Z_-]+:|$)/gu),
+    ]
       .map((match) => match[1])
       .join("\n");
     expect(runBlocks).not.toContain("github.event.comment.body");
