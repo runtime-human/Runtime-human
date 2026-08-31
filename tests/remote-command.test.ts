@@ -187,7 +187,11 @@ describe("remote /rh command contract", () => {
     const calls: unknown[][] = [];
     const spawn = (...args: unknown[]) => {
       calls.push(args);
-      return { status: 0, stdout: '{"schemaVersion":"runtime-human-studio-capabilities-v1"}', stderr: "" };
+      return {
+        status: 0,
+        stdout: '{"schemaVersion":"runtime-human-studio-capabilities-v1"}',
+        stderr: "",
+      };
     };
 
     remote.executeRemoteCommand({
@@ -204,7 +208,11 @@ describe("remote /rh command contract", () => {
     });
 
     expect(calls).toHaveLength(1);
-    const [, , options] = calls[0] as [unknown, unknown, { shell: boolean; env: Record<string, string> }];
+    const [, , options] = calls[0] as [
+      unknown,
+      unknown,
+      { shell: boolean; env: Record<string, string> },
+    ];
     expect(options.shell).toBe(false);
     expect(options.env).toMatchObject({ PATH: "/bin", PNPM_HOME: "/pnpm", CI: "true" });
     expect(options.env).not.toHaveProperty("GITHUB_TOKEN");
@@ -240,10 +248,14 @@ describe("remote /rh command contract", () => {
     expect(remote.serializeRemoteResult(first)).toBe(`${JSON.stringify(first, null, 2)}\n`);
   });
 
-  it("keeps the permanent workflow read-only and free of comment-to-shell interpolation", () => {
+  it("keeps the permanent workflow read-only and routes plain-issue rejection through admission", () => {
     const workflow = fs.readFileSync(path.join(root, ".github/workflows/remote-command.yml"), "utf8");
 
     expect(workflow).toMatch(/issue_comment:\s*\n\s*types:\s*\[created\]/u);
+    expect(workflow).toContain("if: ${{ startsWith(github.event.comment.body, '/rh') }}");
+    expect(workflow).not.toContain(
+      "github.event.issue.pull_request && startsWith(github.event.comment.body, '/rh')",
+    );
     expect(workflow).toContain("contents: read");
     expect(workflow).toContain("pull-requests: read");
     expect(workflow).toContain("persist-credentials: false");
