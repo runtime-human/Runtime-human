@@ -59,7 +59,11 @@ function makeRepo() {
     policy: { maxInitialDocs: 2, maxInitialFiles: 4, neverBulkLoad: [] },
     base: ["AGENTS.md", "GAME.md"],
     zones: {
-      tooling: { agentGuide: null, docs: [], code: ["scripts/studio/**", ".github/**", ".studio/**"] },
+      tooling: {
+        agentGuide: null,
+        docs: [],
+        code: ["scripts/studio/**", ".github/**", ".studio/**"],
+      },
     },
   });
   writeJson(root, ".studio/skill-map.json", {
