@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   bumpGameVersion,
@@ -14,6 +14,7 @@ import {
 const tempRoots: string[] = [];
 
 afterEach(() => {
+  vi.restoreAllMocks();
   while (tempRoots.length > 0) {
     fs.rmSync(tempRoots.pop()!, { recursive: true, force: true });
   }
@@ -92,5 +93,23 @@ describe("Runtime Human game version contract", () => {
       cargoPackage: "0.0.10",
       cargoLockPackage: "0.0.10",
     });
+  });
+
+  it("restores every mirror when a write fails mid-bump", () => {
+    const root = writeFixture("0.0.9");
+    const before = readVersionState(root);
+    const originalWrite = fs.writeFileSync.bind(fs);
+    let writes = 0;
+    vi.spyOn(fs, "writeFileSync").mockImplementation(
+      ((...args: Parameters<typeof fs.writeFileSync>) => {
+        writes += 1;
+        if (writes === 3) throw new Error("simulated write failure");
+        return originalWrite(...args);
+      }) as typeof fs.writeFileSync,
+    );
+
+    expect(() => bumpGameVersion(root, "0.0.10")).toThrow(/simulated write failure/u);
+    vi.restoreAllMocks();
+    expect(readVersionState(root)).toEqual(before);
   });
 });
