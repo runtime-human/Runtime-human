@@ -49,7 +49,11 @@ function makeRepo() {
   writeJson(root, ".studio/zones.json", {
     schemaVersion: 1,
     zones: [
-      { id: "tooling", paths: ["scripts/studio/**", ".github/**", ".studio/**"], minimumRisk: "R1" },
+      {
+        id: "tooling",
+        paths: ["scripts/studio/**", ".github/**", ".studio/**"],
+        minimumRisk: "R1",
+      },
       { id: "canon", paths: ["docs/**", "AGENTS.md", "GAME.md"], minimumRisk: "R2" },
     ],
     exclusiveWriteGroups: [],
