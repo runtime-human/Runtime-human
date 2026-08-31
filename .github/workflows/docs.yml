@@ -1,6 +1,17 @@
 name: docs
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/**"
+      - "AGENTS.md"
+      - "CONTRIBUTING.md"
+      - "README.md"
+      - "SECURITY.md"
+      - "scripts/build-toc.mjs"
+      - ".github/workflows/docs.yml"
   pull_request:
     branches:
       - main
@@ -12,25 +23,25 @@ on:
       - "SECURITY.md"
       - "scripts/build-toc.mjs"
       - ".github/workflows/docs.yml"
+  workflow_dispatch:
 
 concurrency:
-  group: docs-pr-88-materialize
+  group: docs-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  materialize:
-    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'feat/pr-evidence-plane'
+  docs-lint:
+    name: docs / ubuntu-24.04
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - name: Checkout exact PR head
+      - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          persist-credentials: true
+          persist-credentials: false
           show-progress: false
 
       - name: Set up Node
@@ -39,14 +50,5 @@ jobs:
           node-version: "24.20.0"
           package-manager-cache: false
 
-      - name: Materialize canonical docs outputs
-        run: node scripts/build-toc.mjs
-
-      - name: Commit only generated docs
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/CATALOG.md docs/MANIFEST.jsonc
-          git diff --cached --quiet && exit 0
-          git commit -m "docs: refresh generated catalog"
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+      - name: Verify docs front-matter and manifest
+        run: node scripts/build-toc.mjs --check

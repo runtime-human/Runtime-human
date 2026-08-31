@@ -6,14 +6,20 @@ import { resolve } from "node:path";
 const root = process.cwd();
 const errors = [];
 
-function readJson(path) {
+function readText(path) {
   const full = resolve(root, path);
   if (!existsSync(full)) {
     errors.push(`missing ${path}`);
     return null;
   }
+  return readFileSync(full, "utf8");
+}
+
+function readJson(path) {
+  const content = readText(path);
+  if (content === null) return null;
   try {
-    return JSON.parse(readFileSync(full, "utf8"));
+    return JSON.parse(content);
   } catch (error) {
     errors.push(`invalid JSON ${path}: ${error instanceof Error ? error.message : String(error)}`);
     return null;
@@ -42,6 +48,7 @@ const project = readJson(".studio/project.json");
 const zones = readJson(".studio/zones.json");
 const context = readJson(".studio/context-map.json");
 const packageJson = readJson("package.json");
+const foundation = readText(".github/workflows/foundation.yml");
 
 if (project) {
   assert(project.commands?.studioCtl === "pnpm studioctl", "project studioCtl command mismatch");
@@ -102,6 +109,28 @@ if (packageJson) {
     String(scripts["lint:type-aware"] ?? "").includes("scripts/gamectl-entry.ts"),
     "lint:type-aware missing scripts/gamectl-entry.ts",
   );
+}
+
+if (foundation) {
+  const requiredSnippets = [
+    "fetch-depth: 2",
+    "id: v3",
+    "continue-on-error: true",
+    "pnpm studioctl evidence",
+    "${{ github.event.pull_request.base.sha }}",
+    "${{ github.event.pull_request.head.sha }}",
+    "${{ github.sha }}",
+    "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+    "retention-days: 7",
+    "if-no-files-found: error",
+    "include-hidden-files: true",
+    "steps.v3.outcome != 'success'",
+  ];
+  for (const snippet of requiredSnippets) {
+    assert(foundation.includes(snippet), `foundation evidence wiring missing ${snippet}`);
+  }
+  assert(!foundation.includes("permissions:\n  contents: write"), "foundation must remain read-only");
+  assert(!foundation.includes("pull_request_target"), "foundation must not use pull_request_target");
 }
 
 if (errors.length > 0) {

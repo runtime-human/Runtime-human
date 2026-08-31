@@ -31,6 +31,7 @@ jobs:
         with:
           persist-credentials: false
           show-progress: false
+          fetch-depth: 2
 
       - name: Set up pnpm
         uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
@@ -66,4 +67,34 @@ jobs:
         run: pnpm --filter @runtime-human/desktop exec playwright install chromium
 
       - name: Run canonical V3 verification
-        run: pnpm verify
+        id: v3
+        continue-on-error: true
+        run: |
+          pnpm verify
+          $code = $LASTEXITCODE
+          "exit_code=$code" >> $env:GITHUB_OUTPUT
+          exit $code
+
+      - name: Materialize exact PR evidence
+        if: always() && github.event_name == 'pull_request'
+        run: |
+          $status = "${{ steps.v3.outcome }}"
+          $exitCode = "${{ steps.v3.outputs.exit_code }}"
+          if (-not $exitCode) { throw "canonical V3 did not expose an exit code" }
+          pnpm studioctl evidence --base "${{ github.event.pull_request.base.sha }}" --head "${{ github.event.pull_request.head.sha }}" --tested "${{ github.sha }}" --status $status --exit-code $exitCode --output ".studio/runtime/evidence/runtime-human-pr-evidence-v1.json" --summary-output ".studio/runtime/evidence/summary.md" --json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Get-Content ".studio/runtime/evidence/summary.md" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+
+      - name: Upload exact PR evidence
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: runtime-human-pr-evidence-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+          path: .studio/runtime/evidence/runtime-human-pr-evidence-v1.json
+          retention-days: 7
+          if-no-files-found: error
+          include-hidden-files: true
+
+      - name: Preserve canonical V3 failure
+        if: always() && steps.v3.outcome != 'success'
+        run: exit 1

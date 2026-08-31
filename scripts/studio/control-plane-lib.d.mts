@@ -36,7 +36,7 @@ export type ChangeInspection = Readonly<{
   relevantFindings: ReadonlyArray<Readonly<{ id: string; [key: string]: unknown }>>;
   verification: Readonly<{
     requiredTier: "V1" | "V2";
-    commands: string[][] | null;
+    commands: string[];
     notes: string[];
     v3Recommended: boolean;
   }>;
