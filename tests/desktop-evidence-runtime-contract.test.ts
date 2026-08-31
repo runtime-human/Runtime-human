@@ -61,6 +61,17 @@ describe("desktop evidence runtime contract", () => {
     expect(workflow).toContain("cancel-in-progress: true");
   });
 
+  it("scopes cancellation to eligible capture jobs so unrelated labels cannot cancel E2", async () => {
+    const workflow = await readFile(CAPTURE_WORKFLOW_PATH, "utf8");
+    const jobsIndex = workflow.indexOf("jobs:\n");
+
+    expect(jobsIndex).toBeGreaterThanOrEqual(0);
+    expect(workflow.slice(0, jobsIndex)).not.toContain("\nconcurrency:\n");
+    expect(workflow.slice(jobsIndex)).toContain(
+      "    concurrency:\n      group: ${{ github.workflow }}-${{ github.event.pull_request.number }}\n      cancel-in-progress: true",
+    );
+  });
+
   it("measures the exact reviewed PR head without mutating product sources", async () => {
     const workflow = await readFile(CAPTURE_WORKFLOW_PATH, "utf8");
 
