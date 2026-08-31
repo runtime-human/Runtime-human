@@ -136,7 +136,7 @@ Transport использует двухконтурную модель:
 4. после admission отдельно checkout'ится exact same-repository PR `headSha` с `persist-credentials: false`;
 5. trusted runner отображает typed command enum только в фиксированный executable/argv и всегда использует `shell: false`.
 
-Для target subprocess environment используется allowlist. `GITHUB_TOKEN`, Actions runtime credentials и OIDC request tokens target-коду не наследуются. `gamectl capabilities` при необходимости ставит зависимости с frozen lockfile и `--ignore-scripts` перед фиксированным вызовом `tsx`.
+Для target subprocess environment используется allowlist. `GITHUB_TOKEN`, Actions runtime credentials и OIDC request tokens target-коду не наследуются. `/rh game capabilities` вызывает отдельный dependency-free `scripts/gamectl-capabilities.mjs`, общий с обычным `gamectl`, поэтому target PR не запускает `pnpm install`, lifecycle scripts или `tsx`. Если GitHub permission endpoint возвращает `404` для пользователя без collaborator record, admission нормализует это в `permission: none` и выдаёт typed `insufficient-permission`; остальные API failures остаются infrastructure failures.
 
 Результат сериализуется в `runtime-human-remote-result-v1`, попадает в Actions summary и публикуется как artifact с retention 3 дня. v1 не пишет bot-комментарии и поэтому не требует write permission от workflow token.
 
