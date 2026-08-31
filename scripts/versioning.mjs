@@ -86,6 +86,75 @@ function replaceVersionLine(blockInfo, version) {
   return lines.join("\n");
 }
 
+function replaceJsonVersion(text, version) {
+  const value = JSON.parse(text);
+  value.version = version;
+  return `${JSON.stringify(value, null, 2)}\n`;
+}
+
+function buildVersionWrites(root, version) {
+  const canonical = readUtf8(root, PATHS.canonical);
+  const rootPackage = readUtf8(root, PATHS.rootPackage);
+  const desktopPackage = readUtf8(root, PATHS.desktopPackage);
+  const cargoPackage = readUtf8(root, PATHS.cargoPackage);
+  const cargoLockPackage = readUtf8(root, PATHS.cargoLockPackage);
+  return [
+    {
+      relativePath: PATHS.canonical,
+      before: canonical,
+      after: replaceJsonVersion(canonical, version),
+    },
+    {
+      relativePath: PATHS.rootPackage,
+      before: rootPackage,
+      after: replaceJsonVersion(rootPackage, version),
+    },
+    {
+      relativePath: PATHS.desktopPackage,
+      before: desktopPackage,
+      after: replaceJsonVersion(desktopPackage, version),
+    },
+    {
+      relativePath: PATHS.cargoPackage,
+      before: cargoPackage,
+      after: replaceVersionLine(findCargoTomlPackage(cargoPackage), version),
+    },
+    {
+      relativePath: PATHS.cargoLockPackage,
+      before: cargoLockPackage,
+      after: replaceVersionLine(findCargoLockPackage(cargoLockPackage), version),
+    },
+  ];
+}
+
+function applyVersionWrites(root, writes) {
+  const attempted = [];
+  try {
+    for (const write of writes) {
+      attempted.push(write);
+      fs.writeFileSync(path.resolve(root, write.relativePath), write.after, "utf8");
+    }
+  } catch (error) {
+    const rollbackErrors = [];
+    for (const write of attempted.toReversed()) {
+      try {
+        fs.writeFileSync(path.resolve(root, write.relativePath), write.before, "utf8");
+      } catch (rollbackError) {
+        rollbackErrors.push(
+          `${write.relativePath}: ${rollbackError instanceof Error ? rollbackError.message : String(rollbackError)}`,
+        );
+      }
+    }
+    if (rollbackErrors.length > 0) {
+      throw new Error(
+        `version bump failed and rollback was incomplete: ${rollbackErrors.join("; ")}`,
+        { cause: error },
+      );
+    }
+    throw error;
+  }
+}
+
 export function readVersionState(root = process.cwd()) {
   const tauri = readJson(root, PATHS.canonical);
   const rootPackage = readJson(root, PATHS.rootPackage);
@@ -131,13 +200,6 @@ export function nextGameVersion(version) {
   return `0.0.${current + 1}`;
 }
 
-function writeJsonVersion(root, relativePath, version) {
-  const fullPath = path.resolve(root, relativePath);
-  const value = JSON.parse(fs.readFileSync(fullPath, "utf8"));
-  value.version = version;
-  fs.writeFileSync(fullPath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
-}
-
 export function bumpGameVersion(root = process.cwd(), explicitTarget) {
   const before = readVersionState(root);
   const check = checkVersionState(before);
@@ -147,22 +209,33 @@ export function bumpGameVersion(root = process.cwd(), explicitTarget) {
     throw new Error(`target must be the immediate next version ${expected}; got ${explicitTarget}`);
   }
   const version = explicitTarget ?? expected;
+  const writes = buildVersionWrites(root, version);
 
-  writeJsonVersion(root, PATHS.canonical, version);
-  writeJsonVersion(root, PATHS.rootPackage, version);
-  writeJsonVersion(root, PATHS.desktopPackage, version);
-
-  const cargoPath = path.resolve(root, PATHS.cargoPackage);
-  const cargoText = fs.readFileSync(cargoPath, "utf8");
-  fs.writeFileSync(cargoPath, replaceVersionLine(findCargoTomlPackage(cargoText), version), "utf8");
-
-  const lockPath = path.resolve(root, PATHS.cargoLockPackage);
-  const lockText = fs.readFileSync(lockPath, "utf8");
-  fs.writeFileSync(lockPath, replaceVersionLine(findCargoLockPackage(lockText), version), "utf8");
-
-  const after = checkVersionState(readVersionState(root));
-  if (!after.ok)
-    throw new Error(`version bump produced invalid mirrors: ${after.errors.join("; ")}`);
+  applyVersionWrites(root, writes);
+  try {
+    const after = checkVersionState(readVersionState(root));
+    if (!after.ok) {
+      throw new Error(`version bump produced invalid mirrors: ${after.errors.join("; ")}`);
+    }
+  } catch (error) {
+    const rollbackErrors = [];
+    for (const write of writes.toReversed()) {
+      try {
+        fs.writeFileSync(path.resolve(root, write.relativePath), write.before, "utf8");
+      } catch (rollbackError) {
+        rollbackErrors.push(
+          `${write.relativePath}: ${rollbackError instanceof Error ? rollbackError.message : String(rollbackError)}`,
+        );
+      }
+    }
+    if (rollbackErrors.length > 0) {
+      throw new Error(
+        `version bump validation failed and rollback was incomplete: ${rollbackErrors.join("; ")}`,
+        { cause: error },
+      );
+    }
+    throw error;
+  }
   return { previous: before.canonical, version };
 }
 
