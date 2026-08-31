@@ -15,10 +15,7 @@ const execFileAsync = promisify(execFile);
 const CLI_PATH = resolve(process.cwd(), "scripts", "run-desktop-performance-evidence.mjs");
 const COMMIT = "6472f5c3fac508cdc4cf2827aec34dcd15d8916d";
 
-function capture(
-  sampleIndex: number,
-  sampleRole: "warmup" | "measurement" = "measurement",
-) {
+function capture(sampleIndex: number, sampleRole: "warmup" | "measurement" = "measurement") {
   return {
     schemaVersion: "runtime-human-desktop-performance-capture-v1",
     commit: COMMIT,
@@ -58,6 +55,13 @@ function capture(
       browserMark("app.first_meaningful_paint", 5_000),
     ],
   };
+}
+
+function series(warmupCount: number, measurementCount: number) {
+  return [
+    ...Array.from({ length: warmupCount }, (_, index) => capture(index, "warmup")),
+    ...Array.from({ length: measurementCount }, (_, index) => capture(index)),
+  ];
 }
 
 function rustMark(name: string, atMicros: number) {
@@ -137,14 +141,7 @@ describe("desktop performance evidence CLI", () => {
     const tooFewWarmups = join(directory, "too-few-warmups.json");
     const completeSeries = join(directory, "complete-series.json");
 
-    await writeFile(
-      tooFewMeasurements,
-      `${JSON.stringify([
-        ...Array.from({ length: 5 }, (_, index) => capture(index, "warmup")),
-        ...Array.from({ length: 29 }, (_, index) => capture(index)),
-      ])}\n`,
-      "utf8",
-    );
+    await writeFile(tooFewMeasurements, `${JSON.stringify(series(5, 29))}\n`, "utf8");
     await expect(
       runDesktopEvidenceCli([
         `--input=${tooFewMeasurements}`,
@@ -153,14 +150,7 @@ describe("desktop performance evidence CLI", () => {
       ]),
     ).rejects.toThrow(/at least 30 measurement/iu);
 
-    await writeFile(
-      tooFewWarmups,
-      `${JSON.stringify([
-        ...Array.from({ length: 4 }, (_, index) => capture(index, "warmup")),
-        ...Array.from({ length: 30 }, (_, index) => capture(index)),
-      ])}\n`,
-      "utf8",
-    );
+    await writeFile(tooFewWarmups, `${JSON.stringify(series(4, 30))}\n`, "utf8");
     await expect(
       runDesktopEvidenceCli([
         `--input=${tooFewWarmups}`,
@@ -169,14 +159,7 @@ describe("desktop performance evidence CLI", () => {
       ]),
     ).rejects.toThrow(/at least 5 warmup/iu);
 
-    await writeFile(
-      completeSeries,
-      `${JSON.stringify([
-        ...Array.from({ length: 5 }, (_, index) => capture(index, "warmup")),
-        ...Array.from({ length: 30 }, (_, index) => capture(index)),
-      ])}\n`,
-      "utf8",
-    );
+    await writeFile(completeSeries, `${JSON.stringify(series(5, 30))}\n`, "utf8");
     const report = await runDesktopEvidenceCli([
       `--input=${completeSeries}`,
       `--output=${join(directory, "complete-report.json")}`,
