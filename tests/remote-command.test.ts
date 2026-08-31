@@ -25,7 +25,10 @@ type RemoteCommandCliModule = Readonly<{
   fetchRepositoryPermission: (
     username: string,
     token: string,
-    request: (url: string, init: Record<string, unknown>) => Promise<{
+    request: (
+      url: string,
+      init: Record<string, unknown>,
+    ) => Promise<{
       status: number;
       ok: boolean;
       json: () => Promise<unknown>;
