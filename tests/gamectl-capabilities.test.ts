@@ -82,11 +82,9 @@ describe("gamectl capabilities", () => {
   });
 
   it("runs capability discovery directly under node without target dependencies", () => {
-    const stdout = execFileSync(
-      process.execPath,
-      [dependencyFreeEntry, "capabilities", "--json"],
-      { encoding: "utf8" },
-    );
+    const stdout = execFileSync(process.execPath, [dependencyFreeEntry, "capabilities", "--json"], {
+      encoding: "utf8",
+    });
     const envelope = JSON.parse(stdout) as {
       schemaVersion: string;
       command: string;
