@@ -187,10 +187,12 @@ if (feedback) {
 
 if (foundation) {
   const requiredSnippets = [
-    "types: [labeled]",
+    "types: [labeled, synchronize]",
     "github.event_name != 'pull_request'",
     "github.event.action == 'labeled'",
     "github.event.label.name == 'verify:v3'",
+    "github.event.action == 'synchronize'",
+    "contains(github.event.pull_request.labels.*.name, 'verify:v3')",
     "fetch-depth: 2",
     "id: v3",
     "continue-on-error: true",
