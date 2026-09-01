@@ -36,24 +36,20 @@ jobs:
       - name: Install frozen dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
 
-      - name: Materialize current persistence fixture
+      - name: Materialize current persistence fixture through repository test harness
         shell: pwsh
+        env:
+          RUNTIME_HUMAN_MATERIALIZE_JANUARY_E2: "1"
         run: |
           $ErrorActionPreference = "Stop"
-          @'
-          import { mkdir, writeFile } from "node:fs/promises";
-          import { generateJanuary1990PersistenceFlowFixture } from "./tests/helpers/january-1990-persistence-flow";
-
-          const fixture = await generateJanuary1990PersistenceFlowFixture();
-          await mkdir("artifacts/engine-01", { recursive: true });
-          await writeFile(
-            "artifacts/engine-01/january-1990-persistence-flow-v1.json",
-            `${JSON.stringify(fixture, null, 2)}\n`,
-            "utf8",
-          );
-          '@ | Set-Content -Path ".engine-01-materialize.ts" -Encoding utf8
-          pnpm exec tsx .engine-01-materialize.ts
-          Remove-Item ".engine-01-materialize.ts" -Force
+          pnpm exec vitest run --project content-node tests/materialize-january-e2-fixtures.test.ts
+          if ($LASTEXITCODE -ne 0) {
+            throw "January fixture materialization failed with exit code $LASTEXITCODE"
+          }
+          New-Item -ItemType Directory -Force -Path "artifacts/engine-01" | Out-Null
+          Copy-Item `
+            "fixtures/persistence/january-1990-persistence-flow-v1.json" `
+            "artifacts/engine-01/january-1990-persistence-flow-v1.json"
 
       - name: Upload generated fixture
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
