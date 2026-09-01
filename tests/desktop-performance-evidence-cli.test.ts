@@ -15,7 +15,11 @@ const execFileAsync = promisify(execFile);
 const CLI_PATH = resolve(process.cwd(), "scripts", "run-desktop-performance-evidence.mjs");
 const COMMIT = "6472f5c3fac508cdc4cf2827aec34dcd15d8916d";
 
-function capture(sampleIndex: number, sampleRole: "warmup" | "measurement" = "measurement") {
+function capture(
+  sampleIndex: number,
+  sampleRole: "warmup" | "measurement" = "measurement",
+  process: "cold-process" | "warm-process" = "cold-process",
+) {
   return {
     schemaVersion: "runtime-human-desktop-performance-capture-v1",
     commit: COMMIT,
@@ -28,7 +32,7 @@ function capture(sampleIndex: number, sampleRole: "warmup" | "measurement" = "me
     },
     scenario: "startup-shell-fmp",
     classification: {
-      process: "cold-process",
+      process,
       osCache: "warm-os-cache",
       database: "existing-clean-database",
       sampleRole,
@@ -57,10 +61,14 @@ function capture(sampleIndex: number, sampleRole: "warmup" | "measurement" = "me
   };
 }
 
-function series(warmupCount: number, measurementCount: number) {
+function series(
+  warmupCount: number,
+  measurementCount: number,
+  process: "cold-process" | "warm-process" = "cold-process",
+) {
   return [
-    ...Array.from({ length: warmupCount }, (_, index) => capture(index, "warmup")),
-    ...Array.from({ length: measurementCount }, (_, index) => capture(index)),
+    ...Array.from({ length: warmupCount }, (_, index) => capture(index, "warmup", process)),
+    ...Array.from({ length: measurementCount }, (_, index) => capture(index, "measurement", process)),
   ];
 }
 
@@ -170,6 +178,41 @@ describe("desktop performance evidence CLI", () => {
     expect(report.measurementCount).toBe(30);
     expect(report.groups).toHaveLength(1);
     expect(report.groups[0]?.sampleCount).toBe(30);
+  });
+
+  it("enforces E3 coverage independently for every comparable group", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "runtime-human-desktop-e3-groups-"));
+    const incompleteInput = join(directory, "incomplete-groups.json");
+    const completeInput = join(directory, "complete-groups.json");
+
+    await writeFile(
+      incompleteInput,
+      `${JSON.stringify([...series(5, 30), ...series(5, 29, "warm-process")])}\n`,
+      "utf8",
+    );
+    await expect(
+      runDesktopEvidenceCli([
+        `--input=${incompleteInput}`,
+        `--output=${join(directory, "incomplete-groups-report.json")}`,
+        "--series=e3",
+      ]),
+    ).rejects.toThrow(/warm-process.*at least 30 measurement/iu);
+
+    await writeFile(
+      completeInput,
+      `${JSON.stringify([...series(5, 30), ...series(5, 30, "warm-process")])}\n`,
+      "utf8",
+    );
+    const report = await runDesktopEvidenceCli([
+      `--input=${completeInput}`,
+      `--output=${join(directory, "complete-groups-report.json")}`,
+      "--series=e3",
+    ]);
+
+    expect(report.warmupCount).toBe(10);
+    expect(report.measurementCount).toBe(60);
+    expect(report.groups).toHaveLength(2);
+    expect(report.groups.every((group) => group.sampleCount === 30)).toBe(true);
   });
 
   it("runs as a shell-free Node executable", async () => {
