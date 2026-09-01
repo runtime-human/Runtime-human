@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
-import { fileURLToPath } from "node:url";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { describe, expect, it } from "vitest";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
@@ -91,13 +92,7 @@ describe("Studio adaptive evaluator planner", () => {
   });
 
   it("rejects an unknown risk", () => {
-    const result = evaluate([
-      "--change-class",
-      "gameplay",
-      "--risk",
-      "R9",
-      "--json",
-    ]);
+    const result = evaluate(["--change-class", "gameplay", "--risk", "R9", "--json"]);
     expect(result.status).toBe(2);
     expect(result.stderr).toContain("Unknown risk");
   });
