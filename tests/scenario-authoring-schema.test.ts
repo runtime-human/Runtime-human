@@ -51,12 +51,8 @@ const VALID_SCENARIO: ScenarioAuthoringDocument = {
 
 describe("ScenarioAuthoringSchemaV1", () => {
   it("uses a stable JSON Schema 2020-12 identity", () => {
-    expect(ScenarioAuthoringSchemaV1.$schema).toBe(
-      "https://json-schema.org/draft/2020-12/schema",
-    );
-    expect(ScenarioAuthoringSchemaV1.$id).toBe(
-      "https://runtime-human.invalid/schema/scenario-v1",
-    );
+    expect(ScenarioAuthoringSchemaV1.$schema).toBe("https://json-schema.org/draft/2020-12/schema");
+    expect(ScenarioAuthoringSchemaV1.$id).toBe("https://runtime-human.invalid/schema/scenario-v1");
   });
 
   it("accepts a closed typed scenario graph", () => {
@@ -70,7 +66,13 @@ describe("ScenarioAuthoringSchemaV1", () => {
       {
         ...VALID_SCENARIO,
         nodes: {
-          bad: { kind: "gate", predicateId: "ready", pass: "complete", fail: "complete", expression: "money > 2" },
+          bad: {
+            kind: "gate",
+            predicateId: "ready",
+            pass: "complete",
+            fail: "complete",
+            expression: "money > 2",
+          },
           complete: { kind: "complete" },
         },
       },
@@ -80,7 +82,12 @@ describe("ScenarioAuthoringSchemaV1", () => {
       {
         ...VALID_SCENARIO,
         nodes: {
-          bad: { kind: "provider", providerId: "x", next: "complete", effects: [{ set: "skill", value: 9 }] },
+          bad: {
+            kind: "provider",
+            providerId: "x",
+            next: "complete",
+            effects: [{ set: "skill", value: 9 }],
+          },
           complete: { kind: "complete" },
         },
       },
