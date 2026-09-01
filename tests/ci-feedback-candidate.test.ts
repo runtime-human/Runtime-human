@@ -27,13 +27,15 @@ describe("remote CI feedback and candidate V3", () => {
     expect(feedback).not.toContain("pull_request_target");
   });
 
-  it("admits PR V3 only for an explicit verify:v3 label event", () => {
+  it("refreshes explicit PR V3 candidates after their head synchronizes", () => {
     const foundation = read(".github/workflows/foundation.yml");
 
-    expect(foundation).toMatch(/pull_request:\s*[\s\S]*?types:\s*\[labeled\]/u);
+    expect(foundation).toMatch(/pull_request:\s*[\s\S]*?types:\s*\[labeled, synchronize\]/u);
     expect(foundation).toContain("github.event_name != 'pull_request'");
     expect(foundation).toContain("github.event.action == 'labeled'");
     expect(foundation).toContain("github.event.label.name == 'verify:v3'");
+    expect(foundation).toContain("github.event.action == 'synchronize'");
+    expect(foundation).toContain("contains(github.event.pull_request.labels.*.name, 'verify:v3')");
     expect(foundation).toContain("pnpm verify");
     expect(foundation).toContain("pnpm studioctl evidence");
     expect(foundation).toContain("contents: read");
