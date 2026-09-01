@@ -5,10 +5,7 @@ import {
 } from "@runtime-human/game-schema";
 
 import { fingerprint } from "../determinism/hash";
-import {
-  createJanuary1990BalanceFingerprint,
-  type January1990BalanceV1,
-} from "./january-balance";
+import { createJanuary1990BalanceFingerprint, type January1990BalanceV1 } from "./january-balance";
 import { JANUARY_1990_REQUIRED_CHUNK_IDS } from "./january-content-ids";
 import { JANUARY_1990_DECISION_IDS } from "./january-decisions";
 import { JANUARY_1990_RNG_CALL_BUDGET, JANUARY_1990_RNG_SCOPES } from "./january-rng-scopes";
