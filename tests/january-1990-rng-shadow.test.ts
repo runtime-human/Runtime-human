@@ -6,12 +6,14 @@ import {
 } from "@runtime-human/game-application";
 import {
   createJanuary1990RngDomainPathsV1,
+  createJanuary1990RulesFingerprint,
   deriveRandomSource,
   fingerprint,
   JANUARY_1990_CONTENT_IDS,
   JANUARY_1990_DEFAULT_BALANCE,
   RNG_DERIVATION_MANIFEST_V1,
   Xoshiro256StarStar,
+  type January1990ContentContext,
 } from "@runtime-human/game-core";
 import {
   createJanuary1990RngShadowReport,
@@ -19,6 +21,7 @@ import {
   JANUARY_RNG_SHADOW_REPORT_SCHEMA_VERSION,
 } from "@runtime-human/game-simulation";
 
+import { createCountingRandomSource } from "../packages/game-simulation/src/rng-call-counter";
 import { loadJanuaryTestRegistry } from "./helpers/january-1990-runtime-fixture";
 
 const context = projectJanuary1990Content(await loadJanuaryTestRegistry());
@@ -50,13 +53,28 @@ describe("January 1990 hierarchical RNG shadow evidence", () => {
     ]);
   });
 
-  it("emits a versioned byte-stable report without raw derived RNG state", () => {
+  it("rejects a context that does not satisfy the full January context contract", () => {
+    const invalidContext = {
+      ...context,
+      contentFingerprint: "not-a-fingerprint",
+    } as unknown as January1990ContentContext;
+
+    expect(() => createJanuary1990RngDomainPathsV1(invalidContext)).toThrow(
+      "verified January 1990 content context",
+    );
+  });
+
+  it("emits a versioned byte-stable report with exact source identities", () => {
     const first = createReport();
     const second = createReport();
 
     expect(second).toEqual(first);
     expect(first.schemaVersion).toBe(JANUARY_RNG_SHADOW_REPORT_SCHEMA_VERSION);
     expect(first.derivationManifest).toEqual(RNG_DERIVATION_MANIFEST_V1);
+    expect(first.contentFingerprint).toBe(context.contentFingerprint);
+    expect(first.rulesetFingerprint).toBe(
+      createJanuary1990RulesFingerprint(JANUARY_1990_DEFAULT_BALANCE),
+    );
     expect(first.rootStateFingerprint).toMatch(/^[0-9a-f]{64}$/u);
     expect(first.domainCalls).toEqual({
       content: { declared: 0, observed: 0 },
@@ -72,6 +90,16 @@ describe("January 1990 hierarchical RNG shadow evidence", () => {
     }
   });
 
+  it("measures random-source calls instead of accepting a self-reported count", () => {
+    const counted = createCountingRandomSource(Xoshiro256StarStar.fromSeed(7n));
+
+    counted.random.nextInt(0, 2);
+    counted.random.nextInt(0, 2);
+    counted.random.weightedIndex([1, 1]);
+
+    expect(counted.observedCalls()).toBe(3);
+  });
+
   it("matches the committed golden report fingerprint", () => {
     expect(fingerprint("january-1990-rng-shadow-report-golden-v1", createReport())).toBe(
       "6dc47a16bc814091f27bbec8b08bccccd999fdb6fe37b3789875ec9c19ba3df2",
@@ -79,17 +107,28 @@ describe("January 1990 hierarchical RNG shadow evidence", () => {
   });
 
   it("keeps the outcome shadow stream independent from narrative consumption", () => {
+    const baseline = createReport();
     const paths = createJanuary1990RngDomainPathsV1(context);
     const narrative = deriveRandomSource(rootState, paths.narrativeEventSelection);
-    const outcomeBefore = deriveRandomSource(rootState, paths.outcomeQualityRoll).exportState();
+    const baselineNarrative = baseline.streams.find((stream) => stream.domain === "narrative");
+    const baselineOutcome = baseline.streams.find((stream) => stream.domain === "outcome");
 
-    narrative.nextUint64();
-    narrative.nextUint64();
-    narrative.nextUint64();
-
-    expect(deriveRandomSource(rootState, paths.outcomeQualityRoll).exportState()).toBe(
-      outcomeBefore,
+    narrative.nextInt(0, context.situation.eventIds.length);
+    narrative.nextInt(0, context.situation.eventIds.length);
+    const narrativeWithExtraDrawFingerprint = fingerprint(
+      "january-1990-rng-shadow-stream-state-v1",
+      {
+        path: paths.narrativeEventSelection,
+        phase: "post-calls",
+        state: narrative.exportState(),
+      },
     );
+
+    expect(narrativeWithExtraDrawFingerprint).not.toBe(
+      baselineNarrative?.postCallsStateFingerprint,
+    );
+    expect(createReport().streams.find((stream) => stream.domain === "outcome"))
+      .toEqual(baselineOutcome);
   });
 
   it("does not alter authoritative January execution", () => {
