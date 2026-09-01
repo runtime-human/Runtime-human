@@ -1,3 +1,11 @@
+---
+title: "AI Harness Wave 9 Reconciliation Implementation Plan"
+type: plan
+status: completed
+canon: false
+updated: 2026-09-01
+---
+
 # AI Harness Wave 9 Reconciliation Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
