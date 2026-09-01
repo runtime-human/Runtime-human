@@ -34,4 +34,11 @@ describe("PERF-02A E3 hosted Windows series workflow", () => {
     expect(workflow).not.toContain("pull_request_target");
     expect(workflow).not.toContain("workflow_dispatch");
   });
+
+  it("uses the versioned report missing-metric field", async () => {
+    const workflow = await readWorkflow();
+
+    expect(workflow).toContain("$missingExternal[0].count -ne $measurementCount");
+    expect(workflow).not.toContain("$missingExternal[0].missingCount");
+  });
 });
