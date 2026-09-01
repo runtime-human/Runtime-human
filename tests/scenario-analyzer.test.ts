@@ -60,9 +60,12 @@ describe("scenario analyzer", () => {
   it("reports SCN004 for an invalid node identifier", () => {
     expect(
       codes(
-        scenario({
-          "Bad Node": { kind: "complete" },
-        } as ScenarioAuthoringDocument["nodes"], "Bad Node"),
+        scenario(
+          {
+            "Bad Node": { kind: "complete" },
+          } as ScenarioAuthoringDocument["nodes"],
+          "Bad Node",
+        ),
       ),
     ).toContain("SCN004");
   });
@@ -134,7 +137,10 @@ describe("scenario analyzer", () => {
   it("returns diagnostics in stable code/path order", () => {
     const diagnostics = analyzeScenario(
       scenario({
-        start: { kind: "branch", branches: [{ predicateId: "missing.predicate", target: "missing" }] },
+        start: {
+          kind: "branch",
+          branches: [{ predicateId: "missing.predicate", target: "missing" }],
+        },
         unreachable: { kind: "provider", providerId: "missing.provider" },
       }),
       { providerIds: new Set(), predicateIds: new Set() },
