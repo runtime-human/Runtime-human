@@ -14,7 +14,6 @@ export { RNG_DERIVATION_MANIFEST_V1 } from "@runtime-human/game-schema";
 export type { RngDerivationManifestV1, RngDerivationVersion } from "@runtime-human/game-schema";
 export {
   createJanuary1990HierarchicalMonthSteps,
-  createJanuary1990HierarchicalRulesFingerprint,
   createJanuary1990MonthPlan,
   createJanuary1990MonthSteps,
   createJanuary1990Result,
