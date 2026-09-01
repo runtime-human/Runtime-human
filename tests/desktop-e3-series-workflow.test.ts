@@ -59,6 +59,15 @@ describe("PERF-02A E3 hosted Windows series workflow", () => {
     expect(workflow).not.toContain("workflow_dispatch");
   });
 
+  it("selects one explicit canonical database population", async () => {
+    const workflow = await readWorkflow();
+
+    expect(workflow).toContain("perf:e3-existing-clean");
+    expect(workflow).toContain('$database = "new-database"');
+    expect(workflow).toContain('$database = "existing-clean-database"');
+    expect(workflow).toContain("E3 database population labels are ambiguous");
+  });
+
   it("uses delimiter-safe PowerShell interpolation before milestone colons", async () => {
     const workflow = await readWorkflow();
 
