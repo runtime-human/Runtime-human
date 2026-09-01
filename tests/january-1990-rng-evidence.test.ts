@@ -11,7 +11,7 @@ import {
 import type { Fingerprint } from "@runtime-human/game-schema";
 import {
   compareSimulationReportsV2,
-  createJanuary1990Simulation,
+  createJanuary1990SimulationV2,
   GAME_REPRO_SCHEMA_VERSION_V2,
   JANUARY_RNG_EVIDENCE_SCHEMA_VERSION,
   JANUARY_RNG_EVIDENCE_V1,
@@ -36,7 +36,7 @@ const registry = await loadJanuaryTestRegistry();
 const context = projectJanuary1990Content(registry);
 const balance = JANUARY_1990_DEFAULT_BALANCE;
 const rulesetFingerprint = createJanuary1990RulesFingerprint(balance);
-const simulation = createJanuary1990Simulation({
+const simulation = createJanuary1990SimulationV2({
   context,
   balance,
   saveSchemaFingerprint: JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
