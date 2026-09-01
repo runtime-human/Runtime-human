@@ -6,7 +6,7 @@ export type StartupCaptureOptions = Readonly<{
   outputPath: string;
   process: "cold-process";
   osCache: "cold-os-cache" | "warm-os-cache";
-  database: "new-database" | "existing-database";
+  database: "new-database" | "existing-clean-database";
   sampleRole: "warmup" | "measurement";
   sampleIndex: number;
 }>;
@@ -14,7 +14,7 @@ export type StartupCaptureOptions = Readonly<{
 const CACHE_CLASSES = new Set<StartupCaptureOptions["osCache"]>(["cold-os-cache", "warm-os-cache"]);
 const DATABASE_CLASSES = new Set<StartupCaptureOptions["database"]>([
   "new-database",
-  "existing-database",
+  "existing-clean-database",
 ]);
 const SAMPLE_ROLES = new Set<StartupCaptureOptions["sampleRole"]>(["warmup", "measurement"]);
 const EVIDENCE_BINARY_PATH = "apps/desktop/src-tauri/target/release/runtime-human-desktop.exe";
