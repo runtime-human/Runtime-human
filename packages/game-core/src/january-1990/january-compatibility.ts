@@ -11,8 +11,7 @@ import { JANUARY_1990_DECISION_IDS } from "./january-decisions";
 import { JANUARY_1990_RNG_CALL_BUDGET, JANUARY_1990_RNG_SCOPES } from "./january-rng-scopes";
 
 export const JANUARY_1990_STEP_TABLE_VERSION = "january-1990-step-table-v1" as const;
-export const JANUARY_1990_HIERARCHICAL_RULES_VERSION =
-  "january-1990-hierarchical-rng-v1" as const;
+export const JANUARY_1990_HIERARCHICAL_RULES_VERSION = "january-1990-hierarchical-rng-v1" as const;
 
 export const JANUARY_1990_HIERARCHICAL_DETERMINISM_MANIFEST: DeterminismManifest = Object.freeze({
   ...DETERMINISM_MANIFEST_V1,
