@@ -96,6 +96,7 @@ export function analyzeScenario(
     for (const cycle of findStronglyConnectedCycles(adjacency, reachable)) {
       if (cycle.some((nodeId) => canReachCompletion.has(nodeId))) continue;
       const anchor = cycle[0];
+      if (anchor === undefined) continue;
       diagnostics.push(
         diagnostic(
           scenario,
