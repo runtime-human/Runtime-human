@@ -17,14 +17,16 @@ describe("PERF-02A E3 hosted Windows series workflow", () => {
 
     expect(workflow).toContain("name: perf-02a-e3-windows-series");
     expect(workflow).toContain("types: [labeled, synchronize]");
-    expect(workflow).toContain("github.event.pull_request.head.repo.full_name == github.repository");
+    expect(workflow).toContain(
+      "github.event.pull_request.head.repo.full_name == github.repository",
+    );
     expect(workflow).toContain("perf:e3-series");
     expect(workflow).toContain("contents: read");
     expect(workflow).toContain("runs-on: windows-2025");
     expect(workflow).toContain("ref: ${{ github.event.pull_request.head.sha }}");
     expect(workflow).toContain("persist-credentials: false");
-    expect(workflow).toContain("E3_WARMUP_COUNT: \"5\"");
-    expect(workflow).toContain("E3_MEASUREMENT_COUNT: \"30\"");
+    expect(workflow).toContain('E3_WARMUP_COUNT: "5"');
+    expect(workflow).toContain('E3_MEASUREMENT_COUNT: "30"');
     expect(workflow).toContain('"--series=e3"');
 
     expect(workflow.match(/pnpm evidence:desktop:build/g)).toHaveLength(1);
