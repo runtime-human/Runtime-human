@@ -10,19 +10,19 @@ export function createCountingRandomSource(source: RandomSource): CountingRandom
 
   function wrap(random: RandomSource): RandomSource {
     return Object.freeze({
-      nextUint32() {
+      nextUint32(): number {
         observedCalls += 1;
         return random.nextUint32();
       },
-      nextInt(minInclusive, maxExclusive) {
+      nextInt(minInclusive: number, maxExclusive: number): number {
         observedCalls += 1;
         return random.nextInt(minInclusive, maxExclusive);
       },
-      weightedIndex(weights) {
+      weightedIndex(weights: readonly number[]): number {
         observedCalls += 1;
         return random.weightedIndex(weights);
       },
-      fork(scope) {
+      fork(scope: string): RandomSource {
         return wrap(random.fork(scope));
       },
       exportState() {
