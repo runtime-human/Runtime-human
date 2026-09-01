@@ -128,7 +128,7 @@ export function replayJanuaryReproV2(
     balance: input.balance,
     saveSchemaFingerprint: input.saveSchemaFingerprint,
     repro: legacy,
-    captureTrace: input.captureTrace,
+    ...(input.captureTrace === undefined ? {} : { captureTrace: input.captureTrace }),
   });
 }
 
