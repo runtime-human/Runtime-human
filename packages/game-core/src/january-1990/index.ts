@@ -9,7 +9,6 @@ export {
   parseJanuaryLearningAnswer,
 } from "./january-answers";
 export {
-  createJanuary1990HierarchicalRulesFingerprint,
   createJanuary1990RulesFingerprint,
   createJanuary1990RulesetManifest,
   JANUARY_1990_HIERARCHICAL_DETERMINISM_MANIFEST,
