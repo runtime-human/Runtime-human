@@ -1,14 +1,29 @@
 import { readFile } from "node:fs/promises";
+import { basename } from "node:path";
 
 import { describe, expect, it } from "vitest";
+
+import { parseStartupCaptureArguments } from "../tools/desktop-evidence/src/capture-options.js";
 
 const WORKFLOW_URL = new URL(
   "../.github/workflows/perf-02a-e3-windows-series.yml",
   import.meta.url,
 );
+const COMMIT = "a".repeat(40);
 
 async function readWorkflow(): Promise<string> {
   return readFile(WORKFLOW_URL, "utf8");
+}
+
+function captureArguments(database: string): string[] {
+  return [
+    `--commit=${COMMIT}`,
+    "--process=cold-process",
+    "--os-cache=warm-os-cache",
+    `--database=${database}`,
+    "--sample-role=measurement",
+    "--sample-index=7",
+  ];
 }
 
 describe("PERF-02A E3 hosted Windows series workflow", () => {
@@ -47,5 +62,26 @@ describe("PERF-02A E3 hosted Windows series workflow", () => {
 
     expect(workflow).toContain("$missingExternal[0].count -ne $measurementCount");
     expect(workflow).not.toContain("$missingExternal[0].missingCount");
+  });
+
+  it("accepts existing-database as a distinct startup evidence population", () => {
+    const options = parseStartupCaptureArguments(captureArguments("existing-database"), process.cwd());
+
+    expect(options.database).toBe("existing-database");
+    expect(basename(options.outputPath)).toBe(
+      "startup-shell-fmp-cold-process-warm-os-cache-existing-database-measurement-7.json",
+    );
+  });
+
+  it("keeps the original new-database population valid", () => {
+    const options = parseStartupCaptureArguments(captureArguments("new-database"), process.cwd());
+
+    expect(options.database).toBe("new-database");
+  });
+
+  it("rejects database classes without implemented capture semantics", () => {
+    expect(() => parseStartupCaptureArguments(captureArguments("mystery-database"))).toThrow(
+      "--database has an unsupported value",
+    );
   });
 });
