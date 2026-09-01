@@ -1,6 +1,7 @@
 import { createRngDomainPathV1, type RngDomainPathV1 } from "../determinism/rng-domain";
 import type { January1990ContentContext } from "./january-content-context";
 import { JANUARY_1990_CONTENT_IDS } from "./january-content-ids";
+import { assertJanuary1990ContentContext } from "./january-month-plan";
 
 export type January1990RngDomainPathsV1 = Readonly<{
   narrativeEventSelection: RngDomainPathV1;
@@ -10,9 +11,7 @@ export type January1990RngDomainPathsV1 = Readonly<{
 export function createJanuary1990RngDomainPathsV1(
   context: January1990ContentContext,
 ): January1990RngDomainPathsV1 {
-  if (context.month !== "1990-01") {
-    throw new TypeError("January RNG domains require the January 1990 content context");
-  }
+  assertJanuary1990ContentContext(context);
   if (context.situation.id !== JANUARY_1990_CONTENT_IDS.firstBugSituation) {
     throw new TypeError(
       "January narrative RNG owner does not match the approved first-bug situation",
