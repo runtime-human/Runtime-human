@@ -3,6 +3,7 @@ import type { DesktopEvidenceReport } from "./performance/desktop-evidence-contr
 export type DesktopEvidenceCliOptions = Readonly<{
   inputs: readonly string[];
   output: string;
+  series: "e3" | null;
 }>;
 
 export function parseDesktopEvidenceArguments(args: readonly string[]): DesktopEvidenceCliOptions;
