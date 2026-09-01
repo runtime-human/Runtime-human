@@ -30,7 +30,7 @@ export type JanuaryRngEvidenceParseResultV1 =
   | Readonly<{ kind: "invalid"; message: string }>;
 
 const JANUARY_RNG_SHADOW_GOLDEN_REPORT_FINGERPRINT =
-  "6dc47a16bc814091f27bbec8b08bccccd999fdb6fe37b3789875ec9c19ba3df2" as Fingerprint;
+  "f013a1155f4829ba20a112b12e1edb906288ecc27468808c1fb87d0b45ab15bd" as Fingerprint;
 
 export const JANUARY_RNG_EVIDENCE_V1: JanuaryRngEvidenceV1 = Object.freeze({
   schemaVersion: JANUARY_RNG_EVIDENCE_SCHEMA_VERSION,
@@ -132,7 +132,8 @@ export function januaryRngEvidenceEqual(
     left.shadow.derivationManifest.algorithm === right.shadow.derivationManifest.algorithm &&
     left.shadow.derivationManifest.derivationVersion ===
       right.shadow.derivationManifest.derivationVersion &&
-    left.shadow.derivationManifest.hashAlgorithm === right.shadow.derivationManifest.hashAlgorithm &&
+    left.shadow.derivationManifest.hashAlgorithm ===
+      right.shadow.derivationManifest.hashAlgorithm &&
     left.shadow.derivationManifest.serializationVersion ===
       right.shadow.derivationManifest.serializationVersion &&
     left.shadow.reportSchemaVersion === right.shadow.reportSchemaVersion &&

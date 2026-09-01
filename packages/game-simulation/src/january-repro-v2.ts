@@ -1,7 +1,4 @@
-import type {
-  January1990BalanceV1,
-  January1990ContentContext,
-} from "@runtime-human/game-core";
+import type { January1990BalanceV1, January1990ContentContext } from "@runtime-human/game-core";
 import type { Fingerprint } from "@runtime-human/game-schema";
 
 import {

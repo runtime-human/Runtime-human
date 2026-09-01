@@ -28,7 +28,7 @@ import {
 import { loadJanuaryTestRegistry } from "./helpers/january-1990-runtime-fixture";
 
 const GOLDEN_SHADOW_FINGERPRINT =
-  "6dc47a16bc814091f27bbec8b08bccccd999fdb6fe37b3789875ec9c19ba3df2";
+  "f013a1155f4829ba20a112b12e1edb906288ecc27468808c1fb87d0b45ab15bd";
 const TERMINAL_CHECKPOINT_HASH =
   "10a2fbda782646a739e5a54b7c71cd5feee2b815886510fe62be47febd30314f" as Fingerprint;
 

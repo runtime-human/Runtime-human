@@ -29,10 +29,7 @@ export {
   januaryRngEvidenceEqual,
   parseJanuaryRngEvidenceV1,
 } from "./january-rng-evidence";
-export type {
-  JanuaryRngEvidenceParseResultV1,
-  JanuaryRngEvidenceV1,
-} from "./january-rng-evidence";
+export type { JanuaryRngEvidenceParseResultV1, JanuaryRngEvidenceV1 } from "./january-rng-evidence";
 export {
   GAME_REPLAY_TRACE_SCHEMA_VERSION,
   parseGameReproV1,

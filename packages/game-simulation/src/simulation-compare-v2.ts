@@ -4,18 +4,12 @@ import {
   type SimulationCompareMetricIdV1,
   type SimulationCompareResultV1,
 } from "./simulation-compare";
-import {
-  januaryRngEvidenceEqual,
-  parseJanuaryRngEvidenceV1,
-} from "./january-rng-evidence";
+import { januaryRngEvidenceEqual, parseJanuaryRngEvidenceV1 } from "./january-rng-evidence";
 import {
   SIMULATION_REPORT_SCHEMA_VERSION_V2,
   type SimulationReportV2,
 } from "./january-simulation-v2";
-import {
-  SIMULATION_REPORT_SCHEMA_VERSION,
-  type SimulationReportV1,
-} from "./simulation-types";
+import { SIMULATION_REPORT_SCHEMA_VERSION, type SimulationReportV1 } from "./simulation-types";
 
 export type SimulationReportDiagnosticV2 = Readonly<{ code: "REPORT_INVALID"; message: string }>;
 
