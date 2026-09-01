@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
 
 defaults:
   run:
@@ -28,11 +28,10 @@ jobs:
     runs-on: windows-2025
     timeout-minutes: 20
     steps:
-      - name: Checkout exact PR head
+      - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          persist-credentials: true
+          persist-credentials: false
           show-progress: false
 
       - name: Set up pnpm
@@ -56,27 +55,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
-
-      - name: Materialize January E2 fixture
-        run: pnpm evidence:january:e2
-
-      - name: Commit January persistence fixture
-        run: |
-          $ErrorActionPreference = "Stop"
-          git add -- fixtures/persistence/january-1990-persistence-flow-v1.json
-          git diff --cached --quiet
-          if ($LASTEXITCODE -eq 0) {
-            Write-Host "January persistence fixture is already current"
-          } elseif ($LASTEXITCODE -eq 1) {
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git commit -m "test(application): refresh January RNG cutover fixture"
-            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-            git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
-            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          } else {
-            throw "Unable to inspect staged January persistence fixture"
-          }
 
       - name: Run non-authoritative fast feedback
         run: pnpm check:fast
