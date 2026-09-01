@@ -1,0 +1,411 @@
+name: perf-02a-e3-windows-series
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [labeled, synchronize]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: pwsh
+
+env:
+  E3_WARMUP_COUNT: "5"
+  E3_MEASUREMENT_COUNT: "30"
+
+jobs:
+  series:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      (
+        (github.event.action == 'labeled' &&
+         github.event.label.name == 'perf:e3-series') ||
+        (github.event.action == 'synchronize' &&
+         contains(github.event.pull_request.labels.*.name, 'perf:e3-series'))
+      )
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    runs-on: windows-2025
+    timeout-minutes: 210
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+          show-progress: false
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          version: "11.11.0"
+          run_install: false
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "24.20.0"
+          package-manager-cache: false
+
+      - name: Install Rust 1.97.1
+        run: |
+          rustup toolchain install 1.97.1 --profile minimal --component rustfmt
+          rustup default 1.97.1
+          rustc --version
+          cargo --version
+
+      - name: Install frozen dependencies
+        run: pnpm install --frozen-lockfile --reporter=append-only
+
+      - name: Check public repository contract
+        run: pnpm public:check
+
+      - name: Check documentation
+        run: pnpm docs:check
+
+      - name: Check formatting
+        run: pnpm fmt:check
+
+      - name: Run lint
+        run: pnpm lint
+
+      - name: Run type-aware lint
+        run: pnpm lint:type-aware
+
+      - name: Run typecheck
+        run: pnpm typecheck
+
+      - name: Verify evidence contracts
+        run: pnpm evidence:desktop:check
+
+      - name: Check evidence Rust feature graph
+        run: cargo check --locked --manifest-path apps/desktop/src-tauri/Cargo.toml --features performance-evidence
+
+      - name: Test evidence-only Rust boundary
+        run: >-
+          cargo test --locked
+          --manifest-path apps/desktop/src-tauri/Cargo.toml
+          --features performance-evidence
+          evidence::tests
+          -- --nocapture --test-threads=1
+
+      - name: Restore only Rust-generated Tauri schemas
+        run: |
+          $ErrorActionPreference = "Stop"
+          $generatedSchemas = @(
+            "apps/desktop/src-tauri/gen/schemas/acl-manifests.json",
+            "apps/desktop/src-tauri/gen/schemas/capabilities.json",
+            "apps/desktop/src-tauri/gen/schemas/desktop-schema.json",
+            "apps/desktop/src-tauri/gen/schemas/windows-schema.json"
+          )
+          foreach ($path in $generatedSchemas) {
+            git ls-files --error-unmatch -- $path *> $null
+            $trackedExit = $LASTEXITCODE
+            if ($trackedExit -eq 0) {
+              git restore --worktree -- $path
+              if ($LASTEXITCODE -ne 0) {
+                throw "Unable to restore tracked generated Tauri schema $path"
+              }
+            } elseif ($trackedExit -eq 1) {
+              if (Test-Path $path) {
+                Remove-Item $path -Force
+              }
+            } else {
+              throw "Unable to determine whether generated Tauri schema is tracked: $path"
+            }
+          }
+          $status = @(git status --porcelain --untracked-files=all)
+          $status | ForEach-Object { Write-Host $_ }
+          if ($status.Count -gt 0) {
+            throw "Evidence Rust verification changed reviewed sources outside the generated Tauri schema allowlist"
+          }
+
+      - name: Pin exact reviewed product head
+        run: |
+          $ErrorActionPreference = "Stop"
+          git diff --quiet
+          if ($LASTEXITCODE -ne 0) {
+            throw "Reviewed evidence worktree is not clean before build"
+          }
+          git diff --cached --quiet
+          if ($LASTEXITCODE -ne 0) {
+            throw "Reviewed evidence index is not clean before build"
+          }
+          $measuredCommit = (git rev-parse HEAD).Trim()
+          $expectedCommit = "${{ github.event.pull_request.head.sha }}"
+          if ($measuredCommit -ne $expectedCommit) {
+            throw "Checked out head $measuredCommit does not match PR head $expectedCommit"
+          }
+          "MEASURED_COMMIT=$measuredCommit" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "Measured product commit: $measuredCommit"
+
+      - name: Preflight embedded WDIO runtime
+        run: |
+          Push-Location tools/desktop-evidence
+          try {
+            node --input-type=module -e "await import('@wdio/tauri-service'); console.log('WDIO Tauri service import succeeded')"
+          } finally {
+            Pop-Location
+          }
+
+      - name: Build evidence executable once
+        run: pnpm evidence:desktop:build
+
+      - name: Restore only build-generated Tauri schemas
+        run: |
+          $ErrorActionPreference = "Stop"
+          $generatedSchemas = @(
+            "apps/desktop/src-tauri/gen/schemas/acl-manifests.json",
+            "apps/desktop/src-tauri/gen/schemas/capabilities.json",
+            "apps/desktop/src-tauri/gen/schemas/desktop-schema.json",
+            "apps/desktop/src-tauri/gen/schemas/windows-schema.json"
+          )
+          foreach ($path in $generatedSchemas) {
+            git ls-files --error-unmatch -- $path *> $null
+            $trackedExit = $LASTEXITCODE
+            if ($trackedExit -eq 0) {
+              git restore --worktree -- $path
+              if ($LASTEXITCODE -ne 0) {
+                throw "Unable to restore tracked generated Tauri schema $path"
+              }
+            } elseif ($trackedExit -eq 1) {
+              if (Test-Path $path) {
+                Remove-Item $path -Force
+              }
+            } else {
+              throw "Unable to determine whether generated Tauri schema is tracked: $path"
+            }
+          }
+          $status = @(git status --porcelain --untracked-files=all)
+          $status | ForEach-Object { Write-Host $_ }
+          if ($status.Count -gt 0) {
+            throw "Evidence build changed reviewed sources outside the generated Tauri schema allowlist"
+          }
+
+      - name: Record bounded runner provenance
+        run: |
+          $ErrorActionPreference = "Stop"
+          New-Item -ItemType Directory -Force -Path "artifacts/performance" | Out-Null
+          $imageOS = if ([string]::IsNullOrWhiteSpace($env:ImageOS)) { "unknown" } else { $env:ImageOS.Trim() }
+          $imageVersion = if ([string]::IsNullOrWhiteSpace($env:ImageVersion)) { "unknown" } else { $env:ImageVersion.Trim() }
+          $provenance = [ordered]@{
+            schemaVersion = "runtime-human-e3-run-provenance-v1"
+            commit = $env:MEASURED_COMMIT
+            runnerOS = "${{ runner.os }}"
+            runnerArch = "${{ runner.arch }}"
+            imageOS = $imageOS
+            imageVersion = $imageVersion
+            nodeVersion = (node --version).Trim()
+            pnpmVersion = (pnpm --version).Trim()
+            rustcVersion = (rustc --version).Trim()
+            cargoVersion = (cargo --version).Trim()
+            warmupCount = [int]$env:E3_WARMUP_COUNT
+            measurementCount = [int]$env:E3_MEASUREMENT_COUNT
+          }
+          $provenance |
+            ConvertTo-Json -Depth 3 |
+            Set-Content -Path "artifacts/performance/e3-run-provenance.json" -Encoding utf8
+
+      - name: Capture and validate physical E3 startup series
+        run: |
+          $ErrorActionPreference = "Stop"
+          $scenario = "startup-shell-fmp"
+          $processClass = "cold-process"
+          $osCache = "warm-os-cache"
+          $database = "new-database"
+          $warmupCount = [int]$env:E3_WARMUP_COUNT
+          $measurementCount = [int]$env:E3_MEASUREMENT_COUNT
+          $capturePaths = [System.Collections.Generic.List[string]]::new()
+          $before = @(
+            Get-ChildItem -Path $env:TEMP -Directory -Filter "runtime-human-desktop-evidence-*" -ErrorAction SilentlyContinue |
+              ForEach-Object { $_.FullName }
+          )
+          $seriesFailure = $null
+
+          function Assert-Capture {
+            param(
+              [Parameter(Mandatory = $true)][string]$Path,
+              [Parameter(Mandatory = $true)][string]$Role,
+              [Parameter(Mandatory = $true)][int]$Index
+            )
+            if (-not (Test-Path $Path)) {
+              throw "Expected raw capture was not written: $Path"
+            }
+            $payload = Get-Content $Path -Raw | ConvertFrom-Json
+            if ($payload.schemaVersion -ne "runtime-human-desktop-performance-capture-v1") {
+              throw "Unexpected capture schema in ${Path}: $($payload.schemaVersion)"
+            }
+            if ($payload.commit -ne $env:MEASURED_COMMIT) {
+              throw "Capture commit $($payload.commit) does not match $env:MEASURED_COMMIT"
+            }
+            if ($payload.scenario -ne $scenario) {
+              throw "Capture scenario does not match E3 startup contract: $($payload.scenario)"
+            }
+            if (
+              $payload.classification.process -ne $processClass -or
+              $payload.classification.osCache -ne $osCache -or
+              $payload.classification.database -ne $database -or
+              $payload.classification.sampleRole -ne $Role -or
+              $payload.sampleIndex -ne $Index
+            ) {
+              throw "Capture classification does not match E3 series identity for $Role/$Index"
+            }
+            if ($payload.rustSnapshot.droppedEvents -ne 0) {
+              throw "Rust recorder dropped $($payload.rustSnapshot.droppedEvents) event(s) for $Role/$Index"
+            }
+            $browserNames = @($payload.browserEntries | ForEach-Object { $_.name })
+            foreach ($required in @(
+              "app.renderer_bootstrap",
+              "app.react_shell_commit",
+              "app.january_session_ready",
+              "app.first_meaningful_paint"
+            )) {
+              if ($required -notin $browserNames) {
+                throw "Required browser milestone is missing for $Role/${Index}: $required"
+              }
+            }
+            $rustNames = @($payload.rustSnapshot.events | ForEach-Object { $_.name })
+            foreach ($required in @(
+              "processEntry",
+              "tauriSetupStart",
+              "persistenceWorkerReady",
+              "tauriSetupComplete",
+              "mainWindowAvailable"
+            )) {
+              if ($required -notin $rustNames) {
+                throw "Required Rust milestone is missing for $Role/${Index}: $required"
+              }
+            }
+            $invalidQueueDepth = @(
+              $payload.rustSnapshot.events |
+                Where-Object { $_.queueDepth -ne $null -and $_.name -ne "persistenceQueueWait" }
+            )
+            if ($invalidQueueDepth.Count -gt 0) {
+              throw "queueDepth is present outside persistenceQueueWait for $Role/$Index"
+            }
+            $externalProperties = @($payload.externalDurationsMicros.PSObject.Properties)
+            if ($externalProperties.Count -ne 0) {
+              throw "Startup E3 capture must not fabricate cross-clock external durations for $Role/$Index"
+            }
+          }
+
+          function Invoke-Capture {
+            param(
+              [Parameter(Mandatory = $true)][string]$Role,
+              [Parameter(Mandatory = $true)][int]$Index
+            )
+            Write-Host "Capturing E3 sample role=$Role index=$Index"
+            pnpm evidence:desktop:capture:startup -- `
+              "--commit=$env:MEASURED_COMMIT" `
+              "--process=$processClass" `
+              "--os-cache=$osCache" `
+              "--database=$database" `
+              "--sample-role=$Role" `
+              "--sample-index=$Index"
+            if ($LASTEXITCODE -ne 0) {
+              throw "Desktop evidence capture failed for $Role/$Index with exit code $LASTEXITCODE"
+            }
+            $path = "artifacts/performance/raw/$scenario-$processClass-$osCache-$database-$Role-$Index.json"
+            Assert-Capture -Path $path -Role $Role -Index $Index
+            $capturePaths.Add($path)
+          }
+
+          try {
+            for ($index = 0; $index -lt $warmupCount; $index += 1) {
+              Invoke-Capture -Role "warmup" -Index $index
+            }
+            for ($index = 0; $index -lt $measurementCount; $index += 1) {
+              Invoke-Capture -Role "measurement" -Index $index
+            }
+
+            $reportPath = "artifacts/performance/e3-startup-series-report.json"
+            $reportArgs = @(
+              "--series=e3",
+              "--output=$reportPath"
+            )
+            foreach ($path in $capturePaths) {
+              $reportArgs += "--input=$path"
+            }
+            node scripts/run-desktop-performance-evidence.mjs @reportArgs
+            if ($LASTEXITCODE -ne 0) {
+              throw "E3 report generation failed with exit code $LASTEXITCODE"
+            }
+
+            $report = Get-Content $reportPath -Raw | ConvertFrom-Json
+            if ($report.schemaVersion -ne "runtime-human-desktop-performance-evidence-v1") {
+              throw "Unexpected E3 report schema: $($report.schemaVersion)"
+            }
+            if ($report.commit -ne $env:MEASURED_COMMIT) {
+              throw "E3 report commit $($report.commit) does not match $env:MEASURED_COMMIT"
+            }
+            if (
+              $report.captureCount -ne ($warmupCount + $measurementCount) -or
+              $report.warmupCount -ne $warmupCount -or
+              $report.measurementCount -ne $measurementCount -or
+              @($report.captures).Count -ne ($warmupCount + $measurementCount)
+            ) {
+              throw "E3 report sample counts do not match the fixed 5+30 contract"
+            }
+            $groups = @($report.groups)
+            if ($groups.Count -ne 1) {
+              throw "E3 startup series must produce exactly one comparable group; received $($groups.Count)"
+            }
+            $group = $groups[0]
+            if (
+              $group.scenario -ne $scenario -or
+              $group.classification.process -ne $processClass -or
+              $group.classification.osCache -ne $osCache -or
+              $group.classification.database -ne $database -or
+              $group.sampleCount -ne $measurementCount -or
+              $group.droppedRustEvents -ne 0
+            ) {
+              throw "E3 report group does not match the reviewed startup series contract"
+            }
+            $missingExternal = @(
+              $group.missingMetrics |
+                Where-Object { $_.name -eq "external.processToShellFmpMicros" }
+            )
+            if (
+              $missingExternal.Count -ne 1 -or
+              $missingExternal[0].count -ne $measurementCount
+            ) {
+              throw "E3 report must retain process-to-shell-FMP as an explicitly missing cross-clock metric"
+            }
+          } catch {
+            $seriesFailure = $_
+          } finally {
+            $after = @(
+              Get-ChildItem -Path $env:TEMP -Directory -Filter "runtime-human-desktop-evidence-*" -ErrorAction SilentlyContinue |
+                ForEach-Object { $_.FullName }
+            )
+            $leaked = @($after | Where-Object { $_ -notin $before })
+            if ($leaked.Count -gt 0) {
+              $leakedNames = @($leaked | ForEach-Object { Split-Path -Leaf $_ })
+              $leakMessage = "Evidence series leaked temporary app-data directories (count=$($leaked.Count)): $($leakedNames -join ', ')"
+              if ($null -ne $seriesFailure) {
+                throw "$($seriesFailure.Exception.Message); $leakMessage"
+              }
+              throw $leakMessage
+            }
+          }
+          if ($null -ne $seriesFailure) {
+            throw $seriesFailure
+          }
+
+      - name: Upload E3 startup series evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: perf-02a-e3-series-${{ github.event.pull_request.head.sha }}
+          path: |
+            artifacts/performance/raw/startup-shell-fmp-cold-process-warm-os-cache-new-database-warmup-*.json
+            artifacts/performance/raw/startup-shell-fmp-cold-process-warm-os-cache-new-database-measurement-*.json
+            artifacts/performance/e3-startup-series-report.json
+            artifacts/performance/e3-run-provenance.json
+          retention-days: 14
+          if-no-files-found: error
