@@ -373,7 +373,7 @@ jobs:
             )
             if (
               $missingExternal.Count -ne 1 -or
-              $missingExternal[0].missingCount -ne $measurementCount
+              $missingExternal[0].count -ne $measurementCount
             ) {
               throw "E3 report must retain process-to-shell-FMP as an explicitly missing cross-clock metric"
             }
