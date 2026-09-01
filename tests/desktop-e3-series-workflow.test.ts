@@ -10,10 +10,18 @@ const WORKFLOW_URL = new URL(
   "../.github/workflows/perf-02a-e3-windows-series.yml",
   import.meta.url,
 );
+const CAPTURE_STARTUP_URL = new URL(
+  "../tools/desktop-evidence/src/capture-startup.ts",
+  import.meta.url,
+);
 const COMMIT = "a".repeat(40);
 
 async function readWorkflow(): Promise<string> {
   return readFile(WORKFLOW_URL, "utf8");
+}
+
+async function readCaptureStartup(): Promise<string> {
+  return readFile(CAPTURE_STARTUP_URL, "utf8");
 }
 
 function captureArguments(database: string): string[] {
@@ -65,15 +73,15 @@ describe("PERF-02A E3 hosted Windows series workflow", () => {
     expect(workflow).not.toContain("$missingExternal[0].missingCount");
   });
 
-  it("accepts existing-database as a distinct startup evidence population", () => {
+  it("accepts the canonical existing-clean-database startup population", () => {
     const options = parseStartupCaptureArguments(
-      captureArguments("existing-database"),
+      captureArguments("existing-clean-database"),
       process.cwd(),
     );
 
-    expect(options.database).toBe("existing-database");
+    expect(options.database).toBe("existing-clean-database");
     expect(basename(options.outputPath)).toBe(
-      "startup-shell-fmp-cold-process-warm-os-cache-existing-database-measurement-7.json",
+      "startup-shell-fmp-cold-process-warm-os-cache-existing-clean-database-measurement-7.json",
     );
   });
 
@@ -83,7 +91,10 @@ describe("PERF-02A E3 hosted Windows series workflow", () => {
     expect(options.database).toBe("new-database");
   });
 
-  it("rejects database classes without implemented capture semantics", () => {
+  it("rejects database classes without canonical capture semantics", () => {
+    expect(() => parseStartupCaptureArguments(captureArguments("existing-database"))).toThrow(
+      "--database has an unsupported value",
+    );
     expect(() => parseStartupCaptureArguments(captureArguments("mystery-database"))).toThrow(
       "--database has an unsupported value",
     );
@@ -111,11 +122,11 @@ describe("PERF-02A E3 hosted Windows series workflow", () => {
     expect(called).toBe(false);
   });
 
-  it("prepares an existing database before measuring the next cold process", async () => {
+  it("prepares an existing clean database before measuring the next cold process", async () => {
     const calls: string[] = [];
     const session = Object.freeze({ id: "seed" });
 
-    await prepareStartupDatabasePopulation("existing-database", {
+    await prepareStartupDatabasePopulation("existing-clean-database", {
       startSession: async () => {
         calls.push("start");
         return session;
@@ -134,5 +145,38 @@ describe("PERF-02A E3 hosted Windows series workflow", () => {
     });
 
     expect(calls).toEqual(["start", "ready", "cleanup", "database"]);
+  });
+
+  it("always cleans the seed session when readiness fails", async () => {
+    const calls: string[] = [];
+    const session = Object.freeze({ id: "seed" });
+
+    await expect(
+      prepareStartupDatabasePopulation("existing-clean-database", {
+        startSession: async () => {
+          calls.push("start");
+          return session;
+        },
+        waitUntilReady: async () => {
+          calls.push("ready");
+          throw new Error("seed readiness failed");
+        },
+        cleanupSession: async () => {
+          calls.push("cleanup");
+        },
+        assertDatabaseExists: async () => {
+          calls.push("database");
+        },
+      }),
+    ).rejects.toThrow("seed readiness failed");
+
+    expect(calls).toEqual(["start", "ready", "cleanup"]);
+  });
+
+  it("wires database preparation into the physical startup capture", async () => {
+    const source = await readCaptureStartup();
+
+    expect(source).toContain("prepareStartupDatabasePopulation");
+    expect(source).toContain('join(isolatedDataDirectory, "runtime-human.sqlite3")');
   });
 });
