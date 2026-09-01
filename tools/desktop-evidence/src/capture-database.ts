@@ -14,7 +14,10 @@ export async function prepareStartupDatabasePopulation<Session>(
   if (database === "new-database") return;
 
   const session = await ports.startSession();
-  await ports.waitUntilReady(session);
-  await ports.cleanupSession(session);
+  try {
+    await ports.waitUntilReady(session);
+  } finally {
+    await ports.cleanupSession(session);
+  }
   await ports.assertDatabaseExists();
 }
