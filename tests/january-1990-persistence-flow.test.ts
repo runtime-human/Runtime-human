@@ -17,9 +17,6 @@ describe("January 1990 production persistence flow fixture", () => {
     const generated = await generateJanuary1990PersistenceFlowFixture();
     const committed = JSON.parse(await readFile(FIXTURE_PATH, "utf8")) as unknown;
 
-    console.log("RUNTIME_HUMAN_PERSISTENCE_FIXTURE_BEGIN");
-    console.log(JSON.stringify(generated, null, 2));
-    console.log("RUNTIME_HUMAN_PERSISTENCE_FIXTURE_END");
     expect(generated).toEqual(committed);
     expect(generated.boundaries.map((command) => command.status)).toEqual([
       "suspended",
