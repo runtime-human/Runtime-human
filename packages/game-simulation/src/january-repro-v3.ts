@@ -113,7 +113,8 @@ export function replayJanuaryReproV3(
       diagnostics: [
         {
           code: "REPRO_RNG_EVIDENCE_MISMATCH",
-          message: "Repro January RNG authority evidence does not match the active hierarchical contract",
+          message:
+            "Repro January RNG authority evidence does not match the active hierarchical contract",
         },
       ],
     };
