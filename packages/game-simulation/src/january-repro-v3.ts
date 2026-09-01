@@ -8,7 +8,7 @@ import type { Fingerprint } from "@runtime-human/game-schema";
 import {
   GAME_REPRO_SCHEMA_VERSION,
   parseGameReproV1,
-  replayJanuaryReproV1,
+  replayJanuaryReproForExecutionProfile,
   type GameReplayTraceV1,
   type GameReproCommandV1,
   type GameReproDiagnosticV1,
@@ -127,14 +127,16 @@ export function replayJanuaryReproV3(
     commands: input.repro.commands,
     expected: input.repro.expected,
   };
-  return replayJanuaryReproV1({
-    context: input.context,
-    balance: input.balance,
-    saveSchemaFingerprint: input.saveSchemaFingerprint,
-    repro: legacy,
-    rngExecutionProfile: JANUARY_1990_RNG_EXECUTION_PROFILES_V1.hierarchical.id,
-    ...(input.captureTrace === undefined ? {} : { captureTrace: input.captureTrace }),
-  });
+  return replayJanuaryReproForExecutionProfile(
+    {
+      context: input.context,
+      balance: input.balance,
+      saveSchemaFingerprint: input.saveSchemaFingerprint,
+      repro: legacy,
+      ...(input.captureTrace === undefined ? {} : { captureTrace: input.captureTrace }),
+    },
+    JANUARY_1990_RNG_EXECUTION_PROFILES_V1.hierarchical.id,
+  );
 }
 
 function closedRecord(value: unknown, keys: readonly string[]): Record<string, unknown> | null {
