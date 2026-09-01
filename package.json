@@ -25,6 +25,7 @@
     "studio:exec": "node scripts/studio/exec.mjs",
     "studio:affected": "node scripts/studio/affected.mjs",
     "studio:verify": "node scripts/studio/verify.mjs",
+    "studio:evaluate": "node scripts/studio/evaluator-plan.mjs",
     "studio:skills:check": "node scripts/studio/check-skills.mjs",
     "studio:doctor": "node scripts/studio/doctor.mjs",
     "studio:route": "node scripts/studio/route.mjs",
