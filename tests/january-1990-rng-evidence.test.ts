@@ -216,9 +216,9 @@ describe("January hierarchical RNG authority evidence v2", () => {
       JSON.parse(JSON.stringify(JANUARY_RNG_EVIDENCE_V2)) as unknown,
     );
     expect(parsed.kind).toBe("ok");
-    expect(
-      parseJanuaryRngEvidenceV2({ ...JANUARY_RNG_EVIDENCE_V2, unexpected: true }).kind,
-    ).toBe("invalid");
+    expect(parseJanuaryRngEvidenceV2({ ...JANUARY_RNG_EVIDENCE_V2, unexpected: true }).kind).toBe(
+      "invalid",
+    );
   });
 
   it("emits simulation-report-v3 with hierarchical rules and immutable month-root RNG state", () => {
