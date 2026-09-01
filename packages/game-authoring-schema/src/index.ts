@@ -11,3 +11,10 @@ export {
   type QualityBalanceAuthoringDocument,
   type SkillEvidenceBalanceAuthoringDocument,
 } from "./balance-schema";
+export {
+  ScenarioAuthoringSchemaV1,
+  SCENARIO_IDENTIFIER_PATTERN,
+  SCENARIO_SCHEMA_VERSION,
+  type ScenarioAuthoringDocument,
+  type ScenarioAuthoringNode,
+} from "./scenario-schema";
