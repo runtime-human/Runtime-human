@@ -9,8 +9,11 @@ export {
   parseJanuaryLearningAnswer,
 } from "./january-answers";
 export {
+  createJanuary1990HierarchicalRulesFingerprint,
   createJanuary1990RulesFingerprint,
   createJanuary1990RulesetManifest,
+  JANUARY_1990_HIERARCHICAL_DETERMINISM_MANIFEST,
+  JANUARY_1990_HIERARCHICAL_RULES_VERSION,
   JANUARY_1990_STEP_TABLE_VERSION,
 } from "./january-compatibility";
 export type { January1990RulesetManifestV1 } from "./january-compatibility";
@@ -77,4 +80,7 @@ export { createJanuary1990RngDomainPathsV1 } from "./january-rng-domains";
 export type { January1990RngDomainPathsV1 } from "./january-rng-domains";
 export { JANUARY_1990_RNG_CALL_BUDGET, JANUARY_1990_RNG_SCOPES } from "./january-rng-scopes";
 export type { January1990RngScope } from "./january-rng-scopes";
-export { createJanuary1990ValidatedMonthSteps as createJanuary1990MonthSteps } from "./january-validated-month-steps";
+export {
+  createJanuary1990HierarchicalValidatedMonthSteps as createJanuary1990HierarchicalMonthSteps,
+  createJanuary1990ValidatedMonthSteps as createJanuary1990MonthSteps,
+} from "./january-validated-month-steps";
