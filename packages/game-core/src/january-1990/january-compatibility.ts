@@ -52,35 +52,6 @@ export function createJanuary1990RulesFingerprint(balance: January1990BalanceV1)
   });
 }
 
-export function createJanuary1990HierarchicalRulesFingerprint(
-  balance: January1990BalanceV1,
-): Fingerprint {
-  return fingerprint("january-1990-rules-v2", {
-    sliceId: "january-1990",
-    planSchemaVersion: "january-1990-month-plan-v1",
-    stepTableVersion: JANUARY_1990_STEP_TABLE_VERSION,
-    answerSchemaVersions: [
-      "january-access-answer-v1",
-      "january-learning-answer-v1",
-      "january-defect-answer-v1",
-    ],
-    decisionIds: [
-      JANUARY_1990_DECISION_IDS.access,
-      JANUARY_1990_DECISION_IDS.learning,
-      JANUARY_1990_DECISION_IDS.defect,
-    ],
-    rngDerivationVersion: "hierarchical-v1",
-    rngScopes: [
-      JANUARY_1990_RNG_SCOPES.content,
-      JANUARY_1990_RNG_SCOPES.narrative,
-      JANUARY_1990_RNG_SCOPES.outcome,
-    ],
-    rngCallBudget: JANUARY_1990_RNG_CALL_BUDGET,
-    requiredChunkIds: JANUARY_1990_REQUIRED_CHUNK_IDS,
-    balanceFingerprint: createJanuary1990BalanceFingerprint(balance),
-  });
-}
-
 export function createJanuary1990RulesetManifest(
   input: Readonly<{
     contentFingerprint: Fingerprint;
