@@ -100,6 +100,7 @@ export default defineConfig({
         "tests/january-1990-persistence-flow.test.ts",
         "tests/january-1990-persisted-restart.test.ts",
         "tests/january-1990-persisted-run.test.ts",
+        "tests/january-1990-rng-application-cutover.test.ts",
       ]),
       nodeProject("content-node", [
         "tests/compiled-content-runtime-loader.test.ts",
