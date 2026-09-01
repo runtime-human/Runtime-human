@@ -65,7 +65,10 @@ describe("PERF-02A E3 hosted Windows series workflow", () => {
   });
 
   it("accepts existing-database as a distinct startup evidence population", () => {
-    const options = parseStartupCaptureArguments(captureArguments("existing-database"), process.cwd());
+    const options = parseStartupCaptureArguments(
+      captureArguments("existing-database"),
+      process.cwd(),
+    );
 
     expect(options.database).toBe("existing-database");
     expect(basename(options.outputPath)).toBe(
