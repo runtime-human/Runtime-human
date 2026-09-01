@@ -127,8 +127,9 @@ describe("January 1990 hierarchical RNG shadow evidence", () => {
     expect(narrativeWithExtraDrawFingerprint).not.toBe(
       baselineNarrative?.postCallsStateFingerprint,
     );
-    expect(createReport().streams.find((stream) => stream.domain === "outcome"))
-      .toEqual(baselineOutcome);
+    expect(createReport().streams.find((stream) => stream.domain === "outcome")).toEqual(
+      baselineOutcome,
+    );
   });
 
   it("does not alter authoritative January execution", () => {
