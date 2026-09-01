@@ -267,7 +267,7 @@ jobs:
               "app.first_meaningful_paint"
             )) {
               if ($required -notin $browserNames) {
-                throw "Required browser milestone is missing for $Role/$Index: $required"
+                throw "Required browser milestone is missing for $Role/${Index}: $required"
               }
             }
             $rustNames = @($payload.rustSnapshot.events | ForEach-Object { $_.name })
@@ -279,7 +279,7 @@ jobs:
               "mainWindowAvailable"
             )) {
               if ($required -notin $rustNames) {
-                throw "Required Rust milestone is missing for $Role/$Index: $required"
+                throw "Required Rust milestone is missing for $Role/${Index}: $required"
               }
             }
             $invalidQueueDepth = @(
