@@ -35,6 +35,13 @@ describe("PERF-02A E3 hosted Windows series workflow", () => {
     expect(workflow).not.toContain("workflow_dispatch");
   });
 
+  it("uses delimiter-safe PowerShell interpolation before milestone colons", async () => {
+    const workflow = await readWorkflow();
+
+    expect(workflow).not.toContain("$Role/$Index: $required");
+    expect(workflow).toContain("$Role/${Index}: $required");
+  });
+
   it("uses the versioned report missing-metric field", async () => {
     const workflow = await readWorkflow();
 
