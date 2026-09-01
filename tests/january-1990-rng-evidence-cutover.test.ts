@@ -39,7 +39,11 @@ const input = {
 
 function commands() {
   return [
-    { kind: "answer" as const, decisionId: "january-1990/access" as const, value: "home-pc" },
+    {
+      kind: "answer" as const,
+      decisionId: "january-1990/access" as const,
+      value: "home-pc",
+    },
     {
       kind: "answer" as const,
       decisionId: "january-1990/learning" as const,
@@ -164,7 +168,11 @@ describe("January RNG evidence after hierarchical authority cutover", () => {
     expect(parsed.kind).toBe("ok");
     if (parsed.kind !== "ok") return;
 
-    const replay = replayJanuaryReproV3({ ...input, repro: parsed.repro, captureTrace: true });
+    const replay = replayJanuaryReproV3({
+      ...input,
+      repro: parsed.repro,
+      captureTrace: true,
+    });
     expect(replay.kind).toBe("reproduced");
     if (replay.kind === "reproduced") {
       expect(replay.terminalCheckpointHash).toBe(expectedRun.checkpoint.checkpointHash);
