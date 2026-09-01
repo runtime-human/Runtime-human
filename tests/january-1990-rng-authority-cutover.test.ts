@@ -3,15 +3,16 @@ import { describe, expect, it } from "vitest";
 import { projectJanuary1990Content } from "@runtime-human/game-application";
 import {
   createJanuary1990HierarchicalMonthSteps,
-  createJanuary1990HierarchicalRulesFingerprint,
   createJanuary1990MonthPlan,
   createJanuary1990RngDomainPathsV1,
   createJanuary1990RulesFingerprint,
+  createJanuary1990RulesFingerprintForExecutionProfile,
   createMonthRunCheckpoint,
   deriveRandomSource,
   fingerprint,
   JANUARY_1990_DEFAULT_BALANCE,
   JANUARY_1990_HIERARCHICAL_DETERMINISM_MANIFEST,
+  JANUARY_1990_RNG_EXECUTION_PROFILES_V1,
   runUntilBoundary,
   transitionMonthRun,
   Xoshiro256StarStar,
@@ -34,6 +35,13 @@ const balance = JANUARY_1990_DEFAULT_BALANCE;
 const rootState = Xoshiro256StarStar.fromSeed(42n).exportState();
 const saveSchemaFingerprint = fingerprint("january-rng-cutover-test-save-schema", { version: 1 });
 
+function hierarchicalRulesFingerprint() {
+  return createJanuary1990RulesFingerprintForExecutionProfile(
+    balance,
+    JANUARY_1990_RNG_EXECUTION_PROFILES_V1.hierarchical.id,
+  );
+}
+
 function createInitialCheckpoint(): MonthRunCheckpointV1 {
   return createMonthRunCheckpoint({
     runId: parseMonthRunId("january-hierarchical-cutover-run"),
@@ -42,7 +50,7 @@ function createInitialCheckpoint(): MonthRunCheckpointV1 {
     plan: createJanuary1990MonthPlan(context),
     compatibility: {
       checkpointSchema: "month-run-checkpoint-v1",
-      rulesFingerprint: createJanuary1990HierarchicalRulesFingerprint(balance),
+      rulesFingerprint: hierarchicalRulesFingerprint(),
       contentFingerprint: context.contentFingerprint,
       saveSchemaFingerprint,
       determinismManifest: JANUARY_1990_HIERARCHICAL_DETERMINISM_MANIFEST,
@@ -90,9 +98,9 @@ function readOutcomeField(
 }
 
 describe("January 1990 hierarchical RNG authority cutover", () => {
-  it("assigns hierarchical authority a compatibility identity distinct from legacy", () => {
+  it("uses the persisted hierarchical execution-profile compatibility identity", () => {
     const legacy = createJanuary1990RulesFingerprint(balance);
-    const hierarchical = createJanuary1990HierarchicalRulesFingerprint(balance);
+    const hierarchical = hierarchicalRulesFingerprint();
 
     expect(hierarchical).not.toBe(legacy);
     expect(JANUARY_1990_HIERARCHICAL_DETERMINISM_MANIFEST).toEqual({
