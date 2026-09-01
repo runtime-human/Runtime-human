@@ -242,7 +242,8 @@ export function replayJanuaryReproForExecutionProfile(
   }>,
   rngExecutionProfile: January1990RngExecutionProfileId,
 ): GameReproReplayResultV1 {
-  const hierarchical = rngExecutionProfile === JANUARY_1990_RNG_EXECUTION_PROFILES_V1.hierarchical.id;
+  const hierarchical =
+    rngExecutionProfile === JANUARY_1990_RNG_EXECUTION_PROFILES_V1.hierarchical.id;
   const rulesetFingerprint = createJanuary1990RulesFingerprintForExecutionProfile(
     input.balance,
     rngExecutionProfile,
