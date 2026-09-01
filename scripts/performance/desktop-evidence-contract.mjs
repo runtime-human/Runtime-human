@@ -50,10 +50,7 @@ const RUST_BOOTSTRAP_METRIC_NAMES = Object.freeze([
   "rust.bootstrap.integrity_verify",
   "rust.bootstrap.clean_marker",
 ]);
-const RUST_SPAN_NAMES = new Set([
-  ...RUST_OPERATION_SPAN_NAMES,
-  ...RUST_BOOTSTRAP_SPAN_NAMES,
-]);
+const RUST_SPAN_NAMES = new Set([...RUST_OPERATION_SPAN_NAMES, ...RUST_BOOTSTRAP_SPAN_NAMES]);
 const RUST_EVENT_NAMES = new Set([...RUST_MARK_NAMES, ...RUST_SPAN_NAMES]);
 const RUST_CATEGORIES = new Set(["query", "mutation", "backup", "recovery", "shutdown"]);
 const BROWSER_MARK_NAMES = new Set([
