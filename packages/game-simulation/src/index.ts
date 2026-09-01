@@ -13,6 +13,11 @@ export {
 } from "./january-simulation-v2";
 export type { January1990SimulationV2, SimulationReportV2 } from "./january-simulation-v2";
 export {
+  createJanuary1990SimulationV3,
+  SIMULATION_REPORT_SCHEMA_VERSION_V3,
+} from "./january-simulation-v3";
+export type { January1990SimulationV3, SimulationReportV3 } from "./january-simulation-v3";
+export {
   createJanuary1990RngShadowReport,
   JANUARY_RNG_SHADOW_REPORT_SCHEMA_VERSION,
 } from "./january-rng-shadow";
@@ -30,6 +35,16 @@ export {
   parseJanuaryRngEvidenceV1,
 } from "./january-rng-evidence";
 export type { JanuaryRngEvidenceParseResultV1, JanuaryRngEvidenceV1 } from "./january-rng-evidence";
+export {
+  JANUARY_RNG_EVIDENCE_SCHEMA_VERSION_V2,
+  JANUARY_RNG_EVIDENCE_V2,
+  januaryRngEvidenceV2Equal,
+  parseJanuaryRngEvidenceV2,
+} from "./january-rng-evidence-v2";
+export type {
+  JanuaryRngEvidenceParseResultV2,
+  JanuaryRngEvidenceV2,
+} from "./january-rng-evidence-v2";
 export {
   GAME_REPLAY_TRACE_SCHEMA_VERSION,
   parseGameReproV1,
@@ -56,6 +71,16 @@ export type {
   GameReproReplayResultV2,
   GameReproV2,
 } from "./january-repro-v2";
+export {
+  GAME_REPRO_SCHEMA_VERSION_V3,
+  parseGameReproV3,
+  replayJanuaryReproV3,
+} from "./january-repro-v3";
+export type {
+  GameReproDiagnosticV3,
+  GameReproReplayResultV3,
+  GameReproV3,
+} from "./january-repro-v3";
 export { parseGameplayFixtureV1, GAMEPLAY_FIXTURE_SCHEMA_VERSION } from "./gameplay-fixture";
 export type {
   GameplayFixtureAnswersV1,
