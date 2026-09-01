@@ -4,13 +4,16 @@ on:
   pull_request:
     branches:
       - main
+    types: [synchronize]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   materialize:
-    if: github.event.pull_request.number == 126
+    if: >-
+      github.event.pull_request.number == 126 &&
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: windows-2025
     timeout-minutes: 20
     steps:
@@ -18,7 +21,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-          persist-credentials: false
+          persist-credentials: true
           show-progress: false
 
       - name: Set up pnpm
@@ -36,7 +39,7 @@ jobs:
       - name: Install frozen dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
 
-      - name: Materialize current January E2 fixtures
+      - name: Materialize and validate exact persistence golden
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
@@ -44,15 +47,39 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             throw "January E2 fixture materialization failed with exit code $LASTEXITCODE"
           }
-          New-Item -ItemType Directory -Force -Path "artifacts/engine-01" | Out-Null
-          Copy-Item `
-            "fixtures/persistence/january-1990-persistence-flow-v1.json" `
-            "artifacts/engine-01/january-1990-persistence-flow-v1.json"
+          $fixture = "fixtures/persistence/january-1990-persistence-flow-v1.json"
+          $actual = (Get-FileHash -Algorithm SHA256 $fixture).Hash.ToLowerInvariant()
+          $expected = "290069e5343946aefb0e7069e799fd741bee5ecf0b2f3fe8463e79d89c7649c4"
+          if ($actual -ne $expected) {
+            throw "Generated persistence golden hash $actual does not match reviewed artifact $expected"
+          }
 
-      - name: Upload generated fixture
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: engine-01-persistence-fixture-${{ github.event.pull_request.head.sha }}
-          path: artifacts/engine-01/january-1990-persistence-flow-v1.json
-          if-no-files-found: error
-          retention-days: 1
+      - name: Commit bounded fixture cleanup to PR branch
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          Remove-Item ".github/workflows/engine-01-fixture-materializer.yml" -Force
+          if (Test-Path "fixtures/persistence/january-1990-persistence-flow-v1.next.b64") {
+            Remove-Item "fixtures/persistence/january-1990-persistence-flow-v1.next.b64" -Force
+          }
+          git add -- `
+            "fixtures/persistence/january-1990-persistence-flow-v1.json" `
+            ".github/workflows/engine-01-fixture-materializer.yml" `
+            "fixtures/persistence/january-1990-persistence-flow-v1.next.b64"
+          $changed = @(git diff --cached --name-only)
+          $allowed = @(
+            ".github/workflows/engine-01-fixture-materializer.yml",
+            "fixtures/persistence/january-1990-persistence-flow-v1.json",
+            "fixtures/persistence/january-1990-persistence-flow-v1.next.b64"
+          )
+          $unexpected = @($changed | Where-Object { $_ -notin $allowed })
+          if ($unexpected.Count -gt 0) {
+            throw "Unexpected materializer changes: $($unexpected -join ', ')"
+          }
+          if ("fixtures/persistence/january-1990-persistence-flow-v1.json" -notin $changed) {
+            throw "Canonical persistence fixture did not change"
+          }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "test(engine): refresh canonical persistence golden"
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
