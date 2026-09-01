@@ -2,7 +2,7 @@ import { JANUARY_1990_RNG_EXECUTION_PROFILES_V1 } from "@runtime-human/game-core
 import type { Fingerprint } from "@runtime-human/game-schema";
 
 import {
-  createJanuary1990Simulation,
+  createJanuary1990SimulationForExecutionProfile,
   type CreateJanuary1990SimulationInput,
 } from "./january-simulation";
 import { JANUARY_RNG_EVIDENCE_V2, type JanuaryRngEvidenceV2 } from "./january-rng-evidence-v2";
@@ -38,10 +38,10 @@ export type January1990SimulationV3 = Readonly<{
 export function createJanuary1990SimulationV3(
   input: CreateJanuary1990SimulationInput,
 ): January1990SimulationV3 {
-  const hierarchical = createJanuary1990Simulation({
-    ...input,
-    rngExecutionProfile: JANUARY_1990_RNG_EXECUTION_PROFILES_V1.hierarchical.id,
-  });
+  const hierarchical = createJanuary1990SimulationForExecutionProfile(
+    input,
+    JANUARY_1990_RNG_EXECUTION_PROFILES_V1.hierarchical.id,
+  );
   return Object.freeze({
     simulate(request) {
       const report = hierarchical.simulate(request);
