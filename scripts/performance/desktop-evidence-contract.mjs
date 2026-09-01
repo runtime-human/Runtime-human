@@ -23,11 +23,34 @@ const RUST_MARK_NAMES = new Set([
   "tauriSetupComplete",
   "mainWindowAvailable",
 ]);
-const RUST_SPAN_NAMES = new Set([
+const RUST_OPERATION_SPAN_NAMES = new Set([
   "tauriCommandDispatch",
   "persistenceQueueWait",
   "persistenceDatabaseOperation",
 ]);
+const RUST_BOOTSTRAP_SPAN_NAMES = new Set([
+  "persistenceBootstrapPath",
+  "persistenceBootstrapSqliteVersion",
+  "persistenceBootstrapConnectionOpen",
+  "persistenceBootstrapSchemaCheck",
+  "persistenceBootstrapConnectionConfigure",
+  "persistenceBootstrapMigration",
+  "persistenceBootstrapManifestVerify",
+  "persistenceBootstrapIntegrityVerify",
+  "persistenceBootstrapCleanMarker",
+]);
+const RUST_BOOTSTRAP_METRIC_NAMES = Object.freeze([
+  "rust.bootstrap.path",
+  "rust.bootstrap.sqlite_version",
+  "rust.bootstrap.connection_open",
+  "rust.bootstrap.schema_check",
+  "rust.bootstrap.connection_configure",
+  "rust.bootstrap.migration",
+  "rust.bootstrap.manifest_verify",
+  "rust.bootstrap.integrity_verify",
+  "rust.bootstrap.clean_marker",
+]);
+const RUST_SPAN_NAMES = new Set([...RUST_OPERATION_SPAN_NAMES, ...RUST_BOOTSTRAP_SPAN_NAMES]);
 const RUST_EVENT_NAMES = new Set([...RUST_MARK_NAMES, ...RUST_SPAN_NAMES]);
 const RUST_CATEGORIES = new Set(["query", "mutation", "backup", "recovery", "shutdown"]);
 const BROWSER_MARK_NAMES = new Set([
@@ -318,11 +341,10 @@ function extractMetrics(capture) {
   const rustMarks = new Map();
   for (const event of capture.rustSnapshot.events) {
     if (event.durationMicros !== null) {
-      pushMetric(
-        metrics,
-        `rust.${rustEventMetricName(event.name)}.${event.category}`,
-        event.durationMicros,
-      );
+      const metricName = RUST_BOOTSTRAP_SPAN_NAMES.has(event.name)
+        ? `rust.${rustEventMetricName(event.name)}`
+        : `rust.${rustEventMetricName(event.name)}.${event.category}`;
+      pushMetric(metrics, metricName, event.durationMicros);
     } else if (!rustMarks.has(event.name)) {
       rustMarks.set(event.name, event.atMicros);
     }
@@ -384,6 +406,7 @@ function expectedMetricNames(scenario) {
     "rust.process_to_persistence_ready",
     "rust.process_to_main_window",
     "rust.tauri_setup",
+    ...RUST_BOOTSTRAP_METRIC_NAMES,
   ];
   switch (scenario) {
     case "startup-shell-fmp":
@@ -433,6 +456,24 @@ function rustEventMetricName(name) {
       return "queue_wait";
     case "persistenceDatabaseOperation":
       return "database_operation";
+    case "persistenceBootstrapPath":
+      return "bootstrap.path";
+    case "persistenceBootstrapSqliteVersion":
+      return "bootstrap.sqlite_version";
+    case "persistenceBootstrapConnectionOpen":
+      return "bootstrap.connection_open";
+    case "persistenceBootstrapSchemaCheck":
+      return "bootstrap.schema_check";
+    case "persistenceBootstrapConnectionConfigure":
+      return "bootstrap.connection_configure";
+    case "persistenceBootstrapMigration":
+      return "bootstrap.migration";
+    case "persistenceBootstrapManifestVerify":
+      return "bootstrap.manifest_verify";
+    case "persistenceBootstrapIntegrityVerify":
+      return "bootstrap.integrity_verify";
+    case "persistenceBootstrapCleanMarker":
+      return "bootstrap.clean_marker";
     default:
       throw new TypeError(`unsupported Rust span name ${name}`);
   }
@@ -518,6 +559,25 @@ function parseRustEvent(value, label) {
       name,
       atMicros,
       durationMicros: null,
+      category: null,
+      operationId: null,
+      queueDepth: null,
+    });
+  }
+
+  if (RUST_BOOTSTRAP_SPAN_NAMES.has(name)) {
+    if (
+      event.durationMicros === null ||
+      event.category !== null ||
+      event.operationId !== null ||
+      event.queueDepth !== null
+    ) {
+      throw new TypeError(`${label} must be a bootstrap span with duration and null operation fields`);
+    }
+    return Object.freeze({
+      name,
+      atMicros,
+      durationMicros: requireSafeInteger(event.durationMicros, `${label}.durationMicros`, 0),
       category: null,
       operationId: null,
       queueDepth: null,
