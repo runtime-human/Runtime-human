@@ -56,5 +56,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
 
+      - name: Materialize January E2 fixture
+        run: pnpm evidence:january:e2
+
+      - name: Upload January persistence fixture
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: january-rng-cutover-fixture-${{ github.event.pull_request.head.sha }}
+          path: fixtures/persistence/january-1990-persistence-flow-v1.json
+          retention-days: 1
+          if-no-files-found: error
+
       - name: Run non-authoritative fast feedback
         run: pnpm check:fast
