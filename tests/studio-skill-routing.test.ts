@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { describe, expect, it } from "vitest";
 
 import { selectSkills } from "../scripts/studio/context-lib.mjs";
@@ -18,9 +19,7 @@ describe("Studio domain skill routing", () => {
   });
 
   it("routes simulation work to the active simulation skill", () => {
-    expect(selectSkills(["simulation"], "R2", skillMap.skills)).toEqual([
-      "runtime-simulation",
-    ]);
+    expect(selectSkills(["simulation"], "R2", skillMap.skills)).toEqual(["runtime-simulation"]);
   });
 
   it("routes harness/tooling work to the active harness skill", () => {
