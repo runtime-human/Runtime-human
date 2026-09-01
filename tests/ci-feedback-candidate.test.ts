@@ -43,6 +43,16 @@ describe("remote CI feedback and candidate V3", () => {
     expect(foundation).not.toContain("pull_request_target");
   });
 
+  it("keeps the control-plane forcing function aligned with candidate refresh semantics", () => {
+    const checker = read("scripts/studio/check-control-plane.mjs");
+
+    expect(checker).toContain('"types: [labeled, synchronize]"');
+    expect(checker).toContain('"github.event.action == \'synchronize\'"');
+    expect(checker).toContain(
+      '"contains(github.event.pull_request.labels.*.name, \'verify:v3\')"',
+    );
+  });
+
   it("retains full V3 on main and manual dispatch without duplicating command bodies", () => {
     const foundation = read(".github/workflows/foundation.yml");
     const feedback = read(".github/workflows/feedback.yml");
