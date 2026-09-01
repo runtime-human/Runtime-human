@@ -28,7 +28,12 @@ export function analyzeScenario(
 
   if (!IDENTIFIER.test(scenario.id)) {
     diagnostics.push(
-      diagnostic(scenario, "SCN004", "Scenario id does not match the closed identifier contract", "/id"),
+      diagnostic(
+        scenario,
+        "SCN004",
+        "Scenario id does not match the closed identifier contract",
+        "/id",
+      ),
     );
   }
 
@@ -314,7 +319,8 @@ function findStronglyConnectedCycles(
     }
     component.sort(compareText);
     const selfLoop =
-      component.length === 1 && (adjacency.get(component[0] ?? "") ?? []).includes(component[0] ?? "");
+      component.length === 1 &&
+      (adjacency.get(component[0] ?? "") ?? []).includes(component[0] ?? "");
     if (component.length > 1 || selfLoop) components.push(component);
   };
 
