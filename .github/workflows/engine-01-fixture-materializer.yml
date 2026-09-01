@@ -36,15 +36,13 @@ jobs:
       - name: Install frozen dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
 
-      - name: Materialize current persistence fixture through repository test harness
+      - name: Materialize current January E2 fixtures
         shell: pwsh
-        env:
-          RUNTIME_HUMAN_MATERIALIZE_JANUARY_E2: "1"
         run: |
           $ErrorActionPreference = "Stop"
-          pnpm exec vitest run --project content-node tests/materialize-january-e2-fixtures.test.ts
+          pnpm evidence:january:e2
           if ($LASTEXITCODE -ne 0) {
-            throw "January fixture materialization failed with exit code $LASTEXITCODE"
+            throw "January E2 fixture materialization failed with exit code $LASTEXITCODE"
           }
           New-Item -ItemType Directory -Force -Path "artifacts/engine-01" | Out-Null
           Copy-Item `
