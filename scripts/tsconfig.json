@@ -19,6 +19,7 @@
     { "path": "../packages/game-application" },
     { "path": "../packages/game-content" },
     { "path": "../packages/game-content-compiler" },
+    { "path": "../packages/game-authoring-schema" },
     { "path": "../packages/game-devtools" },
     { "path": "../packages/game-simulation" }
   ]
