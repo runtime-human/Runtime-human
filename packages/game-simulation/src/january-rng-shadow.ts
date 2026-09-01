@@ -1,11 +1,13 @@
 import {
   createJanuary1990RngDomainPathsV1,
+  createJanuary1990RulesFingerprint,
   deriveRandomSource,
   fingerprint,
   JANUARY_1990_RNG_CALL_BUDGET,
   RNG_DERIVATION_MANIFEST_V1,
   type January1990BalanceV1,
   type January1990ContentContext,
+  type RandomSource,
   type RngDomainPathV1,
 } from "@runtime-human/game-core";
 import {
@@ -14,6 +16,8 @@ import {
   type RngDerivationManifestV1,
   type SerializedXoshiro256State,
 } from "@runtime-human/game-schema";
+
+import { createCountingRandomSource } from "./rng-call-counter";
 
 export const JANUARY_RNG_SHADOW_REPORT_SCHEMA_VERSION = "january-rng-shadow-report-v1" as const;
 
@@ -41,6 +45,8 @@ export type JanuaryRngShadowStreamV1 = Readonly<{
 export type JanuaryRngShadowReportV1 = Readonly<{
   schemaVersion: typeof JANUARY_RNG_SHADOW_REPORT_SCHEMA_VERSION;
   month: "1990-01";
+  contentFingerprint: Fingerprint;
+  rulesetFingerprint: Fingerprint;
   derivationManifest: RngDerivationManifestV1;
   rootStateFingerprint: Fingerprint;
   domainCalls: JanuaryRngShadowDomainCallsV1;
@@ -71,7 +77,6 @@ export function createJanuary1990RngShadowReport(
     declaredCalls: JANUARY_1990_RNG_CALL_BUDGET.narrative,
     consume(random) {
       random.nextInt(0, narrativeCandidateCount);
-      return 1;
     },
   });
 
@@ -84,7 +89,6 @@ export function createJanuary1990RngShadowReport(
     consume(random) {
       const bounds = input.balance.quality.outcomeRoll;
       random.nextInt(bounds.minimum, bounds.maximum + 1);
-      return 1;
     },
   });
 
@@ -107,6 +111,8 @@ export function createJanuary1990RngShadowReport(
   return Object.freeze({
     schemaVersion: JANUARY_RNG_SHADOW_REPORT_SCHEMA_VERSION,
     month: "1990-01",
+    contentFingerprint: input.context.contentFingerprint,
+    rulesetFingerprint: createJanuary1990RulesFingerprint(input.balance),
     derivationManifest: RNG_DERIVATION_MANIFEST_V1,
     rootStateFingerprint: fingerprint("january-1990-rng-shadow-root-state-v1", rootState),
     domainCalls,
@@ -121,18 +127,19 @@ function createShadowStream(
     purpose: JanuaryRngShadowStreamV1["purpose"];
     path: RngDomainPathV1;
     declaredCalls: number;
-    consume(random: ReturnType<typeof deriveRandomSource>): number;
+    consume(random: RandomSource): void;
   }>,
 ): JanuaryRngShadowStreamV1 {
-  const random = deriveRandomSource(input.rootState, input.path);
-  const derivedState = random.exportState();
-  const observedCalls = input.consume(random);
+  const counted = createCountingRandomSource(deriveRandomSource(input.rootState, input.path));
+  const derivedState = counted.random.exportState();
+  input.consume(counted.random);
+  const observedCalls = counted.observedCalls();
   if (observedCalls !== input.declaredCalls) {
     throw new TypeError(
       `January RNG shadow call budget mismatch for ${input.domain}/${input.purpose}`,
     );
   }
-  const postCallsState = random.exportState();
+  const postCallsState = counted.random.exportState();
 
   return Object.freeze({
     domain: input.domain,
