@@ -224,11 +224,24 @@ export function replayJanuaryReproV1(
     saveSchemaFingerprint: Fingerprint;
     repro: GameReproV1;
     captureTrace?: boolean;
-    rngExecutionProfile?: January1990RngExecutionProfileId | undefined;
   }>,
 ): GameReproReplayResultV1 {
-  const rngExecutionProfile =
-    input.rngExecutionProfile ?? JANUARY_1990_RNG_EXECUTION_PROFILES_V1.legacySequential.id;
+  return replayJanuaryReproForExecutionProfile(
+    input,
+    JANUARY_1990_RNG_EXECUTION_PROFILES_V1.legacySequential.id,
+  );
+}
+
+export function replayJanuaryReproForExecutionProfile(
+  input: Readonly<{
+    context: January1990ContentContext;
+    balance: January1990BalanceV1;
+    saveSchemaFingerprint: Fingerprint;
+    repro: GameReproV1;
+    captureTrace?: boolean;
+  }>,
+  rngExecutionProfile: January1990RngExecutionProfileId,
+): GameReproReplayResultV1 {
   const hierarchical = rngExecutionProfile === JANUARY_1990_RNG_EXECUTION_PROFILES_V1.hierarchical.id;
   const rulesetFingerprint = createJanuary1990RulesFingerprintForExecutionProfile(
     input.balance,
