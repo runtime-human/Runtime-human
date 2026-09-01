@@ -39,7 +39,8 @@ export function parseDesktopEvidenceArguments(args) {
   }
 
   if (inputs.length === 0) throw new Error("At least one --input=<capture.json> is required");
-  return Object.freeze({ inputs: Object.freeze(inputs), output, series });
+  const options = { inputs: Object.freeze(inputs), output };
+  return Object.freeze(series === null ? options : { ...options, series });
 }
 
 export async function runDesktopEvidenceCli(args, log = console.log) {
