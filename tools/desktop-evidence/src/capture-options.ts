@@ -53,11 +53,7 @@ export function parseStartupCaptureArguments(
     "--process",
   );
   const osCache = parseClosed(requireOption(values, "--os-cache"), CACHE_CLASSES, "--os-cache");
-  const database = parseClosed(
-    requireOption(values, "--database"),
-    DATABASE_CLASSES,
-    "--database",
-  );
+  const database = parseClosed(requireOption(values, "--database"), DATABASE_CLASSES, "--database");
   const sampleRole = parseClosed(
     requireOption(values, "--sample-role"),
     SAMPLE_ROLES,
