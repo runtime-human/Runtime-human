@@ -1,8 +1,6 @@
 use tempfile::tempdir;
 
-use crate::desktop_performance::{
-    DesktopPerformanceEventName, DesktopPerformanceRecorder,
-};
+use crate::desktop_performance::{DesktopPerformanceEventName, DesktopPerformanceRecorder};
 
 use super::Database;
 
@@ -38,9 +36,21 @@ fn writable_database_bootstrap_records_closed_phase_spans_in_order() {
             DesktopPerformanceEventName::PersistenceBootstrapCleanMarker,
         ],
     );
-    assert!(bootstrap_events.iter().all(|event| event.category.is_none()));
-    assert!(bootstrap_events.iter().all(|event| event.operation_id.is_none()));
-    assert!(bootstrap_events.iter().all(|event| event.queue_depth.is_none()));
+    assert!(
+        bootstrap_events
+            .iter()
+            .all(|event| event.category.is_none())
+    );
+    assert!(
+        bootstrap_events
+            .iter()
+            .all(|event| event.operation_id.is_none())
+    );
+    assert!(
+        bootstrap_events
+            .iter()
+            .all(|event| event.queue_depth.is_none())
+    );
     assert_eq!(snapshot.dropped_events, 0);
 
     database.close().expect("close database");
