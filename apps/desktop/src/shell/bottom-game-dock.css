@@ -1,0 +1,72 @@
+.runtime-bottom-game-dock {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  grid-template-rows: auto minmax(0, 1fr);
+  color: var(--game-fg-2);
+  background: var(--game-surface-1);
+}
+
+.runtime-bottom-game-dock__tabs {
+  display: flex;
+  min-width: 0;
+  align-items: stretch;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--game-stage-gutter) 0;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--game-border-soft);
+  scrollbar-width: thin;
+}
+
+.runtime-bottom-game-dock__tab {
+  flex: 0 0 auto;
+  min-height: 2.25rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: var(--game-radius-control) var(--game-radius-control) 0 0;
+  color: var(--game-muted);
+  background: transparent;
+  font: inherit;
+  font-size: var(--game-text-small);
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    color var(--game-motion-fast) var(--game-ease-standard),
+    background-color var(--game-motion-fast) var(--game-ease-standard),
+    border-color var(--game-motion-fast) var(--game-ease-standard);
+}
+
+.runtime-bottom-game-dock__tab:hover {
+  color: var(--game-fg);
+  background: var(--game-surface-hover);
+}
+
+.runtime-bottom-game-dock__tab[aria-selected="true"] {
+  border-color: var(--game-border);
+  color: var(--game-accent);
+  background: var(--game-accent-soft);
+}
+
+.runtime-bottom-game-dock__tab:focus-visible,
+.runtime-bottom-game-dock__panel:focus-visible {
+  outline: none;
+  box-shadow: var(--game-shadow-focus);
+}
+
+.runtime-bottom-game-dock__panel {
+  min-width: 0;
+  min-height: 0;
+  padding: var(--space-3) var(--game-stage-gutter);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .runtime-bottom-game-dock__tab {
+    transition: none;
+  }
+}
