@@ -10,11 +10,12 @@ import {
   projectJanuary1990Content,
 } from "@runtime-human/game-application";
 import {
-  createJanuary1990HierarchicalRulesFingerprint,
   createJanuary1990MonthSteps,
   createJanuary1990RulesFingerprint,
+  createJanuary1990RulesFingerprintForExecutionProfile,
   JANUARY_1990_DEFAULT_BALANCE,
   JANUARY_1990_HIERARCHICAL_DETERMINISM_MANIFEST,
+  JANUARY_1990_RNG_EXECUTION_PROFILES_V1,
   Xoshiro256StarStar,
 } from "@runtime-human/game-core";
 import {
@@ -39,7 +40,10 @@ describe("January 1990 persisted hierarchical RNG authority", () => {
 
     expect(source.runtime.compatibility).toEqual({
       checkpointSchema: "month-run-checkpoint-v1",
-      rulesFingerprint: createJanuary1990HierarchicalRulesFingerprint(JANUARY_1990_DEFAULT_BALANCE),
+      rulesFingerprint: createJanuary1990RulesFingerprintForExecutionProfile(
+        JANUARY_1990_DEFAULT_BALANCE,
+        JANUARY_1990_RNG_EXECUTION_PROFILES_V1.hierarchical.id,
+      ),
       contentFingerprint: source.runtime.contentContext.contentFingerprint,
       saveSchemaFingerprint: JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
       determinismManifest: JANUARY_1990_HIERARCHICAL_DETERMINISM_MANIFEST,
