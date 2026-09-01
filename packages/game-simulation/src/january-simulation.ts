@@ -427,7 +427,7 @@ function collectChoices(checkpoint: MonthRunCheckpointV1): SimulationChoiceDistr
 }
 
 function bump(target: Record<string, number>, key: string): void {
-  target[key] = (target[key] ?? 0) + count;
+  target[key] = (target[key] ?? 0) + 1;
 }
 
 function readQualityScores(checkpoint: MonthRunCheckpointV1 | undefined): {
