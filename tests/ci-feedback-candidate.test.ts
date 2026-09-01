@@ -60,10 +60,8 @@ describe("remote CI feedback and candidate V3", () => {
     const checker = read("scripts/studio/check-control-plane.mjs");
 
     expect(checker).toContain('"types: [labeled, synchronize]"');
-    expect(checker).toContain('"github.event.action == \'synchronize\'"');
-    expect(checker).toContain(
-      '"contains(github.event.pull_request.labels.*.name, \'verify:v3\')"',
-    );
+    expect(checker).toContain("\"github.event.action == 'synchronize'\"");
+    expect(checker).toContain("\"contains(github.event.pull_request.labels.*.name, 'verify:v3')\"");
   });
 
   it("retains full V3 on main and manual dispatch without duplicating command bodies", () => {
