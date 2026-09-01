@@ -1,12 +1,20 @@
 import {
+  createJanuary1990HierarchicalMonthSteps,
   createJanuary1990MonthPlan,
   createJanuary1990MonthSteps,
-  createJanuary1990RulesFingerprint,
+  createJanuary1990RulesFingerprintForExecutionProfile,
+  JANUARY_1990_HIERARCHICAL_DETERMINISM_MANIFEST,
+  JANUARY_1990_RNG_EXECUTION_PROFILES_V1,
   type January1990BalanceV1,
   type January1990ContentContext,
+  type January1990RngExecutionProfileId,
   type JanuaryQualityScoresV1,
 } from "@runtime-human/game-core";
-import type { AuthoritativeJsonValue, Fingerprint } from "@runtime-human/game-schema";
+import {
+  DETERMINISM_MANIFEST_V1,
+  type AuthoritativeJsonValue,
+  type Fingerprint,
+} from "@runtime-human/game-schema";
 
 import { runJanuaryCommandSequence, type JanuaryAnswerProviderV1 } from "./january-simulation";
 import {
@@ -216,9 +224,16 @@ export function replayJanuaryReproV1(
     saveSchemaFingerprint: Fingerprint;
     repro: GameReproV1;
     captureTrace?: boolean;
+    rngExecutionProfile?: January1990RngExecutionProfileId | undefined;
   }>,
 ): GameReproReplayResultV1 {
-  const rulesetFingerprint = createJanuary1990RulesFingerprint(input.balance);
+  const rngExecutionProfile =
+    input.rngExecutionProfile ?? JANUARY_1990_RNG_EXECUTION_PROFILES_V1.legacySequential.id;
+  const hierarchical = rngExecutionProfile === JANUARY_1990_RNG_EXECUTION_PROFILES_V1.hierarchical.id;
+  const rulesetFingerprint = createJanuary1990RulesFingerprintForExecutionProfile(
+    input.balance,
+    rngExecutionProfile,
+  );
   if (input.repro.rulesetFingerprint !== rulesetFingerprint) {
     return {
       kind: "incompatible",
@@ -248,9 +263,14 @@ export function replayJanuaryReproV1(
     runnerId: "repro-v1",
     seed: Number(input.repro.seed),
     contentFingerprint: input.context.contentFingerprint,
-    steps: createJanuary1990MonthSteps(input.context, input.balance),
+    steps: hierarchical
+      ? createJanuary1990HierarchicalMonthSteps(input.context, input.balance)
+      : createJanuary1990MonthSteps(input.context, input.balance),
     plan: createJanuary1990MonthPlan(input.context),
     rulesetFingerprint,
+    determinismManifest: hierarchical
+      ? JANUARY_1990_HIERARCHICAL_DETERMINISM_MANIFEST
+      : DETERMINISM_MANIFEST_V1,
     saveSchemaFingerprint: input.saveSchemaFingerprint,
     answers,
   });
