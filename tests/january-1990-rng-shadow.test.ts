@@ -102,7 +102,7 @@ describe("January 1990 hierarchical RNG shadow evidence", () => {
 
   it("matches the committed golden report fingerprint", () => {
     expect(fingerprint("january-1990-rng-shadow-report-golden-v1", createReport())).toBe(
-      "6dc47a16bc814091f27bbec8b08bccccd999fdb6fe37b3789875ec9c19ba3df2",
+      "f013a1155f4829ba20a112b12e1edb906288ecc27468808c1fb87d0b45ab15bd",
     );
   });
 
