@@ -14,6 +14,17 @@ const HOST = {
   memoryMiB: 16_384,
   cpuModel: "Test CPU",
 } as const;
+const BOOTSTRAP_SPAN_NAMES = [
+  "persistenceBootstrapPath",
+  "persistenceBootstrapSqliteVersion",
+  "persistenceBootstrapConnectionOpen",
+  "persistenceBootstrapSchemaCheck",
+  "persistenceBootstrapConnectionConfigure",
+  "persistenceBootstrapMigration",
+  "persistenceBootstrapManifestVerify",
+  "persistenceBootstrapIntegrityVerify",
+  "persistenceBootstrapCleanMarker",
+] as const;
 
 function capture(sampleIndex: number, overrides: Readonly<Record<string, unknown>> = {}): unknown {
   return {
@@ -37,6 +48,9 @@ function capture(sampleIndex: number, overrides: Readonly<Record<string, unknown
       events: [
         rustMark("processEntry", 0),
         rustMark("tauriSetupStart", 100),
+        ...BOOTSTRAP_SPAN_NAMES.map((name, index) =>
+          rustBootstrapDuration(name, 200 + index * 100, 10 + index),
+        ),
         rustMark("persistenceWorkerReady", 4_000 + sampleIndex),
         rustMark("tauriSetupComplete", 5_000 + sampleIndex),
         rustMark("mainWindowAvailable", 8_000 + sampleIndex),
@@ -62,6 +76,17 @@ function rustMark(name: string, atMicros: number) {
     name,
     atMicros,
     durationMicros: null,
+    category: null,
+    operationId: null,
+    queueDepth: null,
+  };
+}
+
+function rustBootstrapDuration(name: string, atMicros: number, durationMicros: number) {
+  return {
+    name,
+    atMicros,
+    durationMicros,
     category: null,
     operationId: null,
     queueDepth: null,
@@ -162,6 +187,20 @@ describe("desktop performance evidence", () => {
       },
     });
     expect(() => parseDesktopEvidenceCapture(invalidQueueMark)).toThrow(/operation span/u);
+
+    const invalidBootstrapMetadata = capture(0, {
+      rustSnapshot: {
+        schemaVersion: "runtime-human-desktop-performance-snapshot-v1",
+        events: [
+          {
+            ...rustBootstrapDuration("persistenceBootstrapPath", 0, 1),
+            category: "query",
+          },
+        ],
+        droppedEvents: 0,
+      },
+    });
+    expect(() => parseDesktopEvidenceCapture(invalidBootstrapMetadata)).toThrow(/bootstrap span/u);
 
     const invalidRendererMeasure = capture(0, {
       browserEntries: [browserMeasure("app.renderer_bootstrap", 0, 1)],
@@ -314,6 +353,15 @@ describe("desktop performance evidence", () => {
       "browser.renderer_to_first_meaningful_paint",
       "browser.renderer_to_shell_commit",
       "external.processToShellFmpMicros",
+      "rust.bootstrap.clean_marker",
+      "rust.bootstrap.connection_configure",
+      "rust.bootstrap.connection_open",
+      "rust.bootstrap.integrity_verify",
+      "rust.bootstrap.manifest_verify",
+      "rust.bootstrap.migration",
+      "rust.bootstrap.path",
+      "rust.bootstrap.schema_check",
+      "rust.bootstrap.sqlite_version",
       "rust.process_to_main_window",
       "rust.process_to_persistence_ready",
       "rust.tauri_setup",
