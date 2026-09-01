@@ -3,6 +3,7 @@ import { basename } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { prepareStartupDatabasePopulation } from "../tools/desktop-evidence/src/capture-database.js";
 import { parseStartupCaptureArguments } from "../tools/desktop-evidence/src/capture-options.js";
 
 const WORKFLOW_URL = new URL(
@@ -86,5 +87,52 @@ describe("PERF-02A E3 hosted Windows series workflow", () => {
     expect(() => parseStartupCaptureArguments(captureArguments("mystery-database"))).toThrow(
       "--database has an unsupported value",
     );
+  });
+
+  it("does not preseed the new-database population", async () => {
+    let called = false;
+
+    await prepareStartupDatabasePopulation("new-database", {
+      startSession: async () => {
+        called = true;
+        return Object.freeze({ id: "seed" });
+      },
+      waitUntilReady: async () => {
+        called = true;
+      },
+      cleanupSession: async () => {
+        called = true;
+      },
+      assertDatabaseExists: async () => {
+        called = true;
+      },
+    });
+
+    expect(called).toBe(false);
+  });
+
+  it("prepares an existing database before measuring the next cold process", async () => {
+    const calls: string[] = [];
+    const session = Object.freeze({ id: "seed" });
+
+    await prepareStartupDatabasePopulation("existing-database", {
+      startSession: async () => {
+        calls.push("start");
+        return session;
+      },
+      waitUntilReady: async (candidate) => {
+        expect(candidate).toBe(session);
+        calls.push("ready");
+      },
+      cleanupSession: async (candidate) => {
+        expect(candidate).toBe(session);
+        calls.push("cleanup");
+      },
+      assertDatabaseExists: async () => {
+        calls.push("database");
+      },
+    });
+
+    expect(calls).toEqual(["start", "ready", "cleanup", "database"]);
   });
 });
