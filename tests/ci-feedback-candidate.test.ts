@@ -30,7 +30,9 @@ describe("remote CI feedback and candidate V3", () => {
   it("refreshes explicit PR V3 candidates after their head synchronizes", () => {
     const foundation = read(".github/workflows/foundation.yml");
 
-    expect(foundation).toMatch(/pull_request:\s*[\s\S]*?types:\s*\[labeled, synchronize\]/u);
+    expect(foundation).toMatch(
+      /pull_request:\s*[\s\S]*?types:\s*\[labeled, synchronize\]/u,
+    );
     expect(foundation).toContain("github.event_name != 'pull_request'");
     expect(foundation).toContain("github.event.action == 'labeled'");
     expect(foundation).toContain("github.event.label.name == 'verify:v3'");
@@ -41,6 +43,19 @@ describe("remote CI feedback and candidate V3", () => {
     expect(foundation).toContain("contents: read");
     expect(foundation).toContain("cancel-in-progress: true");
     expect(foundation).not.toContain("pull_request_target");
+  });
+
+  it("derives exact PR evidence from the tested synthetic merge parents", () => {
+    const foundation = read(".github/workflows/foundation.yml");
+
+    expect(foundation).toContain("git rev-list --parents -n 1");
+    expect(foundation).toContain("tested PR commit must have exactly two parents");
+    expect(foundation).toContain("tested PR head parent does not match pull request head");
+    expect(foundation).toContain("steps.tested-parents.outputs.base_sha");
+    expect(foundation).toContain("steps.tested-parents.outputs.head_sha");
+    expect(foundation).not.toContain(
+      'studioctl evidence --base "${{ github.event.pull_request.base.sha }}"',
+    );
   });
 
   it("keeps the control-plane forcing function aligned with candidate refresh semantics", () => {
