@@ -59,13 +59,13 @@ describe("PERF-02A E3 hosted Windows series workflow", () => {
     expect(workflow).not.toContain("workflow_dispatch");
   });
 
-  it("selects one explicit canonical database population", async () => {
+  it("captures both canonical database populations on one exact host", async () => {
     const workflow = await readWorkflow();
 
-    expect(workflow).toContain("perf:e3-existing-clean");
-    expect(workflow).toContain('$database = "new-database"');
-    expect(workflow).toContain('$database = "existing-clean-database"');
-    expect(workflow).toContain("E3 database population labels are ambiguous");
+    expect(workflow).toContain('$databaseClasses = @("new-database", "existing-clean-database")');
+    expect(workflow).toContain("foreach ($database in $databaseClasses)");
+    expect(workflow).toContain("$databaseClasses.Count * ($warmupCount + $measurementCount)");
+    expect(workflow).toContain("$groups.Count -ne $databaseClasses.Count");
   });
 
   it("uses delimiter-safe PowerShell interpolation before milestone colons", async () => {
