@@ -76,7 +76,9 @@ export function parseJanuaryRngEvidenceV2(value: unknown): JanuaryRngEvidencePar
     budget.narrative !== JANUARY_1990_RNG_CALL_BUDGET.narrative ||
     budget.outcome !== JANUARY_1990_RNG_CALL_BUDGET.outcome
   ) {
-    return invalid("RNG evidence declared call budget does not match the January authority contract");
+    return invalid(
+      "RNG evidence declared call budget does not match the January authority contract",
+    );
   }
 
   return {
