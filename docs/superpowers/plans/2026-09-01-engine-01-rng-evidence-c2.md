@@ -1,3 +1,12 @@
+---
+title: "ENGINE-01 C2 RNG Evidence Implementation Plan"
+type: plan
+status: active
+canon: false
+depends_on: [issue-104, PR-108, PR-109, PR-111]
+updated: 2026-09-01
+---
+
 # ENGINE-01 C2 — materialize RNG authority/shadow identity
 
 ## Goal
