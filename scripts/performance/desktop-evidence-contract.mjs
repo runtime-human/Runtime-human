@@ -50,7 +50,10 @@ const RUST_BOOTSTRAP_METRIC_NAMES = Object.freeze([
   "rust.bootstrap.integrity_verify",
   "rust.bootstrap.clean_marker",
 ]);
-const RUST_SPAN_NAMES = new Set([...RUST_OPERATION_SPAN_NAMES, ...RUST_BOOTSTRAP_SPAN_NAMES]);
+const RUST_SPAN_NAMES = new Set([
+  ...RUST_OPERATION_SPAN_NAMES,
+  ...RUST_BOOTSTRAP_SPAN_NAMES,
+]);
 const RUST_EVENT_NAMES = new Set([...RUST_MARK_NAMES, ...RUST_SPAN_NAMES]);
 const RUST_CATEGORIES = new Set(["query", "mutation", "backup", "recovery", "shutdown"]);
 const BROWSER_MARK_NAMES = new Set([
@@ -572,7 +575,9 @@ function parseRustEvent(value, label) {
       event.operationId !== null ||
       event.queueDepth !== null
     ) {
-      throw new TypeError(`${label} must be a bootstrap span with duration and null operation fields`);
+      throw new TypeError(
+        `${label} must be a bootstrap span with duration and null operation fields`,
+      );
     }
     return Object.freeze({
       name,
