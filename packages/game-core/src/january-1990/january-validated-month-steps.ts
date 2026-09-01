@@ -1,10 +1,7 @@
 import type { Fingerprint, MonthRunCheckpointV1 } from "@runtime-human/game-schema";
 
 import type { MonthRunStep } from "../month-run/runner";
-import {
-  createJanuary1990HierarchicalRulesFingerprint,
-  createJanuary1990RulesFingerprint,
-} from "./january-compatibility";
+import { createJanuary1990RulesFingerprint } from "./january-compatibility";
 import type { January1990BalanceV1 } from "./january-balance";
 import type { January1990ContentContext } from "./january-content-context";
 import {
@@ -12,6 +9,10 @@ import {
   type January1990RngAuthority,
 } from "./january-month-steps";
 import { parseJanuary1990MonthPlan } from "./january-month-plan";
+import {
+  createJanuary1990RulesFingerprintForExecutionProfile,
+  JANUARY_1990_RNG_EXECUTION_PROFILES_V1,
+} from "./january-rng-execution-profile";
 
 export function createJanuary1990ValidatedMonthSteps(
   context: January1990ContentContext,
@@ -51,7 +52,10 @@ function rulesFingerprint(
   rngAuthority: January1990RngAuthority,
 ): Fingerprint {
   return rngAuthority === "hierarchical-v1"
-    ? createJanuary1990HierarchicalRulesFingerprint(balance)
+    ? createJanuary1990RulesFingerprintForExecutionProfile(
+        balance,
+        JANUARY_1990_RNG_EXECUTION_PROFILES_V1.hierarchical.id,
+      )
     : createJanuary1990RulesFingerprint(balance);
 }
 
