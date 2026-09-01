@@ -1,11 +1,4 @@
-import {
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type KeyboardEvent,
-  type ReactNode,
-} from "react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 
 export type BottomGameDockItem = Readonly<{
   id: string;
@@ -30,9 +23,7 @@ export function BottomGameDock({
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const activeIndex = items.findIndex((item) => item.id === activeId);
   const activeItem = activeIndex >= 0 ? items[activeIndex] : undefined;
-  const [focusedId, setFocusedId] = useState<string | undefined>(
-    activeItem?.id ?? items[0]?.id,
-  );
+  const [focusedId, setFocusedId] = useState<string | undefined>(activeItem?.id ?? items[0]?.id);
 
   useEffect(() => {
     setFocusedId(activeItem?.id ?? items[0]?.id);
