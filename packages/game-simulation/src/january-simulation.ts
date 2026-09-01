@@ -76,7 +76,8 @@ export function createJanuary1990SimulationForExecutionProfile(
   rngExecutionProfile: January1990RngExecutionProfileId,
 ): January1990Simulation {
   const context = input.context;
-  const hierarchical = rngExecutionProfile === JANUARY_1990_RNG_EXECUTION_PROFILES_V1.hierarchical.id;
+  const hierarchical =
+    rngExecutionProfile === JANUARY_1990_RNG_EXECUTION_PROFILES_V1.hierarchical.id;
   const steps = hierarchical
     ? createJanuary1990HierarchicalMonthSteps(context, input.balance)
     : createJanuary1990MonthSteps(context, input.balance);
@@ -426,7 +427,7 @@ function collectChoices(checkpoint: MonthRunCheckpointV1): SimulationChoiceDistr
 }
 
 function bump(target: Record<string, number>, key: string): void {
-  target[key] = (target[key] ?? 0) + 1;
+  target[key] = (target[key] ?? 0) + count;
 }
 
 function readQualityScores(checkpoint: MonthRunCheckpointV1 | undefined): {
