@@ -53,7 +53,6 @@ export type CreateJanuary1990SimulationInput = Readonly<{
   context: January1990ContentContext;
   balance: January1990BalanceV1;
   saveSchemaFingerprint: Fingerprint;
-  rngExecutionProfile?: January1990RngExecutionProfileId | undefined;
 }>;
 
 export type January1990Simulation = Readonly<{
@@ -66,9 +65,17 @@ export type January1990Simulation = Readonly<{
 export function createJanuary1990Simulation(
   input: CreateJanuary1990SimulationInput,
 ): January1990Simulation {
+  return createJanuary1990SimulationForExecutionProfile(
+    input,
+    JANUARY_1990_RNG_EXECUTION_PROFILES_V1.legacySequential.id,
+  );
+}
+
+export function createJanuary1990SimulationForExecutionProfile(
+  input: CreateJanuary1990SimulationInput,
+  rngExecutionProfile: January1990RngExecutionProfileId,
+): January1990Simulation {
   const context = input.context;
-  const rngExecutionProfile =
-    input.rngExecutionProfile ?? JANUARY_1990_RNG_EXECUTION_PROFILES_V1.legacySequential.id;
   const hierarchical = rngExecutionProfile === JANUARY_1990_RNG_EXECUTION_PROFILES_V1.hierarchical.id;
   const steps = hierarchical
     ? createJanuary1990HierarchicalMonthSteps(context, input.balance)
