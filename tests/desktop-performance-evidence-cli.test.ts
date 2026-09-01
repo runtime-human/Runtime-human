@@ -68,7 +68,9 @@ function series(
 ) {
   return [
     ...Array.from({ length: warmupCount }, (_, index) => capture(index, "warmup", process)),
-    ...Array.from({ length: measurementCount }, (_, index) => capture(index, "measurement", process)),
+    ...Array.from({ length: measurementCount }, (_, index) =>
+      capture(index, "measurement", process),
+    ),
   ];
 }
 
