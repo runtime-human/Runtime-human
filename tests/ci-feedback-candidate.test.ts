@@ -30,9 +30,7 @@ describe("remote CI feedback and candidate V3", () => {
   it("refreshes explicit PR V3 candidates after their head synchronizes", () => {
     const foundation = read(".github/workflows/foundation.yml");
 
-    expect(foundation).toMatch(
-      /pull_request:\s*[\s\S]*?types:\s*\[labeled, synchronize\]/u,
-    );
+    expect(foundation).toMatch(/pull_request:\s*[\s\S]*?types:\s*\[labeled, synchronize\]/u);
     expect(foundation).toContain("github.event_name != 'pull_request'");
     expect(foundation).toContain("github.event.action == 'labeled'");
     expect(foundation).toContain("github.event.label.name == 'verify:v3'");
