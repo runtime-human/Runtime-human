@@ -62,7 +62,9 @@ function capture() {
       events: [
         rustMark("processEntry", 0),
         rustMark("tauriSetupStart", 100),
-        ...BOOTSTRAP_SPANS.map(([name], index) => bootstrapSpan(name, 200 + index * 100, 10 + index)),
+        ...BOOTSTRAP_SPANS.map(([name], index) =>
+          bootstrapSpan(name, 200 + index * 100, 10 + index),
+        ),
         rustMark("persistenceWorkerReady", 2_000),
         rustMark("tauriSetupComplete", 2_100),
         rustMark("mainWindowAvailable", 2_500),
