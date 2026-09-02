@@ -53,3 +53,15 @@ export type {
   StartRunEventV1,
   SuspendForDecisionEventV1,
 } from "./month-run";
+export { SCENARIO_PROGRAM_SCHEMA_VERSION } from "./scenario-program";
+export type {
+  ScenarioBranchCaseV1,
+  ScenarioBranchInstructionV1,
+  ScenarioCompleteInstructionV1,
+  ScenarioDecisionInstructionV1,
+  ScenarioGateInstructionV1,
+  ScenarioInstructionV1,
+  ScenarioProgramV1,
+  ScenarioProviderInstructionV1,
+  ScenarioRandomContentInstructionV1,
+} from "./scenario-program";
