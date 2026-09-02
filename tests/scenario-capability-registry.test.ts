@@ -235,12 +235,7 @@ describe("scenario capability registry", () => {
     } as ScenarioResolvedCapabilitiesV1;
 
     expectFailureCode(
-      certifyScenarioProgramV1(
-        program,
-        MVP_CASUAL_SCENARIO_POLICY_V1,
-        { fingerprint },
-        forged,
-      ),
+      certifyScenarioProgramV1(program, MVP_CASUAL_SCENARIO_POLICY_V1, { fingerprint }, forged),
       "SCN012",
     );
   });
