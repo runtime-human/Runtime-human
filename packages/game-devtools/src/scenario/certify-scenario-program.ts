@@ -106,7 +106,7 @@ export function certifyScenarioProgramV1(
 
 function validatePolicy(policy: ScenarioExecutionPolicyV1): void {
   if (policy.schemaVersion !== POLICY_SCHEMA_VERSION) {
-    throw new TypeError(`Unsupported scenario execution policy schema: ${policy.schemaVersion}`);
+    throw new TypeError("Unsupported scenario execution policy schema");
   }
   if (policy.requireAcyclic !== true) {
     throw new TypeError("Scenario execution policy v1 must require acyclic execution");
