@@ -76,6 +76,20 @@ describe("scenario compiler v1", () => {
     expect(result.program.programFingerprint).toMatch(/^[0-9a-f]{64}$/u);
   });
 
+  it("matches the canonical compiler fingerprint golden", () => {
+    const result = compileScenarioV1(validScenario(), OPTIONS);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect({
+      sourceFingerprint: result.program.sourceFingerprint,
+      programFingerprint: result.program.programFingerprint,
+    }).toEqual({
+      sourceFingerprint: "0000000000000000000000000000000000000000000000000000000000000000",
+      programFingerprint: "0000000000000000000000000000000000000000000000000000000000000000",
+    });
+  });
+
   it("is byte-stable when JSON object property insertion order changes", () => {
     const first = compileScenarioV1(validScenario(), OPTIONS);
     const reordered = compileScenarioV1(
