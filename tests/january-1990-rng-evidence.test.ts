@@ -6,22 +6,35 @@ import {
 } from "@runtime-human/game-application";
 import {
   createJanuary1990RulesFingerprint,
+  createJanuary1990RulesFingerprintForExecutionProfile,
   JANUARY_1990_DEFAULT_BALANCE,
+  JANUARY_1990_RNG_EXECUTION_PROFILES_V1,
+  Xoshiro256StarStar,
 } from "@runtime-human/game-core";
 import type { Fingerprint } from "@runtime-human/game-schema";
 import {
   compareSimulationReportsV2,
   createJanuary1990SimulationV2,
+  createJanuary1990SimulationV3,
   GAME_REPRO_SCHEMA_VERSION_V2,
+  GAME_REPRO_SCHEMA_VERSION_V3,
   JANUARY_RNG_EVIDENCE_SCHEMA_VERSION,
+  JANUARY_RNG_EVIDENCE_SCHEMA_VERSION_V2,
   JANUARY_RNG_EVIDENCE_V1,
+  JANUARY_RNG_EVIDENCE_V2,
   parseGameReproV2,
+  parseGameReproV3,
   parseJanuaryRngEvidenceV1,
+  parseJanuaryRngEvidenceV2,
   replayJanuaryReproV2,
+  replayJanuaryReproV3,
   SIMULATION_POLICY_IDS,
   SIMULATION_REPORT_SCHEMA_VERSION_V2,
+  SIMULATION_REPORT_SCHEMA_VERSION_V3,
   type GameReproV2,
+  type GameReproV3,
   type JanuaryRngEvidenceV1,
+  type JanuaryRngEvidenceV2,
   type SimulationReportV2,
 } from "@runtime-human/game-simulation";
 
@@ -36,6 +49,10 @@ const registry = await loadJanuaryTestRegistry();
 const context = projectJanuary1990Content(registry);
 const balance = JANUARY_1990_DEFAULT_BALANCE;
 const rulesetFingerprint = createJanuary1990RulesFingerprint(balance);
+const hierarchicalRulesetFingerprint = createJanuary1990RulesFingerprintForExecutionProfile(
+  balance,
+  JANUARY_1990_RNG_EXECUTION_PROFILES_V1.hierarchical.id,
+);
 const simulation = createJanuary1990SimulationV2({
   context,
   balance,
@@ -65,6 +82,20 @@ function withDifferentGolden(): JanuaryRngEvidenceV1 {
       ...JANUARY_RNG_EVIDENCE_V1.shadow,
       goldenReportFingerprint: "a".repeat(64) as Fingerprint,
     },
+  };
+}
+
+function createHierarchicalRepro(
+  rngEvidence: JanuaryRngEvidenceV2 = JANUARY_RNG_EVIDENCE_V2,
+): GameReproV3 {
+  return {
+    schemaVersion: GAME_REPRO_SCHEMA_VERSION_V3,
+    fixtureId: "january-hierarchical-protocol-rejection",
+    rulesetFingerprint: hierarchicalRulesetFingerprint,
+    rngEvidence,
+    seed: "42",
+    commands: [],
+    expected: { kind: "failure", failureClass: "protocol-rejected" },
   };
 }
 
@@ -157,5 +188,79 @@ describe("January RNG evidence v1", () => {
     if (result.kind === "incompatible") {
       expect(result.diagnostics[0]?.code).toBe("REPRO_RNG_EVIDENCE_MISMATCH");
     }
+  });
+});
+
+describe("January hierarchical RNG authority evidence v2", () => {
+  it("preserves historical v1 while materializing a closed hierarchical authority identity", () => {
+    expect(JANUARY_RNG_EVIDENCE_V1.authority.mode).toBe("legacy-sequential-v1");
+    expect(JANUARY_RNG_EVIDENCE_V2).toEqual({
+      schemaVersion: JANUARY_RNG_EVIDENCE_SCHEMA_VERSION_V2,
+      rngDerivationVersion: "hierarchical-v1",
+      authority: {
+        mode: "hierarchical-v1",
+        derivationManifest: {
+          algorithm: "xoshiro256ss-v1",
+          derivationVersion: "hierarchical-v1",
+          hashAlgorithm: "sha256-v1",
+          serializationVersion: "canonical-json-v1",
+        },
+        declaredCallBudget: { content: 0, narrative: 1, outcome: 1 },
+      },
+    });
+    expect(Object.isFrozen(JANUARY_RNG_EVIDENCE_V2)).toBe(true);
+    expect(Object.isFrozen(JANUARY_RNG_EVIDENCE_V2.authority)).toBe(true);
+    expect(Object.isFrozen(JANUARY_RNG_EVIDENCE_V2.authority.declaredCallBudget)).toBe(true);
+
+    const parsed = parseJanuaryRngEvidenceV2(
+      JSON.parse(JSON.stringify(JANUARY_RNG_EVIDENCE_V2)) as unknown,
+    );
+    expect(parsed.kind).toBe("ok");
+    expect(parseJanuaryRngEvidenceV2({ ...JANUARY_RNG_EVIDENCE_V2, unexpected: true }).kind).toBe(
+      "invalid",
+    );
+  });
+
+  it("emits simulation-report-v3 with hierarchical rules and immutable month-root RNG state", () => {
+    const hierarchical = createJanuary1990SimulationV3({
+      context,
+      balance,
+      saveSchemaFingerprint: JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
+    });
+    const report = hierarchical.simulate({
+      seedStart: 42,
+      seedEnd: 42,
+      policies: ["always-first-valid"],
+    });
+    const run = hierarchical.runOnce({ seed: 42, policyId: "always-first-valid" });
+
+    expect(report.schemaVersion).toBe(SIMULATION_REPORT_SCHEMA_VERSION_V3);
+    expect(report.rulesetFingerprint).toBe(hierarchicalRulesetFingerprint);
+    expect(report.rngEvidence).toEqual(JANUARY_RNG_EVIDENCE_V2);
+    expect(run.checkpoint.compatibility.rulesFingerprint).toBe(hierarchicalRulesetFingerprint);
+    expect(run.checkpoint.compatibility.determinismManifest.rulesVersion).toBe(
+      "january-1990-hierarchical-rng-v1",
+    );
+    expect(run.checkpoint.rngState).toBe(Xoshiro256StarStar.fromSeed(42n).exportState());
+  });
+
+  it("replays game-repro-v3 only under the hierarchical authority evidence identity", () => {
+    const parsed = parseGameReproV3(createHierarchicalRepro());
+    expect(parsed.kind).toBe("ok");
+    if (parsed.kind !== "ok") return;
+
+    const result = replayJanuaryReproV3({
+      context,
+      balance,
+      saveSchemaFingerprint: JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
+      repro: parsed.repro,
+    });
+    expect(result.kind).toBe("reproduced");
+
+    const legacyEvidence = parseGameReproV3({
+      ...createHierarchicalRepro(),
+      rngEvidence: JANUARY_RNG_EVIDENCE_V1,
+    });
+    expect(legacyEvidence.kind).toBe("invalid");
   });
 });

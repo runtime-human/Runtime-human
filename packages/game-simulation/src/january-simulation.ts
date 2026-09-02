@@ -1,14 +1,18 @@
 import {
+  createJanuary1990HierarchicalMonthSteps,
   createJanuary1990MonthPlan,
   createJanuary1990MonthSteps,
-  createJanuary1990RulesFingerprint,
+  createJanuary1990RulesFingerprintForExecutionProfile,
   createMonthRunCheckpoint,
+  JANUARY_1990_HIERARCHICAL_DETERMINISM_MANIFEST,
+  JANUARY_1990_RNG_EXECUTION_PROFILES_V1,
   runUntilBoundary,
   transitionMonthRun,
   Xoshiro256StarStar,
   type January1990BalanceV1,
   type January1990ContentContext,
   type January1990MonthPlanV1,
+  type January1990RngExecutionProfileId,
   type JanuaryBalanceAccessRoute,
   type JanuaryBalanceDefectResponse,
   type JanuaryBalanceLearningPractice,
@@ -20,6 +24,7 @@ import {
   parseSaveId,
   parseSaveRevision,
   type AuthoritativeJsonValue,
+  type DeterminismManifest,
   type Fingerprint,
   type MonthRunCheckpointV1,
 } from "@runtime-human/game-schema";
@@ -60,10 +65,30 @@ export type January1990Simulation = Readonly<{
 export function createJanuary1990Simulation(
   input: CreateJanuary1990SimulationInput,
 ): January1990Simulation {
+  return createJanuary1990SimulationForExecutionProfile(
+    input,
+    JANUARY_1990_RNG_EXECUTION_PROFILES_V1.legacySequential.id,
+  );
+}
+
+export function createJanuary1990SimulationForExecutionProfile(
+  input: CreateJanuary1990SimulationInput,
+  rngExecutionProfile: January1990RngExecutionProfileId,
+): January1990Simulation {
   const context = input.context;
-  const steps = createJanuary1990MonthSteps(context, input.balance);
+  const hierarchical =
+    rngExecutionProfile === JANUARY_1990_RNG_EXECUTION_PROFILES_V1.hierarchical.id;
+  const steps = hierarchical
+    ? createJanuary1990HierarchicalMonthSteps(context, input.balance)
+    : createJanuary1990MonthSteps(context, input.balance);
   const plan = createJanuary1990MonthPlan(context);
-  const rulesetFingerprint = createJanuary1990RulesFingerprint(input.balance);
+  const rulesetFingerprint = createJanuary1990RulesFingerprintForExecutionProfile(
+    input.balance,
+    rngExecutionProfile,
+  );
+  const determinismManifest = hierarchical
+    ? JANUARY_1990_HIERARCHICAL_DETERMINISM_MANIFEST
+    : DETERMINISM_MANIFEST_V1;
 
   return Object.freeze({
     simulate(request) {
@@ -81,6 +106,7 @@ export function createJanuary1990Simulation(
               steps,
               plan,
               rulesetFingerprint,
+              determinismManifest,
               saveSchemaFingerprint: input.saveSchemaFingerprint,
             }),
           );
@@ -102,6 +128,7 @@ export function createJanuary1990Simulation(
         steps,
         plan,
         rulesetFingerprint,
+        determinismManifest,
         saveSchemaFingerprint: input.saveSchemaFingerprint,
       });
     },
@@ -121,6 +148,7 @@ export function runJanuaryCommandSequence(
     steps: readonly MonthRunStep[];
     plan: January1990MonthPlanV1;
     rulesetFingerprint: Fingerprint;
+    determinismManifest?: DeterminismManifest | undefined;
     saveSchemaFingerprint: Fingerprint;
     answers: readonly JanuaryAnswerProviderV1[];
   }>,
@@ -135,7 +163,7 @@ export function runJanuaryCommandSequence(
       rulesFingerprint: input.rulesetFingerprint,
       contentFingerprint: input.contentFingerprint,
       saveSchemaFingerprint: input.saveSchemaFingerprint,
-      determinismManifest: DETERMINISM_MANIFEST_V1,
+      determinismManifest: input.determinismManifest ?? DETERMINISM_MANIFEST_V1,
     },
     rngState: Xoshiro256StarStar.fromSeed(BigInt(input.seed)).exportState(),
   });
@@ -201,6 +229,7 @@ function runJanuaryOnce(
     steps: readonly MonthRunStep[];
     plan: January1990MonthPlanV1;
     rulesetFingerprint: Fingerprint;
+    determinismManifest: DeterminismManifest;
     saveSchemaFingerprint: Fingerprint;
   }>,
 ): JanuarySimulationTerminalRunV1 {
@@ -211,6 +240,7 @@ function runJanuaryOnce(
     steps: input.steps,
     plan: input.plan,
     rulesetFingerprint: input.rulesetFingerprint,
+    determinismManifest: input.determinismManifest,
     saveSchemaFingerprint: input.saveSchemaFingerprint,
     answers: policyAnswers(input.policyId, input.seed),
   });
