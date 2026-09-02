@@ -8,6 +8,17 @@ export {
   type JanuaryFixtureAnswersV1,
 } from "./january-simulation";
 export {
+  createJanuary1990RngShadowReport,
+  JANUARY_RNG_SHADOW_REPORT_SCHEMA_VERSION,
+} from "./january-rng-shadow";
+export type {
+  CreateJanuary1990RngShadowReportInput,
+  JanuaryRngShadowCallCountV1,
+  JanuaryRngShadowDomainCallsV1,
+  JanuaryRngShadowReportV1,
+  JanuaryRngShadowStreamV1,
+} from "./january-rng-shadow";
+export {
   GAME_REPLAY_TRACE_SCHEMA_VERSION,
   parseGameReproV1,
   replayJanuaryReproV1,

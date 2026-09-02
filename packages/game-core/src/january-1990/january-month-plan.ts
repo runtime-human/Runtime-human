@@ -24,7 +24,7 @@ export type January1990MonthPlanV1 = Readonly<{
 export function createJanuary1990MonthPlan(
   context: January1990ContentContext,
 ): January1990MonthPlanV1 {
-  requireJanuaryContext(context);
+  assertJanuary1990ContentContext(context);
   return parseJanuary1990MonthPlan({
     schemaVersion: "january-1990-month-plan-v1",
     month: "1990-01",
@@ -73,7 +73,7 @@ export function parseJanuary1990MonthPlan(value: unknown): January1990MonthPlanV
   }) as January1990MonthPlanV1;
 }
 
-function requireJanuaryContext(context: January1990ContentContext): void {
+export function assertJanuary1990ContentContext(context: January1990ContentContext): void {
   if (
     context.schemaVersion !== "january-1990-content-context-v1" ||
     context.month !== "1990-01" ||
