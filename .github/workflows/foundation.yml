@@ -7,7 +7,7 @@ on:
   pull_request:
     branches:
       - main
-    types: [labeled]
+    types: [labeled, synchronize]
   workflow_dispatch:
 
 concurrency:
@@ -25,7 +25,9 @@ jobs:
   full-verification:
     if: >-
       github.event_name != 'pull_request' ||
-      (github.event.action == 'labeled' && github.event.label.name == 'verify:v3')
+      (github.event.action == 'labeled' && github.event.label.name == 'verify:v3') ||
+      (github.event.action == 'synchronize' &&
+       contains(github.event.pull_request.labels.*.name, 'verify:v3'))
     name: full verification / windows-2025
     runs-on: windows-2025
     timeout-minutes: 45
@@ -79,13 +81,30 @@ jobs:
           "exit_code=$code" >> $env:GITHUB_OUTPUT
           exit $code
 
+      - name: Resolve exact tested PR parents
+        id: tested-parents
+        if: always() && github.event_name == 'pull_request'
+        run: |
+          $ErrorActionPreference = "Stop"
+          $line = git rev-list --parents -n 1 "${{ github.sha }}"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $parts = $line -split '\s+'
+          if ($parts.Count -ne 3) { throw "tested PR commit must have exactly two parents" }
+          $baseSha = $parts[1]
+          $headSha = $parts[2]
+          if ($headSha -ne "${{ github.event.pull_request.head.sha }}") {
+            throw "tested PR head parent does not match pull request head"
+          }
+          "base_sha=$baseSha" >> $env:GITHUB_OUTPUT
+          "head_sha=$headSha" >> $env:GITHUB_OUTPUT
+
       - name: Materialize exact PR evidence
         if: always() && github.event_name == 'pull_request'
         run: |
           $status = "${{ steps.v3.outcome }}"
           $exitCode = "${{ steps.v3.outputs.exit_code }}"
           if (-not $exitCode) { throw "canonical V3 did not expose an exit code" }
-          pnpm studioctl evidence --base "${{ github.event.pull_request.base.sha }}" --head "${{ github.event.pull_request.head.sha }}" --tested "${{ github.sha }}" --status $status --exit-code $exitCode --output ".studio/runtime/evidence/runtime-human-pr-evidence-v1.json" --summary-output ".studio/runtime/evidence/summary.md" --json
+          pnpm studioctl evidence --base "${{ steps.tested-parents.outputs.base_sha }}" --head "${{ steps.tested-parents.outputs.head_sha }}" --tested "${{ github.sha }}" --status $status --exit-code $exitCode --output ".studio/runtime/evidence/runtime-human-pr-evidence-v1.json" --summary-output ".studio/runtime/evidence/summary.md" --json
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Get-Content ".studio/runtime/evidence/summary.md" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
 
