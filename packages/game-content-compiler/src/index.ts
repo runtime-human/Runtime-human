@@ -27,6 +27,10 @@ export type {
   ContentCatalogEntryV1,
   ContentCatalogProvenanceV1,
 } from "./content-catalog-projection";
+export {
+  fingerprintCompilerArtifactV1,
+  type CompilerFingerprintNamespaceV1,
+} from "./compiler-fingerprint";
 export type { ContentDiagnostic, ContentDiagnosticCode } from "./content-diagnostics";
 export { CONTENT_COMPILER_VERSION, CONTENT_SOURCE_SCHEMA_V1 } from "./content-source-schema";
 export { formatContentDiagnostics } from "./format-content-diagnostics";
