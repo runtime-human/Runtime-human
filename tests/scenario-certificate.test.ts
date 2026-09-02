@@ -5,10 +5,7 @@ import {
   type ScenarioCertificateV1,
   type ScenarioExecutionPolicyV1,
 } from "@runtime-human/game-schema";
-import {
-  certifyScenarioProgramV1,
-  compileScenarioProgramV1,
-} from "@runtime-human/game-devtools";
+import { certifyScenarioProgramV1, compileScenarioProgramV1 } from "@runtime-human/game-devtools";
 
 const POLICY_NAMESPACE = "scenario-execution-policy-v1";
 const CERTIFICATE_NAMESPACE = "scenario-certificate-v1";
