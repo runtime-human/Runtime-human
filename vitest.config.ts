@@ -140,6 +140,7 @@ export default defineConfig({
         "tests/game-devtools-catalog.test.ts",
         "tests/gamectl-capabilities.test.ts",
         "tests/gamectl-cli.test.ts",
+        "tests/gamectl-scenario-cli.test.ts",
         "tests/gamectl-simulation-cli.test.ts",
         "tests/gamectl-harness-cli.test.ts",
         "tests/performance-recorder.test.ts",
