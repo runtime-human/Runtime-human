@@ -1,12 +1,11 @@
-import {
-  SCENARIO_IDENTIFIER_PATTERN,
-  type ScenarioAuthoringDocument,
-  type ScenarioAuthoringNode,
+import type {
+  ScenarioAuthoringDocument,
+  ScenarioAuthoringNode,
 } from "@runtime-human/game-authoring-schema";
 
 import type { StructuredDiagnosticV1 } from "../diagnostics/gamectl-diagnostics";
 
-const IDENTIFIER = new RegExp(SCENARIO_IDENTIFIER_PATTERN, "u");
+const IDENTIFIER = /^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$/u;
 
 export type AnalyzeScenarioOptions = Readonly<{
   providerIds?: ReadonlySet<string>;
