@@ -109,7 +109,9 @@ function validatePolicy(policy: ScenarioExecutionPolicyV1): void {
     throw new TypeError("Scenario execution policy v1 must require acyclic execution");
   }
   if (!POLICY_ID.test(policy.policyId) || policy.policyId.length > 160) {
-    throw new TypeError("Scenario execution policy id does not match the closed identifier contract");
+    throw new TypeError(
+      "Scenario execution policy id does not match the closed identifier contract",
+    );
   }
   if (!Number.isSafeInteger(policy.blockingDecisionsMax) || policy.blockingDecisionsMax < 0) {
     throw new TypeError("Scenario blocking decision limit must be a non-negative safe integer");
