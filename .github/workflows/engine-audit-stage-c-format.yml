@@ -1,0 +1,37 @@
+name: engine-audit-stage-c-format
+
+on:
+  push:
+    branches:
+      - feat/engine-02-scenario-capability-registry-stage-c
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: feat/engine-02-scenario-capability-registry-stage-c
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
+        with:
+          version: 11.11.0
+          run_install: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24.20.0
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile --reporter=silent
+      - run: pnpm exec oxfmt tests/scenario-capability-registry.test.ts
+      - name: Commit formatted test and remove helper
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/scenario-capability-registry.test.ts
+          git rm .github/workflows/engine-audit-stage-c-format.yml
+          git commit -m "test(engine): format capability audit regressions"
+          git push origin HEAD:feat/engine-02-scenario-capability-registry-stage-c
