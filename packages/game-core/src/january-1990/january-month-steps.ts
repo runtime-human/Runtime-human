@@ -8,6 +8,7 @@ import type {
 } from "@runtime-human/game-schema";
 
 import { fingerprint } from "../determinism/hash";
+import { deriveRandomSource } from "../determinism/rng-derivation";
 import { Xoshiro256StarStar } from "../determinism/xoshiro256ss";
 import { snapshotAuthoritativeValue } from "../month-run/checkpoint";
 import type { MonthRunStep } from "../month-run/runner";
@@ -30,6 +31,10 @@ import {
   parseJanuaryProvisionalState,
   updateJanuaryProvisionalState,
 } from "./january-provisional-state";
+import {
+  createJanuary1990RngDomainPathsV1,
+  type January1990RngDomainPathsV1,
+} from "./january-rng-domains";
 import { JANUARY_1990_RNG_SCOPES } from "./january-rng-scopes";
 
 const ANSWER_SCHEMA_FINGERPRINTS = Object.freeze({
@@ -47,20 +52,25 @@ const ANSWER_SCHEMA_FINGERPRINTS = Object.freeze({
   }),
 });
 
+export type January1990RngAuthority = "legacy-sequential-v1" | "hierarchical-v1";
+
 export function createJanuary1990MonthSteps(
   context: January1990ContentContext,
   balance: January1990BalanceV1,
+  rngAuthority: January1990RngAuthority = "legacy-sequential-v1",
 ): readonly MonthRunStep[] {
   requireJanuaryContext(context);
+  const rngDomains =
+    rngAuthority === "hierarchical-v1" ? createJanuary1990RngDomainPathsV1(context) : null;
   return Object.freeze([
     () => ({ type: "start" }),
     () => suspendForAccess(context),
     (checkpoint) => materializeAccess(context, checkpoint),
     () => suspendForLearning(context),
     (checkpoint) => materializeWork(context, checkpoint),
-    (checkpoint) => materializeDefect(context, checkpoint),
+    (checkpoint) => materializeDefect(context, checkpoint, rngDomains),
     (checkpoint) => suspendForDefect(context, checkpoint),
-    (checkpoint) => materializeProgrammingOutcome(context, checkpoint, balance),
+    (checkpoint) => materializeProgrammingOutcome(context, checkpoint, balance, rngDomains),
     (checkpoint) => completeJanuary(context, checkpoint, balance),
   ] satisfies readonly MonthRunStep[]);
 }
@@ -182,6 +192,7 @@ function materializeWork(
 function materializeDefect(
   context: January1990ContentContext,
   checkpoint: MonthRunCheckpointV1,
+  rngDomains: January1990RngDomainPathsV1 | null,
 ): MonthRunEventV1 {
   const state = parseJanuaryProvisionalState(checkpoint.provisionalState);
   if (state.workPackageId !== JANUARY_1990_CONTENT_IDS.inputOutputWorkPackage) {
@@ -191,9 +202,10 @@ function materializeDefect(
   if (candidates.length !== 2) {
     throw new TypeError("January first-bug situation must expose exactly two defect events");
   }
-  const random = Xoshiro256StarStar.fromState(checkpoint.rngState).fork(
-    JANUARY_1990_RNG_SCOPES.narrative,
-  );
+  const random =
+    rngDomains === null
+      ? Xoshiro256StarStar.fromState(checkpoint.rngState).fork(JANUARY_1990_RNG_SCOPES.narrative)
+      : deriveRandomSource(checkpoint.rngState, rngDomains.narrativeEventSelection);
   const defectEventId = candidates[random.nextInt(0, candidates.length)];
   if (defectEventId === undefined) throw new TypeError("January defect selection failed");
   const defect = requireEvent(context, defectEventId);
@@ -205,7 +217,7 @@ function materializeDefect(
     scope: JANUARY_1990_RNG_SCOPES.narrative,
     phase: "resolve",
     state: nextState,
-    rngState: random.exportState(),
+    ...(rngDomains === null ? { rngState: random.exportState() } : {}),
     payload: {
       schemaVersion: "january-1990-defect-outcome-v1",
       situationId: context.situation.id,
@@ -243,6 +255,7 @@ function materializeProgrammingOutcome(
   context: January1990ContentContext,
   checkpoint: MonthRunCheckpointV1,
   balance: January1990BalanceV1,
+  rngDomains: January1990RngDomainPathsV1 | null,
 ): MonthRunEventV1 {
   const answer = parseJanuaryDefectAnswer(
     JANUARY_1990_DECISION_IDS.defect,
@@ -253,9 +266,10 @@ function materializeProgrammingOutcome(
     { defectResponse: answer.response },
   );
   const outcomeRollBounds = balance.quality.outcomeRoll;
-  const random = Xoshiro256StarStar.fromState(checkpoint.rngState).fork(
-    JANUARY_1990_RNG_SCOPES.outcome,
-  );
+  const random =
+    rngDomains === null
+      ? Xoshiro256StarStar.fromState(checkpoint.rngState).fork(JANUARY_1990_RNG_SCOPES.outcome)
+      : deriveRandomSource(checkpoint.rngState, rngDomains.outcomeQualityRoll);
   const materialized = materializeJanuaryProgrammingState(
     stateWithAnswer,
     random.nextInt(outcomeRollBounds.minimum, outcomeRollBounds.maximum + 1),
@@ -270,7 +284,7 @@ function materializeProgrammingOutcome(
     scope: JANUARY_1990_RNG_SCOPES.outcome,
     phase: "resolve",
     state: finalState,
-    rngState: random.exportState(),
+    ...(rngDomains === null ? { rngState: random.exportState() } : {}),
     payload: programmingOutcome,
   });
 }

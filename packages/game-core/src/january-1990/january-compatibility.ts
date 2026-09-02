@@ -1,4 +1,8 @@
-import type { Fingerprint } from "@runtime-human/game-schema";
+import {
+  DETERMINISM_MANIFEST_V1,
+  type DeterminismManifest,
+  type Fingerprint,
+} from "@runtime-human/game-schema";
 
 import { fingerprint } from "../determinism/hash";
 import { createJanuary1990BalanceFingerprint, type January1990BalanceV1 } from "./january-balance";
@@ -7,6 +11,12 @@ import { JANUARY_1990_DECISION_IDS } from "./january-decisions";
 import { JANUARY_1990_RNG_CALL_BUDGET, JANUARY_1990_RNG_SCOPES } from "./january-rng-scopes";
 
 export const JANUARY_1990_STEP_TABLE_VERSION = "january-1990-step-table-v1" as const;
+export const JANUARY_1990_HIERARCHICAL_RULES_VERSION = "january-1990-hierarchical-rng-v1" as const;
+
+export const JANUARY_1990_HIERARCHICAL_DETERMINISM_MANIFEST: DeterminismManifest = Object.freeze({
+  ...DETERMINISM_MANIFEST_V1,
+  rulesVersion: JANUARY_1990_HIERARCHICAL_RULES_VERSION,
+});
 
 export type January1990RulesetManifestV1 = Readonly<{
   schemaVersion: "january-1990-ruleset-manifest-v1";

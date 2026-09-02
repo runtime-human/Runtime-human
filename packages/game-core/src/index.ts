@@ -13,6 +13,7 @@ export { Xoshiro256StarStar } from "./determinism/xoshiro256ss";
 export { RNG_DERIVATION_MANIFEST_V1 } from "@runtime-human/game-schema";
 export type { RngDerivationManifestV1, RngDerivationVersion } from "@runtime-human/game-schema";
 export {
+  createJanuary1990HierarchicalMonthSteps,
   createJanuary1990MonthPlan,
   createJanuary1990MonthSteps,
   createJanuary1990Result,
@@ -27,6 +28,7 @@ export {
   JANUARY_1990_CONTENT_IDS,
   JANUARY_1990_DECISION_IDS,
   JANUARY_1990_DEFAULT_BALANCE,
+  JANUARY_1990_HIERARCHICAL_DETERMINISM_MANIFEST,
   JANUARY_1990_QUALITY_SCORE_MAXIMUMS,
   JANUARY_1990_REASON_CODES,
   JANUARY_1990_REQUIRED_CHUNK_IDS,

@@ -1,6 +1,6 @@
 import {
+  createJanuary1990HierarchicalMonthSteps,
   createJanuary1990MonthPlan,
-  createJanuary1990MonthSteps,
   JANUARY_1990_DEFAULT_BALANCE,
   type January1990BalanceV1,
   type January1990ContentContext,
@@ -48,7 +48,7 @@ export function createJanuary1990Runtime(input: CreateJanuary1990RuntimeInput): 
   });
   const orchestrator = createPersistedMonthRunOrchestrator({
     persistence: input.persistence,
-    steps: createJanuary1990MonthSteps(contentContext, balance),
+    steps: createJanuary1990HierarchicalMonthSteps(contentContext, balance),
     expectedCompatibility: compatibility,
     materializeCommit: materializeJanuary1990Commit,
   });
