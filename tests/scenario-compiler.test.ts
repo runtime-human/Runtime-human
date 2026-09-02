@@ -105,7 +105,12 @@ describe("ScenarioProgramV1 compiler", () => {
       ...source,
       nodes: {
         ...source.nodes,
-        a: { kind: "decision", decisionId: "decision.access", next: "f" },
+        d: {
+          kind: "gate",
+          predicateId: "predicate.ready",
+          pass: "f",
+          fail: "e",
+        },
       },
     };
 
