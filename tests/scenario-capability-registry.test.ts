@@ -86,6 +86,16 @@ function resolve(
   return result.capabilities;
 }
 
+function expectFailureCode(
+  result: ReturnType<typeof certifyScenarioProgramV1>,
+  expectedCode: string,
+): void {
+  expect(result.kind).toBe("failure");
+  if (result.kind === "failure") {
+    expect(result.diagnostics.map(({ code }) => code)).toContain(expectedCode);
+  }
+}
+
 describe("scenario capability registry", () => {
   it("projects only referenced descriptors into a canonical fingerprinted rules contract", () => {
     const program = compile();
@@ -189,5 +199,99 @@ describe("scenario capability registry", () => {
       expect(result.certificate.rngCallsMax).toBe(3);
       expect(result.certificate.providerCallsMax).toBe(1);
     }
+  });
+
+  it("rejects provider descriptors that are not closed runtime values", () => {
+    const base = registry();
+    const referenced = base.providers.find(({ id }) => id === "provider.project");
+    if (referenced === undefined) throw new Error("missing provider.project fixture");
+
+    const invalidEffectDomain = {
+      ...base,
+      providers: [{ ...referenced, effectDomain: "filesystem" }],
+      predicates: [base.predicates[1]!],
+    } as unknown as ScenarioCapabilityRegistryV1;
+    const extraField = {
+      ...base,
+      providers: [{ ...referenced, hiddenMutationAuthority: true }],
+      predicates: [base.predicates[1]!],
+    } as unknown as ScenarioCapabilityRegistryV1;
+
+    expect(() =>
+      resolveScenarioCapabilitiesV1(compile(), invalidEffectDomain, { fingerprint }),
+    ).toThrow();
+    expect(() => resolveScenarioCapabilitiesV1(compile(), extraField, { fingerprint })).toThrow();
+  });
+
+  it("rejects a stale rules fingerprint after resolved provider semantics are forged", () => {
+    const program = compile();
+    const capabilities = resolve();
+    const forged = {
+      ...capabilities,
+      providers: capabilities.providers.map((descriptor) => ({
+        ...descriptor,
+        rngBudgetMax: descriptor.rngBudgetMax + 1,
+      })),
+    } as ScenarioResolvedCapabilitiesV1;
+
+    expectFailureCode(
+      certifyScenarioProgramV1(
+        program,
+        MVP_CASUAL_SCENARIO_POLICY_V1,
+        { fingerprint },
+        forged,
+      ),
+      "SCN012",
+    );
+  });
+
+  it("fails closed when valid per-provider RNG budgets overflow the aggregate safe integer", () => {
+    const program = compile({
+      schemaVersion: "scenario-v1",
+      id: "capabilities.overflow",
+      entry: "a",
+      nodes: {
+        a: { kind: "provider", providerId: "provider.first", next: "b" },
+        b: { kind: "provider", providerId: "provider.second", next: "f" },
+        f: { kind: "complete" },
+      },
+    });
+    const resolved = resolveScenarioCapabilitiesV1(
+      program,
+      {
+        schemaVersion: "scenario-capability-registry-v1",
+        providers: [
+          {
+            id: "provider.first",
+            version: 1,
+            deterministic: true,
+            rngBudgetMax: Number.MAX_SAFE_INTEGER,
+            effectDomain: "project",
+          },
+          {
+            id: "provider.second",
+            version: 1,
+            deterministic: true,
+            rngBudgetMax: 1,
+            effectDomain: "project",
+          },
+        ],
+        predicates: [],
+      },
+      { fingerprint },
+    );
+    if (resolved.kind !== "success") {
+      throw new Error(`Expected resolution success, got ${JSON.stringify(resolved.diagnostics)}`);
+    }
+
+    expectFailureCode(
+      certifyScenarioProgramV1(
+        program,
+        MVP_CASUAL_SCENARIO_POLICY_V1,
+        { fingerprint },
+        resolved.capabilities,
+      ),
+      "SCN013",
+    );
   });
 });
