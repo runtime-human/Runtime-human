@@ -80,6 +80,7 @@ export function certifyScenarioProgramV1(
   const policyFingerprint = primitives.fingerprint(POLICY_FINGERPRINT_NAMESPACE, policy);
   const body = {
     schemaVersion: SCENARIO_CERTIFICATE_SCHEMA_VERSION,
+    programFingerprint: program.programFingerprint,
     policyId: policy.policyId,
     policyFingerprint,
     instructionCount: program.instructions.length,
