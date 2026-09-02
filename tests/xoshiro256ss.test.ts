@@ -1,3 +1,4 @@
+import * as fc from "fast-check";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -153,6 +154,65 @@ describe("hierarchical RNG derivation", () => {
 
     expect(mentorAfterGuardianConsumption.exportState()).toBe(mentorFirst.exportState());
     expect(guardianAfterMentorCreation.exportState()).not.toBe(mentorFirst.exportState());
+  });
+
+  it("reproduces the same sequence for the same root and semantic path across generated inputs", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 0, max: 1_000_000 }),
+        fc.integer({ min: 0, max: 9_999 }),
+        (seed, actorIndex) => {
+          const root = Xoshiro256StarStar.fromSeed(BigInt(seed)).exportState();
+          const path = createRngDomainPathV1({
+            month: "1990-01",
+            domain: "npc",
+            entityId: `npc.actor-${String(actorIndex)}`,
+            purpose: "action-choice",
+          });
+          const first = deriveRandomSource(root, path);
+          const second = deriveRandomSource(root, path);
+          const firstSequence = Array.from({ length: 6 }, () => first.nextUint64());
+          const secondSequence = Array.from({ length: 6 }, () => second.nextUint64());
+
+          expect(secondSequence).toEqual(firstSequence);
+        },
+      ),
+      { numRuns: 128 },
+    );
+  });
+
+  it("keeps generated sibling streams unchanged when another sibling consumes extra draws", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 0, max: 1_000_000 }),
+        fc.integer({ min: 0, max: 64 }),
+        (seed, extraDraws) => {
+          const root = Xoshiro256StarStar.fromSeed(BigInt(seed)).exportState();
+          const noisyPath = createRngDomainPathV1({
+            month: "1990-01",
+            domain: "npc",
+            entityId: "npc.property-noisy",
+            purpose: "action-choice",
+          });
+          const isolatedPath = createRngDomainPathV1({
+            month: "1990-01",
+            domain: "npc",
+            entityId: "npc.property-isolated",
+            purpose: "action-choice",
+          });
+          const isolatedBefore = deriveRandomSource(root, isolatedPath);
+          const expected = Array.from({ length: 6 }, () => isolatedBefore.nextUint64());
+
+          const noisy = deriveRandomSource(root, noisyPath);
+          for (let draw = 0; draw < extraDraws; draw += 1) noisy.nextUint64();
+
+          const isolatedAfter = deriveRandomSource(root, isolatedPath);
+          const observed = Array.from({ length: 6 }, () => isolatedAfter.nextUint64());
+          expect(observed).toEqual(expected);
+        },
+      ),
+      { numRuns: 128 },
+    );
   });
 
   it("rejects unstable identities, invalid purpose combinations and forged paths", () => {
