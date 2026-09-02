@@ -12,6 +12,7 @@ export type ScenarioExecutionPolicyV1 = Readonly<{
 
 export type ScenarioCertificateV1 = Readonly<{
   schemaVersion: typeof SCENARIO_CERTIFICATE_SCHEMA_VERSION;
+  programFingerprint: Fingerprint;
   policyId: string;
   policyFingerprint: Fingerprint;
   instructionCount: number;
