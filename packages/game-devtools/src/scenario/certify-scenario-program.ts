@@ -356,8 +356,14 @@ function addRngBudget(
   own: number | "unknown",
   children: readonly (number | "unknown")[],
 ): number | "unknown" {
-  if (own === "unknown" || children.some((value) => value === "unknown")) return "unknown";
-  return own + Math.max(...children);
+  if (own === "unknown") return "unknown";
+
+  let childMax = 0;
+  for (const child of children) {
+    if (child === "unknown") return "unknown";
+    childMax = Math.max(childMax, child);
+  }
+  return own + childMax;
 }
 
 function successorsOf(instruction: ScenarioInstructionV1): readonly number[] {
