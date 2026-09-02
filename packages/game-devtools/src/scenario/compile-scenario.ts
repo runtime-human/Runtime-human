@@ -132,7 +132,9 @@ export function compileScenarioV1(
   const instructions = nodeIds.map((nodeId) => {
     const node = scenario.nodes[nodeId];
     if (node === undefined) {
-      throw new Error(`Scenario compiler invariant violated: missing node ${JSON.stringify(nodeId)}`);
+      throw new Error(
+        `Scenario compiler invariant violated: missing node ${JSON.stringify(nodeId)}`,
+      );
     }
     return compileInstruction(nodeId, node, tables);
   });
@@ -183,12 +185,7 @@ function validatePolicy(
   ) {
     return null;
   }
-  return scenarioDiagnostic(
-    scenario,
-    "SCN103",
-    "Unsupported scenario compiler policy",
-    "/policy",
-  );
+  return scenarioDiagnostic(scenario, "SCN103", "Unsupported scenario compiler policy", "/policy");
 }
 
 function validateContentPools(
@@ -233,11 +230,7 @@ function compileInstruction(
     case "random-content":
       return {
         kind: "random-content",
-        contentPoolIndex: requiredIndex(
-          tables.contentPoolIndexById,
-          node.poolId,
-          "content pool",
-        ),
+        contentPoolIndex: requiredIndex(tables.contentPoolIndexById, node.poolId, "content pool"),
         nextPc: requiredPc(tables.pcByNodeId, node.next, nodeId, "next"),
       };
     case "gate":
@@ -251,11 +244,7 @@ function compileInstruction(
       return {
         kind: "branch",
         branches: node.branches.map((branch) => ({
-          predicateIndex: requiredIndex(
-            tables.predicateIndexById,
-            branch.predicateId,
-            "predicate",
-          ),
+          predicateIndex: requiredIndex(tables.predicateIndexById, branch.predicateId, "predicate"),
           targetPc: requiredPc(tables.pcByNodeId, branch.target, nodeId, "branch target"),
         })),
         fallbackPc: requiredPc(tables.pcByNodeId, node.fallback, nodeId, "fallback"),
@@ -403,7 +392,9 @@ function longestTransitionPath(
       `Scenario compiler invariant violated: non-terminal node ${JSON.stringify(nodeId)} has no target`,
     );
   }
-  const budget = 1 + Math.max(...targets.map((target) => longestTransitionPath(target, scenario, adjacency, memo)));
+  const budget =
+    1 +
+    Math.max(...targets.map((target) => longestTransitionPath(target, scenario, adjacency, memo)));
   memo.set(nodeId, budget);
   return budget;
 }
@@ -422,14 +413,12 @@ function requiredPc(
   return requiredIndex(pcByNodeId, target, `${nodeId}.${field}`);
 }
 
-function requiredIndex(
-  indexById: ReadonlyMap<string, number>,
-  id: string,
-  label: string,
-): number {
+function requiredIndex(indexById: ReadonlyMap<string, number>, id: string, label: string): number {
   const index = indexById.get(id);
   if (index === undefined) {
-    throw new Error(`Scenario compiler invariant violated: unresolved ${label} ${JSON.stringify(id)}`);
+    throw new Error(
+      `Scenario compiler invariant violated: unresolved ${label} ${JSON.stringify(id)}`,
+    );
   }
   return index;
 }
