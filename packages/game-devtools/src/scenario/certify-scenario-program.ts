@@ -12,7 +12,8 @@ const POLICY_FINGERPRINT_NAMESPACE = "scenario-execution-policy-v1";
 const CERTIFICATE_FINGERPRINT_NAMESPACE = "scenario-certificate-v1";
 const POLICY_SCHEMA_VERSION: ScenarioExecutionPolicyV1["schemaVersion"] =
   "scenario-execution-policy-v1";
-const CERTIFICATE_SCHEMA_VERSION: ScenarioCertificateV1["schemaVersion"] = "scenario-certificate-v1";
+const CERTIFICATE_SCHEMA_VERSION: ScenarioCertificateV1["schemaVersion"] =
+  "scenario-certificate-v1";
 const POLICY_ID = /^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$/u;
 
 export type ScenarioCertificationPrimitives = Readonly<{
