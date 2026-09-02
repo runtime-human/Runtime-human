@@ -92,9 +92,7 @@ export function certifyScenarioProgramV1(
     programFingerprint: program.programFingerprint,
     policyId: policy.policyId,
     policyFingerprint,
-    ...(capabilities === undefined
-      ? {}
-      : { rulesFingerprint: capabilities.rulesFingerprint }),
+    ...(capabilities === undefined ? {} : { rulesFingerprint: capabilities.rulesFingerprint }),
     instructionCount: program.instructions.length,
     completionGuaranteed: true,
     bounded: true,
@@ -301,12 +299,7 @@ function computePathBounds(
 
     const ownDecision = instruction.op === "decision" ? 1 : 0;
     const ownProvider = instruction.op === "provider" ? 1 : 0;
-    const ownRng = rngBudgetForInstruction(
-      program,
-      instruction,
-      capabilities,
-      providerRngBudgets,
-    );
+    const ownRng = rngBudgetForInstruction(program, instruction, capabilities, providerRngBudgets);
     const successors = successorsOf(instruction);
 
     if (successors.length === 0) {
@@ -329,7 +322,10 @@ function computePathBounds(
       blockingDecisionsMax:
         ownDecision + Math.max(...children.map((child) => child.blockingDecisionsMax)),
       providerCallsMax: ownProvider + Math.max(...children.map((child) => child.providerCallsMax)),
-      rngCallsMax: addRngBudget(ownRng, children.map((child) => child.rngCallsMax)),
+      rngCallsMax: addRngBudget(
+        ownRng,
+        children.map((child) => child.rngCallsMax),
+      ),
     });
     memo.set(pc, bounds);
     return bounds;
