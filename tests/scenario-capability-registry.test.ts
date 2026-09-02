@@ -35,7 +35,9 @@ function compile(document: ScenarioAuthoringDocument = source()) {
   return result.program;
 }
 
-function registry(overrides: Partial<ScenarioCapabilityRegistryV1> = {}): ScenarioCapabilityRegistryV1 {
+function registry(
+  overrides: Partial<ScenarioCapabilityRegistryV1> = {},
+): ScenarioCapabilityRegistryV1 {
   return {
     schemaVersion: "scenario-capability-registry-v1",
     providers: [
@@ -77,7 +79,9 @@ function resolve(
 ): ScenarioResolvedCapabilitiesV1 {
   const result = resolveScenarioCapabilitiesV1(compile(), capabilityRegistry, { fingerprint });
   if (result.kind !== "success") {
-    throw new Error(`Expected capability resolution success, got ${JSON.stringify(result.diagnostics)}`);
+    throw new Error(
+      `Expected capability resolution success, got ${JSON.stringify(result.diagnostics)}`,
+    );
   }
   return result.capabilities;
 }
