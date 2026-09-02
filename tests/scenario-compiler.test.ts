@@ -1,199 +1,141 @@
-import { describe, expect, it } from "vitest";
-
 import type { ScenarioAuthoringDocument } from "@runtime-human/game-authoring-schema";
-import {
-  SCENARIO_COMPILER_POLICY_V1,
-  compileScenarioV1,
-  type ScenarioCompileOptionsV1,
-} from "@runtime-human/game-devtools";
+import { fingerprint } from "@runtime-human/game-core";
+import type { ScenarioProgramV1 } from "@runtime-human/game-schema";
+import { compileScenarioProgramV1 } from "@runtime-human/game-devtools";
 
-function scenario(
-  nodes: ScenarioAuthoringDocument["nodes"],
-  entry = "start",
-): ScenarioAuthoringDocument {
+const SOURCE_NAMESPACE = "scenario-source-v1";
+const PROGRAM_NAMESPACE = "scenario-program-v1";
+
+function createScenario(): ScenarioAuthoringDocument {
   return {
     schemaVersion: "scenario-v1",
-    id: "scenario.compiler-test",
-    entry,
-    nodes,
+    id: "compiler.fixture",
+    entry: "a",
+    nodes: {
+      f: { kind: "complete" },
+      d: {
+        kind: "gate",
+        predicateId: "predicate.ready",
+        pass: "e",
+        fail: "f",
+      },
+      b: {
+        kind: "provider",
+        providerId: "provider.project",
+        next: "c",
+      },
+      e: {
+        kind: "branch",
+        branches: [{ predicateId: "predicate.alt", target: "f" }],
+        fallback: "f",
+      },
+      a: {
+        kind: "decision",
+        decisionId: "decision.access",
+        next: "b",
+      },
+      c: {
+        kind: "random-content",
+        poolId: "pool.narrative",
+        next: "d",
+      },
+    },
   };
 }
 
-const OPTIONS: ScenarioCompileOptionsV1 = {
-  providerIds: new Set(["provider.work"]),
-  predicateIds: new Set(["predicate.ready", "predicate.loop"]),
-  contentPoolIds: new Set(["pool.events"]),
-  policy: SCENARIO_COMPILER_POLICY_V1,
-};
-
-function validScenario(): ScenarioAuthoringDocument {
-  return scenario({
-    work: { kind: "provider", providerId: "provider.work", next: "gate" },
-    done: { kind: "complete" },
-    start: { kind: "decision", decisionId: "choose", next: "work" },
-    random: { kind: "random-content", poolId: "pool.events", next: "done" },
-    gate: {
-      kind: "gate",
-      predicateId: "predicate.ready",
-      pass: "random",
-      fail: "done",
-    },
-  });
+function expectSuccess(result: ReturnType<typeof compileScenarioProgramV1>): ScenarioProgramV1 {
+  if (result.kind !== "success") {
+    throw new Error(`Expected compilation success, got ${JSON.stringify(result.diagnostics)}`);
+  }
+  return result.program;
 }
 
-describe("scenario compiler v1", () => {
-  it("compiles a valid acyclic scenario into canonical program counters and tables", () => {
-    const result = compileScenarioV1(validScenario(), OPTIONS);
+describe("ScenarioProgramV1 compiler", () => {
+  it("compiles the closed authoring graph into deterministic compact program counters", () => {
+    const source = createScenario();
+    const program = expectSuccess(compileScenarioProgramV1(source, { fingerprint }));
 
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-
-    expect(result.program).toMatchObject({
+    const sourceFingerprint = fingerprint(SOURCE_NAMESPACE, source);
+    const executable = {
       schemaVersion: "scenario-program-v1",
-      scenarioId: "scenario.compiler-test",
-      compilerPolicyId: "scenario-compiler-foundation-v1",
-      entryPc: 3,
-      providerTable: ["provider.work"],
-      predicateTable: ["predicate.ready"],
-      contentPoolTable: ["pool.events"],
+      scenarioId: "compiler.fixture",
+      entryPc: 0,
       instructions: [
-        { kind: "complete" },
-        { kind: "gate", predicateIndex: 0, passPc: 2, failPc: 0 },
-        { kind: "random-content", contentPoolIndex: 0, nextPc: 0 },
-        { kind: "decision", decisionId: "choose", nextPc: 4 },
-        { kind: "provider", providerIndex: 0, nextPc: 1 },
+        { op: "decision", decisionId: "decision.access", nextPc: 1 },
+        { op: "provider", providerIndex: 0, nextPc: 2 },
+        { op: "random-content", contentPoolIndex: 0, nextPc: 3 },
+        { op: "gate", predicateIndex: 1, passPc: 4, failPc: 5 },
+        {
+          op: "branch",
+          branches: [{ predicateIndex: 0, targetPc: 5 }],
+          fallbackPc: 5,
+        },
+        { op: "complete" },
       ],
-      certificate: {
-        schemaVersion: "scenario-certificate-v1",
-        reachableNodes: 5,
-        instructionCount: 5,
-        completionReachable: true,
-        bounded: true,
-        transitionBudgetMax: 4,
+      providerTable: ["provider.project"],
+      predicateTable: ["predicate.alt", "predicate.ready"],
+      contentPoolTable: ["pool.narrative"],
+      sourceFingerprint,
+    } as const;
+
+    expect(program).toEqual({
+      ...executable,
+      programFingerprint: fingerprint(PROGRAM_NAMESPACE, executable),
+    });
+  });
+
+  it("is invariant to JSON object property order", () => {
+    const source = createScenario();
+    const reordered: ScenarioAuthoringDocument = {
+      entry: source.entry,
+      nodes: Object.fromEntries(Object.entries(source.nodes).toReversed()),
+      id: source.id,
+      schemaVersion: source.schemaVersion,
+    };
+
+    const first = expectSuccess(compileScenarioProgramV1(source, { fingerprint }));
+    const second = expectSuccess(compileScenarioProgramV1(reordered, { fingerprint }));
+
+    expect(second).toEqual(first);
+  });
+
+  it("changes source and program identity when an executable transition changes", () => {
+    const source = createScenario();
+    const changed: ScenarioAuthoringDocument = {
+      ...source,
+      nodes: {
+        ...source.nodes,
+        d: {
+          kind: "gate",
+          predicateId: "predicate.ready",
+          pass: "f",
+          fail: "e",
+        },
       },
-    });
-    expect(result.program.sourceFingerprint).toMatch(/^[0-9a-f]{64}$/u);
-    expect(result.program.programFingerprint).toMatch(/^[0-9a-f]{64}$/u);
+    };
+
+    const first = expectSuccess(compileScenarioProgramV1(source, { fingerprint }));
+    const second = expectSuccess(compileScenarioProgramV1(changed, { fingerprint }));
+
+    expect(second.sourceFingerprint).not.toBe(first.sourceFingerprint);
+    expect(second.programFingerprint).not.toBe(first.programFingerprint);
   });
 
-  it("matches the canonical compiler fingerprint golden", () => {
-    const result = compileScenarioV1(validScenario(), OPTIONS);
+  it("fails with existing structured diagnostics instead of compiling unresolved targets", () => {
+    const source: ScenarioAuthoringDocument = {
+      schemaVersion: "scenario-v1",
+      id: "compiler.invalid",
+      entry: "a",
+      nodes: {
+        a: { kind: "decision", decisionId: "decision.access", next: "missing" },
+      },
+    };
 
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    expect({
-      sourceFingerprint: result.program.sourceFingerprint,
-      programFingerprint: result.program.programFingerprint,
-    }).toEqual({
-      sourceFingerprint: "0000000000000000000000000000000000000000000000000000000000000000",
-      programFingerprint: "0000000000000000000000000000000000000000000000000000000000000000",
-    });
-  });
+    const result = compileScenarioProgramV1(source, { fingerprint });
 
-  it("is byte-stable when JSON object property insertion order changes", () => {
-    const first = compileScenarioV1(validScenario(), OPTIONS);
-    const reordered = compileScenarioV1(
-      scenario({
-        gate: {
-          fail: "done",
-          pass: "random",
-          predicateId: "predicate.ready",
-          kind: "gate",
-        },
-        random: { next: "done", poolId: "pool.events", kind: "random-content" },
-        start: { next: "work", decisionId: "choose", kind: "decision" },
-        done: { kind: "complete" },
-        work: { next: "gate", providerId: "provider.work", kind: "provider" },
-      } as ScenarioAuthoringDocument["nodes"]),
-      OPTIONS,
-    );
-
-    expect(first).toEqual(reordered);
-  });
-
-  it("changes executable fingerprints when an authoritative transition changes", () => {
-    const baseline = compileScenarioV1(validScenario(), OPTIONS);
-    const changed = compileScenarioV1(
-      scenario({
-        work: { kind: "provider", providerId: "provider.work", next: "gate" },
-        done: { kind: "complete" },
-        start: { kind: "decision", decisionId: "choose", next: "work" },
-        random: { kind: "random-content", poolId: "pool.events", next: "done" },
-        gate: {
-          kind: "gate",
-          predicateId: "predicate.ready",
-          pass: "done",
-          fail: "done",
-        },
-      }),
-      OPTIONS,
-    );
-
-    expect(baseline.ok).toBe(true);
-    expect(changed.ok).toBe(true);
-    if (!baseline.ok || !changed.ok) return;
-    expect(changed.program.sourceFingerprint).not.toBe(baseline.program.sourceFingerprint);
-    expect(changed.program.programFingerprint).not.toBe(baseline.program.programFingerprint);
-  });
-
-  it("returns analyzer diagnostics instead of compiling unresolved providers", () => {
-    const result = compileScenarioV1(
-      scenario({
-        start: { kind: "provider", providerId: "provider.unknown", next: "done" },
-        done: { kind: "complete" },
-      }),
-      OPTIONS,
-    );
-
-    expect(result).toMatchObject({ ok: false });
-    if (result.ok) return;
-    expect(result.diagnostics.map((diagnostic) => diagnostic.code)).toContain("SCN006");
-  });
-
-  it("rejects an unregistered random-content pool", () => {
-    const result = compileScenarioV1(
-      scenario({
-        start: { kind: "random-content", poolId: "pool.unknown", next: "done" },
-        done: { kind: "complete" },
-      }),
-      OPTIONS,
-    );
-
-    expect(result).toMatchObject({ ok: false });
-    if (result.ok) return;
-    expect(result.diagnostics).toEqual([
-      expect.objectContaining({
-        code: "SCN101",
-        category: "scenario",
-        entityId: "scenario.compiler-test",
-        pointer: "/nodes/start/poolId",
-      }),
-    ]);
-  });
-
-  it("rejects reachable cycles even when they have an exit because Stage A cannot prove a finite bound", () => {
-    const result = compileScenarioV1(
-      scenario({
-        start: {
-          kind: "branch",
-          branches: [{ predicateId: "predicate.loop", target: "loop" }],
-          fallback: "done",
-        },
-        loop: { kind: "provider", providerId: "provider.work", next: "start" },
-        done: { kind: "complete" },
-      }),
-      OPTIONS,
-    );
-
-    expect(result).toMatchObject({ ok: false });
-    if (result.ok) return;
-    expect(result.diagnostics).toEqual([
-      expect.objectContaining({
-        code: "SCN102",
-        category: "scenario",
-        entityId: "scenario.compiler-test",
-        pointer: "/nodes/loop",
-      }),
-    ]);
+    expect(result.kind).toBe("failure");
+    if (result.kind === "failure") {
+      expect(result.diagnostics.map((diagnostic) => diagnostic.code)).toContain("SCN003");
+    }
   });
 });

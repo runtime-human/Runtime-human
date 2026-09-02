@@ -24,17 +24,8 @@ export { runDoctor } from "./doctor/doctor";
 export type { DoctorCheckV1, DoctorReportV1 } from "./doctor/doctor";
 export { analyzeScenario } from "./scenario/analyze-scenario";
 export type { AnalyzeScenarioOptions } from "./scenario/analyze-scenario";
-export {
-  compileScenarioV1,
-  SCENARIO_CERTIFICATE_SCHEMA_VERSION,
-  SCENARIO_COMPILER_POLICY_V1,
-  SCENARIO_PROGRAM_SCHEMA_VERSION,
-} from "./scenario/compile-scenario";
+export { compileScenarioProgramV1 } from "./scenario/compile-scenario-program";
 export type {
-  ScenarioCertificateV1,
-  ScenarioCompileOptionsV1,
-  ScenarioCompileResultV1,
-  ScenarioCompilerPolicyV1,
-  ScenarioInstructionV1,
-  ScenarioProgramV1,
-} from "./scenario/compile-scenario";
+  CompileScenarioProgramV1Result,
+  ScenarioCompilerPrimitives,
+} from "./scenario/compile-scenario-program";

@@ -29,7 +29,10 @@ const ALLOWED_WORKSPACE_DEPENDENCIES = new Map([
   ],
   ["game-content", new Set(["shared-kernel", "game-schema"])],
   ["game-content-compiler", new Set(["game-schema", "game-core", "game-content"])],
-  ["game-devtools", new Set(["game-authoring-schema", "game-content-compiler", "game-simulation"])],
+  [
+    "game-devtools",
+    new Set(["game-authoring-schema", "game-content-compiler", "game-schema", "game-simulation"]),
+  ],
   ["game-simulation", new Set(["game-schema", "game-core"])],
   ["game-authoring-schema", new Set([])],
   ["game-persistence-contracts", new Set(["shared-kernel", "game-schema"])],
