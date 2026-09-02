@@ -47,6 +47,15 @@ export type {
   StartRunEventV1,
   SuspendForDecisionEventV1,
 } from "./month-run";
+export {
+  MVP_CASUAL_SCENARIO_POLICY_V1,
+  SCENARIO_CERTIFICATE_SCHEMA_VERSION,
+  SCENARIO_EXECUTION_POLICY_SCHEMA_VERSION,
+} from "./scenario-certificate";
+export type {
+  ScenarioCertificateV1,
+  ScenarioExecutionPolicyV1,
+} from "./scenario-certificate";
 export { SCENARIO_PROGRAM_SCHEMA_VERSION } from "./scenario-program";
 export type {
   ScenarioBranchCaseV1,
