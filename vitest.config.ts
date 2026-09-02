@@ -146,6 +146,7 @@ export default defineConfig({
         "tests/runtime-human-design-tokens.test.ts",
         "tests/scenario-analyzer.test.ts",
         "tests/scenario-authoring-schema.test.ts",
+        "tests/scenario-certificate.test.ts",
         "tests/scenario-compiler.test.ts",
         "tests/studio-context.test.ts",
         "tests/studio-findings.test.ts",
