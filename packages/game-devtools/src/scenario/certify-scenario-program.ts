@@ -1,0 +1,300 @@
+import {
+  SCENARIO_CERTIFICATE_SCHEMA_VERSION,
+  SCENARIO_EXECUTION_POLICY_SCHEMA_VERSION,
+  type Fingerprint,
+  type ScenarioCertificateV1,
+  type ScenarioExecutionPolicyV1,
+  type ScenarioInstructionV1,
+  type ScenarioProgramV1,
+} from "@runtime-human/game-schema";
+
+import type { StructuredDiagnosticV1 } from "../diagnostics/gamectl-diagnostics";
+
+const POLICY_FINGERPRINT_NAMESPACE = "scenario-execution-policy-v1";
+const CERTIFICATE_FINGERPRINT_NAMESPACE = "scenario-certificate-v1";
+const POLICY_ID = /^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$/u;
+
+export type ScenarioCertificationPrimitives = Readonly<{
+  fingerprint(namespace: string, value: unknown): Fingerprint;
+}>;
+
+export type CertifyScenarioProgramV1Result =
+  | Readonly<{ kind: "success"; certificate: ScenarioCertificateV1 }>
+  | Readonly<{ kind: "failure"; diagnostics: readonly StructuredDiagnosticV1[] }>;
+
+type PathBounds = Readonly<{
+  transitionBudgetMax: number;
+  blockingDecisionsMin: number;
+  blockingDecisionsMax: number;
+  providerCallsMax: number;
+  rngCallsUnknown: boolean;
+}>;
+
+export function certifyScenarioProgramV1(
+  program: ScenarioProgramV1,
+  policy: ScenarioExecutionPolicyV1,
+  primitives: ScenarioCertificationPrimitives,
+): CertifyScenarioProgramV1Result {
+  validatePolicy(policy);
+  validatePrimitives(primitives);
+
+  const programDiagnostic = validateProgram(program);
+  if (programDiagnostic !== null) return failure(programDiagnostic);
+
+  const reachable = collectReachable(program);
+  if (reachable.size !== program.instructions.length) {
+    return failure(
+      diagnostic(
+        program,
+        "SCN011",
+        "Compiled scenario program contains unreachable instructions",
+        "/instructions",
+      ),
+    );
+  }
+
+  const cycleAnchor = findCycleAnchor(program, reachable);
+  if (cycleAnchor !== null) {
+    return failure(
+      diagnostic(
+        program,
+        "SCN009",
+        "Scenario execution cannot be certified because a reachable cycle has no explicit static bound",
+        `/instructions/${cycleAnchor}`,
+      ),
+    );
+  }
+
+  const bounds = computePathBounds(program);
+  if (bounds.blockingDecisionsMax > policy.blockingDecisionsMax) {
+    return failure(
+      diagnostic(
+        program,
+        "SCN010",
+        `Scenario requires up to ${bounds.blockingDecisionsMax} blocking decisions but policy ${JSON.stringify(policy.policyId)} allows ${policy.blockingDecisionsMax}`,
+        "/policy/blockingDecisionsMax",
+      ),
+    );
+  }
+
+  const policyFingerprint = primitives.fingerprint(POLICY_FINGERPRINT_NAMESPACE, policy);
+  const body = {
+    schemaVersion: SCENARIO_CERTIFICATE_SCHEMA_VERSION,
+    policyId: policy.policyId,
+    policyFingerprint,
+    instructionCount: program.instructions.length,
+    completionGuaranteed: true,
+    bounded: true,
+    transitionBudgetMax: bounds.transitionBudgetMax,
+    blockingDecisionsMin: bounds.blockingDecisionsMin,
+    blockingDecisionsMax: bounds.blockingDecisionsMax,
+    providerCallsMax: bounds.providerCallsMax,
+    rngCallsMax: bounds.rngCallsUnknown ? ("unknown" as const) : 0,
+  } as const;
+
+  return {
+    kind: "success",
+    certificate: Object.freeze({
+      ...body,
+      certificateFingerprint: primitives.fingerprint(CERTIFICATE_FINGERPRINT_NAMESPACE, body),
+    }),
+  };
+}
+
+function validatePolicy(policy: ScenarioExecutionPolicyV1): void {
+  if (policy.schemaVersion !== SCENARIO_EXECUTION_POLICY_SCHEMA_VERSION) {
+    throw new TypeError(`Unsupported scenario execution policy schema: ${policy.schemaVersion}`);
+  }
+  if (policy.requireAcyclic !== true) {
+    throw new TypeError("Scenario execution policy v1 must require acyclic execution");
+  }
+  if (!POLICY_ID.test(policy.policyId) || policy.policyId.length > 160) {
+    throw new TypeError("Scenario execution policy id does not match the closed identifier contract");
+  }
+  if (!Number.isSafeInteger(policy.blockingDecisionsMax) || policy.blockingDecisionsMax < 0) {
+    throw new TypeError("Scenario blocking decision limit must be a non-negative safe integer");
+  }
+}
+
+function validatePrimitives(primitives: ScenarioCertificationPrimitives): void {
+  if (typeof primitives.fingerprint !== "function") {
+    throw new TypeError("Scenario certification requires an authoritative fingerprint primitive");
+  }
+}
+
+function validateProgram(program: ScenarioProgramV1): StructuredDiagnosticV1 | null {
+  if (!isPc(program.entryPc, program.instructions.length)) {
+    return diagnostic(program, "SCN011", "Compiled scenario entry PC is invalid", "/entryPc");
+  }
+
+  for (let pc = 0; pc < program.instructions.length; pc += 1) {
+    const instruction = program.instructions[pc];
+    if (instruction === undefined) {
+      return diagnostic(
+        program,
+        "SCN011",
+        `Compiled scenario instruction ${pc} is missing`,
+        `/instructions/${pc}`,
+      );
+    }
+    const successors = successorsOf(instruction);
+    if (instruction.op !== "complete" && successors.length === 0) {
+      return diagnostic(
+        program,
+        "SCN011",
+        `Compiled scenario instruction ${pc} has no executable successor`,
+        `/instructions/${pc}`,
+      );
+    }
+    for (const target of successors) {
+      if (!isPc(target, program.instructions.length)) {
+        return diagnostic(
+          program,
+          "SCN011",
+          `Compiled scenario instruction ${pc} targets invalid PC ${target}`,
+          `/instructions/${pc}`,
+        );
+      }
+    }
+  }
+
+  return null;
+}
+
+function isPc(value: number, instructionCount: number): boolean {
+  return Number.isSafeInteger(value) && value >= 0 && value < instructionCount;
+}
+
+function collectReachable(program: ScenarioProgramV1): ReadonlySet<number> {
+  const reachable = new Set<number>();
+  const pending = [program.entryPc];
+  for (let index = 0; index < pending.length; index += 1) {
+    const pc = pending[index];
+    if (pc === undefined || reachable.has(pc)) continue;
+    reachable.add(pc);
+    const instruction = program.instructions[pc];
+    if (instruction === undefined) continue;
+    for (const target of successorsOf(instruction)) {
+      if (!reachable.has(target)) pending.push(target);
+    }
+  }
+  return reachable;
+}
+
+function findCycleAnchor(
+  program: ScenarioProgramV1,
+  reachable: ReadonlySet<number>,
+): number | null {
+  const state = new Uint8Array(program.instructions.length);
+
+  const visit = (pc: number): number | null => {
+    state[pc] = 1;
+    const instruction = program.instructions[pc];
+    if (instruction === undefined) return pc;
+    for (const target of successorsOf(instruction).toSorted((left, right) => left - right)) {
+      if (!reachable.has(target)) continue;
+      if (state[target] === 1) return target;
+      if (state[target] === 0) {
+        const cycle = visit(target);
+        if (cycle !== null) return cycle;
+      }
+    }
+    state[pc] = 2;
+    return null;
+  };
+
+  for (const pc of [...reachable].toSorted((left, right) => left - right)) {
+    if (state[pc] !== 0) continue;
+    const cycle = visit(pc);
+    if (cycle !== null) return cycle;
+  }
+  return null;
+}
+
+function computePathBounds(program: ScenarioProgramV1): PathBounds {
+  const memo = new Map<number, PathBounds>();
+
+  const visit = (pc: number): PathBounds => {
+    const cached = memo.get(pc);
+    if (cached !== undefined) return cached;
+    const instruction = program.instructions[pc];
+    if (instruction === undefined) {
+      throw new TypeError(`Scenario certificate cannot read instruction ${pc}`);
+    }
+
+    const ownDecision = instruction.op === "decision" ? 1 : 0;
+    const ownProvider = instruction.op === "provider" ? 1 : 0;
+    const ownRngUnknown = instruction.op === "provider" || instruction.op === "random-content";
+    const successors = successorsOf(instruction);
+
+    if (successors.length === 0) {
+      const terminal = Object.freeze({
+        transitionBudgetMax: 1,
+        blockingDecisionsMin: ownDecision,
+        blockingDecisionsMax: ownDecision,
+        providerCallsMax: ownProvider,
+        rngCallsUnknown: ownRngUnknown,
+      });
+      memo.set(pc, terminal);
+      return terminal;
+    }
+
+    const children = successors.map(visit);
+    const bounds = Object.freeze({
+      transitionBudgetMax: 1 + Math.max(...children.map((child) => child.transitionBudgetMax)),
+      blockingDecisionsMin:
+        ownDecision + Math.min(...children.map((child) => child.blockingDecisionsMin)),
+      blockingDecisionsMax:
+        ownDecision + Math.max(...children.map((child) => child.blockingDecisionsMax)),
+      providerCallsMax: ownProvider + Math.max(...children.map((child) => child.providerCallsMax)),
+      rngCallsUnknown: ownRngUnknown || children.some((child) => child.rngCallsUnknown),
+    });
+    memo.set(pc, bounds);
+    return bounds;
+  };
+
+  return visit(program.entryPc);
+}
+
+function successorsOf(instruction: ScenarioInstructionV1): readonly number[] {
+  switch (instruction.op) {
+    case "decision":
+    case "provider":
+    case "random-content":
+      return [instruction.nextPc];
+    case "gate":
+      return instruction.passPc === instruction.failPc
+        ? [instruction.passPc]
+        : [instruction.passPc, instruction.failPc];
+    case "branch":
+      return [
+        ...new Set([
+          ...instruction.branches.map((branch) => branch.targetPc),
+          instruction.fallbackPc,
+        ]),
+      ];
+    case "complete":
+      return [];
+  }
+}
+
+function diagnostic(
+  program: ScenarioProgramV1,
+  code: string,
+  message: string,
+  pointer: string,
+): StructuredDiagnosticV1 {
+  return {
+    schemaVersion: "runtime-human-diagnostic-v1",
+    code,
+    severity: "error",
+    category: "scenario",
+    entityId: program.scenarioId,
+    pointer,
+    message,
+  };
+}
+
+function failure(diagnosticValue: StructuredDiagnosticV1): CertifyScenarioProgramV1Result {
+  return { kind: "failure", diagnostics: [diagnosticValue] };
+}
