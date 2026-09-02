@@ -48,6 +48,17 @@ export type {
   SuspendForDecisionEventV1,
 } from "./month-run";
 export {
+  SCENARIO_CAPABILITY_REGISTRY_SCHEMA_VERSION,
+  SCENARIO_RESOLVED_CAPABILITIES_SCHEMA_VERSION,
+} from "./scenario-capabilities";
+export type {
+  ScenarioCapabilityRegistryV1,
+  ScenarioPredicateDescriptorV1,
+  ScenarioProviderDescriptorV1,
+  ScenarioProviderEffectDomainV1,
+  ScenarioResolvedCapabilitiesV1,
+} from "./scenario-capabilities";
+export {
   MVP_CASUAL_SCENARIO_POLICY_V1,
   SCENARIO_CERTIFICATE_SCHEMA_VERSION,
   SCENARIO_EXECUTION_POLICY_SCHEMA_VERSION,
