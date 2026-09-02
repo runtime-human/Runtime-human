@@ -1,0 +1,54 @@
+name: scenario-129-lock-importer
+
+on:
+  push:
+    branches:
+      - feat/scenario-shadow-v1-refresh
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: windows-2025
+    timeout-minutes: 10
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: true
+          show-progress: false
+      - name: Add only game-authoring-schema importer
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $path = "pnpm-lock.yaml"
+          $text = [System.IO.File]::ReadAllText($path)
+          $old = @'
+  packages/game-devtools:
+    dependencies:
+      '@runtime-human/game-content-compiler':
+'@
+          $new = @'
+  packages/game-devtools:
+    dependencies:
+      '@runtime-human/game-authoring-schema':
+        specifier: workspace:*
+        version: link:../game-authoring-schema
+      '@runtime-human/game-content-compiler':
+'@
+          if (-not $text.Contains($old)) { throw "game-devtools importer anchor not found" }
+          $text = $text.Replace($old, $new)
+          [System.IO.File]::WriteAllText($path, $text, [System.Text.UTF8Encoding]::new($false))
+          git diff --check
+          git diff -- pnpm-lock.yaml
+      - name: Commit importer and self-remove helper
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pnpm-lock.yaml
+          git rm .github/workflows/scenario-129-lock-importer.yml
+          git commit -m "fix(scenario): register authoring schema lock importer"
+          git push origin HEAD:feat/scenario-shadow-v1-refresh
