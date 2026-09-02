@@ -92,7 +92,9 @@ export function certifyScenarioProgramV1(
     programFingerprint: program.programFingerprint,
     policyId: policy.policyId,
     policyFingerprint,
-    ...(capabilities === undefined ? {} : { rulesFingerprint: capabilities.rulesFingerprint }),
+    ...(capabilities === undefined
+      ? {}
+      : { rulesFingerprint: capabilities.rulesFingerprint }),
     instructionCount: program.instructions.length,
     completionGuaranteed: true,
     bounded: true,
@@ -284,7 +286,9 @@ function computePathBounds(
 ): PathBounds {
   const memo = new Map<number, PathBounds>();
   const providerRngBudgets = new Map(
-    capabilities?.providers.map((descriptor) => [descriptor.id, descriptor.rngBudgetMax] as const) ?? [],
+    capabilities?.providers.map(
+      (descriptor) => [descriptor.id, descriptor.rngBudgetMax] as const,
+    ) ?? [],
   );
 
   const visit = (pc: number): PathBounds => {
