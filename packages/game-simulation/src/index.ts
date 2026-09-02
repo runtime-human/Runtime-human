@@ -8,6 +8,11 @@ export {
   type JanuaryFixtureAnswersV1,
 } from "./january-simulation";
 export {
+  createJanuary1990SimulationV2,
+  SIMULATION_REPORT_SCHEMA_VERSION_V2,
+} from "./january-simulation-v2";
+export type { January1990SimulationV2, SimulationReportV2 } from "./january-simulation-v2";
+export {
   createJanuary1990RngShadowReport,
   JANUARY_RNG_SHADOW_REPORT_SCHEMA_VERSION,
 } from "./january-rng-shadow";
@@ -18,6 +23,13 @@ export type {
   JanuaryRngShadowReportV1,
   JanuaryRngShadowStreamV1,
 } from "./january-rng-shadow";
+export {
+  JANUARY_RNG_EVIDENCE_SCHEMA_VERSION,
+  JANUARY_RNG_EVIDENCE_V1,
+  januaryRngEvidenceEqual,
+  parseJanuaryRngEvidenceV1,
+} from "./january-rng-evidence";
+export type { JanuaryRngEvidenceParseResultV1, JanuaryRngEvidenceV1 } from "./january-rng-evidence";
 export {
   GAME_REPLAY_TRACE_SCHEMA_VERSION,
   parseGameReproV1,
@@ -34,6 +46,16 @@ export type {
   GameReplayTraceDecisionV1,
   GameReplayTraceV1,
 } from "./january-repro";
+export {
+  GAME_REPRO_SCHEMA_VERSION_V2,
+  parseGameReproV2,
+  replayJanuaryReproV2,
+} from "./january-repro-v2";
+export type {
+  GameReproDiagnosticV2,
+  GameReproReplayResultV2,
+  GameReproV2,
+} from "./january-repro-v2";
 export { parseGameplayFixtureV1, GAMEPLAY_FIXTURE_SCHEMA_VERSION } from "./gameplay-fixture";
 export type {
   GameplayFixtureAnswersV1,
@@ -71,6 +93,11 @@ export type {
   SimulationReportDiagnosticV1,
   SimulationReportParseResultV1,
 } from "./simulation-compare";
+export { compareSimulationReportsV2, parseSimulationReportV2 } from "./simulation-compare-v2";
+export type {
+  SimulationReportDiagnosticV2,
+  SimulationReportParseResultV2,
+} from "./simulation-compare-v2";
 export {
   REPRO_RUNNER_ID,
   SIMULATION_POLICY_IDS,
