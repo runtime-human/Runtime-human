@@ -15,6 +15,7 @@ export type ScenarioCertificateV1 = Readonly<{
   programFingerprint: Fingerprint;
   policyId: string;
   policyFingerprint: Fingerprint;
+  rulesFingerprint?: Fingerprint;
   instructionCount: number;
   completionGuaranteed: true;
   bounded: true;
