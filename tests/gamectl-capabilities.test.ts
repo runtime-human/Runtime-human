@@ -73,12 +73,21 @@ describe("gamectl capabilities", () => {
       "simulate.compare": 1,
       "fixture.list": 1,
       "fixture.materialize": 1,
+      "scenario.check": 1,
+      "scenario.compile": 1,
+      "scenario.inspect": 1,
       replay: 1,
       explain: 1,
     });
     expect(envelope.result.commands["catalog.inspect"]).toBeUndefined();
     expect(envelope.result.commands["schema.show"]).toBeUndefined();
-    expect(envelope.result.contracts.diagnostic).toBe("runtime-human-diagnostic-v1");
+    expect(envelope.result.contracts).toMatchObject({
+      diagnostic: "runtime-human-diagnostic-v1",
+      scenarioProgram: "scenario-program-v1",
+      scenarioCertificate: "scenario-certificate-v1",
+      scenarioCapabilities: "scenario-resolved-capabilities-v1",
+      scenarioArtifact: "scenario-artifact-v1",
+    });
   });
 
   it("runs capability discovery directly under node without target dependencies", () => {
