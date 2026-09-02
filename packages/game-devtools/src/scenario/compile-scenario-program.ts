@@ -45,7 +45,8 @@ export function compileScenarioProgramV1(
 
   const instructions = nodeIds.map((nodeId) => {
     const node = scenario.nodes[nodeId];
-    if (node === undefined) throw new TypeError(`Scenario node ${nodeId} disappeared during compile`);
+    if (node === undefined)
+      throw new TypeError(`Scenario node ${nodeId} disappeared during compile`);
     return compileInstruction(node, pcByNode, providerIndex, predicateIndex, contentPoolIndex);
   });
 
@@ -173,11 +174,7 @@ function requireTargetPc(
   return requireIndex(pcByNode, target, subject);
 }
 
-function requireIndex(
-  index: ReadonlyMap<string, number>,
-  value: string,
-  subject: string,
-): number {
+function requireIndex(index: ReadonlyMap<string, number>, value: string, subject: string): number {
   const resolved = index.get(value);
   if (resolved === undefined) throw new TypeError(`Unresolved ${subject}: ${value}`);
   return resolved;
