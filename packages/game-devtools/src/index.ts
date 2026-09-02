@@ -34,3 +34,8 @@ export type {
   CompileScenarioProgramV1Result,
   ScenarioCompilerPrimitives,
 } from "./scenario/compile-scenario-program";
+export { resolveScenarioCapabilitiesV1 } from "./scenario/resolve-scenario-capabilities";
+export type {
+  ResolveScenarioCapabilitiesV1Result,
+  ScenarioCapabilityResolutionPrimitives,
+} from "./scenario/resolve-scenario-capabilities";
