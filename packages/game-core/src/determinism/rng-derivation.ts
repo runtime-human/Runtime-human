@@ -6,6 +6,7 @@ import {
 
 import { canonicalizeAuthoritative } from "./authoritative-json";
 import { sha256Hex } from "./hash";
+import { assertRngDomainPathV1, type RngDomainPathV1 } from "./rng-domain";
 import { Xoshiro256StarStar } from "./xoshiro256ss";
 
 const RNG_DERIVATION_DOMAIN = "runtime-human:rng-derivation:v1";
@@ -13,10 +14,10 @@ const ZERO_XOSHIRO256_STATE = /^0{64}$/u;
 
 export function deriveRngState(
   rootState: unknown,
-  domainPath: readonly string[],
+  domainPath: RngDomainPathV1,
 ): SerializedXoshiro256State {
   const parsedRootState = parseSerializedXoshiro256State(rootState);
-  validateDomainPath(domainPath);
+  assertRngDomainPathV1(domainPath);
 
   let derivedState = sha256Hex(
     canonicalizeAuthoritative({
@@ -36,19 +37,7 @@ export function deriveRngState(
 
 export function deriveRandomSource(
   rootState: unknown,
-  domainPath: readonly string[],
+  domainPath: RngDomainPathV1,
 ): Xoshiro256StarStar {
   return Xoshiro256StarStar.fromState(deriveRngState(rootState, domainPath));
-}
-
-function validateDomainPath(domainPath: readonly string[]): void {
-  if (domainPath.length === 0) {
-    throw new TypeError("RNG domain path must contain at least one segment");
-  }
-
-  for (const segment of domainPath) {
-    if (segment.length === 0 || segment.includes("\0")) {
-      throw new TypeError("RNG domain path segments must be non-empty and contain no NUL");
-    }
-  }
 }

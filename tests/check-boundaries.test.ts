@@ -39,6 +39,12 @@ function addPackage(
   fs.writeFileSync(path.join(directory, "src", "index.ts"), source);
 }
 
+function addSource(root: string, relativePath: string, source: string): void {
+  const file = path.join(root, relativePath);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, source);
+}
+
 afterEach(() => {
   for (const root of temporaryRoots.splice(0)) {
     fs.rmSync(root, { recursive: true, force: true });
@@ -156,5 +162,57 @@ describe("validateWorkspace", () => {
     expect(validateWorkspace(root)).toContainEqual(
       expect.stringContaining("deep workspace import @runtime-human/game-ui/src/foundation-status"),
     );
+  });
+
+  it("rejects Math.random in authoritative game-core source", () => {
+    const root = createRoot();
+    addPackage(root, "packages", "game-core");
+    addSource(
+      root,
+      "packages/game-core/src/gameplay/random-selection.ts",
+      "export const roll = () => Math.random();\n",
+    );
+
+    expect(validateWorkspace(root)).toContainEqual(
+      expect.stringContaining("authoritative game-core cannot call Math.random"),
+    );
+  });
+
+  it("rejects direct Xoshiro imports outside determinism and the explicit January legacy path", () => {
+    const root = createRoot();
+    addPackage(root, "packages", "game-core");
+    addSource(
+      root,
+      "packages/game-core/src/gameplay/random-selection.ts",
+      [
+        'import { Xoshiro256StarStar } from "../determinism/xoshiro256ss";',
+        "export const random = Xoshiro256StarStar.fromSeed(1n);",
+      ].join("\n"),
+    );
+
+    expect(validateWorkspace(root)).toContainEqual(
+      expect.stringContaining("authoritative RNG must use the managed derivation API"),
+    );
+  });
+
+  it("allows the managed derivation API and the bounded January legacy import", () => {
+    const root = createRoot();
+    addPackage(root, "packages", "game-core");
+    addSource(
+      root,
+      "packages/game-core/src/gameplay/random-selection.ts",
+      [
+        'import { deriveRandomSource } from "../determinism/rng-derivation";',
+        'import { createRngDomainPathV1 } from "../determinism/rng-domain";',
+        "export { deriveRandomSource, createRngDomainPathV1 };",
+      ].join("\n"),
+    );
+    addSource(
+      root,
+      "packages/game-core/src/january-1990/january-month-steps.ts",
+      'import { Xoshiro256StarStar } from "../determinism/xoshiro256ss";\nexport { Xoshiro256StarStar };\n',
+    );
+
+    expect(validateWorkspace(root)).toEqual([]);
   });
 });

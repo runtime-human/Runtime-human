@@ -6,6 +6,12 @@ import { fileURLToPath } from "node:url";
 
 const WORKSPACE_PREFIX = "@runtime-human/";
 const SOURCE_EXTENSIONS = new Set([".js", ".jsx", ".mjs", ".mts", ".ts", ".tsx"]);
+const GAME_CORE_DIRECT_XOSHIRO_ALLOWLIST = new Set([
+  "packages/game-core/src/determinism/rng-derivation.ts",
+  "packages/game-core/src/determinism/xoshiro256ss.ts",
+  "packages/game-core/src/index.ts",
+  "packages/game-core/src/january-1990/january-month-steps.ts",
+]);
 
 const ALLOWED_WORKSPACE_DEPENDENCIES = new Map([
   ["shared-kernel", new Set()],
@@ -193,6 +199,93 @@ function validateSourceImports(root, directory, shortName, allowed, knownPackage
   );
 }
 
+function repositoryPath(root, file) {
+  return path.relative(root, file).split(path.sep).join("/");
+}
+
+function maskCommentsAndStrings(source) {
+  const masked = [...source];
+  let index = 0;
+
+  function mask(start, end) {
+    for (let cursor = start; cursor < end; cursor += 1) {
+      if (masked[cursor] !== "\n" && masked[cursor] !== "\r") masked[cursor] = " ";
+    }
+  }
+
+  while (index < source.length) {
+    const current = source[index];
+    const next = source[index + 1];
+
+    if (current === "/" && next === "/") {
+      const start = index;
+      index += 2;
+      while (index < source.length && source[index] !== "\n") index += 1;
+      mask(start, index);
+      continue;
+    }
+
+    if (current === "/" && next === "*") {
+      const start = index;
+      index += 2;
+      while (index < source.length && !(source[index] === "*" && source[index + 1] === "/")) {
+        index += 1;
+      }
+      index = Math.min(source.length, index + 2);
+      mask(start, index);
+      continue;
+    }
+
+    if (current === '"' || current === "'" || current === "`") {
+      const quote = current;
+      const start = index;
+      index += 1;
+      while (index < source.length) {
+        if (source[index] === "\\") {
+          index += 2;
+          continue;
+        }
+        if (source[index] === quote) {
+          index += 1;
+          break;
+        }
+        index += 1;
+      }
+      mask(start, Math.min(index, source.length));
+      continue;
+    }
+
+    index += 1;
+  }
+
+  return masked.join("");
+}
+
+function gameCoreRngDiagnostics(root, file) {
+  const relativeFile = repositoryPath(root, file);
+  const source = maskCommentsAndStrings(fs.readFileSync(file, "utf8"));
+  const diagnostics = [];
+
+  if (/\bMath\s*\.\s*random\b/u.test(source)) {
+    diagnostics.push(`${relativeFile}: authoritative game-core cannot call Math.random`);
+  }
+  if (
+    /\bXoshiro256StarStar\b/u.test(source) &&
+    !GAME_CORE_DIRECT_XOSHIRO_ALLOWLIST.has(relativeFile)
+  ) {
+    diagnostics.push(`${relativeFile}: authoritative RNG must use the managed derivation API`);
+  }
+
+  return diagnostics;
+}
+
+function validateGameCoreRngAuthority(root, directory, shortName) {
+  if (shortName !== "game-core") return [];
+  return walkSourceFiles(path.join(directory, "src")).flatMap((file) =>
+    gameCoreRngDiagnostics(root, file),
+  );
+}
+
 export function validateWorkspace(root) {
   const diagnostics = [];
   const packageDirectories = [
@@ -226,6 +319,7 @@ export function validateWorkspace(root) {
         knownPackages,
       ),
       ...validateSourceImports(root, directory, shortName, allowed, knownPackages),
+      ...validateGameCoreRngAuthority(root, directory, shortName),
     );
   }
 

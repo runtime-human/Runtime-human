@@ -2,16 +2,19 @@ import { describe, expect, it } from "vitest";
 
 import {
   RNG_DERIVATION_MANIFEST_V1,
+  RNG_DOMAIN_PURPOSES_V1,
   Xoshiro256StarStar,
+  createRngDomainPathV1,
   deriveRandomSource,
   deriveRngState,
+  type RngDomainPathV1,
 } from "@runtime-human/game-core";
 
 const INITIAL_STATE = "0100000000000000020000000000000003000000000000000400000000000000";
 const STATE_AFTER_TEN = "d3624311126c0460e60204001a9258402200861100365c08f9a2c09400bc2e3c";
 const SEED_42_STATE = "956eeb2f2632d7bd03f166b233e3ef28529f0f135767524794e34a0effe11c58";
-const HIERARCHICAL_GUARDIAN_STATE =
-  "c83d4d8410bb9caa5938d712edba988635b40a054e42fb4899e66c6c00f2ffd7";
+const HIERARCHICAL_NARRATIVE_STATE =
+  "cbd1d4993ca722554bdf48ec727427540fd18209af1d22dc26013843e58f57a0";
 const REFERENCE_OUTPUTS = [
   11520n,
   0n,
@@ -85,7 +88,21 @@ describe("Xoshiro256StarStar", () => {
 });
 
 describe("hierarchical RNG derivation", () => {
-  it("derives the stable hierarchical-v1 golden state", () => {
+  it("publishes a closed v1 domain-to-purpose registry", () => {
+    expect(RNG_DOMAIN_PURPOSES_V1).toEqual({
+      content: ["selection"],
+      narrative: ["event-selection", "variant"],
+      outcome: ["quality-roll"],
+      npc: ["action-choice", "tie-break"],
+      project: ["work-package-outcome"],
+    });
+    expect(Object.isFrozen(RNG_DOMAIN_PURPOSES_V1)).toBe(true);
+    for (const purposes of Object.values(RNG_DOMAIN_PURPOSES_V1)) {
+      expect(Object.isFrozen(purposes)).toBe(true);
+    }
+  });
+
+  it("builds the canonical v1 semantic path and golden state", () => {
     expect(RNG_DERIVATION_MANIFEST_V1).toEqual({
       algorithm: "xoshiro256ss-v1",
       derivationVersion: "hierarchical-v1",
@@ -93,14 +110,38 @@ describe("hierarchical RNG derivation", () => {
       serializationVersion: "canonical-json-v1",
     });
 
-    const path = ["month:1990-01", "npc", "guardian", "action-choice"] as const;
-    expect(deriveRngState(SEED_42_STATE, path)).toBe(HIERARCHICAL_GUARDIAN_STATE);
-    expect(deriveRandomSource(SEED_42_STATE, path).exportState()).toBe(HIERARCHICAL_GUARDIAN_STATE);
+    const path = createRngDomainPathV1({
+      month: "1990-01",
+      domain: "narrative",
+      entityId: "core.situation-kernel.first-bug",
+      purpose: "event-selection",
+    });
+    expect(path).toEqual([
+      "month:1990-01",
+      "domain:narrative",
+      "entity:core.situation-kernel.first-bug",
+      "purpose:event-selection",
+    ]);
+    expect(Object.isFrozen(path)).toBe(true);
+    expect(deriveRngState(SEED_42_STATE, path)).toBe(HIERARCHICAL_NARRATIVE_STATE);
+    expect(deriveRandomSource(SEED_42_STATE, path).exportState()).toBe(
+      HIERARCHICAL_NARRATIVE_STATE,
+    );
   });
 
   it("keeps sibling domains independent of creation and consumption order", () => {
-    const guardianPath = ["month:1990-01", "npc", "guardian", "action-choice"] as const;
-    const mentorPath = ["month:1990-01", "npc", "mentor", "action-choice"] as const;
+    const guardianPath = createRngDomainPathV1({
+      month: "1990-01",
+      domain: "npc",
+      entityId: "npc.guardian",
+      purpose: "action-choice",
+    });
+    const mentorPath = createRngDomainPathV1({
+      month: "1990-01",
+      domain: "npc",
+      entityId: "npc.mentor",
+      purpose: "action-choice",
+    });
 
     const guardianFirst = deriveRandomSource(SEED_42_STATE, guardianPath);
     const mentorFirst = deriveRandomSource(SEED_42_STATE, mentorPath);
@@ -111,14 +152,49 @@ describe("hierarchical RNG derivation", () => {
     const guardianAfterMentorCreation = deriveRandomSource(SEED_42_STATE, guardianPath);
 
     expect(mentorAfterGuardianConsumption.exportState()).toBe(mentorFirst.exportState());
-    expect(guardianAfterMentorCreation.exportState()).toBe(HIERARCHICAL_GUARDIAN_STATE);
-    expect(mentorFirst.exportState()).not.toBe(HIERARCHICAL_GUARDIAN_STATE);
+    expect(guardianAfterMentorCreation.exportState()).not.toBe(mentorFirst.exportState());
   });
 
-  it("rejects ambiguous or malformed domain paths", () => {
-    expect(() => deriveRngState(SEED_42_STATE, [])).toThrow();
-    expect(() => deriveRngState(SEED_42_STATE, ["npc", ""])).toThrow();
-    expect(() => deriveRngState(SEED_42_STATE, ["npc", "guardian\0action"])).toThrow();
-    expect(() => deriveRngState(SEED_42_STATE, ["npc", "\ud800"])).toThrow();
+  it("rejects unstable identities, invalid purpose combinations and forged paths", () => {
+    expect(() =>
+      createRngDomainPathV1({
+        month: "1990-13",
+        domain: "npc",
+        entityId: "npc.guardian",
+        purpose: "action-choice",
+      }),
+    ).toThrow();
+    expect(() =>
+      createRngDomainPathV1({
+        month: "1990-01",
+        domain: "npc",
+        entityId: "Guardian Smith",
+        purpose: "action-choice",
+      }),
+    ).toThrow();
+    expect(() =>
+      createRngDomainPathV1({
+        month: "1990-01",
+        domain: "npc",
+        entityId: "npc.guardián",
+        purpose: "action-choice",
+      }),
+    ).toThrow();
+    expect(() =>
+      createRngDomainPathV1({
+        month: "1990-01",
+        domain: "npc",
+        entityId: "npc.guardian",
+        purpose: "variant",
+      } as never),
+    ).toThrow();
+
+    const forgedPath = [
+      "month:1990-01",
+      "domain:npc",
+      "entity:npc.guardian",
+      "purpose:variant",
+    ] as unknown as RngDomainPathV1;
+    expect(() => deriveRngState(SEED_42_STATE, forgedPath)).toThrow();
   });
 });
