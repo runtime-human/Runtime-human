@@ -28,6 +28,15 @@ export type DeterminismManifest = Readonly<{
   serializationVersion: "canonical-json-v1";
 }>;
 
+export type RngDerivationVersion = "hierarchical-v1";
+
+export type RngDerivationManifestV1 = Readonly<{
+  algorithm: "xoshiro256ss-v1";
+  derivationVersion: RngDerivationVersion;
+  hashAlgorithm: "sha256-v1";
+  serializationVersion: "canonical-json-v1";
+}>;
+
 export const DETERMINISM_MANIFEST_V1: DeterminismManifest = Object.freeze({
   rulesVersion: "foundation-v1",
   rngAlgorithm: "xoshiro256ss-v1",
@@ -36,6 +45,13 @@ export const DETERMINISM_MANIFEST_V1: DeterminismManifest = Object.freeze({
   calendarModel: "gregorian-v1",
   candidateSort: "stable-id-ascending-v1",
   effectOrdering: "phase-then-priority-then-stable-id-v1",
+  serializationVersion: "canonical-json-v1",
+});
+
+export const RNG_DERIVATION_MANIFEST_V1: RngDerivationManifestV1 = Object.freeze({
+  algorithm: "xoshiro256ss-v1",
+  derivationVersion: "hierarchical-v1",
+  hashAlgorithm: "sha256-v1",
   serializationVersion: "canonical-json-v1",
 });
 
