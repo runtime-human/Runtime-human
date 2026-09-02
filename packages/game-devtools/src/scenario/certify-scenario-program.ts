@@ -1,17 +1,18 @@
-import {
-  SCENARIO_CERTIFICATE_SCHEMA_VERSION,
-  SCENARIO_EXECUTION_POLICY_SCHEMA_VERSION,
-  type Fingerprint,
-  type ScenarioCertificateV1,
-  type ScenarioExecutionPolicyV1,
-  type ScenarioInstructionV1,
-  type ScenarioProgramV1,
+import type {
+  Fingerprint,
+  ScenarioCertificateV1,
+  ScenarioExecutionPolicyV1,
+  ScenarioInstructionV1,
+  ScenarioProgramV1,
 } from "@runtime-human/game-schema";
 
 import type { StructuredDiagnosticV1 } from "../diagnostics/gamectl-diagnostics";
 
 const POLICY_FINGERPRINT_NAMESPACE = "scenario-execution-policy-v1";
 const CERTIFICATE_FINGERPRINT_NAMESPACE = "scenario-certificate-v1";
+const POLICY_SCHEMA_VERSION: ScenarioExecutionPolicyV1["schemaVersion"] =
+  "scenario-execution-policy-v1";
+const CERTIFICATE_SCHEMA_VERSION: ScenarioCertificateV1["schemaVersion"] = "scenario-certificate-v1";
 const POLICY_ID = /^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$/u;
 
 export type ScenarioCertificationPrimitives = Readonly<{
@@ -79,7 +80,7 @@ export function certifyScenarioProgramV1(
 
   const policyFingerprint = primitives.fingerprint(POLICY_FINGERPRINT_NAMESPACE, policy);
   const body = {
-    schemaVersion: SCENARIO_CERTIFICATE_SCHEMA_VERSION,
+    schemaVersion: CERTIFICATE_SCHEMA_VERSION,
     programFingerprint: program.programFingerprint,
     policyId: policy.policyId,
     policyFingerprint,
@@ -103,7 +104,7 @@ export function certifyScenarioProgramV1(
 }
 
 function validatePolicy(policy: ScenarioExecutionPolicyV1): void {
-  if (policy.schemaVersion !== SCENARIO_EXECUTION_POLICY_SCHEMA_VERSION) {
+  if (policy.schemaVersion !== POLICY_SCHEMA_VERSION) {
     throw new TypeError(`Unsupported scenario execution policy schema: ${policy.schemaVersion}`);
   }
   if (policy.requireAcyclic !== true) {
