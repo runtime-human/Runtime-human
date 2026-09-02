@@ -189,10 +189,7 @@ function diagnostic(
   };
 }
 
-function compareDiagnostic(
-  left: StructuredDiagnosticV1,
-  right: StructuredDiagnosticV1,
-): number {
+function compareDiagnostic(left: StructuredDiagnosticV1, right: StructuredDiagnosticV1): number {
   return compareText(left.code, right.code) || compareText(left.pointer ?? "", right.pointer ?? "");
 }
 
