@@ -51,10 +51,13 @@ function linearScenario(): ScenarioAuthoringDocument {
 
 describe("ScenarioCertificateV1", () => {
   it("proves exact DAG bounds without inventing an RNG budget", () => {
-    const certificate = expectCertificate(linearScenario());
+    const source = linearScenario();
+    const program = compile(source);
+    const certificate = expectCertificate(source);
     const policyFingerprint = fingerprint(POLICY_NAMESPACE, MVP_CASUAL_SCENARIO_POLICY_V1);
     const body = {
       schemaVersion: "scenario-certificate-v1",
+      programFingerprint: program.programFingerprint,
       policyId: "mvp-casual-ordinary-month-v1",
       policyFingerprint,
       instructionCount: 6,
@@ -71,6 +74,25 @@ describe("ScenarioCertificateV1", () => {
       ...body,
       certificateFingerprint: fingerprint(CERTIFICATE_NAMESPACE, body),
     });
+  });
+
+  it("binds certificate identity to executable program identity", () => {
+    const source = linearScenario();
+    const changed: ScenarioAuthoringDocument = {
+      ...source,
+      nodes: {
+        ...source.nodes,
+        d: { kind: "gate", predicateId: "predicate.ready", pass: "f", fail: "e" },
+      },
+    };
+
+    const first = expectCertificate(source);
+    const second = expectCertificate(changed);
+
+    expect(second.transitionBudgetMax).toBe(first.transitionBudgetMax);
+    expect(second.blockingDecisionsMax).toBe(first.blockingDecisionsMax);
+    expect(second.programFingerprint).not.toBe(first.programFingerprint);
+    expect(second.certificateFingerprint).not.toBe(first.certificateFingerprint);
   });
 
   it("computes conservative decision min and max across branches", () => {
