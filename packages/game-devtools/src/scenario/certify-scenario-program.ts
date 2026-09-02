@@ -4,6 +4,7 @@ import type {
   ScenarioExecutionPolicyV1,
   ScenarioInstructionV1,
   ScenarioProgramV1,
+  ScenarioResolvedCapabilitiesV1,
 } from "@runtime-human/game-schema";
 
 import type { StructuredDiagnosticV1 } from "../diagnostics/gamectl-diagnostics";
@@ -29,19 +30,25 @@ type PathBounds = Readonly<{
   blockingDecisionsMin: number;
   blockingDecisionsMax: number;
   providerCallsMax: number;
-  rngCallsUnknown: boolean;
+  rngCallsMax: number | "unknown";
 }>;
 
 export function certifyScenarioProgramV1(
   program: ScenarioProgramV1,
   policy: ScenarioExecutionPolicyV1,
   primitives: ScenarioCertificationPrimitives,
+  capabilities?: ScenarioResolvedCapabilitiesV1,
 ): CertifyScenarioProgramV1Result {
   validatePolicy(policy);
   validatePrimitives(primitives);
 
   const programDiagnostic = validateProgram(program);
   if (programDiagnostic !== null) return failure(programDiagnostic);
+
+  if (capabilities !== undefined) {
+    const capabilityDiagnostic = validateResolvedCapabilities(program, capabilities);
+    if (capabilityDiagnostic !== null) return failure(capabilityDiagnostic);
+  }
 
   const reachable = collectReachable(program);
   if (reachable.size !== program.instructions.length) {
@@ -67,7 +74,7 @@ export function certifyScenarioProgramV1(
     );
   }
 
-  const bounds = computePathBounds(program);
+  const bounds = computePathBounds(program, capabilities);
   if (bounds.blockingDecisionsMax > policy.blockingDecisionsMax) {
     return failure(
       diagnostic(
@@ -85,6 +92,7 @@ export function certifyScenarioProgramV1(
     programFingerprint: program.programFingerprint,
     policyId: policy.policyId,
     policyFingerprint,
+    ...(capabilities === undefined ? {} : { rulesFingerprint: capabilities.rulesFingerprint }),
     instructionCount: program.instructions.length,
     completionGuaranteed: true,
     bounded: true,
@@ -92,7 +100,7 @@ export function certifyScenarioProgramV1(
     blockingDecisionsMin: bounds.blockingDecisionsMin,
     blockingDecisionsMax: bounds.blockingDecisionsMax,
     providerCallsMax: bounds.providerCallsMax,
-    rngCallsMax: bounds.rngCallsUnknown ? ("unknown" as const) : 0,
+    rngCallsMax: bounds.rngCallsMax,
   } as const;
 
   return {
@@ -125,6 +133,60 @@ function validatePrimitives(primitives: ScenarioCertificationPrimitives): void {
   if (typeof primitives.fingerprint !== "function") {
     throw new TypeError("Scenario certification requires an authoritative fingerprint primitive");
   }
+}
+
+function validateResolvedCapabilities(
+  program: ScenarioProgramV1,
+  capabilities: ScenarioResolvedCapabilitiesV1,
+): StructuredDiagnosticV1 | null {
+  if (capabilities.programFingerprint !== program.programFingerprint) {
+    return diagnostic(
+      program,
+      "SCN012",
+      "Resolved scenario capabilities target a different executable program",
+      "/programFingerprint",
+    );
+  }
+
+  if (!sameIds(capabilities.providers, program.providerTable)) {
+    return diagnostic(
+      program,
+      "SCN012",
+      "Resolved scenario provider descriptors do not match the executable provider table",
+      "/providerTable",
+    );
+  }
+
+  if (!sameIds(capabilities.predicates, program.predicateTable)) {
+    return diagnostic(
+      program,
+      "SCN012",
+      "Resolved scenario predicate descriptors do not match the executable predicate table",
+      "/predicateTable",
+    );
+  }
+
+  if (
+    !Number.isSafeInteger(capabilities.randomContentRngBudgetPerInstruction) ||
+    capabilities.randomContentRngBudgetPerInstruction < 0
+  ) {
+    return diagnostic(
+      program,
+      "SCN012",
+      "Resolved random-content RNG budget must be a non-negative safe integer",
+      "/randomContentRngBudgetPerInstruction",
+    );
+  }
+
+  return null;
+}
+
+function sameIds(
+  descriptors: readonly Readonly<{ id: string }>[],
+  expectedIds: readonly string[],
+): boolean {
+  if (descriptors.length !== expectedIds.length) return false;
+  return descriptors.every((descriptor, index) => descriptor.id === expectedIds[index]);
 }
 
 function validateProgram(program: ScenarioProgramV1): StructuredDiagnosticV1 | null {
@@ -216,8 +278,14 @@ function findCycleAnchor(
   return null;
 }
 
-function computePathBounds(program: ScenarioProgramV1): PathBounds {
+function computePathBounds(
+  program: ScenarioProgramV1,
+  capabilities: ScenarioResolvedCapabilitiesV1 | undefined,
+): PathBounds {
   const memo = new Map<number, PathBounds>();
+  const providerRngBudgets = new Map(
+    capabilities?.providers.map((descriptor) => [descriptor.id, descriptor.rngBudgetMax] as const) ?? [],
+  );
 
   const visit = (pc: number): PathBounds => {
     const cached = memo.get(pc);
@@ -229,7 +297,12 @@ function computePathBounds(program: ScenarioProgramV1): PathBounds {
 
     const ownDecision = instruction.op === "decision" ? 1 : 0;
     const ownProvider = instruction.op === "provider" ? 1 : 0;
-    const ownRngUnknown = instruction.op === "provider" || instruction.op === "random-content";
+    const ownRng = rngBudgetForInstruction(
+      program,
+      instruction,
+      capabilities,
+      providerRngBudgets,
+    );
     const successors = successorsOf(instruction);
 
     if (successors.length === 0) {
@@ -238,7 +311,7 @@ function computePathBounds(program: ScenarioProgramV1): PathBounds {
         blockingDecisionsMin: ownDecision,
         blockingDecisionsMax: ownDecision,
         providerCallsMax: ownProvider,
-        rngCallsUnknown: ownRngUnknown,
+        rngCallsMax: ownRng,
       });
       memo.set(pc, terminal);
       return terminal;
@@ -252,13 +325,39 @@ function computePathBounds(program: ScenarioProgramV1): PathBounds {
       blockingDecisionsMax:
         ownDecision + Math.max(...children.map((child) => child.blockingDecisionsMax)),
       providerCallsMax: ownProvider + Math.max(...children.map((child) => child.providerCallsMax)),
-      rngCallsUnknown: ownRngUnknown || children.some((child) => child.rngCallsUnknown),
+      rngCallsMax: addRngBudget(ownRng, children.map((child) => child.rngCallsMax)),
     });
     memo.set(pc, bounds);
     return bounds;
   };
 
   return visit(program.entryPc);
+}
+
+function rngBudgetForInstruction(
+  program: ScenarioProgramV1,
+  instruction: ScenarioInstructionV1,
+  capabilities: ScenarioResolvedCapabilitiesV1 | undefined,
+  providerRngBudgets: ReadonlyMap<string, number>,
+): number | "unknown" {
+  if (instruction.op === "provider") {
+    if (capabilities === undefined) return "unknown";
+    const providerId = program.providerTable[instruction.providerIndex];
+    if (providerId === undefined) return "unknown";
+    return providerRngBudgets.get(providerId) ?? "unknown";
+  }
+  if (instruction.op === "random-content") {
+    return capabilities?.randomContentRngBudgetPerInstruction ?? "unknown";
+  }
+  return 0;
+}
+
+function addRngBudget(
+  own: number | "unknown",
+  children: readonly (number | "unknown")[],
+): number | "unknown" {
+  if (own === "unknown" || children.some((value) => value === "unknown")) return "unknown";
+  return own + Math.max(...children);
 }
 
 function successorsOf(instruction: ScenarioInstructionV1): readonly number[] {
