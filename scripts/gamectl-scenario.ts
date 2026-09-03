@@ -146,6 +146,7 @@ export async function runScenarioGamectlCli(
 function targetsScenarioCommand(argv: readonly string[]): boolean {
   for (let index = 0; index < argv.length; index += 1) {
     const value = argv[index];
+    if (value === undefined) break;
     if (value === "--json" || value === "--quiet") continue;
     if (value === "--root" || value === "--registry" || value === "--out") {
       index += 1;
@@ -161,6 +162,7 @@ function inferScenarioCommand(argv: readonly string[]): ScenarioCommandName | "u
   const positionals: string[] = [];
   for (let index = 0; index < argv.length; index += 1) {
     const value = argv[index];
+    if (value === undefined) break;
     if (value === "--json" || value === "--quiet") continue;
     if (value === "--root" || value === "--registry" || value === "--out") {
       index += 1;
