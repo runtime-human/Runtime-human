@@ -174,7 +174,11 @@ function inferScenarioCommand(argv: readonly string[]): ScenarioCommandName | "u
 
 function routeScenarioCommand(positionals: readonly string[]): ScenarioRoute {
   if (positionals[0] !== "scenario") {
-    return { command: "unknown", errorCode: "unknown-command", message: "missing scenario command" };
+    return {
+      command: "unknown",
+      errorCode: "unknown-command",
+      message: "missing scenario command",
+    };
   }
   const secondary = positionals[1];
   const path = positionals[2];
