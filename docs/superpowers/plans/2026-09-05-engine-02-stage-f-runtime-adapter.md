@@ -1,3 +1,12 @@
+---
+title: "ENGINE-02 Stage F Runtime Adapter Implementation Plan"
+type: plan
+status: accepted
+canon: false
+depends_on: [ENGINE-02]
+updated: 2026-09-05
+---
+
 # ENGINE-02 Stage F Runtime Adapter Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
