@@ -130,6 +130,7 @@ export default defineConfig({
         "tests/check-boundaries.test.ts",
         "tests/check-build-only-dependencies.test.ts",
         "tests/ci-feedback-candidate.test.ts",
+        "tests/desktop-bootstrap-evidence.test.ts",
         "tests/desktop-content-csp.test.ts",
         "tests/desktop-e3-series-workflow.test.ts",
         "tests/desktop-evidence-runtime-contract.test.ts",
