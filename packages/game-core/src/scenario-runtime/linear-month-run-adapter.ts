@@ -107,7 +107,11 @@ export function createLinearScenarioMonthRunStepsV1(
         }
         const binding = bindings.providers[providerId];
         if (binding === undefined) {
-          return failure("MissingBinding", `Missing trusted provider binding for ${providerId}`, pc);
+          return failure(
+            "MissingBinding",
+            `Missing trusted provider binding for ${providerId}`,
+            pc,
+          );
         }
         compiledSteps.push(binding);
         break;
@@ -192,7 +196,9 @@ function validateArtifactBinding(
 
   if (
     capabilities.providers.length !== program.providerTable.length ||
-    capabilities.providers.some((descriptor, index) => descriptor.id !== program.providerTable[index])
+    capabilities.providers.some(
+      (descriptor, index) => descriptor.id !== program.providerTable[index],
+    )
   ) {
     return {
       code: "ArtifactMismatch",
@@ -202,7 +208,9 @@ function validateArtifactBinding(
 
   if (
     capabilities.predicates.length !== program.predicateTable.length ||
-    capabilities.predicates.some((descriptor, index) => descriptor.id !== program.predicateTable[index])
+    capabilities.predicates.some(
+      (descriptor, index) => descriptor.id !== program.predicateTable[index],
+    )
   ) {
     return {
       code: "ArtifactMismatch",
