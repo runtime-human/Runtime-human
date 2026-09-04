@@ -8,19 +8,19 @@ updated: 2026-08-27
 
 # AI-First Game Development Harness
 
-Целевая архитектура репозитория как harness для ИИ-разработки. Статус: целевая архитектура; инструменты, помеченные `(planned)`, ещё не существуют — не выдавать их за работающие и не ссылаться на них как на команды.
+Целевая архитектура репозитория как harness для ИИ-разработки. Инструменты, помеченные `(planned)`, ещё не существуют — не выдавать их за работающие и не ссылаться на них как на команды. Текущее состояние всегда проверять по реальным scripts/packages и `docs/EXECUTION-STATUS.jsonc`, а не по памяти агента.
 
 ## Классы редактируемых артефактов
 
-ИИ не редактирует «игру вообще». Каждый таск изменяет ровно один класс артефактов:
+ИИ не редактирует «игру вообще». Каждый таск изменяет один основной класс артефактов, а cross-domain изменение явно повышает risk/scope:
 
 | Класс | Canonical source | Проверка |
 |---|---|---|
-| presentation | React/Storybook, design tokens | stories/browser tests |
+| presentation | React/Storybook, текущие CSS tokens | stories/browser tests |
 | content | JSONC под `content/` с provenance | content compiler + graph |
-| balance | closed typed data (`balance/`, planned) | schema + simulation compare (planned) |
+| balance | closed typed data под `balance/` | schema + deterministic simulation compare |
 | scenario | typed graph JSONC (planned) | static analyzer (planned) |
-| rule | TypeScript в `game-core` | tests/property/replay |
+| rule | TypeScript в `game-core` | tests/property/replay/simulation |
 
 Всё остальное делает специализированный deterministic tooling.
 
@@ -41,25 +41,27 @@ updated: 2026-08-27
 
 ```text
 Orca/Producer      — КТО работает (outer orchestrator, maxWorkers=3)
-Studio             — ЧТО нужно прочитать и проверить (zones, context-map, task envelope — planned Wave 1)
-Nx                 — ЧТО затронуто в репозитории (project/task graph, cache, affected — planned)
-gamectl            — ЧТО означает игровая операция (catalog v1: list/show/refs/impact, content validate/source — доступен; simulate/replay — planned)
-Content compiler   — КАКИЕ данные легальны (schema → normalize → refs → graph → fingerprint)
-game-simulation    — ЧТО доказано о gameplay (deterministic runs/compare — planned)
-Storybook          — КАК выглядит UI (workshop, browser tests; MCP dev-only, planned)
+Studio             — ЧТО нужно прочитать и проверить (zones, context-map, task envelope, verification tiers)
+Nx                 — ЧТО затронуто в репозитории (project/task graph, local cache, affected assistance)
+gamectl            — ЧТО означает игровая операция (catalog/content/simulate/fixture/replay/explain)
+Content compiler   — КАКИЕ content-данные легальны (schema → normalize → refs → graph → fingerprint)
+Balance compiler   — КАКИЕ tuning-данные легальны (closed schema → fingerprint → derived evidence)
+game-simulation    — ЧТО доказано о gameplay (deterministic runs, properties, compare, replay/trace)
+Storybook          — КАК выглядит UI (workshop + browser tests + dev-only MCP)
 Canonical sources  — единственная истина (Git-friendly текст)
 ```
+
+`pnpm studio:evaluate` является shadow-mode planner evaluator cost. Пока `.studio/verification-policy.json` явно не переведён в active mode после накопления метрик, planner не имеет права отменять tester/reviewer, обязательных текущим Producer contract.
 
 ## Правила зависимостей пакетов
 
 ```text
 shared-kernel ← game-schema ← game-core ← game-application
-content sources → game-authoring-schema (planned) → game-content-compiler → game-content (compiled contracts)
-compiled rules/content → game-core/adapters по существующей authority
-game-simulation (planned) → game-core + game-schema + compiled rules/content
-game-devtools (planned) → authoring schema/compiler + simulation + read-only game contracts
+content/balance sources → game-authoring-schema → compiler/validators → compiled runtime contracts
+game-simulation → game-core + game-schema + verified rules/content
+game-devtools → authoring/compiler + simulation + read-only game contracts
 apps/authoring (planned) → game-devtools + authoring schemas + UI libraries
-apps/desktop → только существующие runtime packages
+apps/desktop → только runtime packages
 ```
 
 Запрещено: production runtime зависит от apps/authoring, от JSON Forms/React Flow/Terrazzo CLI, парсит raw JSONC/Ajv в runtime.
@@ -75,4 +77,6 @@ apps/desktop → только существующие runtime packages
 
 ## Дорожная карта
 
-Волны внедрения фиксируются в implementation plan и `docs/EXECUTION-STATUS.jsonc`. Реализовано: canon/harness alignment (skill-map, verification-policy, верификационные tier'ы), context compiler/task envelope, compact exec/affected, Nx minimal, Vitest projects + Storybook browser, Game Catalog + `gamectl` v1. Далее: authoring schema pilot, balance layer, simulation/fast-check/repro, skills v2 + adaptive review, scenario v1, Authoring Studio (GUI после headless API), DTCG tokens, persistence inspector.
+Реализованы Waves 0–8: canon/harness alignment, context/task envelope, compact exec/affected, minimal Nx + local cache, Vitest projects + Storybook browser/MCP, Game Catalog + `gamectl`, TypeBox authoring pilot, closed balance layer, deterministic simulation/fast-check/fixtures/repro/replay/trace/explain.
+
+Wave 9 активирует существующие balance/simulation/harness skills и вводит измеримый adaptive evaluator planner только в shadow mode. Далее: scenario v1 shadow/analyzer → secure Authoring Studio поверх headless APIs → Scenario Graph/Balance Lab → DTCG/Terrazzo migration → Rust-owned read-only persistence inspector/dev overlay. Детальный порядок: `.opencode/Runtime-Human-AI-First-Harness-Waves-9-14-Execution-Plan-2026-08-31.md`.
