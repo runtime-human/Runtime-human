@@ -1,0 +1,6 @@
+{
+  "schemaVersion": "scenario-execution-policy-v1",
+  "policyId": "january-1990-shadow-proof-v1",
+  "requireAcyclic": true,
+  "blockingDecisionsMax": 3
+}
