@@ -8,10 +8,7 @@ import type { ScenarioArtifactV1 } from "@runtime-human/game-schema";
 
 import { createPersistedMonthRunOrchestrator } from "../persisted-month-run-orchestrator";
 import type { PersistenceService } from "../persistence-service";
-import {
-  createJanuary1990BeginCommand,
-  createJanuary1990ResumeCommand,
-} from "./january-commands";
+import { createJanuary1990BeginCommand, createJanuary1990ResumeCommand } from "./january-commands";
 import { materializeJanuary1990Commit } from "./january-commit-materializer";
 import type { JanuaryContentRegistryPort } from "./january-content-registry-port";
 import type { January1990Runtime } from "./create-january-runtime";
