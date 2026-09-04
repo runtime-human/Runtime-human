@@ -99,4 +99,16 @@ export type {
 export { runUntilBoundary } from "./month-run/runner";
 export type { MonthRunRunResult, MonthRunStep } from "./month-run/runner";
 export { transitionMonthRun } from "./month-run/transition";
+export { createLinearScenarioMonthRunStepsV1 } from "./scenario-runtime/linear-month-run-adapter";
+export type {
+  CreateLinearScenarioMonthRunStepsInputV1,
+  LinearScenarioCompleteBindingV1,
+  LinearScenarioDecisionBindingV1,
+  LinearScenarioMonthRunAdapterErrorCodeV1,
+  LinearScenarioMonthRunAdapterErrorV1,
+  LinearScenarioMonthRunAdapterResultV1,
+  LinearScenarioMonthRunBindingsV1,
+  LinearScenarioProviderBindingV1,
+  LinearScenarioRandomContentBindingV1,
+} from "./scenario-runtime/linear-month-run-adapter";
 export type { AuthoritativeJsonValue } from "@runtime-human/game-schema";
