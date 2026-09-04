@@ -10,6 +10,8 @@
   "include": [
     "./build-game-content.ts",
     "./gamectl.ts",
+    "./gamectl-core.ts",
+    "./gamectl-scenario.ts",
     "./validate-balance.ts",
     "./performance/**/*.ts"
   ],

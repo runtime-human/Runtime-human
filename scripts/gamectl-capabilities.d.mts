@@ -21,6 +21,9 @@ export declare const IMPLEMENTED_GAMECTL_COMMANDS: Readonly<{
   "fixture.materialize": 1;
   replay: 1;
   explain: 1;
+  "scenario.check": 1;
+  "scenario.compile": 1;
+  "scenario.inspect": 1;
 }>;
 
 export declare function gamectlCapabilitiesResult(): Readonly<{
@@ -32,6 +35,9 @@ export declare function gamectlCapabilitiesResult(): Readonly<{
     simulationReport: "simulation-report-v1";
     gameplayFixture: "gameplay-fixture-v1";
     repro: "game-repro-v1";
+    scenarioAuthoring: "scenario-v1";
+    scenarioCapabilityRegistry: "scenario-capability-registry-v1";
+    scenarioArtifact: "scenario-artifact-v1";
   }>;
 }>;
 

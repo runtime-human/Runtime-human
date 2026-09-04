@@ -19,6 +19,9 @@ export const IMPLEMENTED_GAMECTL_COMMANDS = Object.freeze({
   "fixture.materialize": 1,
   replay: 1,
   explain: 1,
+  "scenario.check": 1,
+  "scenario.compile": 1,
+  "scenario.inspect": 1,
 });
 
 function capabilityPositionals(argv) {
@@ -47,6 +50,9 @@ export function gamectlCapabilitiesResult() {
       simulationReport: "simulation-report-v1",
       gameplayFixture: "gameplay-fixture-v1",
       repro: "game-repro-v1",
+      scenarioAuthoring: "scenario-v1",
+      scenarioCapabilityRegistry: "scenario-capability-registry-v1",
+      scenarioArtifact: "scenario-artifact-v1",
     },
   };
 }
