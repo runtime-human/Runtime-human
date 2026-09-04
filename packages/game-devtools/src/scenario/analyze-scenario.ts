@@ -6,6 +6,7 @@ import type {
 import type { StructuredDiagnosticV1 } from "../diagnostics/gamectl-diagnostics";
 
 const IDENTIFIER = /^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$/u;
+const DECISION_ID = /^[!-~]{1,128}$/u;
 
 export type AnalyzeScenarioOptions = Readonly<{
   providerIds?: ReadonlySet<string>;
@@ -118,6 +119,17 @@ function validateNodeSemantics(
   diagnostics: StructuredDiagnosticV1[],
 ): void {
   const pointer = `/nodes/${escapePointer(nodeId)}`;
+
+  if (node.kind === "decision" && !DECISION_ID.test(node.decisionId)) {
+    diagnostics.push(
+      diagnostic(
+        scenario,
+        "SCN004",
+        `Scenario decision id ${JSON.stringify(node.decisionId)} does not match the MonthRun protocol id contract`,
+        `${pointer}/decisionId`,
+      ),
+    );
+  }
 
   if (node.kind !== "complete" && !hasRequiredTransition(node)) {
     diagnostics.push(
