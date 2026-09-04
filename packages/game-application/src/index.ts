@@ -4,6 +4,8 @@ export {
   createJanuary1990InitialSaveSnapshot,
   createJanuary1990ResumeCommand,
   createJanuary1990Runtime,
+  createJanuary1990ScenarioCompatibility,
+  createJanuary1990ScenarioRuntime,
   JANUARY_1990_QUALITY_SCORE_MAXIMUMS,
   JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
   JANUARY_CONTENT_PROJECTION_ERROR_CODES,
@@ -17,6 +19,8 @@ export {
 export type {
   CreateJanuary1990CompatibilityInput,
   CreateJanuary1990RuntimeInput,
+  CreateJanuary1990ScenarioCompatibilityInput,
+  CreateJanuary1990ScenarioRuntimeInput,
   January1990BeginInput,
   January1990CompletedMonthV1,
   January1990DecisionViewKind,
