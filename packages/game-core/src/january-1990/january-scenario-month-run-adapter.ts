@@ -105,9 +105,7 @@ const EXPECTED_CERTIFICATE: ScenarioCertificateV1 = Object.freeze({
   certificateFingerprint: CERTIFICATE_FINGERPRINT,
 });
 
-export function assertJanuary1990ScenarioRuntimeArtifactV1(
-  artifact: ScenarioArtifactV1,
-): void {
+export function assertJanuary1990ScenarioRuntimeArtifactV1(artifact: ScenarioArtifactV1): void {
   if (artifact.schemaVersion !== "scenario-artifact-v1") {
     throw new TypeError("January scenario runtime requires scenario-artifact-v1");
   }
@@ -139,10 +137,19 @@ export function createJanuary1990ScenarioMonthSteps(
   artifact: ScenarioArtifactV1,
 ): readonly MonthRunStep[] {
   assertJanuary1990ScenarioRuntimeArtifactV1(artifact);
-  const expectedRulesFingerprint = createJanuary1990ScenarioRuntimeRulesFingerprint(balance, artifact);
-  const authoritativeSteps = createUncheckedJanuary1990MonthSteps(context, balance, "hierarchical-v1");
+  const expectedRulesFingerprint = createJanuary1990ScenarioRuntimeRulesFingerprint(
+    balance,
+    artifact,
+  );
+  const authoritativeSteps = createUncheckedJanuary1990MonthSteps(
+    context,
+    balance,
+    "hierarchical-v1",
+  );
   if (authoritativeSteps.length !== artifact.program.instructions.length + 1) {
-    throw new TypeError("January scenario adapter does not match the authoritative MonthRun step table");
+    throw new TypeError(
+      "January scenario adapter does not match the authoritative MonthRun step table",
+    );
   }
 
   return Object.freeze(
