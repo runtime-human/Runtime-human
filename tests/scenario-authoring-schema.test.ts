@@ -59,6 +59,22 @@ describe("ScenarioAuthoringSchemaV1", () => {
     expect(validate(VALID_SCENARIO), JSON.stringify(validate.errors)).toBe(true);
   });
 
+  it("accepts MonthRun-compatible decision ids used by the January shadow", () => {
+    const document = {
+      ...VALID_SCENARIO,
+      nodes: {
+        ...VALID_SCENARIO.nodes,
+        access: {
+          kind: "decision",
+          decisionId: "january-1990/access",
+          next: "learning",
+        },
+      },
+    };
+
+    expect(validate(document), JSON.stringify(validate.errors)).toBe(true);
+  });
+
   it.each([
     ["unknown node kind", { ...VALID_SCENARIO, nodes: { bad: { kind: "script", code: "x" } } }],
     [

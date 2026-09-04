@@ -33,6 +33,28 @@ describe("scenario analyzer", () => {
     ).toEqual([]);
   });
 
+  it("accepts MonthRun-compatible decision ids", () => {
+    expect(
+      analyzeScenario(
+        scenario({
+          start: { kind: "decision", decisionId: "january-1990/access", next: "done" },
+          done: { kind: "complete" },
+        }),
+      ),
+    ).toEqual([]);
+  });
+
+  it("reports SCN004 for a decision id outside the MonthRun protocol contract", () => {
+    expect(
+      codes(
+        scenario({
+          start: { kind: "decision", decisionId: "invalid decision", next: "done" },
+          done: { kind: "complete" },
+        }),
+      ),
+    ).toContain("SCN004");
+  });
+
   it("reports SCN001 for an unreachable node", () => {
     expect(
       codes(

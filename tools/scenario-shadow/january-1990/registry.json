@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "scenario-capability-registry-v1",
+  "providers": [
+    {
+      "id": "january-1990.access-materialize",
+      "version": 1,
+      "deterministic": true,
+      "rngBudgetMax": 0,
+      "effectDomain": "progression"
+    },
+    {
+      "id": "january-1990.work-materialize",
+      "version": 1,
+      "deterministic": true,
+      "rngBudgetMax": 0,
+      "effectDomain": "learning"
+    },
+    {
+      "id": "january-1990.programming-outcome",
+      "version": 1,
+      "deterministic": true,
+      "rngBudgetMax": 1,
+      "effectDomain": "project"
+    }
+  ],
+  "predicates": []
+}

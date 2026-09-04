@@ -2,6 +2,7 @@ import { Type, type Static } from "typebox";
 
 export const SCENARIO_SCHEMA_VERSION = "scenario-v1" as const;
 export const SCENARIO_IDENTIFIER_PATTERN = "^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$" as const;
+export const SCENARIO_DECISION_ID_PATTERN = "^[!-~]{1,128}$" as const;
 
 const identifier = Type.String({
   pattern: SCENARIO_IDENTIFIER_PATTERN,
@@ -9,10 +10,16 @@ const identifier = Type.String({
   maxLength: 160,
 });
 
+const decisionId = Type.String({
+  pattern: SCENARIO_DECISION_ID_PATTERN,
+  minLength: 1,
+  maxLength: 128,
+});
+
 const decisionNode = Type.Object(
   {
     kind: Type.Literal("decision"),
-    decisionId: identifier,
+    decisionId,
     next: Type.Optional(identifier),
   },
   { additionalProperties: false },
