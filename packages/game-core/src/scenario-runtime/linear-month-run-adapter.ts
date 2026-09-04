@@ -13,24 +13,15 @@ type ProviderEventV1 = Extract<
   MonthRunEventV1,
   Readonly<{ type: "advance-step" | "materialize-outcome" }>
 >;
-type RandomContentEventV1 = Extract<
-  MonthRunEventV1,
-  Readonly<{ type: "materialize-outcome" }>
->;
+type RandomContentEventV1 = Extract<MonthRunEventV1, Readonly<{ type: "materialize-outcome" }>>;
 type CompleteEventV1 = Extract<MonthRunEventV1, Readonly<{ type: "complete" }>>;
 
-export type LinearScenarioDecisionBindingV1 = (
-  checkpoint: MonthRunCheckpointV1,
-) => DecisionEventV1;
-export type LinearScenarioProviderBindingV1 = (
-  checkpoint: MonthRunCheckpointV1,
-) => ProviderEventV1;
+export type LinearScenarioDecisionBindingV1 = (checkpoint: MonthRunCheckpointV1) => DecisionEventV1;
+export type LinearScenarioProviderBindingV1 = (checkpoint: MonthRunCheckpointV1) => ProviderEventV1;
 export type LinearScenarioRandomContentBindingV1 = (
   checkpoint: MonthRunCheckpointV1,
 ) => RandomContentEventV1;
-export type LinearScenarioCompleteBindingV1 = (
-  checkpoint: MonthRunCheckpointV1,
-) => CompleteEventV1;
+export type LinearScenarioCompleteBindingV1 = (checkpoint: MonthRunCheckpointV1) => CompleteEventV1;
 
 export type LinearScenarioMonthRunBindingsV1 = Readonly<{
   decisions: Readonly<Record<string, LinearScenarioDecisionBindingV1>>;
