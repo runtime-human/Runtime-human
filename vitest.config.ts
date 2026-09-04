@@ -83,6 +83,7 @@ export default defineConfig({
         "tests/january-1990-rng-authority-cutover.test.ts",
         "tests/january-1990-quality-explain.test.ts",
         "tests/january-1990-harness-proof.test.ts",
+        "tests/january-1990-scenario-runtime-adapter.test.ts",
         "tests/simulation-compare.test.ts",
         "tests/gameplay-fixture-parser.test.ts",
       ]),
@@ -101,6 +102,7 @@ export default defineConfig({
         "tests/january-1990-persisted-restart.test.ts",
         "tests/january-1990-persisted-run.test.ts",
         "tests/january-1990-rng-application-cutover.test.ts",
+        "tests/january-1990-scenario-runtime-application.test.ts",
       ]),
       nodeProject("content-node", [
         "tests/compiled-content-runtime-loader.test.ts",
