@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "january-1990-scenario-shadow-evidence-v1",
+  "authority": {
+    "month": "1990-01",
+    "program": "january-1990-v1",
+    "monthRunStepCount": 9,
+    "blockingDecisions": 3,
+    "rngCallsMax": 2
+  },
+  "shadow": {
+    "scenarioId": "january-1990.shadow-proof",
+    "instructionCount": 8,
+    "transitionBudgetMax": 8,
+    "blockingDecisionsMin": 3,
+    "blockingDecisionsMax": 3,
+    "providerCallsMax": 3,
+    "rngCallsMax": 2,
+    "completionGuaranteed": true,
+    "bounded": true,
+    "sourceFingerprint": "162e470476ad0bd32194ee68dfdac80e14092b04c5b44a668315c47887a8117f",
+    "programFingerprint": "1581cd05caff76175c31c28f100f8cce8dc2da467586ff0db39e6897b6cb40b0",
+    "rulesFingerprint": "5b2b4b434450e14050df032d4d59c30e48c01a44ec98f416d3421038c899be1a",
+    "policyFingerprint": "4263f3937d962c8238b142358311d3a4b3e8fe51c8d79d1747a49cba1054483b",
+    "certificateFingerprint": "43650b303c0983f26e555352a45358ff1d1ee2f4f14da0ccf6b625bd36b1aa0c"
+  }
+}
