@@ -119,7 +119,7 @@ describe("January 1990 ScenarioProgram shadow proof", () => {
 
   it("proves the shadow RNG bound equals January's authoritative two-call budget", async () => {
     const shadow = await buildShadowEvidence();
-    const authoritativeRngCalls = Object.values(JANUARY_1990_RNG_CALL_BUDGET).reduce(
+    const authoritativeRngCalls = Object.values(JANUARY_1990_RNG_CALL_BUDGET).reduce<number>(
       (total, calls) => total + calls,
       0,
     );
