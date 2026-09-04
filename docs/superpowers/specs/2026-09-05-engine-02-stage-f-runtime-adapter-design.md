@@ -1,3 +1,12 @@
+---
+title: "ENGINE-02 Stage F Runtime Adapter Design"
+type: plan
+status: accepted
+canon: true
+depends_on: [ENGINE-02]
+updated: 2026-09-05
+---
+
 # ENGINE-02 Stage F Runtime Adapter Design
 
 ## Goal
