@@ -85,6 +85,11 @@ export type { January1990RngExecutionProfileId } from "./january-rng-execution-p
 export { JANUARY_1990_RNG_CALL_BUDGET, JANUARY_1990_RNG_SCOPES } from "./january-rng-scopes";
 export type { January1990RngScope } from "./january-rng-scopes";
 export {
+  assertJanuary1990ScenarioRuntimeArtifactV1,
+  createJanuary1990ScenarioMonthSteps,
+  createJanuary1990ScenarioRuntimeRulesFingerprint,
+} from "./january-scenario-month-run-adapter";
+export {
   createJanuary1990HierarchicalValidatedMonthSteps as createJanuary1990HierarchicalMonthSteps,
   createJanuary1990ValidatedMonthSteps as createJanuary1990MonthSteps,
 } from "./january-validated-month-steps";
