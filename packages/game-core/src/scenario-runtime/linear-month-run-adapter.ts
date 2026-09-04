@@ -151,9 +151,10 @@ export function createLinearScenarioMonthRunStepsV1(
   const artifactError = validateArtifactBinding(program, capabilities, certificate);
   if (artifactError !== null) return { kind: "failure", error: artifactError };
 
+  const startStep: MonthRunStep = () => ({ type: "start" });
   return {
     kind: "success",
-    steps: Object.freeze([() => ({ type: "start" }), ...compiledSteps]),
+    steps: Object.freeze([startStep, ...compiledSteps]),
   };
 }
 
