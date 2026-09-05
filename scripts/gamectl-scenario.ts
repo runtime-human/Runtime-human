@@ -621,6 +621,7 @@ function emitRouteFailure(
           ok: false,
           error: { code, message },
         },
+        null,
         2,
       ),
     );
