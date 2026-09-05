@@ -3,11 +3,12 @@ import type {
   MonthRunCheckpointV1,
   ScenarioArtifactV1,
   ScenarioCertificateV1,
+  ScenarioInstructionV1,
   ScenarioProgramV1,
+  ScenarioProviderDescriptorV1,
   ScenarioResolvedCapabilitiesV1,
 } from "@runtime-human/game-schema";
 
-import { canonicalizeAuthoritative } from "../determinism/authoritative-json";
 import { fingerprint } from "../determinism/hash";
 import type { MonthRunStep } from "../month-run/runner";
 import type { January1990BalanceV1 } from "./january-balance";
@@ -20,98 +21,55 @@ import {
 } from "./january-rng-execution-profile";
 
 const JANUARY_SCENARIO_RUNTIME_RULES_NAMESPACE = "january-1990-scenario-runtime-rules-v1";
-
-const SOURCE_FINGERPRINT =
-  "162e470476ad0bd32194ee68dfdac80e14092b04c5b44a668315c47887a8117f" as Fingerprint;
-const PROGRAM_FINGERPRINT =
-  "1581cd05caff76175c31c28f100f8cce8dc2da467586ff0db39e6897b6cb40b0" as Fingerprint;
-const RULES_FINGERPRINT =
-  "5b2b4b434450e14050df032d4d59c30e48c01a44ec98f416d3421038c899be1a" as Fingerprint;
-const POLICY_FINGERPRINT =
+const SCENARIO_PROGRAM_FINGERPRINT_NAMESPACE = "scenario-program-v1";
+const SCENARIO_RULES_FINGERPRINT_NAMESPACE = "scenario-rules-v1";
+const SCENARIO_CERTIFICATE_FINGERPRINT_NAMESPACE = "scenario-certificate-v1";
+const JANUARY_SCENARIO_ID = "january-1990.shadow-proof";
+const JANUARY_SCENARIO_POLICY_ID = "january-1990-shadow-proof-v1";
+const JANUARY_SCENARIO_POLICY_FINGERPRINT =
   "4263f3937d962c8238b142358311d3a4b3e8fe51c8d79d1747a49cba1054483b" as Fingerprint;
-const CERTIFICATE_FINGERPRINT =
-  "43650b303c0983f26e555352a45358ff1d1ee2f4f14da0ccf6b625bd36b1aa0c" as Fingerprint;
+const JANUARY_SCENARIO_INSTRUCTION_COUNT = 8;
+const JANUARY_SCENARIO_DECISION_COUNT = 3;
+const JANUARY_SCENARIO_PROVIDER_COUNT = 3;
+const JANUARY_SCENARIO_RANDOM_CONTENT_COUNT = 1;
+const JANUARY_SCENARIO_RNG_CALL_BUDGET = 2;
 
-const EXPECTED_PROGRAM: ScenarioProgramV1 = Object.freeze({
-  schemaVersion: "scenario-program-v1",
-  scenarioId: "january-1990.shadow-proof",
-  entryPc: 0,
-  instructions: Object.freeze([
-    Object.freeze({ op: "decision", decisionId: "january-1990/access", nextPc: 1 }),
-    Object.freeze({ op: "provider", providerIndex: 0, nextPc: 2 }),
-    Object.freeze({ op: "decision", decisionId: "january-1990/learning", nextPc: 3 }),
-    Object.freeze({ op: "provider", providerIndex: 2, nextPc: 4 }),
-    Object.freeze({ op: "random-content", contentPoolIndex: 0, nextPc: 5 }),
-    Object.freeze({ op: "decision", decisionId: "january-1990/defect", nextPc: 6 }),
-    Object.freeze({ op: "provider", providerIndex: 1, nextPc: 7 }),
-    Object.freeze({ op: "complete" }),
-  ]),
-  providerTable: Object.freeze([
-    "january-1990.access-materialize",
-    "january-1990.programming-outcome",
-    "january-1990.work-materialize",
-  ]),
-  predicateTable: Object.freeze([]),
-  contentPoolTable: Object.freeze(["january-1990.defect-events"]),
-  sourceFingerprint: SOURCE_FINGERPRINT,
-  programFingerprint: PROGRAM_FINGERPRINT,
-});
+const ACCESS_DECISION_ID = "january-1990/access";
+const LEARNING_DECISION_ID = "january-1990/learning";
+const DEFECT_DECISION_ID = "january-1990/defect";
+const ACCESS_PROVIDER_ID = "january-1990.access-materialize";
+const WORK_PROVIDER_ID = "january-1990.work-materialize";
+const PROGRAMMING_PROVIDER_ID = "january-1990.programming-outcome";
+const DEFECT_CONTENT_POOL_ID = "january-1990.defect-events";
 
-const EXPECTED_CAPABILITIES: ScenarioResolvedCapabilitiesV1 = Object.freeze({
-  schemaVersion: "scenario-resolved-capabilities-v1",
-  programFingerprint: PROGRAM_FINGERPRINT,
-  providers: Object.freeze([
-    Object.freeze({
-      id: "january-1990.access-materialize",
-      version: 1,
-      deterministic: true,
-      rngBudgetMax: 0,
-      effectDomain: "progression",
-    }),
-    Object.freeze({
-      id: "january-1990.programming-outcome",
-      version: 1,
-      deterministic: true,
-      rngBudgetMax: 1,
-      effectDomain: "project",
-    }),
-    Object.freeze({
-      id: "january-1990.work-materialize",
-      version: 1,
-      deterministic: true,
-      rngBudgetMax: 0,
-      effectDomain: "learning",
-    }),
-  ]),
-  predicates: Object.freeze([]),
-  randomContentRngBudgetPerInstruction: 1,
-  rulesFingerprint: RULES_FINGERPRINT,
-});
+type JanuaryScenarioRuntimeStats = Readonly<{
+  blockingDecisions: number;
+  providerCalls: number;
+  randomContentCalls: number;
+  rngCalls: number;
+}>;
 
-const EXPECTED_CERTIFICATE: ScenarioCertificateV1 = Object.freeze({
-  schemaVersion: "scenario-certificate-v1",
-  programFingerprint: PROGRAM_FINGERPRINT,
-  policyId: "january-1990-shadow-proof-v1",
-  policyFingerprint: POLICY_FINGERPRINT,
-  rulesFingerprint: RULES_FINGERPRINT,
-  instructionCount: 8,
-  completionGuaranteed: true,
-  bounded: true,
-  transitionBudgetMax: 8,
-  blockingDecisionsMin: 3,
-  blockingDecisionsMax: 3,
-  providerCallsMax: 3,
-  rngCallsMax: 2,
-  certificateFingerprint: CERTIFICATE_FINGERPRINT,
-});
+type JanuaryMonthStepBindings = Readonly<{
+  start: MonthRunStep;
+  accessDecision: MonthRunStep;
+  learningDecision: MonthRunStep;
+  defectDecision: MonthRunStep;
+  accessProvider: MonthRunStep;
+  workProvider: MonthRunStep;
+  programmingProvider: MonthRunStep;
+  defectContent: MonthRunStep;
+  complete: MonthRunStep;
+}>;
 
 export function assertJanuary1990ScenarioRuntimeArtifactV1(artifact: ScenarioArtifactV1): void {
   if (artifact.schemaVersion !== "scenario-artifact-v1") {
     throw new TypeError("January scenario runtime requires scenario-artifact-v1");
   }
-  assertCanonicalIdentity(artifact.program, EXPECTED_PROGRAM, "program");
-  assertCanonicalIdentity(artifact.capabilities, EXPECTED_CAPABILITIES, "capabilities");
-  assertCanonicalIdentity(artifact.certificate, EXPECTED_CERTIFICATE, "certificate");
+
+  assertProgramIdentity(artifact.program);
+  assertCapabilityIdentity(artifact.program, artifact.capabilities);
+  const stats = assertJanuaryInstructionSurface(artifact.program, artifact.capabilities);
+  assertCertificateIdentity(artifact.program, artifact.capabilities, artifact.certificate, stats);
 }
 
 export function createJanuary1990ScenarioRuntimeRulesFingerprint(
@@ -141,23 +99,322 @@ export function createJanuary1990ScenarioMonthSteps(
     balance,
     artifact,
   );
-  const authoritativeSteps = createUncheckedJanuary1990MonthSteps(
-    context,
-    balance,
-    "hierarchical-v1",
+  const bindings = createJanuaryMonthStepBindings(
+    createUncheckedJanuary1990MonthSteps(context, balance, "hierarchical-v1"),
   );
-  if (authoritativeSteps.length !== artifact.program.instructions.length + 1) {
-    throw new TypeError(
-      "January scenario adapter does not match the authoritative MonthRun step table",
-    );
-  }
+  const scenarioSteps = artifact.program.instructions.map((instruction) =>
+    bindScenarioInstruction(artifact.program, instruction, bindings),
+  );
 
   return Object.freeze(
-    authoritativeSteps.map((step) => (checkpoint: MonthRunCheckpointV1) => {
+    [bindings.start, ...scenarioSteps].map((step) => (checkpoint: MonthRunCheckpointV1) => {
       validateScenarioCheckpoint(context, checkpoint, expectedRulesFingerprint);
       return step(checkpoint);
     }),
   );
+}
+
+function assertProgramIdentity(program: ScenarioProgramV1): void {
+  if (
+    program.schemaVersion !== "scenario-program-v1" ||
+    program.scenarioId !== JANUARY_SCENARIO_ID ||
+    program.entryPc !== 0 ||
+    program.instructions.length !== JANUARY_SCENARIO_INSTRUCTION_COUNT
+  ) {
+    throw new TypeError("January scenario runtime program shape is unsupported");
+  }
+
+  const { programFingerprint, ...programBody } = program;
+  if (fingerprint(SCENARIO_PROGRAM_FINGERPRINT_NAMESPACE, programBody) !== programFingerprint) {
+    throw new TypeError("January scenario runtime program fingerprint is invalid");
+  }
+}
+
+function assertCapabilityIdentity(
+  program: ScenarioProgramV1,
+  capabilities: ScenarioResolvedCapabilitiesV1,
+): void {
+  if (
+    capabilities.schemaVersion !== "scenario-resolved-capabilities-v1" ||
+    capabilities.programFingerprint !== program.programFingerprint ||
+    capabilities.providers.length !== program.providerTable.length ||
+    capabilities.predicates.length !== program.predicateTable.length ||
+    program.predicateTable.length !== 0 ||
+    capabilities.randomContentRngBudgetPerInstruction !== 1
+  ) {
+    throw new TypeError("January scenario runtime capability binding is unsupported");
+  }
+
+  for (let index = 0; index < program.providerTable.length; index += 1) {
+    const providerId = program.providerTable[index];
+    const descriptor = capabilities.providers[index];
+    if (providerId === undefined || descriptor === undefined || descriptor.id !== providerId) {
+      throw new TypeError("January scenario runtime provider binding is inconsistent");
+    }
+    assertJanuaryProviderDescriptor(descriptor);
+  }
+
+  const { rulesFingerprint, ...capabilityBody } = capabilities;
+  if (fingerprint(SCENARIO_RULES_FINGERPRINT_NAMESPACE, capabilityBody) !== rulesFingerprint) {
+    throw new TypeError("January scenario runtime capability fingerprint is invalid");
+  }
+}
+
+function assertJanuaryProviderDescriptor(descriptor: ScenarioProviderDescriptorV1): void {
+  const supported =
+    (descriptor.id === ACCESS_PROVIDER_ID &&
+      descriptor.version === 1 &&
+      descriptor.deterministic === true &&
+      descriptor.rngBudgetMax === 0 &&
+      descriptor.effectDomain === "progression") ||
+    (descriptor.id === WORK_PROVIDER_ID &&
+      descriptor.version === 1 &&
+      descriptor.deterministic === true &&
+      descriptor.rngBudgetMax === 0 &&
+      descriptor.effectDomain === "learning") ||
+    (descriptor.id === PROGRAMMING_PROVIDER_ID &&
+      descriptor.version === 1 &&
+      descriptor.deterministic === true &&
+      descriptor.rngBudgetMax === 1 &&
+      descriptor.effectDomain === "project");
+  if (!supported) {
+    throw new TypeError(`January scenario provider ${descriptor.id} is unsupported`);
+  }
+}
+
+function assertJanuaryInstructionSurface(
+  program: ScenarioProgramV1,
+  capabilities: ScenarioResolvedCapabilitiesV1,
+): JanuaryScenarioRuntimeStats {
+  let blockingDecisions = 0;
+  let providerCalls = 0;
+  let randomContentCalls = 0;
+  let rngCalls = 0;
+  let completionCount = 0;
+
+  for (let pc = 0; pc < program.instructions.length; pc += 1) {
+    const instruction = program.instructions[pc];
+    if (instruction === undefined) {
+      throw new TypeError(`January scenario instruction ${pc} is missing`);
+    }
+
+    switch (instruction.op) {
+      case "decision":
+        assertLinearNextPc(pc, instruction.nextPc);
+        assertJanuaryDecisionId(instruction.decisionId);
+        blockingDecisions += 1;
+        break;
+      case "provider": {
+        assertLinearNextPc(pc, instruction.nextPc);
+        const provider = requireTableEntry(
+          program.providerTable,
+          instruction.providerIndex,
+          "provider",
+        );
+        assertJanuaryProviderId(provider);
+        const descriptor = capabilities.providers[instruction.providerIndex];
+        if (descriptor === undefined || descriptor.id !== provider) {
+          throw new TypeError("January scenario provider descriptor is missing");
+        }
+        providerCalls += 1;
+        rngCalls += descriptor.rngBudgetMax;
+        break;
+      }
+      case "random-content": {
+        assertLinearNextPc(pc, instruction.nextPc);
+        const contentPool = requireTableEntry(
+          program.contentPoolTable,
+          instruction.contentPoolIndex,
+          "content pool",
+        );
+        if (contentPool !== DEFECT_CONTENT_POOL_ID) {
+          throw new TypeError(`January scenario content pool ${contentPool} is unsupported`);
+        }
+        randomContentCalls += 1;
+        rngCalls += capabilities.randomContentRngBudgetPerInstruction;
+        break;
+      }
+      case "complete":
+        if (pc !== program.instructions.length - 1) {
+          throw new TypeError("January scenario completion must be the final instruction");
+        }
+        completionCount += 1;
+        break;
+      case "gate":
+      case "branch":
+        throw new TypeError(`January scenario runtime instruction ${instruction.op} is unsupported`);
+    }
+  }
+
+  if (
+    blockingDecisions !== JANUARY_SCENARIO_DECISION_COUNT ||
+    providerCalls !== JANUARY_SCENARIO_PROVIDER_COUNT ||
+    randomContentCalls !== JANUARY_SCENARIO_RANDOM_CONTENT_COUNT ||
+    completionCount !== 1 ||
+    rngCalls !== JANUARY_SCENARIO_RNG_CALL_BUDGET
+  ) {
+    throw new TypeError("January scenario runtime instruction surface is unsupported");
+  }
+
+  return { blockingDecisions, providerCalls, randomContentCalls, rngCalls };
+}
+
+function assertCertificateIdentity(
+  program: ScenarioProgramV1,
+  capabilities: ScenarioResolvedCapabilitiesV1,
+  certificate: ScenarioCertificateV1,
+  stats: JanuaryScenarioRuntimeStats,
+): void {
+  if (
+    certificate.schemaVersion !== "scenario-certificate-v1" ||
+    certificate.programFingerprint !== program.programFingerprint ||
+    certificate.rulesFingerprint !== capabilities.rulesFingerprint ||
+    certificate.policyId !== JANUARY_SCENARIO_POLICY_ID ||
+    certificate.policyFingerprint !== JANUARY_SCENARIO_POLICY_FINGERPRINT ||
+    certificate.instructionCount !== program.instructions.length ||
+    certificate.completionGuaranteed !== true ||
+    certificate.bounded !== true ||
+    certificate.transitionBudgetMax !== program.instructions.length ||
+    certificate.blockingDecisionsMin !== stats.blockingDecisions ||
+    certificate.blockingDecisionsMax !== stats.blockingDecisions ||
+    certificate.providerCallsMax !== stats.providerCalls ||
+    certificate.rngCallsMax !== stats.rngCalls
+  ) {
+    throw new TypeError("January scenario runtime certificate bounds are unsupported");
+  }
+
+  const { certificateFingerprint, ...certificateBody } = certificate;
+  if (
+    fingerprint(SCENARIO_CERTIFICATE_FINGERPRINT_NAMESPACE, certificateBody) !==
+    certificateFingerprint
+  ) {
+    throw new TypeError("January scenario runtime certificate fingerprint is invalid");
+  }
+}
+
+function assertLinearNextPc(pc: number, nextPc: number): void {
+  if (nextPc !== pc + 1) {
+    throw new TypeError(
+      `January scenario runtime requires linear control flow at instruction ${pc}`,
+    );
+  }
+}
+
+function assertJanuaryDecisionId(decisionId: string): void {
+  if (
+    decisionId !== ACCESS_DECISION_ID &&
+    decisionId !== LEARNING_DECISION_ID &&
+    decisionId !== DEFECT_DECISION_ID
+  ) {
+    throw new TypeError(`January scenario decision ${decisionId} is unsupported`);
+  }
+}
+
+function assertJanuaryProviderId(providerId: string): void {
+  if (
+    providerId !== ACCESS_PROVIDER_ID &&
+    providerId !== WORK_PROVIDER_ID &&
+    providerId !== PROGRAMMING_PROVIDER_ID
+  ) {
+    throw new TypeError(`January scenario provider ${providerId} is unsupported`);
+  }
+}
+
+function createJanuaryMonthStepBindings(steps: readonly MonthRunStep[]): JanuaryMonthStepBindings {
+  if (steps.length !== JANUARY_SCENARIO_INSTRUCTION_COUNT + 1) {
+    throw new TypeError("January scenario adapter does not match the MonthRun binding table");
+  }
+  return Object.freeze({
+    start: requireMonthStep(steps, 0, "start"),
+    accessDecision: requireMonthStep(steps, 1, "access decision"),
+    accessProvider: requireMonthStep(steps, 2, "access provider"),
+    learningDecision: requireMonthStep(steps, 3, "learning decision"),
+    workProvider: requireMonthStep(steps, 4, "work provider"),
+    defectContent: requireMonthStep(steps, 5, "defect content"),
+    defectDecision: requireMonthStep(steps, 6, "defect decision"),
+    programmingProvider: requireMonthStep(steps, 7, "programming provider"),
+    complete: requireMonthStep(steps, 8, "completion"),
+  });
+}
+
+function bindScenarioInstruction(
+  program: ScenarioProgramV1,
+  instruction: ScenarioInstructionV1,
+  bindings: JanuaryMonthStepBindings,
+): MonthRunStep {
+  switch (instruction.op) {
+    case "decision":
+      switch (instruction.decisionId) {
+        case ACCESS_DECISION_ID:
+          return bindings.accessDecision;
+        case LEARNING_DECISION_ID:
+          return bindings.learningDecision;
+        case DEFECT_DECISION_ID:
+          return bindings.defectDecision;
+        default:
+          throw new TypeError(`January scenario decision ${instruction.decisionId} is unsupported`);
+      }
+    case "provider": {
+      const providerId = requireTableEntry(
+        program.providerTable,
+        instruction.providerIndex,
+        "provider",
+      );
+      switch (providerId) {
+        case ACCESS_PROVIDER_ID:
+          return bindings.accessProvider;
+        case WORK_PROVIDER_ID:
+          return bindings.workProvider;
+        case PROGRAMMING_PROVIDER_ID:
+          return bindings.programmingProvider;
+        default:
+          throw new TypeError(`January scenario provider ${providerId} is unsupported`);
+      }
+    }
+    case "random-content": {
+      const contentPool = requireTableEntry(
+        program.contentPoolTable,
+        instruction.contentPoolIndex,
+        "content pool",
+      );
+      if (contentPool !== DEFECT_CONTENT_POOL_ID) {
+        throw new TypeError(`January scenario content pool ${contentPool} is unsupported`);
+      }
+      return bindings.defectContent;
+    }
+    case "complete":
+      return bindings.complete;
+    case "gate":
+    case "branch":
+      throw new TypeError(`January scenario runtime instruction ${instruction.op} is unsupported`);
+  }
+}
+
+function requireTableEntry(
+  values: readonly string[],
+  index: number,
+  subject: string,
+): string {
+  if (!Number.isSafeInteger(index) || index < 0) {
+    throw new TypeError(`January scenario ${subject} index is invalid`);
+  }
+  const value = values[index];
+  if (value === undefined) {
+    throw new TypeError(`January scenario ${subject} index ${index} is unresolved`);
+  }
+  return value;
+}
+
+function requireMonthStep(
+  steps: readonly MonthRunStep[],
+  index: number,
+  subject: string,
+): MonthRunStep {
+  const step = steps[index];
+  if (step === undefined) {
+    throw new TypeError(`January MonthRun ${subject} binding is missing`);
+  }
+  return step;
 }
 
 function validateScenarioCheckpoint(
@@ -174,11 +431,5 @@ function validateScenarioCheckpoint(
   }
   if (checkpoint.compatibility.rulesFingerprint !== expectedRulesFingerprint) {
     throw new TypeError("January scenario MonthRun rules fingerprint is incompatible");
-  }
-}
-
-function assertCanonicalIdentity(actual: unknown, expected: unknown, subject: string): void {
-  if (canonicalizeAuthoritative(actual) !== canonicalizeAuthoritative(expected)) {
-    throw new TypeError(`January scenario runtime ${subject} identity is unsupported`);
   }
 }
