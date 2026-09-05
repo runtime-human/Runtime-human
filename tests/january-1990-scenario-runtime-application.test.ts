@@ -31,7 +31,11 @@ import {
 
 import { createInMemoryPersistenceHarness } from "./helpers/in-memory-persistence-service";
 import { loadJanuaryScenarioArtifactV1 } from "./helpers/january-1990-scenario-artifact";
-import { loadJanuaryTestRegistry } from "./helpers/january-1990-runtime-fixture";
+import {
+  loadJanuaryTestRegistry,
+  requireJanuaryWaiting,
+  resumeJanuary,
+} from "./helpers/january-1990-runtime-fixture";
 
 const EQUIVALENCE_SEEDS = Array.from({ length: 64 }, (_, seed) => seed);
 const PROVIDER_OUTCOME_IDS = new Set([
@@ -93,6 +97,50 @@ describe("January 1990 opt-in certified scenario runtime", () => {
     expect(ordinaryLoad).toMatchObject({
       kind: "blocked",
       reason: "incompatible-checkpoint",
+    });
+  });
+
+  it("replays a duplicate scenario resume exactly once through the existing persisted protocol", async () => {
+    const registry = await loadJanuaryTestRegistry();
+    const artifact = await loadJanuaryScenarioArtifactV1();
+    const saveId = parseSaveId("save-january-scenario-duplicate-resume");
+    const runId = parseMonthRunId("run-january-scenario-duplicate-resume");
+    const harness = createInMemoryPersistenceHarness({
+      saveId,
+      saveSchemaFingerprint: JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
+      initialSnapshot: createJanuary1990InitialSaveSnapshot(),
+    });
+    const scenarioRuntime = createJanuary1990ScenarioRuntime({
+      persistence: harness.service,
+      contentRegistry: registry,
+      artifact,
+    });
+    const started = requireJanuaryWaiting(
+      await scenarioRuntime.begin({
+        requestId: parseRequestId("begin-january-scenario-duplicate-resume"),
+        saveId,
+        expectedSaveRevision: parseSaveRevision(0),
+        runId,
+        seed: 42n,
+      }),
+    );
+    const resumeInput = {
+      requestId: "resume-january-scenario-access-once",
+      answer: { schemaVersion: "january-access-answer-v1", route: "home-pc" },
+    } as const;
+
+    const first = requireJanuaryWaiting(await resumeJanuary(scenarioRuntime, started, resumeInput));
+    const duplicate = requireJanuaryWaiting(
+      await resumeJanuary(scenarioRuntime, started, resumeInput),
+    );
+
+    expect(first.checkpoint.pendingDecision?.decisionId).toBe("january-1990/learning");
+    expect(duplicate.checkpoint.checkpointHash).toBe(first.checkpoint.checkpointHash);
+    expect(duplicate.checkpoint.acceptedDecisions).toEqual(first.checkpoint.acceptedDecisions);
+    expect(harness.getStats()).toEqual({
+      beginMutations: 1,
+      boundaryMutations: 2,
+      commitMutations: 0,
     });
   });
 
