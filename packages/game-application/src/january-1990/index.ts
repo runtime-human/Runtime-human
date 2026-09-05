@@ -2,6 +2,8 @@ export { createJanuary1990Runtime } from "./create-january-runtime";
 export type { CreateJanuary1990RuntimeInput, January1990Runtime } from "./create-january-runtime";
 export { createJanuary1990ScenarioRuntime } from "./create-january-scenario-runtime";
 export type { CreateJanuary1990ScenarioRuntimeInput } from "./create-january-scenario-runtime";
+export { createJanuary1990AuthorityCutoverRuntime } from "./create-january-authority-cutover-runtime";
+export type { CreateJanuary1990AuthorityCutoverRuntimeInput } from "./create-january-authority-cutover-runtime";
 export { JANUARY_1990_DEFAULT_BALANCE, parseJanuary1990Balance } from "@runtime-human/game-core";
 export type { January1990BalanceV1 } from "@runtime-human/game-core";
 export { createJanuary1990BeginCommand, createJanuary1990ResumeCommand } from "./january-commands";

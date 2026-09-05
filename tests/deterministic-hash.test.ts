@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { fingerprint, sha256Hex, stableId } from "@runtime-human/game-core";
+import { parseFingerprint } from "@runtime-human/game-schema";
 
 describe("deterministic hashing", () => {
   it("matches the SHA-256 standard vector", () => {
@@ -21,5 +22,14 @@ describe("deterministic hashing", () => {
 
   it("separates stable IDs from fingerprints", () => {
     expect(stableId("rules", { version: 1 })).not.toBe(fingerprint("rules", { version: 1 }));
+  });
+
+  it("parses only canonical lowercase SHA-256 fingerprints", () => {
+    const value = "162e470476ad0bd32194ee68dfdac80e14092b04c5b44a668315c47887a8117f";
+
+    expect(parseFingerprint(value)).toBe(value);
+    expect(() => parseFingerprint(value.toUpperCase())).toThrow("Fingerprint");
+    expect(() => parseFingerprint("not-a-fingerprint")).toThrow("Fingerprint");
+    expect(() => parseFingerprint(42)).toThrow("Fingerprint");
   });
 });
