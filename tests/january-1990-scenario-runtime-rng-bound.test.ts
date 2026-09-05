@@ -28,6 +28,10 @@ describe("January 1990 certified scenario runtime RNG bound", () => {
     const registry = await loadJanuaryTestRegistry();
     const context = projectJanuary1990Content(registry);
     const artifact = await loadJanuaryScenarioArtifactV1();
+    if (artifact.certificate.rngCallsMax === "unknown") {
+      throw new Error("January scenario certificate must expose a numeric RNG call bound");
+    }
+    const rngCallsMax = artifact.certificate.rngCallsMax;
     const plan = createJanuary1990MonthPlan(context);
     const steps = createJanuary1990ScenarioMonthSteps(
       context,
@@ -66,8 +70,8 @@ describe("January 1990 certified scenario runtime RNG bound", () => {
         const observedCalls = nextInt.mock.calls.length - callsBefore;
 
         expect(run.terminalState).toBe("completed");
-        expect(observedCalls).toBeLessThanOrEqual(artifact.certificate.rngCallsMax);
-        expect(observedCalls).toBe(artifact.certificate.rngCallsMax);
+        expect(observedCalls).toBeLessThanOrEqual(rngCallsMax);
+        expect(observedCalls).toBe(rngCallsMax);
       }
     } finally {
       nextInt.mockRestore();
