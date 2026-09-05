@@ -124,6 +124,11 @@ export type {
   SimulationReportParseResultV2,
 } from "./simulation-compare-v2";
 export {
+  JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1,
+  SIMULATION_CORPUS_VERSION_V1,
+} from "./simulation-corpus";
+export type { SimulationCorpusV1 } from "./simulation-corpus";
+export {
   REPRO_RUNNER_ID,
   SIMULATION_POLICY_IDS,
   SIMULATION_REPORT_SCHEMA_VERSION,
