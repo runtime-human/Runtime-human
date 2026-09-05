@@ -21,7 +21,60 @@ async function loadJson<T>(name: string): Promise<T> {
 }
 
 export async function loadJanuaryScenarioArtifactV1(): Promise<ScenarioArtifactV1> {
-  const source = await loadJson<ScenarioAuthoringDocument>("source.json");
+  return buildJanuaryScenarioArtifactV1(await loadJson<ScenarioAuthoringDocument>("source.json"));
+}
+
+export async function loadJanuaryScenarioDispatchProbeArtifactV1(): Promise<ScenarioArtifactV1> {
+  return buildJanuaryScenarioArtifactV1({
+    schemaVersion: "scenario-v1",
+    id: "january-1990.shadow-proof",
+    entry: "a-access",
+    nodes: {
+      "a-access": {
+        kind: "decision",
+        decisionId: "january-1990/access",
+        next: "b-learning",
+      },
+      "b-learning": {
+        kind: "decision",
+        decisionId: "january-1990/learning",
+        next: "c-access-materialize",
+      },
+      "c-access-materialize": {
+        kind: "provider",
+        providerId: "january-1990.access-materialize",
+        next: "d-work-materialize",
+      },
+      "d-work-materialize": {
+        kind: "provider",
+        providerId: "january-1990.work-materialize",
+        next: "e-defect-select",
+      },
+      "e-defect-select": {
+        kind: "random-content",
+        poolId: "january-1990.defect-events",
+        next: "f-defect",
+      },
+      "f-defect": {
+        kind: "decision",
+        decisionId: "january-1990/defect",
+        next: "g-programming-outcome",
+      },
+      "g-programming-outcome": {
+        kind: "provider",
+        providerId: "january-1990.programming-outcome",
+        next: "h-complete",
+      },
+      "h-complete": {
+        kind: "complete",
+      },
+    },
+  });
+}
+
+async function buildJanuaryScenarioArtifactV1(
+  source: ScenarioAuthoringDocument,
+): Promise<ScenarioArtifactV1> {
   const registry = await loadJson<ScenarioCapabilityRegistryV1>("registry.json");
   const policy = await loadJson<ScenarioExecutionPolicyV1>("policy.json");
 
