@@ -38,6 +38,11 @@ export type January1990Runtime = Readonly<{
   retry(): Promise<PersistedMonthRunResult>;
 }>;
 
+/**
+ * @deprecated Migration-only legacy authority used to drain checkpoints created before the
+ * certified scenario cutover. New production composition must use
+ * `createJanuary1990AuthorityCutoverRuntime`.
+ */
 export function createJanuary1990Runtime(input: CreateJanuary1990RuntimeInput): January1990Runtime {
   const balance = input.balance ?? JANUARY_1990_DEFAULT_BALANCE;
   const contentContext = projectJanuary1990Content(input.contentRegistry);
