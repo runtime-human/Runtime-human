@@ -1,12 +1,12 @@
 {
   "_schemaVersion": 1,
-  "updated": "2026-08-31",
+  "updated": "2026-09-05",
   "implementationProfile": "MVP Casual",
   "repository": "runtime-human/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "mainHeadAtCurrentSliceStart": "a364fc97b4e0f86c99c850abbfa44b2db1608ff6",
-  "currentPhase": "ai-first-harness-foundation",
+  "mainHeadAtCurrentSliceStart": "8b237c19eebfbed6779192cd64a1b438f161ae8e",
+  "currentPhase": "engine-03-simulation-regression-foundation",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -499,6 +499,89 @@
         "docsRun": 1417,
         "sonarNewIssues": 0,
         "sonarSecurityHotspots": 0
+      }
+    },
+    {
+      "id": "engine-01-hierarchical-rng-authority",
+      "status": "complete",
+      "issue": 104,
+      "pullRequest": 140,
+      "commit": "0b210e7f663b008b2be1be810d37c8fe7b5c585b",
+      "scope": ["hierarchical-v1-rng-authority", "domain-isolated-streams", "simulation-report-v3", "game-repro-v3", "hierarchical-rules-identity"],
+      "evidence": {
+        "generatedPropertyEvidenceInMain": true,
+        "propertyRunsPerCase": 128,
+        "legacySequentialContractsPreserved": true
+      }
+    },
+    {
+      "id": "engine-02-scenario-tooling",
+      "status": "complete",
+      "issue": 105,
+      "pullRequest": 152,
+      "commit": "f541e8942c93b5db2ad5c286224f0706e9ae9fde",
+      "scope": ["scenario-program-v1", "scenario-certificate-v1", "capability-registry", "scenario-artifact-v1", "gamectl-check-compile-inspect"],
+      "evidence": {
+        "runtimeExecutorAdded": false,
+        "genericWorkflowLayerAdded": false,
+        "canonicalV3Run": 33834313917
+      }
+    },
+    {
+      "id": "engine-02-january-shadow-proof",
+      "status": "complete",
+      "issue": 105,
+      "pullRequest": 154,
+      "commit": "ccb5b9793c407686178f91fb0a6625ab6678dcfd",
+      "scope": ["january-scenario-shadow", "authoritative-decision-id-preservation", "explicit-january-policy", "two-call-rng-upper-bound"],
+      "evidence": {
+        "runtimeAuthorityChanged": false,
+        "persistenceChanged": false,
+        "scenarioRuntimeExecutorAdded": false
+      }
+    },
+    {
+      "id": "engine-02-certified-month-run-adapter",
+      "status": "complete",
+      "issue": 105,
+      "pullRequest": 156,
+      "commit": "1c9b44d5fad14cdf126998e75b27eab4a01830ca",
+      "scope": ["certified-january-adapter", "existing-month-run-protocol", "fingerprint-bound-compatibility", "exactly-once-resume", "controlled-equivalence-corpus"],
+      "evidence": {
+        "equivalenceComparisons": 192,
+        "observedRngCallsMax": 2,
+        "checkpointSchemaChanged": false,
+        "persistenceProtocolChanged": false,
+        "canonicalV3Run": 33956048832
+      }
+    },
+    {
+      "id": "engine-02-january-authority-cutover",
+      "status": "complete",
+      "issue": 158,
+      "pullRequest": 159,
+      "commit": "58b40ac267af2b952c29e771f76fb0ec931e3ab3",
+      "scope": ["production-scenario-artifact", "fresh-run-scenario-authority", "sticky-legacy-checkpoint-drain", "compatibility-aware-runtime-selection"],
+      "evidence": {
+        "legacyActiveRunsRemainLoadable": true,
+        "newRunsUseCertifiedScenarioAuthority": true,
+        "persistenceProtocolChanged": false,
+        "canonicalV3Run": 33968866036
+      }
+    },
+    {
+      "id": "engine-02-production-artifact-freshness",
+      "status": "complete",
+      "issue": 158,
+      "pullRequest": 161,
+      "commit": "8b237c19eebfbed6779192cd64a1b438f161ae8e",
+      "scope": ["canonical-scenario-rebuild", "production-artifact-byte-comparison", "check-fast-drift-gate"],
+      "evidence": {
+        "secondPublicArtifactAdded": false,
+        "desktopFetchLoaderAdded": false,
+        "fastFeedbackRun": 33971651260,
+        "canonicalV3Run": 33971834212,
+        "postMergeFoundationRun": 33972302729
       }
     }
   ],
