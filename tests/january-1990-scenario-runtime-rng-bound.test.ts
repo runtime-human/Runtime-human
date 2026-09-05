@@ -14,6 +14,7 @@ import {
 } from "@runtime-human/game-core";
 import {
   createJanuary1990AnswerProviders,
+  REPRO_RUNNER_ID,
   runJanuaryCommandSequence,
 } from "@runtime-human/game-simulation";
 
@@ -52,7 +53,7 @@ describe("January 1990 certified scenario runtime RNG bound", () => {
         });
         const callsBefore = nextInt.mock.calls.length;
         const run = runJanuaryCommandSequence({
-          runnerId: "repro",
+          runnerId: REPRO_RUNNER_ID,
           seed,
           contentFingerprint: context.contentFingerprint,
           steps,
