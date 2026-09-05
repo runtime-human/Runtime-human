@@ -14,9 +14,11 @@ describe("January scenario production artifact", () => {
   it("matches the committed deterministic artifact byte-for-byte", async () => {
     const built = await buildJanuaryScenarioArtifact();
     assertJanuary1990ScenarioRuntimeArtifactV1(built);
+    const serialized = serializeJanuaryScenarioArtifact(built);
+    console.log(`JANUARY_SCENARIO_ARTIFACT=${serialized.trimEnd()}`);
 
     const committed = await readFile(JANUARY_SCENARIO_ARTIFACT_PATH, "utf8");
-    expect(committed).toBe(serializeJanuaryScenarioArtifact(built));
+    expect(committed).toBe(serialized);
     expect(JSON.parse(committed)).toEqual(built);
   });
 });
