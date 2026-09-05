@@ -72,6 +72,54 @@ export async function loadJanuaryScenarioDispatchProbeArtifactV1(): Promise<Scen
   });
 }
 
+export async function loadJanuaryScenarioInvalidDomainOrderProbeArtifactV1(): Promise<ScenarioArtifactV1> {
+  return buildJanuaryScenarioArtifactV1({
+    schemaVersion: "scenario-v1",
+    id: "january-1990.shadow-proof",
+    entry: "a-access-materialize",
+    nodes: {
+      "a-access-materialize": {
+        kind: "provider",
+        providerId: "january-1990.access-materialize",
+        next: "b-access",
+      },
+      "b-access": {
+        kind: "decision",
+        decisionId: "january-1990/access",
+        next: "c-learning",
+      },
+      "c-learning": {
+        kind: "decision",
+        decisionId: "january-1990/learning",
+        next: "d-work-materialize",
+      },
+      "d-work-materialize": {
+        kind: "provider",
+        providerId: "january-1990.work-materialize",
+        next: "e-defect-select",
+      },
+      "e-defect-select": {
+        kind: "random-content",
+        poolId: "january-1990.defect-events",
+        next: "f-defect",
+      },
+      "f-defect": {
+        kind: "decision",
+        decisionId: "january-1990/defect",
+        next: "g-programming-outcome",
+      },
+      "g-programming-outcome": {
+        kind: "provider",
+        providerId: "january-1990.programming-outcome",
+        next: "h-complete",
+      },
+      "h-complete": {
+        kind: "complete",
+      },
+    },
+  });
+}
+
 export async function loadJanuaryScenarioDuplicateDecisionProbeArtifactV1(): Promise<ScenarioArtifactV1> {
   return buildJanuaryScenarioArtifactV1({
     schemaVersion: "scenario-v1",
