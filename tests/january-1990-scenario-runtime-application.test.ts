@@ -19,6 +19,7 @@ import {
 } from "@runtime-human/game-core";
 import {
   parseMonthRunId,
+  parseMonthRunRevision,
   parseRequestId,
   parseSaveId,
   parseSaveRevision,
@@ -115,6 +116,26 @@ describe("January 1990 opt-in certified scenario runtime", () => {
     expect(alternateLoad).toMatchObject({
       kind: "blocked",
       reason: "incompatible-checkpoint",
+    });
+
+    const pendingDecision = started.checkpoint.pendingDecision;
+    if (pendingDecision === null) throw new Error("January scenario access decision is missing");
+    const alternateResume = await alternateScenarioRuntime.resume({
+      requestId: parseRequestId("resume-january-scenario-incompatible-artifact"),
+      saveId,
+      runId,
+      expectedRunRevision: parseMonthRunRevision(started.checkpoint.runRevision),
+      decisionId: pendingDecision.decisionId,
+      answer: { schemaVersion: "january-access-answer-v1", route: "home-pc" },
+    });
+    expect(alternateResume).toMatchObject({
+      kind: "blocked",
+      reason: "incompatible-checkpoint",
+    });
+    expect(harness.getStats()).toEqual({
+      beginMutations: 1,
+      boundaryMutations: 1,
+      commitMutations: 0,
     });
   });
 
