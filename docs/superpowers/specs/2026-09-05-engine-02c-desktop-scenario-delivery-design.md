@@ -1,3 +1,11 @@
+---
+title: "ENGINE-02C Desktop Scenario Delivery Design"
+type: plan
+status: accepted
+canon: true
+updated: 2026-09-05
+---
+
 # ENGINE-02C Desktop Scenario Delivery Design
 
 ## Status
