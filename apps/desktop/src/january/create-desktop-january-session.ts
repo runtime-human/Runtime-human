@@ -1,4 +1,5 @@
-import { createJanuary1990Runtime, type PersistenceService } from "@runtime-human/game-application";
+import { createJanuary1990AuthorityCutoverRuntime, type PersistenceService } from "@runtime-human/game-application";
+import { JANUARY_1990_SCENARIO_ARTIFACT } from "@runtime-human/game-content";
 import {
   parseMonthRunId,
   parseSaveId,
@@ -44,9 +45,10 @@ export async function createDesktopJanuarySession(
       ensureJanuarySave(input.persistence, saveId),
     ]);
     const controller = createJanuarySessionController({
-      runtime: createJanuary1990Runtime({
+      runtime: createJanuary1990AuthorityCutoverRuntime({
         persistence: input.persistence,
         contentRegistry,
+        artifact: JANUARY_1990_SCENARIO_ARTIFACT,
       }),
       saveId,
       runId,
