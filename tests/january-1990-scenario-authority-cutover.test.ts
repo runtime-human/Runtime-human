@@ -18,6 +18,7 @@ import { createInMemoryPersistenceHarness } from "./helpers/in-memory-persistenc
 import { loadJanuaryScenarioArtifactV1 } from "./helpers/january-1990-scenario-artifact";
 import {
   loadJanuaryTestRegistry,
+  requireJanuaryCommitted,
   requireJanuaryWaiting,
   resumeJanuary,
 } from "./helpers/january-1990-runtime-fixture";
@@ -108,6 +109,78 @@ describe("January 1990 scenario authority cutover", () => {
     );
     expect(resumed.checkpoint.pendingDecision?.decisionId).toBe("january-1990/learning");
     expect(resumed.checkpoint.compatibility.rulesFingerprint).toBe(
+      legacy.compatibility.rulesFingerprint,
+    );
+  });
+
+  it("returns to scenario authority for a new run after a legacy drain commits", async () => {
+    const registry = await loadJanuaryTestRegistry();
+    const saveId = parseSaveId("save-january-scenario-cutover-drain-then-new");
+    const legacyRunId = parseMonthRunId("run-january-scenario-cutover-drain");
+    const scenarioRunId = parseMonthRunId("run-january-scenario-cutover-after-drain");
+    const harness = createInMemoryPersistenceHarness({
+      saveId,
+      saveSchemaFingerprint: JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
+      initialSnapshot: createJanuary1990InitialSaveSnapshot(),
+    });
+    const legacy = createJanuary1990Runtime({
+      persistence: harness.service,
+      contentRegistry: registry,
+    });
+    const access = requireJanuaryWaiting(
+      await legacy.begin({
+        requestId: parseRequestId("begin-january-scenario-cutover-drain"),
+        saveId,
+        expectedSaveRevision: parseSaveRevision(0),
+        runId: legacyRunId,
+        seed: 42n,
+      }),
+    );
+    const cutover = createJanuary1990AuthorityCutoverRuntime({
+      persistence: harness.service,
+      contentRegistry: registry,
+      artifact: JANUARY_1990_SCENARIO_ARTIFACT,
+    });
+    const scenarioRulesFingerprint = cutover.compatibility.rulesFingerprint;
+
+    const loaded = requireJanuaryWaiting(await cutover.load(saveId));
+    expect(loaded.checkpoint.checkpointHash).toBe(access.checkpoint.checkpointHash);
+    expect(cutover.compatibility.rulesFingerprint).toBe(legacy.compatibility.rulesFingerprint);
+
+    const learning = requireJanuaryWaiting(
+      await resumeJanuary(cutover, loaded, {
+        requestId: "resume-january-scenario-cutover-drain-access",
+        answer: { schemaVersion: "january-access-answer-v1", route: "home-pc" },
+      }),
+    );
+    const defect = requireJanuaryWaiting(
+      await resumeJanuary(cutover, learning, {
+        requestId: "resume-january-scenario-cutover-drain-learning",
+        answer: { schemaVersion: "january-learning-answer-v1", practice: "edit-and-debug" },
+      }),
+    );
+    const committed = requireJanuaryCommitted(
+      await resumeJanuary(cutover, defect, {
+        requestId: "resume-january-scenario-cutover-drain-defect",
+        answer: { schemaVersion: "january-defect-answer-v1", response: "inspect-listing" },
+      }),
+    );
+    expect(committed.checkpoint.compatibility.rulesFingerprint).toBe(
+      legacy.compatibility.rulesFingerprint,
+    );
+
+    const nextRun = requireJanuaryWaiting(
+      await cutover.begin({
+        requestId: parseRequestId("begin-january-scenario-cutover-after-drain"),
+        saveId,
+        expectedSaveRevision: parseSaveRevision(1),
+        runId: scenarioRunId,
+        seed: 43n,
+      }),
+    );
+
+    expect(nextRun.checkpoint.compatibility.rulesFingerprint).toBe(scenarioRulesFingerprint);
+    expect(nextRun.checkpoint.compatibility.rulesFingerprint).not.toBe(
       legacy.compatibility.rulesFingerprint,
     );
   });
