@@ -28,6 +28,8 @@ import {
 import {
   loadJanuaryScenarioArtifactV1,
   loadJanuaryScenarioDispatchProbeArtifactV1,
+  loadJanuaryScenarioDuplicateDecisionProbeArtifactV1,
+  loadJanuaryScenarioDuplicateProviderProbeArtifactV1,
 } from "./helpers/january-1990-scenario-artifact";
 import { loadJanuaryTestRegistry } from "./helpers/january-1990-runtime-fixture";
 
@@ -137,6 +139,28 @@ describe("January 1990 certified scenario MonthRun adapter", () => {
     if (learning.kind !== "boundary") return;
     expect(learning.checkpoint.pendingDecision?.decisionId).toBe("january-1990/learning");
     expect(learning.checkpoint.programCounter).toBe(3);
+  });
+
+  it("rejects certified artifacts that duplicate required January bindings", async () => {
+    const registry = await loadJanuaryTestRegistry();
+    const context = projectJanuary1990Content(registry);
+    const duplicateDecision = await loadJanuaryScenarioDuplicateDecisionProbeArtifactV1();
+    const duplicateProvider = await loadJanuaryScenarioDuplicateProviderProbeArtifactV1();
+
+    expect(() =>
+      createJanuary1990ScenarioMonthSteps(
+        context,
+        JANUARY_1990_DEFAULT_BALANCE,
+        duplicateDecision,
+      ),
+    ).toThrow();
+    expect(() =>
+      createJanuary1990ScenarioMonthSteps(
+        context,
+        JANUARY_1990_DEFAULT_BALANCE,
+        duplicateProvider,
+      ),
+    ).toThrow();
   });
 
   it("binds scenario program, capability rules, policy and certificate into compatibility identity", async () => {
