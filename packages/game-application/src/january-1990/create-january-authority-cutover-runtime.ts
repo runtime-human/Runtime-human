@@ -30,9 +30,21 @@ export function createJanuary1990AuthorityCutoverRuntime(
     }
   }
 
+  function releaseCompletedLegacyAuthority(
+    authority: January1990Runtime,
+    result: PersistedMonthRunResult,
+  ): void {
+    if (authority === legacy && isInactiveMonthRunResult(result)) selected = null;
+  }
+
   async function load(saveId: Parameters<January1990Runtime["load"]>[0]) {
     bindSave(saveId);
-    if (selected !== null) return selected.load(saveId);
+    if (selected !== null) {
+      const authority = selected;
+      const result = await authority.load(saveId);
+      releaseCompletedLegacyAuthority(authority, result);
+      return result;
+    }
 
     const scenarioResult = await scenario.load(saveId);
     if (!isIncompatibleCheckpoint(scenarioResult)) {
@@ -41,13 +53,20 @@ export function createJanuary1990AuthorityCutoverRuntime(
     }
 
     const legacyResult = await legacy.load(saveId);
-    if (!isIncompatibleCheckpoint(legacyResult)) selected = legacy;
+    if (!isIncompatibleCheckpoint(legacyResult)) {
+      selected = isInactiveMonthRunResult(legacyResult) ? null : legacy;
+    }
     return legacyResult;
   }
 
   async function resume(inputValue: Parameters<January1990Runtime["resume"]>[0]) {
     bindSave(inputValue.saveId);
-    if (selected !== null) return selected.resume(inputValue);
+    if (selected !== null) {
+      const authority = selected;
+      const result = await authority.resume(inputValue);
+      releaseCompletedLegacyAuthority(authority, result);
+      return result;
+    }
 
     const scenarioResult = await scenario.resume(inputValue);
     if (!isIncompatibleCheckpoint(scenarioResult)) {
@@ -56,7 +75,9 @@ export function createJanuary1990AuthorityCutoverRuntime(
     }
 
     const legacyResult = await legacy.resume(inputValue);
-    if (!isIncompatibleCheckpoint(legacyResult)) selected = legacy;
+    if (!isIncompatibleCheckpoint(legacyResult)) {
+      selected = isInactiveMonthRunResult(legacyResult) ? null : legacy;
+    }
     return legacyResult;
   }
 
@@ -73,12 +94,19 @@ export function createJanuary1990AuthorityCutoverRuntime(
       return selected.begin(beginInput);
     },
     resume,
-    retry() {
-      return (selected ?? scenario).retry();
+    async retry() {
+      const authority = selected ?? scenario;
+      const result = await authority.retry();
+      releaseCompletedLegacyAuthority(authority, result);
+      return result;
     },
   });
 }
 
 function isIncompatibleCheckpoint(result: PersistedMonthRunResult): boolean {
   return result.kind === "blocked" && result.reason === "incompatible-checkpoint";
+}
+
+function isInactiveMonthRunResult(result: PersistedMonthRunResult): boolean {
+  return result.kind === "idle" || result.kind === "committed" || result.kind === "terminal";
 }
