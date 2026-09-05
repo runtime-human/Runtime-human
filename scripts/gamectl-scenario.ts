@@ -12,12 +12,13 @@ import {
   resolveScenarioCapabilitiesV1,
   type StructuredDiagnosticV1,
 } from "@runtime-human/game-devtools";
-import type {
-  ScenarioCapabilityRegistryV1,
-  ScenarioCertificateV1,
-  ScenarioExecutionPolicyV1,
-  ScenarioProgramV1,
-  ScenarioResolvedCapabilitiesV1,
+import {
+  SCENARIO_ARTIFACT_SCHEMA_VERSION,
+  type ScenarioArtifactV1,
+  type ScenarioCapabilityRegistryV1,
+  type ScenarioExecutionPolicyV1,
+  type ScenarioProgramV1,
+  type ScenarioResolvedCapabilitiesV1,
 } from "@runtime-human/game-schema";
 
 export type ScenarioGamectlIo = Readonly<{
@@ -26,7 +27,6 @@ export type ScenarioGamectlIo = Readonly<{
 }>;
 
 const ENVELOPE_SCHEMA_VERSION = "runtime-human-gamectl-v1" as const;
-const SCENARIO_ARTIFACT_SCHEMA_VERSION = "scenario-artifact-v1" as const;
 const FINGERPRINT = /^[0-9a-f]{64}$/u;
 const MVP_SCENARIO_POLICY_V1: ScenarioExecutionPolicyV1 = Object.freeze({
   schemaVersion: "scenario-execution-policy-v1",
@@ -65,13 +65,6 @@ type ScenarioHandlerPayload = Readonly<{
 type ScenarioHandlerOutput = Readonly<{
   exitCode: number;
   payload: ScenarioHandlerPayload;
-}>;
-
-type ScenarioArtifactV1 = Readonly<{
-  schemaVersion: typeof SCENARIO_ARTIFACT_SCHEMA_VERSION;
-  program: ScenarioProgramV1;
-  capabilities: ScenarioResolvedCapabilitiesV1;
-  certificate: ScenarioCertificateV1;
 }>;
 
 type ScenarioPipeline = Readonly<{
