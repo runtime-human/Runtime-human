@@ -1,6 +1,7 @@
 export type { AuthoritativeJsonValue } from "./authoritative-json";
 export {
   DETERMINISM_MANIFEST_V1,
+  parseFingerprint,
   RNG_DERIVATION_MANIFEST_V1,
   parseSerializedXoshiro256State,
 } from "./determinism";
