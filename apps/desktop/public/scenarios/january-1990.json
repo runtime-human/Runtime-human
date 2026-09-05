@@ -1,1 +1,105 @@
-{"capabilities":{"predicates":[],"programFingerprint":"1581cd05caff76175c31c28f100f8cce8dc2da467586ff0db39e6897b6cb40b0","providers":[{"deterministic":true,"effectDomain":"progression","id":"january-1990.access-materialize","rngBudgetMax":0,"version":1},{"deterministic":true,"effectDomain":"project","id":"january-1990.programming-outcome","rngBudgetMax":1,"version":1},{"deterministic":true,"effectDomain":"learning","id":"january-1990.work-materialize","rngBudgetMax":0,"version":1}],"randomContentRngBudgetPerInstruction":1,"rulesFingerprint":"5b2b4b434450e14050df032d4d59c30e48c01a44ec98f416d3421038c899be1a","schemaVersion":"scenario-resolved-capabilities-v1"},"certificate":{"blockingDecisionsMax":3,"blockingDecisionsMin":3,"bounded":true,"certificateFingerprint":"43650b303c0983f26e555352a45358ff1d1ee2f4f14da0ccf6b625bd36b1aa0c","completionGuaranteed":true,"instructionCount":8,"policyFingerprint":"4263f3937d962c8238b142358311d3a4b3e8fe51c8d79d1747a49cba1054483b","policyId":"january-1990-shadow-proof-v1","programFingerprint":"1581cd05caff76175c31c28f100f8cce8dc2da467586ff0db39e6897b6cb40b0","providerCallsMax":3,"rngCallsMax":2,"rulesFingerprint":"5b2b4b434450e14050df032d4d59c30e48c01a44ec98f416d3421038c899be1a","schemaVersion":"scenario-certificate-v1","transitionBudgetMax":8},"program":{"contentPoolTable":["january-1990.defect-events"],"entryPc":0,"instructions":[{"decisionId":"january-1990/access","nextPc":1,"op":"decision"},{"nextPc":2,"op":"provider","providerIndex":0},{"decisionId":"january-1990/learning","nextPc":3,"op":"decision"},{"nextPc":4,"op":"provider","providerIndex":2},{"contentPoolIndex":0,"nextPc":5,"op":"random-content"},{"decisionId":"january-1990/defect","nextPc":6,"op":"decision"},{"nextPc":7,"op":"provider","providerIndex":1},{"op":"complete"}],"predicateTable":[],"programFingerprint":"1581cd05caff76175c31c28f100f8cce8dc2da467586ff0db39e6897b6cb40b0","providerTable":["january-1990.access-materialize","january-1990.programming-outcome","january-1990.work-materialize"],"scenarioId":"january-1990.shadow-proof","schemaVersion":"scenario-program-v1","sourceFingerprint":"162e470476ad0bd32194ee68dfdac80e14092b04c5b44a668315c47887a8117f"},"schemaVersion":"scenario-artifact-v1"}
+{
+  "capabilities": {
+    "predicates": [],
+    "programFingerprint": "1581cd05caff76175c31c28f100f8cce8dc2da467586ff0db39e6897b6cb40b0",
+    "providers": [
+      {
+        "deterministic": true,
+        "effectDomain": "progression",
+        "id": "january-1990.access-materialize",
+        "rngBudgetMax": 0,
+        "version": 1
+      },
+      {
+        "deterministic": true,
+        "effectDomain": "project",
+        "id": "january-1990.programming-outcome",
+        "rngBudgetMax": 1,
+        "version": 1
+      },
+      {
+        "deterministic": true,
+        "effectDomain": "learning",
+        "id": "january-1990.work-materialize",
+        "rngBudgetMax": 0,
+        "version": 1
+      }
+    ],
+    "randomContentRngBudgetPerInstruction": 1,
+    "rulesFingerprint": "5b2b4b434450e14050df032d4d59c30e48c01a44ec98f416d3421038c899be1a",
+    "schemaVersion": "scenario-resolved-capabilities-v1"
+  },
+  "certificate": {
+    "blockingDecisionsMax": 3,
+    "blockingDecisionsMin": 3,
+    "bounded": true,
+    "certificateFingerprint": "43650b303c0983f26e555352a45358ff1d1ee2f4f14da0ccf6b625bd36b1aa0c",
+    "completionGuaranteed": true,
+    "instructionCount": 8,
+    "policyFingerprint": "4263f3937d962c8238b142358311d3a4b3e8fe51c8d79d1747a49cba1054483b",
+    "policyId": "january-1990-shadow-proof-v1",
+    "programFingerprint": "1581cd05caff76175c31c28f100f8cce8dc2da467586ff0db39e6897b6cb40b0",
+    "providerCallsMax": 3,
+    "rngCallsMax": 2,
+    "rulesFingerprint": "5b2b4b434450e14050df032d4d59c30e48c01a44ec98f416d3421038c899be1a",
+    "schemaVersion": "scenario-certificate-v1",
+    "transitionBudgetMax": 8
+  },
+  "program": {
+    "contentPoolTable": [
+      "january-1990.defect-events"
+    ],
+    "entryPc": 0,
+    "instructions": [
+      {
+        "decisionId": "january-1990/access",
+        "nextPc": 1,
+        "op": "decision"
+      },
+      {
+        "nextPc": 2,
+        "op": "provider",
+        "providerIndex": 0
+      },
+      {
+        "decisionId": "january-1990/learning",
+        "nextPc": 3,
+        "op": "decision"
+      },
+      {
+        "nextPc": 4,
+        "op": "provider",
+        "providerIndex": 2
+      },
+      {
+        "contentPoolIndex": 0,
+        "nextPc": 5,
+        "op": "random-content"
+      },
+      {
+        "decisionId": "january-1990/defect",
+        "nextPc": 6,
+        "op": "decision"
+      },
+      {
+        "nextPc": 7,
+        "op": "provider",
+        "providerIndex": 1
+      },
+      {
+        "op": "complete"
+      }
+    ],
+    "predicateTable": [],
+    "programFingerprint": "1581cd05caff76175c31c28f100f8cce8dc2da467586ff0db39e6897b6cb40b0",
+    "providerTable": [
+      "january-1990.access-materialize",
+      "january-1990.programming-outcome",
+      "january-1990.work-materialize"
+    ],
+    "scenarioId": "january-1990.shadow-proof",
+    "schemaVersion": "scenario-program-v1",
+    "sourceFingerprint": "162e470476ad0bd32194ee68dfdac80e14092b04c5b44a668315c47887a8117f"
+  },
+  "schemaVersion": "scenario-artifact-v1"
+}
