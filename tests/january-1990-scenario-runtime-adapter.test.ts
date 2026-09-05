@@ -30,6 +30,7 @@ import {
   loadJanuaryScenarioDispatchProbeArtifactV1,
   loadJanuaryScenarioDuplicateDecisionProbeArtifactV1,
   loadJanuaryScenarioDuplicateProviderProbeArtifactV1,
+  loadJanuaryScenarioInvalidDomainOrderProbeArtifactV1,
 } from "./helpers/january-1990-scenario-artifact";
 import { loadJanuaryTestRegistry } from "./helpers/january-1990-runtime-fixture";
 
@@ -139,6 +140,16 @@ describe("January 1990 certified scenario MonthRun adapter", () => {
     if (learning.kind !== "boundary") return;
     expect(learning.checkpoint.pendingDecision?.decisionId).toBe("january-1990/learning");
     expect(learning.checkpoint.programCounter).toBe(3);
+  });
+
+  it("rejects certified instruction orders that violate January domain dependencies", async () => {
+    const registry = await loadJanuaryTestRegistry();
+    const context = projectJanuary1990Content(registry);
+    const artifact = await loadJanuaryScenarioInvalidDomainOrderProbeArtifactV1();
+
+    expect(() =>
+      createJanuary1990ScenarioMonthSteps(context, JANUARY_1990_DEFAULT_BALANCE, artifact),
+    ).toThrow();
   });
 
   it("rejects certified artifacts that duplicate required January bindings", async () => {
