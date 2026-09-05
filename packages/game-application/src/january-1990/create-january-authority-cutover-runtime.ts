@@ -50,7 +50,9 @@ export function createJanuary1990AuthorityCutoverRuntime(
   return Object.freeze({
     contentContext: scenario.contentContext,
     plan: scenario.plan,
-    compatibility: scenario.compatibility,
+    get compatibility() {
+      return (selected ?? scenario).compatibility;
+    },
     load,
     begin(beginInput) {
       selected ??= scenario;
