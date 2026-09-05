@@ -24,11 +24,21 @@ export async function loadJanuaryScenarioArtifact(
   } catch {
     throw new TypeError("January scenario runtime artifact is not valid JSON");
   }
-  if (candidate === null || typeof candidate !== "object" || Array.isArray(candidate)) {
+  if (
+    !isRecord(candidate) ||
+    candidate.schemaVersion !== "scenario-artifact-v1" ||
+    !isRecord(candidate.program) ||
+    !isRecord(candidate.capabilities) ||
+    !isRecord(candidate.certificate)
+  ) {
     throw new TypeError("January scenario runtime artifact is malformed");
   }
 
-  const artifact = candidate as ScenarioArtifactV1;
+  const artifact = candidate as unknown as ScenarioArtifactV1;
   assertJanuary1990ScenarioRuntimeArtifactV1(artifact);
   return artifact;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
 }
