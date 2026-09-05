@@ -7,13 +7,14 @@ import {
   createCanonicalPayload,
   createJanuary1990InitialSaveSnapshot,
   createJanuary1990ScenarioCompatibility,
-  JANUARY_1990_DEFAULT_BALANCE,
   JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
   projectJanuary1990Content,
-  type CreateDesktopJanuarySessionInput,
   type PersistenceService,
 } from "@runtime-human/game-application";
-import { assertJanuary1990ScenarioRuntimeArtifactV1 } from "@runtime-human/game-core";
+import {
+  assertJanuary1990ScenarioRuntimeArtifactV1,
+  JANUARY_1990_DEFAULT_BALANCE,
+} from "@runtime-human/game-core";
 import type { CreateSaveCommandV1, SaveRecordV1 } from "@runtime-human/game-persistence-contracts";
 import {
   parseSaveId,
@@ -22,7 +23,10 @@ import {
 } from "@runtime-human/game-schema";
 
 import { ensureJanuarySave } from "../apps/desktop/src/january/bootstrap-january-save";
-import { createDesktopJanuarySession } from "../apps/desktop/src/january/create-desktop-january-session";
+import {
+  createDesktopJanuarySession,
+  type CreateDesktopJanuarySessionInput,
+} from "../apps/desktop/src/january/create-desktop-january-session";
 import {
   loadJanuaryContentRegistry,
   type JanuaryContentFetchPort,
