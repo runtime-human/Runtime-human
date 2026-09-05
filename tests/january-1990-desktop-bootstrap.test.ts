@@ -205,7 +205,9 @@ describe("January 1990 desktop bootstrap", () => {
     await session.start();
 
     expect(fetchedUrls).toEqual(["/scenarios/january-1990.json"]);
-    expect(source.harness.getRun(source.runId)?.compatibility).toEqual(expectedCompatibility);
+    expect(source.harness.getRun(source.runId)?.compatibility).toEqual(
+      createCanonicalPayload(expectedCompatibility),
+    );
   });
 
   it("rejects a malformed scenario artifact before any MonthRun mutation", async () => {
