@@ -1,4 +1,7 @@
-import { createJanuary1990AuthorityCutoverRuntime, type PersistenceService } from "@runtime-human/game-application";
+import {
+  createJanuary1990AuthorityCutoverRuntime,
+  type PersistenceService,
+} from "@runtime-human/game-application";
 import { JANUARY_1990_SCENARIO_ARTIFACT } from "@runtime-human/game-content";
 import {
   parseMonthRunId,
