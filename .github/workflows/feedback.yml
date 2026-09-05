@@ -56,5 +56,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
 
+      - name: Print temporary exact oxfmt diff
+        run: |
+          pnpm exec oxfmt tests/january-1990-scenario-runtime-application.test.ts
+          git diff -- tests/january-1990-scenario-runtime-application.test.ts
+          exit 1
+
       - name: Run non-authoritative fast feedback
         run: pnpm check:fast
