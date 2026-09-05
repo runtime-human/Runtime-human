@@ -60,7 +60,8 @@ export async function buildJanuaryScenarioArtifact(): Promise<ScenarioArtifactV1
 }
 
 export function serializeJanuaryScenarioArtifact(artifact: ScenarioArtifactV1): string {
-  return `${canonicalizeAuthoritative(artifact)}\n`;
+  const canonical = JSON.parse(canonicalizeAuthoritative(artifact)) as ScenarioArtifactV1;
+  return `${JSON.stringify(canonical, null, 2)}\n`;
 }
 
 export async function writeJanuaryScenarioArtifact(): Promise<void> {
