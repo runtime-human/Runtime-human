@@ -9,6 +9,7 @@
   },
   "include": [
     "./build-game-content.ts",
+    "./build-january-scenario-artifact.ts",
     "./gamectl.ts",
     "./gamectl-core.ts",
     "./gamectl-scenario.ts",
