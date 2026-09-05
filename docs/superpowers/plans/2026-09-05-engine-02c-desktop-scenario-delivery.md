@@ -1,3 +1,11 @@
+---
+title: "ENGINE-02C Desktop Scenario Delivery Implementation Plan"
+type: plan
+status: active
+canon: true
+updated: 2026-09-05
+---
+
 # ENGINE-02C Desktop Scenario Delivery Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
