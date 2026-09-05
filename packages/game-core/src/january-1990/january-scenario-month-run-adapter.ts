@@ -41,6 +41,7 @@ const ACCESS_PROVIDER_ID = "january-1990.access-materialize";
 const WORK_PROVIDER_ID = "january-1990.work-materialize";
 const PROGRAMMING_PROVIDER_ID = "january-1990.programming-outcome";
 const DEFECT_CONTENT_POOL_ID = "january-1990.defect-events";
+const COMPLETE_BINDING_ID = "january-1990/complete";
 
 type JanuaryScenarioRuntimeStats = Readonly<{
   blockingDecisions: number;
@@ -193,6 +194,7 @@ function assertJanuaryInstructionSurface(
   let completionCount = 0;
   const decisionBindings = new Set<string>();
   const providerBindings = new Set<string>();
+  const bindingPositions = new Map<string, number>();
 
   for (let pc = 0; pc < program.instructions.length; pc += 1) {
     const instruction = program.instructions[pc];
@@ -205,6 +207,7 @@ function assertJanuaryInstructionSurface(
         assertLinearNextPc(pc, instruction.nextPc);
         assertJanuaryDecisionId(instruction.decisionId);
         recordUniqueBinding(decisionBindings, instruction.decisionId, "decision");
+        bindingPositions.set(instruction.decisionId, pc);
         blockingDecisions += 1;
         break;
       case "provider": {
@@ -216,6 +219,7 @@ function assertJanuaryInstructionSurface(
         );
         assertJanuaryProviderId(provider);
         recordUniqueBinding(providerBindings, provider, "provider");
+        bindingPositions.set(provider, pc);
         const descriptor = capabilities.providers[instruction.providerIndex];
         if (descriptor === undefined || descriptor.id !== provider) {
           throw new TypeError("January scenario provider descriptor is missing");
@@ -234,6 +238,7 @@ function assertJanuaryInstructionSurface(
         if (contentPool !== DEFECT_CONTENT_POOL_ID) {
           throw new TypeError(`January scenario content pool ${contentPool} is unsupported`);
         }
+        bindingPositions.set(DEFECT_CONTENT_POOL_ID, pc);
         randomContentCalls += 1;
         rngCalls += capabilities.randomContentRngBudgetPerInstruction;
         break;
@@ -242,6 +247,7 @@ function assertJanuaryInstructionSurface(
         if (pc !== program.instructions.length - 1) {
           throw new TypeError("January scenario completion must be the final instruction");
         }
+        bindingPositions.set(COMPLETE_BINDING_ID, pc);
         completionCount += 1;
         break;
       case "gate":
@@ -262,7 +268,28 @@ function assertJanuaryInstructionSurface(
     throw new TypeError("January scenario runtime instruction surface is unsupported");
   }
 
+  assertJanuaryDomainOrder(bindingPositions);
   return { blockingDecisions, providerCalls, randomContentCalls, rngCalls };
+}
+
+function assertJanuaryDomainOrder(bindingPositions: ReadonlyMap<string, number>): void {
+  const dependencies = [
+    [ACCESS_DECISION_ID, ACCESS_PROVIDER_ID],
+    [LEARNING_DECISION_ID, WORK_PROVIDER_ID],
+    [ACCESS_PROVIDER_ID, DEFECT_CONTENT_POOL_ID],
+    [WORK_PROVIDER_ID, DEFECT_CONTENT_POOL_ID],
+    [DEFECT_CONTENT_POOL_ID, DEFECT_DECISION_ID],
+    [DEFECT_DECISION_ID, PROGRAMMING_PROVIDER_ID],
+    [PROGRAMMING_PROVIDER_ID, COMPLETE_BINDING_ID],
+  ] as const;
+
+  for (const [before, after] of dependencies) {
+    const beforePc = bindingPositions.get(before);
+    const afterPc = bindingPositions.get(after);
+    if (beforePc === undefined || afterPc === undefined || beforePc >= afterPc) {
+      throw new TypeError(`January scenario dependency ${before} -> ${after} is violated`);
+    }
+  }
 }
 
 function assertCertificateIdentity(
