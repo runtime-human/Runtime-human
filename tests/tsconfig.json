@@ -25,6 +25,7 @@
     "../apps/desktop/src/routing/**/*.tsx",
     "../apps/desktop/src/shell/**/*.ts",
     "../apps/desktop/src/shell/**/*.tsx",
+    "../scripts/build-january-scenario-artifact.ts",
     "../scripts/performance/**/*.ts",
     "../vitest.config.ts"
   ],
