@@ -10,7 +10,10 @@ export type {
 } from "./determinism/rng-domain";
 export { deriveRandomSource, deriveRngState } from "./determinism/rng-derivation";
 export { Xoshiro256StarStar } from "./determinism/xoshiro256ss";
-export { RNG_DERIVATION_MANIFEST_V1 } from "@runtime-human/game-schema";
+export {
+  RNG_DERIVATION_MANIFEST_V1,
+  SCENARIO_ARTIFACT_SCHEMA_VERSION,
+} from "@runtime-human/game-schema";
 export type { RngDerivationManifestV1, RngDerivationVersion } from "@runtime-human/game-schema";
 export {
   assertJanuary1990ScenarioRuntimeArtifactV1,
