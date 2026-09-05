@@ -6,11 +6,20 @@ import { describe, expect, it } from "vitest";
 import {
   createCanonicalPayload,
   createJanuary1990InitialSaveSnapshot,
+  createJanuary1990ScenarioCompatibility,
+  JANUARY_1990_DEFAULT_BALANCE,
   JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
+  projectJanuary1990Content,
+  type CreateDesktopJanuarySessionInput,
   type PersistenceService,
 } from "@runtime-human/game-application";
+import { assertJanuary1990ScenarioRuntimeArtifactV1 } from "@runtime-human/game-core";
 import type { CreateSaveCommandV1, SaveRecordV1 } from "@runtime-human/game-persistence-contracts";
-import { parseSaveId, parseSaveRevision } from "@runtime-human/game-schema";
+import {
+  parseSaveId,
+  parseSaveRevision,
+  type ScenarioArtifactV1,
+} from "@runtime-human/game-schema";
 
 import { ensureJanuarySave } from "../apps/desktop/src/january/bootstrap-january-save";
 import { createDesktopJanuarySession } from "../apps/desktop/src/january/create-desktop-january-session";
@@ -24,6 +33,20 @@ import {
 } from "./helpers/january-1990-runtime-fixture";
 
 const CONTENT_ROOT = join(process.cwd(), "apps", "desktop", "public", "content");
+const SCENARIO_ARTIFACT_PATH = join(
+  process.cwd(),
+  "apps",
+  "desktop",
+  "public",
+  "scenarios",
+  "january-1990.json",
+);
+
+type ScenarioDesktopSessionInput = CreateDesktopJanuarySessionInput &
+  Readonly<{
+    runtimeMode: "scenario";
+    fetchScenarioArtifact: JanuaryContentFetchPort;
+  }>;
 
 function createSaveRecord(): SaveRecordV1 {
   const saveId = parseSaveId("save-january-desktop-bootstrap");
@@ -87,6 +110,26 @@ const fetchPublishedContent: JanuaryContentFetchPort = async (url) => {
   }
 };
 
+async function loadPublishedScenarioArtifact(): Promise<ScenarioArtifactV1> {
+  const artifact = JSON.parse(await readFile(SCENARIO_ARTIFACT_PATH, "utf8")) as ScenarioArtifactV1;
+  assertJanuary1990ScenarioRuntimeArtifactV1(artifact);
+  return artifact;
+}
+
+function createPublishedScenarioFetch(onFetch?: (url: string) => void): JanuaryContentFetchPort {
+  return async (url) => {
+    onFetch?.(url);
+    if (url !== "/scenarios/january-1990.json") {
+      return { ok: false, status: 404, text: async () => "" };
+    }
+    return {
+      ok: true,
+      status: 200,
+      text: async () => readFile(SCENARIO_ARTIFACT_PATH, "utf8"),
+    };
+  };
+}
+
 describe("January 1990 desktop bootstrap", () => {
   it("keeps an existing canonical save and does not create another one", async () => {
     const save = createSaveRecord();
@@ -131,6 +174,57 @@ describe("January 1990 desktop bootstrap", () => {
       kind: "access-decision",
       runRevision: access.checkpoint.runRevision,
       checkpointHash: access.checkpoint.checkpointHash,
+    });
+  });
+
+  it("uses the certified scenario compatibility when scenario mode is explicitly selected", async () => {
+    const source = await createHarnessedJanuaryRuntime();
+    const fetchedUrls: string[] = [];
+    const artifact = await loadPublishedScenarioArtifact();
+    const projected = projectJanuary1990Content(source.registry);
+    const expectedCompatibility = createJanuary1990ScenarioCompatibility({
+      contentFingerprint: projected.contentFingerprint,
+      balance: JANUARY_1990_DEFAULT_BALANCE,
+      artifact,
+    });
+    const input: ScenarioDesktopSessionInput = {
+      persistence: source.harness.service,
+      fetchContent: fetchPublishedContent,
+      fetchScenarioArtifact: createPublishedScenarioFetch((url) => fetchedUrls.push(url)),
+      runtimeMode: "scenario",
+      saveId: source.saveId,
+      runId: source.runId,
+      seed: 42n,
+    };
+
+    const session = await createDesktopJanuarySession(input);
+    await session.start();
+
+    expect(fetchedUrls).toEqual(["/scenarios/january-1990.json"]);
+    expect(source.harness.getRun(source.runId)?.compatibility).toEqual(expectedCompatibility);
+  });
+
+  it("rejects a malformed scenario artifact before any MonthRun mutation", async () => {
+    const source = await createHarnessedJanuaryRuntime();
+    const input: ScenarioDesktopSessionInput = {
+      persistence: source.harness.service,
+      fetchContent: fetchPublishedContent,
+      fetchScenarioArtifact: async () => ({
+        ok: true,
+        status: 200,
+        text: async () => '{"schemaVersion":"scenario-artifact-v1"}',
+      }),
+      runtimeMode: "scenario",
+      saveId: source.saveId,
+      runId: source.runId,
+      seed: 42n,
+    };
+
+    await expect(createDesktopJanuarySession(input)).rejects.toThrow(/January scenario runtime/u);
+    expect(source.harness.getStats()).toEqual({
+      beginMutations: 0,
+      boundaryMutations: 0,
+      commitMutations: 0,
     });
   });
 
