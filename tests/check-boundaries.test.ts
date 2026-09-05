@@ -246,6 +246,36 @@ describe("validateWorkspace", () => {
     );
   });
 
+  it("rejects aliased legacy January runtime composition outside the cutover drain adapter", () => {
+    const root = createRoot();
+    addPackage(root, "packages", "shared-kernel");
+    addPackage(root, "packages", "game-schema", ["shared-kernel"]);
+    addPackage(root, "packages", "game-core", ["shared-kernel", "game-schema"]);
+    addPackage(root, "packages", "game-persistence-contracts", ["shared-kernel", "game-schema"]);
+    addPackage(root, "packages", "game-platform-contracts", ["shared-kernel", "game-schema"]);
+    addPackage(root, "packages", "game-application", [
+      "shared-kernel",
+      "game-schema",
+      "game-core",
+      "game-persistence-contracts",
+      "game-platform-contracts",
+    ]);
+    addPackage(
+      root,
+      "apps",
+      "desktop",
+      ["game-application"],
+      [
+        'import { createJanuary1990Runtime as createLegacyJanuary } from "@runtime-human/game-application";',
+        "createLegacyJanuary({});",
+      ].join("\n"),
+    );
+
+    expect(validateWorkspace(root)).toContainEqual(
+      expect.stringContaining("legacy January runtime is drain-only"),
+    );
+  });
+
   it("allows the bounded legacy January runtime call inside the authority cutover adapter", () => {
     const root = createRoot();
     addPackage(root, "packages", "shared-kernel");
