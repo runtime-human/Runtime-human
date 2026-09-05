@@ -85,6 +85,7 @@ export default defineConfig({
         "tests/january-1990-harness-proof.test.ts",
         "tests/january-1990-scenario-runtime-adapter.test.ts",
         "tests/simulation-compare.test.ts",
+        "tests/simulation-corpus.test.ts",
         "tests/gameplay-fixture-parser.test.ts",
       ]),
       nodeProject("application-node", [
