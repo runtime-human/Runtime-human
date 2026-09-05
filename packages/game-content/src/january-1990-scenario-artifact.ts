@@ -1,4 +1,4 @@
-import type { ScenarioArtifactV1 } from "@runtime-human/game-schema";
+import { parseFingerprint, type ScenarioArtifactV1 } from "@runtime-human/game-schema";
 
 export const JANUARY_1990_SCENARIO_ARTIFACT = {
   schemaVersion: "scenario-artifact-v1",
@@ -23,12 +23,21 @@ export const JANUARY_1990_SCENARIO_ARTIFACT = {
     ],
     predicateTable: [],
     contentPoolTable: ["january-1990.defect-events"],
-    sourceFingerprint: "162e470476ad0bd32194ee68dfdac80e14092b04c5b44a668315c47887a8117f",
-    programFingerprint: "1581cd05caff76175c31c28f100f8cce8dc2da467586ff0db39e6897b6cb40b0",
+    sourceFingerprint: parseFingerprint(
+      "162e470476ad0bd32194ee68dfdac80e14092b04c5b44a668315c47887a8117f",
+      "January scenario source fingerprint",
+    ),
+    programFingerprint: parseFingerprint(
+      "1581cd05caff76175c31c28f100f8cce8dc2da467586ff0db39e6897b6cb40b0",
+      "January scenario program fingerprint",
+    ),
   },
   capabilities: {
     schemaVersion: "scenario-resolved-capabilities-v1",
-    programFingerprint: "1581cd05caff76175c31c28f100f8cce8dc2da467586ff0db39e6897b6cb40b0",
+    programFingerprint: parseFingerprint(
+      "1581cd05caff76175c31c28f100f8cce8dc2da467586ff0db39e6897b6cb40b0",
+      "January scenario capability program fingerprint",
+    ),
     providers: [
       {
         id: "january-1990.access-materialize",
@@ -54,14 +63,26 @@ export const JANUARY_1990_SCENARIO_ARTIFACT = {
     ],
     predicates: [],
     randomContentRngBudgetPerInstruction: 1,
-    rulesFingerprint: "5b2b4b434450e14050df032d4d59c30e48c01a44ec98f416d3421038c899be1a",
+    rulesFingerprint: parseFingerprint(
+      "5b2b4b434450e14050df032d4d59c30e48c01a44ec98f416d3421038c899be1a",
+      "January scenario rules fingerprint",
+    ),
   },
   certificate: {
     schemaVersion: "scenario-certificate-v1",
-    programFingerprint: "1581cd05caff76175c31c28f100f8cce8dc2da467586ff0db39e6897b6cb40b0",
+    programFingerprint: parseFingerprint(
+      "1581cd05caff76175c31c28f100f8cce8dc2da467586ff0db39e6897b6cb40b0",
+      "January scenario certificate program fingerprint",
+    ),
     policyId: "january-1990-shadow-proof-v1",
-    policyFingerprint: "4263f3937d962c8238b142358311d3a4b3e8fe51c8d79d1747a49cba1054483b",
-    rulesFingerprint: "5b2b4b434450e14050df032d4d59c30e48c01a44ec98f416d3421038c899be1a",
+    policyFingerprint: parseFingerprint(
+      "4263f3937d962c8238b142358311d3a4b3e8fe51c8d79d1747a49cba1054483b",
+      "January scenario policy fingerprint",
+    ),
+    rulesFingerprint: parseFingerprint(
+      "5b2b4b434450e14050df032d4d59c30e48c01a44ec98f416d3421038c899be1a",
+      "January scenario certificate rules fingerprint",
+    ),
     instructionCount: 8,
     completionGuaranteed: true,
     bounded: true,
@@ -70,6 +91,9 @@ export const JANUARY_1990_SCENARIO_ARTIFACT = {
     blockingDecisionsMax: 3,
     providerCallsMax: 3,
     rngCallsMax: 2,
-    certificateFingerprint: "43650b303c0983f26e555352a45358ff1d1ee2f4f14da0ccf6b625bd36b1aa0c",
+    certificateFingerprint: parseFingerprint(
+      "43650b303c0983f26e555352a45358ff1d1ee2f4f14da0ccf6b625bd36b1aa0c",
+      "January scenario certificate fingerprint",
+    ),
   },
 } as const satisfies ScenarioArtifactV1;
