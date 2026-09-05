@@ -1,3 +1,4 @@
+const FINGERPRINT_PATTERN = /^[0-9a-f]{64}$/u;
 const XOSHIRO256_STATE_PATTERN = /^[0-9a-f]{64}$/u;
 const ZERO_XOSHIRO256_STATE = "0".repeat(64);
 
@@ -54,6 +55,13 @@ export const RNG_DERIVATION_MANIFEST_V1: RngDerivationManifestV1 = Object.freeze
   hashAlgorithm: "sha256-v1",
   serializationVersion: "canonical-json-v1",
 });
+
+export function parseFingerprint(value: unknown, name = "Fingerprint"): Fingerprint {
+  if (typeof value !== "string" || !FINGERPRINT_PATTERN.test(value)) {
+    throw new TypeError(`${name} must be a lowercase SHA-256 value`);
+  }
+  return value as Fingerprint;
+}
 
 export function parseSerializedXoshiro256State(value: unknown): SerializedXoshiro256State {
   if (typeof value !== "string" || !XOSHIRO256_STATE_PATTERN.test(value)) {
