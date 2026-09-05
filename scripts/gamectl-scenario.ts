@@ -12,14 +12,14 @@ import {
   resolveScenarioCapabilitiesV1,
   type StructuredDiagnosticV1,
 } from "@runtime-human/game-devtools";
-import {
-  SCENARIO_ARTIFACT_SCHEMA_VERSION,
-  type ScenarioArtifactV1,
-  type ScenarioCapabilityRegistryV1,
-  type ScenarioExecutionPolicyV1,
-  type ScenarioProgramV1,
-  type ScenarioResolvedCapabilitiesV1,
+import type {
+  ScenarioArtifactV1,
+  ScenarioCapabilityRegistryV1,
+  ScenarioExecutionPolicyV1,
+  ScenarioProgramV1,
+  ScenarioResolvedCapabilitiesV1,
 } from "@runtime-human/game-schema";
+import { SCENARIO_ARTIFACT_SCHEMA_VERSION } from "../packages/game-schema/src/scenario-artifact";
 
 export type ScenarioGamectlIo = Readonly<{
   stdout: (line: string) => void;
@@ -621,7 +621,6 @@ function emitRouteFailure(
           ok: false,
           error: { code, message },
         },
-        null,
         2,
       ),
     );
