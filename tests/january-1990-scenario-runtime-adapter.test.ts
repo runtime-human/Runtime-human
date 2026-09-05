@@ -25,7 +25,10 @@ import {
   type ScenarioArtifactV1,
 } from "@runtime-human/game-schema";
 
-import { loadJanuaryScenarioArtifactV1 } from "./helpers/january-1990-scenario-artifact";
+import {
+  loadJanuaryScenarioArtifactV1,
+  loadJanuaryScenarioDispatchProbeArtifactV1,
+} from "./helpers/january-1990-scenario-artifact";
 import { loadJanuaryTestRegistry } from "./helpers/january-1990-runtime-fixture";
 
 async function fixture() {
@@ -90,6 +93,50 @@ describe("January 1990 certified scenario MonthRun adapter", () => {
     if (learning.kind !== "boundary") return;
     expect(learning.checkpoint.pendingDecision?.decisionId).toBe("january-1990/learning");
     expect(learning.checkpoint.programCounter).toBe(4);
+  });
+
+  it("dispatches the certified instruction order instead of replaying the legacy January step table", async () => {
+    const registry = await loadJanuaryTestRegistry();
+    const context = projectJanuary1990Content(registry);
+    const artifact = await loadJanuaryScenarioDispatchProbeArtifactV1();
+    const createSteps = () =>
+      createJanuary1990ScenarioMonthSteps(context, JANUARY_1990_DEFAULT_BALANCE, artifact);
+
+    expect(createSteps).not.toThrow();
+    const steps = createSteps();
+    const rulesFingerprint = createJanuary1990ScenarioRuntimeRulesFingerprint(
+      JANUARY_1990_DEFAULT_BALANCE,
+      artifact,
+    );
+    const checkpoint = createMonthRunCheckpoint({
+      runId: parseMonthRunId("scenario-dispatch-probe-run"),
+      saveId: parseSaveId("scenario-dispatch-probe-save"),
+      baseSaveRevision: parseSaveRevision(0),
+      plan: createJanuary1990MonthPlan(context),
+      compatibility: compatibility(rulesFingerprint, context.contentFingerprint),
+      rngState: Xoshiro256StarStar.fromSeed(42n).exportState(),
+    });
+
+    const access = runUntilBoundary(checkpoint, steps);
+    expect(access.kind).toBe("boundary");
+    if (access.kind !== "boundary") return;
+    expect(access.checkpoint.pendingDecision?.decisionId).toBe("january-1990/access");
+    expect(access.checkpoint.programCounter).toBe(2);
+
+    const accepted = transitionMonthRun(access.checkpoint, {
+      type: "accept-decision",
+      requestId: parseRequestId("scenario-dispatch-probe-access-answer"),
+      decisionId: access.checkpoint.pendingDecision!.decisionId,
+      answer: { schemaVersion: "january-access-answer-v1", route: "home-pc" },
+    });
+    expect(accepted.kind).toBe("accepted");
+    if (accepted.kind !== "accepted") return;
+
+    const learning = runUntilBoundary(accepted.checkpoint, steps);
+    expect(learning.kind).toBe("boundary");
+    if (learning.kind !== "boundary") return;
+    expect(learning.checkpoint.pendingDecision?.decisionId).toBe("january-1990/learning");
+    expect(learning.checkpoint.programCounter).toBe(3);
   });
 
   it("binds scenario program, capability rules, policy and certificate into compatibility identity", async () => {
