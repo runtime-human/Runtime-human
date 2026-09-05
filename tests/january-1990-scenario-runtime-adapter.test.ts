@@ -148,18 +148,10 @@ describe("January 1990 certified scenario MonthRun adapter", () => {
     const duplicateProvider = await loadJanuaryScenarioDuplicateProviderProbeArtifactV1();
 
     expect(() =>
-      createJanuary1990ScenarioMonthSteps(
-        context,
-        JANUARY_1990_DEFAULT_BALANCE,
-        duplicateDecision,
-      ),
+      createJanuary1990ScenarioMonthSteps(context, JANUARY_1990_DEFAULT_BALANCE, duplicateDecision),
     ).toThrow();
     expect(() =>
-      createJanuary1990ScenarioMonthSteps(
-        context,
-        JANUARY_1990_DEFAULT_BALANCE,
-        duplicateProvider,
-      ),
+      createJanuary1990ScenarioMonthSteps(context, JANUARY_1990_DEFAULT_BALANCE, duplicateProvider),
     ).toThrow();
   });
 
