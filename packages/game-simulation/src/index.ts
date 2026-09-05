@@ -124,10 +124,14 @@ export type {
   SimulationReportParseResultV2,
 } from "./simulation-compare-v2";
 export {
+  JANUARY_1990_CANONICAL_SIMULATION_CORPUS_FINGERPRINT_V1,
   JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1,
+  SIMULATION_CORPUS_RUN_SCHEMA_VERSION_V1,
   SIMULATION_CORPUS_VERSION_V1,
+  fingerprintSimulationCorpusV1,
+  runJanuary1990CanonicalSimulationV1,
 } from "./simulation-corpus";
-export type { SimulationCorpusV1 } from "./simulation-corpus";
+export type { SimulationCorpusRunV1, SimulationCorpusV1 } from "./simulation-corpus";
 export {
   REPRO_RUNNER_ID,
   SIMULATION_POLICY_IDS,
