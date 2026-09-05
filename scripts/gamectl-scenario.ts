@@ -5,7 +5,7 @@ import { parseArgs } from "node:util";
 import { parse as parseJsonc } from "jsonc-parser";
 
 import type { ScenarioAuthoringDocument } from "@runtime-human/game-authoring-schema";
-import { fingerprint } from "@runtime-human/game-core";
+import { fingerprint, SCENARIO_ARTIFACT_SCHEMA_VERSION } from "@runtime-human/game-core";
 import {
   certifyScenarioProgramV1,
   compileScenarioProgramV1,
@@ -13,8 +13,8 @@ import {
   type StructuredDiagnosticV1,
 } from "@runtime-human/game-devtools";
 import type {
+  ScenarioArtifactV1,
   ScenarioCapabilityRegistryV1,
-  ScenarioCertificateV1,
   ScenarioExecutionPolicyV1,
   ScenarioProgramV1,
   ScenarioResolvedCapabilitiesV1,
@@ -26,7 +26,6 @@ export type ScenarioGamectlIo = Readonly<{
 }>;
 
 const ENVELOPE_SCHEMA_VERSION = "runtime-human-gamectl-v1" as const;
-const SCENARIO_ARTIFACT_SCHEMA_VERSION = "scenario-artifact-v1" as const;
 const FINGERPRINT = /^[0-9a-f]{64}$/u;
 const MVP_SCENARIO_POLICY_V1: ScenarioExecutionPolicyV1 = Object.freeze({
   schemaVersion: "scenario-execution-policy-v1",
@@ -65,13 +64,6 @@ type ScenarioHandlerPayload = Readonly<{
 type ScenarioHandlerOutput = Readonly<{
   exitCode: number;
   payload: ScenarioHandlerPayload;
-}>;
-
-type ScenarioArtifactV1 = Readonly<{
-  schemaVersion: typeof SCENARIO_ARTIFACT_SCHEMA_VERSION;
-  program: ScenarioProgramV1;
-  capabilities: ScenarioResolvedCapabilitiesV1;
-  certificate: ScenarioCertificateV1;
 }>;
 
 type ScenarioPipeline = Readonly<{

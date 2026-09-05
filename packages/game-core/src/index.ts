@@ -10,9 +10,13 @@ export type {
 } from "./determinism/rng-domain";
 export { deriveRandomSource, deriveRngState } from "./determinism/rng-derivation";
 export { Xoshiro256StarStar } from "./determinism/xoshiro256ss";
-export { RNG_DERIVATION_MANIFEST_V1 } from "@runtime-human/game-schema";
+export {
+  RNG_DERIVATION_MANIFEST_V1,
+  SCENARIO_ARTIFACT_SCHEMA_VERSION,
+} from "@runtime-human/game-schema";
 export type { RngDerivationManifestV1, RngDerivationVersion } from "@runtime-human/game-schema";
 export {
+  assertJanuary1990ScenarioRuntimeArtifactV1,
   createJanuary1990HierarchicalMonthSteps,
   createJanuary1990MonthPlan,
   createJanuary1990MonthSteps,
@@ -21,6 +25,8 @@ export {
   createJanuary1990RulesFingerprint,
   createJanuary1990RulesFingerprintForExecutionProfile,
   createJanuary1990RulesetManifest,
+  createJanuary1990ScenarioMonthSteps,
+  createJanuary1990ScenarioRuntimeRulesFingerprint,
   createJanuaryInitialProvisionalState,
   createJanuaryProgrammingOutcomeFromState,
   JANUARY_1990_BALANCE_SLICE_ID,

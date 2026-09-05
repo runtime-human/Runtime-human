@@ -53,6 +53,8 @@ export type {
   StartRunEventV1,
   SuspendForDecisionEventV1,
 } from "./month-run";
+export { SCENARIO_ARTIFACT_SCHEMA_VERSION } from "./scenario-artifact";
+export type { ScenarioArtifactV1 } from "./scenario-artifact";
 export {
   SCENARIO_CAPABILITY_REGISTRY_SCHEMA_VERSION,
   SCENARIO_RESOLVED_CAPABILITIES_SCHEMA_VERSION,

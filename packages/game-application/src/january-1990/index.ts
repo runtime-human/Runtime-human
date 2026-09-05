@@ -1,11 +1,15 @@
 export { createJanuary1990Runtime } from "./create-january-runtime";
 export type { CreateJanuary1990RuntimeInput, January1990Runtime } from "./create-january-runtime";
+export { createJanuary1990ScenarioRuntime } from "./create-january-scenario-runtime";
+export type { CreateJanuary1990ScenarioRuntimeInput } from "./create-january-scenario-runtime";
 export { JANUARY_1990_DEFAULT_BALANCE, parseJanuary1990Balance } from "@runtime-human/game-core";
 export type { January1990BalanceV1 } from "@runtime-human/game-core";
 export { createJanuary1990BeginCommand, createJanuary1990ResumeCommand } from "./january-commands";
 export type { January1990BeginInput, January1990ResumeInput } from "./january-commands";
 export { createJanuary1990Compatibility } from "./january-compatibility";
 export type { CreateJanuary1990CompatibilityInput } from "./january-compatibility";
+export { createJanuary1990ScenarioCompatibility } from "./january-scenario-compatibility";
+export type { CreateJanuary1990ScenarioCompatibilityInput } from "./january-scenario-compatibility";
 export { materializeJanuary1990Commit } from "./january-commit-materializer";
 export {
   JANUARY_CONTENT_PROJECTION_ERROR_CODES,
