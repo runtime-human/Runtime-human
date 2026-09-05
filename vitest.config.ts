@@ -148,6 +148,7 @@ export default defineConfig({
         "tests/gamectl-scenario-cli.test.ts",
         "tests/gamectl-simulation-cli.test.ts",
         "tests/gamectl-harness-cli.test.ts",
+        "tests/january-1990-scenario-production-artifact.test.ts",
         "tests/january-1990-scenario-shadow.test.ts",
         "tests/performance-recorder.test.ts",
         "tests/performance-summary.test.ts",
