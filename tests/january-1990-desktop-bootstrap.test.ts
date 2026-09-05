@@ -181,7 +181,7 @@ describe("January 1990 desktop bootstrap", () => {
     });
   });
 
-  it("uses the certified scenario compatibility when scenario mode is explicitly selected", async () => {
+  it("uses the certified scenario runtime through the real desktop persistence path", async () => {
     const source = await createHarnessedJanuaryRuntime();
     const fetchedUrls: string[] = [];
     const artifact = await loadPublishedScenarioArtifact();
@@ -208,6 +208,16 @@ describe("January 1990 desktop bootstrap", () => {
     expect(source.harness.getRun(source.runId)?.compatibility).toEqual(
       createCanonicalPayload(expectedCompatibility),
     );
+
+    await session.choose("home-pc");
+    expect(session.view.kind).toBe("learning-decision");
+    await session.choose("edit-and-debug");
+    expect(session.view.kind).toBe("defect-decision");
+    await session.choose("inspect-listing");
+
+    expect(session.view.kind).toBe("committed");
+    expect(source.harness.getSave().revision).toBe(1);
+    expect(source.harness.getStats().commitMutations).toBe(1);
   });
 
   it("rejects a malformed scenario artifact before any MonthRun mutation", async () => {
