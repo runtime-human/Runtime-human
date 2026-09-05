@@ -232,6 +232,32 @@ describe("January 1990 desktop bootstrap", () => {
     });
   });
 
+  it("rejects a missing scenario artifact before any MonthRun mutation", async () => {
+    const source = await createHarnessedJanuaryRuntime();
+    const input: ScenarioDesktopSessionInput = {
+      persistence: source.harness.service,
+      fetchContent: fetchPublishedContent,
+      fetchScenarioArtifact: async () => ({
+        ok: false,
+        status: 404,
+        text: async () => "",
+      }),
+      runtimeMode: "scenario",
+      saveId: source.saveId,
+      runId: source.runId,
+      seed: 42n,
+    };
+
+    await expect(createDesktopJanuarySession(input)).rejects.toThrow(
+      "/scenarios/january-1990.json: HTTP 404",
+    );
+    expect(source.harness.getStats()).toEqual({
+      beginMutations: 0,
+      boundaryMutations: 0,
+      commitMutations: 0,
+    });
+  });
+
   it("fails closed when the compiled-content manifest cannot be loaded", async () => {
     await expect(
       loadJanuaryContentRegistry(async () => ({
