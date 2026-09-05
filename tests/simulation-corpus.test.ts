@@ -26,7 +26,7 @@ type CanonicalSimulationRun = Readonly<{
     schemaVersion: string;
     seedRange: Readonly<{ start: number; end: number }>;
     policies: readonly string[];
-    runs: readonly unknown[];
+    runs: number;
   }>;
 }>;
 
@@ -101,7 +101,7 @@ describe("canonical simulation corpus v1", () => {
       "learning-first",
       "random-valid-v1",
     ]);
-    expect(first.report.runs).toHaveLength(192);
+    expect(first.report.runs).toBe(192);
     expect(JSON.stringify(second)).toBe(JSON.stringify(first));
   });
 });
