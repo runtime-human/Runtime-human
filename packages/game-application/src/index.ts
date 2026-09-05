@@ -1,4 +1,5 @@
 export {
+  createJanuary1990AuthorityCutoverRuntime,
   createJanuary1990BeginCommand,
   createJanuary1990Compatibility,
   createJanuary1990InitialSaveSnapshot,
@@ -17,6 +18,7 @@ export {
   projectJanuary1990RuntimeView,
 } from "./january-1990";
 export type {
+  CreateJanuary1990AuthorityCutoverRuntimeInput,
   CreateJanuary1990CompatibilityInput,
   CreateJanuary1990RuntimeInput,
   CreateJanuary1990ScenarioCompatibilityInput,
