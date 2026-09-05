@@ -72,6 +72,102 @@ export async function loadJanuaryScenarioDispatchProbeArtifactV1(): Promise<Scen
   });
 }
 
+export async function loadJanuaryScenarioDuplicateDecisionProbeArtifactV1(): Promise<ScenarioArtifactV1> {
+  return buildJanuaryScenarioArtifactV1({
+    schemaVersion: "scenario-v1",
+    id: "january-1990.shadow-proof",
+    entry: "a-access",
+    nodes: {
+      "a-access": {
+        kind: "decision",
+        decisionId: "january-1990/access",
+        next: "b-access-duplicate",
+      },
+      "b-access-duplicate": {
+        kind: "decision",
+        decisionId: "january-1990/access",
+        next: "c-defect",
+      },
+      "c-defect": {
+        kind: "decision",
+        decisionId: "january-1990/defect",
+        next: "d-access-materialize",
+      },
+      "d-access-materialize": {
+        kind: "provider",
+        providerId: "january-1990.access-materialize",
+        next: "e-work-materialize",
+      },
+      "e-work-materialize": {
+        kind: "provider",
+        providerId: "january-1990.work-materialize",
+        next: "f-defect-select",
+      },
+      "f-defect-select": {
+        kind: "random-content",
+        poolId: "january-1990.defect-events",
+        next: "g-programming-outcome",
+      },
+      "g-programming-outcome": {
+        kind: "provider",
+        providerId: "january-1990.programming-outcome",
+        next: "h-complete",
+      },
+      "h-complete": {
+        kind: "complete",
+      },
+    },
+  });
+}
+
+export async function loadJanuaryScenarioDuplicateProviderProbeArtifactV1(): Promise<ScenarioArtifactV1> {
+  return buildJanuaryScenarioArtifactV1({
+    schemaVersion: "scenario-v1",
+    id: "january-1990.shadow-proof",
+    entry: "a-access",
+    nodes: {
+      "a-access": {
+        kind: "decision",
+        decisionId: "january-1990/access",
+        next: "b-access-materialize",
+      },
+      "b-access-materialize": {
+        kind: "provider",
+        providerId: "january-1990.access-materialize",
+        next: "c-learning",
+      },
+      "c-learning": {
+        kind: "decision",
+        decisionId: "january-1990/learning",
+        next: "d-access-materialize-duplicate",
+      },
+      "d-access-materialize-duplicate": {
+        kind: "provider",
+        providerId: "january-1990.access-materialize",
+        next: "e-defect-select",
+      },
+      "e-defect-select": {
+        kind: "random-content",
+        poolId: "january-1990.defect-events",
+        next: "f-defect",
+      },
+      "f-defect": {
+        kind: "decision",
+        decisionId: "january-1990/defect",
+        next: "g-programming-outcome",
+      },
+      "g-programming-outcome": {
+        kind: "provider",
+        providerId: "january-1990.programming-outcome",
+        next: "h-complete",
+      },
+      "h-complete": {
+        kind: "complete",
+      },
+    },
+  });
+}
+
 async function buildJanuaryScenarioArtifactV1(
   source: ScenarioAuthoringDocument,
 ): Promise<ScenarioArtifactV1> {
