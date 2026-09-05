@@ -191,6 +191,8 @@ function assertJanuaryInstructionSurface(
   let randomContentCalls = 0;
   let rngCalls = 0;
   let completionCount = 0;
+  const decisionBindings = new Set<string>();
+  const providerBindings = new Set<string>();
 
   for (let pc = 0; pc < program.instructions.length; pc += 1) {
     const instruction = program.instructions[pc];
@@ -202,6 +204,7 @@ function assertJanuaryInstructionSurface(
       case "decision":
         assertLinearNextPc(pc, instruction.nextPc);
         assertJanuaryDecisionId(instruction.decisionId);
+        recordUniqueBinding(decisionBindings, instruction.decisionId, "decision");
         blockingDecisions += 1;
         break;
       case "provider": {
@@ -212,6 +215,7 @@ function assertJanuaryInstructionSurface(
           "provider",
         );
         assertJanuaryProviderId(provider);
+        recordUniqueBinding(providerBindings, provider, "provider");
         const descriptor = capabilities.providers[instruction.providerIndex];
         if (descriptor === undefined || descriptor.id !== provider) {
           throw new TypeError("January scenario provider descriptor is missing");
@@ -320,6 +324,13 @@ function assertJanuaryProviderId(providerId: string): void {
   ) {
     throw new TypeError(`January scenario provider ${providerId} is unsupported`);
   }
+}
+
+function recordUniqueBinding(bindings: Set<string>, bindingId: string, subject: string): void {
+  if (bindings.has(bindingId)) {
+    throw new TypeError(`January scenario ${subject} ${bindingId} must be bound exactly once`);
+  }
+  bindings.add(bindingId);
 }
 
 function createJanuaryMonthStepBindings(steps: readonly MonthRunStep[]): JanuaryMonthStepBindings {
