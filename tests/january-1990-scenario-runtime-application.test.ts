@@ -147,7 +147,9 @@ describe("January 1990 opt-in certified scenario runtime", () => {
       answer: { schemaVersion: "january-access-answer-v1", route: "home-pc" },
     } as const;
 
-    const first = requireJanuaryWaiting(await resumeJanuary(scenarioRuntime, started, resumeInput));
+    const first = requireJanuaryWaiting(
+      await resumeJanuary(scenarioRuntime, started, resumeInput),
+    );
     const duplicate = requireJanuaryWaiting(
       await resumeJanuary(scenarioRuntime, started, resumeInput),
     );
