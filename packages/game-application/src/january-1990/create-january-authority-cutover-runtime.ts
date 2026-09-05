@@ -67,7 +67,7 @@ export function createJanuary1990AuthorityCutoverRuntime(
       return (selected ?? scenario).compatibility;
     },
     load,
-    begin(beginInput) {
+    async begin(beginInput) {
       bindSave(beginInput.saveId);
       selected ??= scenario;
       return selected.begin(beginInput);
