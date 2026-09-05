@@ -103,6 +103,7 @@ export default defineConfig({
         "tests/january-1990-persisted-run.test.ts",
         "tests/january-1990-rng-application-cutover.test.ts",
         "tests/january-1990-scenario-runtime-application.test.ts",
+        "tests/january-1990-scenario-runtime-rng-bound.test.ts",
       ]),
       nodeProject("content-node", [
         "tests/compiled-content-runtime-loader.test.ts",
