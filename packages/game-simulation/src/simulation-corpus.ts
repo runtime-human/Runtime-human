@@ -1,14 +1,8 @@
-import {
-  fingerprint,
-  JANUARY_1990_RNG_EXECUTION_PROFILES_V1,
-} from "@runtime-human/game-core";
+import { fingerprint, JANUARY_1990_RNG_EXECUTION_PROFILES_V1 } from "@runtime-human/game-core";
 import type { Fingerprint } from "@runtime-human/game-schema";
 
 import type { CreateJanuary1990SimulationInput } from "./january-simulation";
-import {
-  createJanuary1990SimulationV3,
-  type SimulationReportV3,
-} from "./january-simulation-v3";
+import { createJanuary1990SimulationV3, type SimulationReportV3 } from "./january-simulation-v3";
 import { SIMULATION_POLICY_IDS, type SimulationPolicyIdV1 } from "./simulation-types";
 
 export const SIMULATION_CORPUS_VERSION_V1 = "runtime-human-sim-corpus-v1" as const;
