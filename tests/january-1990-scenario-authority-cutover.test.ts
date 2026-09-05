@@ -98,6 +98,7 @@ describe("January 1990 scenario authority cutover", () => {
     expect(loaded.checkpoint.compatibility.rulesFingerprint).toBe(
       legacy.compatibility.rulesFingerprint,
     );
+    expect(cutover.compatibility.rulesFingerprint).toBe(legacy.compatibility.rulesFingerprint);
 
     const resumed = requireJanuaryWaiting(
       await resumeJanuary(cutover, loaded, {
