@@ -5,7 +5,7 @@ import { parseArgs } from "node:util";
 import { parse as parseJsonc } from "jsonc-parser";
 
 import type { ScenarioAuthoringDocument } from "@runtime-human/game-authoring-schema";
-import { fingerprint } from "@runtime-human/game-core";
+import { fingerprint, SCENARIO_ARTIFACT_SCHEMA_VERSION } from "@runtime-human/game-core";
 import {
   certifyScenarioProgramV1,
   compileScenarioProgramV1,
@@ -19,7 +19,6 @@ import type {
   ScenarioProgramV1,
   ScenarioResolvedCapabilitiesV1,
 } from "@runtime-human/game-schema";
-import { SCENARIO_ARTIFACT_SCHEMA_VERSION } from "../packages/game-schema/src/scenario-artifact";
 
 export type ScenarioGamectlIo = Readonly<{
   stdout: (line: string) => void;
