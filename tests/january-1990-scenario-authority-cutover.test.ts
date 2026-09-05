@@ -111,4 +111,25 @@ describe("January 1990 scenario authority cutover", () => {
       legacy.compatibility.rulesFingerprint,
     );
   });
+
+  it("rejects reuse of one authority runtime for another save", async () => {
+    const registry = await loadJanuaryTestRegistry();
+    const saveId = parseSaveId("save-january-authority-session-primary");
+    const otherSaveId = parseSaveId("save-january-authority-session-other");
+    const harness = createInMemoryPersistenceHarness({
+      saveId,
+      saveSchemaFingerprint: JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
+      initialSnapshot: createJanuary1990InitialSaveSnapshot(),
+    });
+    const runtime = createJanuary1990AuthorityCutoverRuntime({
+      persistence: harness.service,
+      contentRegistry: registry,
+      artifact: JANUARY_1990_SCENARIO_ARTIFACT,
+    });
+
+    await expect(runtime.load(saveId)).resolves.toMatchObject({ kind: "idle" });
+    await expect(runtime.load(otherSaveId)).rejects.toThrow(
+      "January authority runtime is already bound to another save",
+    );
+  });
 });
