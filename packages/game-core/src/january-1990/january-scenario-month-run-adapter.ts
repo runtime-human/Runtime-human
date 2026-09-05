@@ -242,7 +242,9 @@ function assertJanuaryInstructionSurface(
         break;
       case "gate":
       case "branch":
-        throw new TypeError(`January scenario runtime instruction ${instruction.op} is unsupported`);
+        throw new TypeError(
+          `January scenario runtime instruction ${instruction.op} is unsupported`,
+        );
     }
   }
 
@@ -390,11 +392,7 @@ function bindScenarioInstruction(
   }
 }
 
-function requireTableEntry(
-  values: readonly string[],
-  index: number,
-  subject: string,
-): string {
+function requireTableEntry(values: readonly string[], index: number, subject: string): string {
   if (!Number.isSafeInteger(index) || index < 0) {
     throw new TypeError(`January scenario ${subject} index is invalid`);
   }
