@@ -5,17 +5,20 @@ import { describe, expect, it } from "vitest";
 
 import {
   createJanuary1990InitialSaveSnapshot,
+  createJanuary1990ScenarioCompatibility,
   JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
+  projectJanuary1990Content,
+  restorePersistedCheckpoint,
 } from "@runtime-human/game-application";
 import { JANUARY_1990_SCENARIO_ARTIFACT } from "@runtime-human/game-content";
-import {
-  createJanuary1990ScenarioRuntimeRulesFingerprint,
-  JANUARY_1990_DEFAULT_BALANCE,
-} from "@runtime-human/game-core";
+import { JANUARY_1990_DEFAULT_BALANCE } from "@runtime-human/game-core";
 import { parseMonthRunId, parseSaveId } from "@runtime-human/game-schema";
 
 import { createDesktopJanuarySession } from "../apps/desktop/src/january/create-desktop-january-session";
-import type { JanuaryContentFetchPort } from "../apps/desktop/src/january/load-january-content";
+import {
+  loadJanuaryContentRegistry,
+  type JanuaryContentFetchPort,
+} from "../apps/desktop/src/january/load-january-content";
 import { createInMemoryPersistenceHarness } from "./helpers/in-memory-persistence-service";
 
 const CONTENT_ROOT = join(process.cwd(), "apps", "desktop", "public", "content");
@@ -50,14 +53,25 @@ describe("desktop January scenario authority", () => {
     const view = await session.start();
     expect(view.kind).toBe("access-decision");
 
-    const active = await harness.service.loadActiveMonthRun({ saveId });
+    const active = await harness.service.loadActiveMonthRun({
+      schemaVersion: "load-active-month-run-query-v1",
+      saveId,
+    });
     expect(active.kind).toBe("found");
     if (active.kind !== "found") return;
-    expect(active.value.checkpoint.compatibility.rulesFingerprint).toBe(
-      createJanuary1990ScenarioRuntimeRulesFingerprint(
-        JANUARY_1990_DEFAULT_BALANCE,
-        JANUARY_1990_SCENARIO_ARTIFACT,
-      ),
+
+    const registry = await loadJanuaryContentRegistry(fetchPublishedContent);
+    const expectedCompatibility = createJanuary1990ScenarioCompatibility({
+      contentFingerprint: projectJanuary1990Content(registry).contentFingerprint,
+      balance: JANUARY_1990_DEFAULT_BALANCE,
+      artifact: JANUARY_1990_SCENARIO_ARTIFACT,
+    });
+    const restored = restorePersistedCheckpoint(active.value, expectedCompatibility);
+
+    expect(restored.kind).toBe("ok");
+    if (restored.kind !== "ok") return;
+    expect(restored.checkpoint.compatibility.rulesFingerprint).toBe(
+      expectedCompatibility.rulesFingerprint,
     );
   });
 });
