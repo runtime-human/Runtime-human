@@ -131,5 +131,38 @@ describe("January 1990 scenario authority cutover", () => {
     await expect(runtime.load(otherSaveId)).rejects.toThrow(
       "January authority runtime is already bound to another save",
     );
+    await expect(
+      runtime.begin({
+        requestId: parseRequestId("begin-january-authority-session-other"),
+        saveId: otherSaveId,
+        expectedSaveRevision: parseSaveRevision(0),
+        runId: parseMonthRunId("run-january-authority-session-other"),
+        seed: 42n,
+      }),
+    ).rejects.toThrow("January authority runtime is already bound to another save");
+  });
+
+  it("binds before awaiting the first authority resolution", async () => {
+    const registry = await loadJanuaryTestRegistry();
+    const saveId = parseSaveId("save-january-authority-session-concurrent-primary");
+    const otherSaveId = parseSaveId("save-january-authority-session-concurrent-other");
+    const harness = createInMemoryPersistenceHarness({
+      saveId,
+      saveSchemaFingerprint: JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
+      initialSnapshot: createJanuary1990InitialSaveSnapshot(),
+    });
+    const runtime = createJanuary1990AuthorityCutoverRuntime({
+      persistence: harness.service,
+      contentRegistry: registry,
+      artifact: JANUARY_1990_SCENARIO_ARTIFACT,
+    });
+
+    const firstLoad = runtime.load(saveId);
+    const secondLoad = runtime.load(otherSaveId);
+
+    await expect(firstLoad).resolves.toMatchObject({ kind: "idle" });
+    await expect(secondLoad).rejects.toThrow(
+      "January authority runtime is already bound to another save",
+    );
   });
 });
