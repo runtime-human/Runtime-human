@@ -18,10 +18,8 @@ type CanonicalCorpus = Readonly<{
 
 type CanonicalSimulationRun = Readonly<{
   schemaVersion: string;
-  corpusVersion: string;
+  corpus: CanonicalCorpus;
   corpusFingerprint: string;
-  scenarioId: string;
-  executionProfile: string;
   report: Readonly<{
     schemaVersion: string;
     seedRange: Readonly<{ start: number; end: number }>;
@@ -70,6 +68,7 @@ describe("canonical simulation corpus v1", () => {
 
   it("runs the canonical corpus into a byte-stable simulation-report-v3 envelope", async () => {
     const simulation = (await import("@runtime-human/game-simulation")) as Record<string, unknown>;
+    const corpus = simulation.JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1 as CanonicalCorpus;
     const runCanonical = simulation.runJanuary1990CanonicalSimulationV1 as
       | ((input: {
           context: unknown;
@@ -90,17 +89,11 @@ describe("canonical simulation corpus v1", () => {
     const second = runCanonical(input);
 
     expect(first.schemaVersion).toBe("simulation-corpus-run-v1");
-    expect(first.corpusVersion).toBe("runtime-human-sim-corpus-v1");
-    expect(first.scenarioId).toBe("january-1990");
-    expect(first.executionProfile).toBe("hierarchical-v1");
+    expect(first.corpus).toEqual(corpus);
     expect(first.corpusFingerprint).toMatch(/^[0-9a-f]{64}$/u);
     expect(first.report.schemaVersion).toBe("simulation-report-v3");
-    expect(first.report.seedRange).toEqual({ start: 1, end: 64 });
-    expect(first.report.policies).toEqual([
-      "always-first-valid",
-      "learning-first",
-      "random-valid-v1",
-    ]);
+    expect(first.report.seedRange).toEqual(corpus.seedRange);
+    expect(first.report.policies).toEqual(corpus.policies);
     expect(first.report.runs).toBe(192);
     expect(JSON.stringify(second)).toBe(JSON.stringify(first));
   });
