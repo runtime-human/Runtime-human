@@ -30,7 +30,10 @@ import {
 } from "@runtime-human/game-simulation";
 
 import { createInMemoryPersistenceHarness } from "./helpers/in-memory-persistence-service";
-import { loadJanuaryScenarioArtifactV1 } from "./helpers/january-1990-scenario-artifact";
+import {
+  loadJanuaryScenarioArtifactV1,
+  loadJanuaryScenarioDispatchProbeArtifactV1,
+} from "./helpers/january-1990-scenario-artifact";
 import {
   loadJanuaryTestRegistry,
   requireJanuaryWaiting,
@@ -45,7 +48,7 @@ const PROVIDER_OUTCOME_IDS = new Set([
 ]);
 
 describe("January 1990 opt-in certified scenario runtime", () => {
-  it("persists and reloads through the existing MonthRun protocol while ordinary runtime fails closed", async () => {
+  it("persists and reloads through the existing MonthRun protocol while incompatible runtimes fail closed", async () => {
     const registry = await loadJanuaryTestRegistry();
     const artifact = await loadJanuaryScenarioArtifactV1();
     const saveId = parseSaveId("save-january-scenario-runtime");
@@ -95,6 +98,21 @@ describe("January 1990 opt-in certified scenario runtime", () => {
     );
     const ordinaryLoad = await ordinaryRuntime.load(saveId);
     expect(ordinaryLoad).toMatchObject({
+      kind: "blocked",
+      reason: "incompatible-checkpoint",
+    });
+
+    const alternateArtifact = await loadJanuaryScenarioDispatchProbeArtifactV1();
+    const alternateScenarioRuntime = createJanuary1990ScenarioRuntime({
+      persistence: harness.service,
+      contentRegistry: registry,
+      artifact: alternateArtifact,
+    });
+    expect(alternateScenarioRuntime.compatibility.rulesFingerprint).not.toBe(
+      scenarioRuntime.compatibility.rulesFingerprint,
+    );
+    const alternateLoad = await alternateScenarioRuntime.load(saveId);
+    expect(alternateLoad).toMatchObject({
       kind: "blocked",
       reason: "incompatible-checkpoint",
     });
