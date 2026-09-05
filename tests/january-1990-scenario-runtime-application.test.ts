@@ -33,7 +33,12 @@ import { createInMemoryPersistenceHarness } from "./helpers/in-memory-persistenc
 import { loadJanuaryScenarioArtifactV1 } from "./helpers/january-1990-scenario-artifact";
 import { loadJanuaryTestRegistry } from "./helpers/january-1990-runtime-fixture";
 
-const EQUIVALENCE_SEEDS = [0, 1, 42, 63] as const;
+const EQUIVALENCE_SEEDS = Array.from({ length: 64 }, (_, seed) => seed);
+const PROVIDER_OUTCOME_IDS = new Set([
+  "january-1990/access",
+  "january-1990/work",
+  "january-1990/programming-outcome",
+]);
 
 describe("January 1990 opt-in certified scenario runtime", () => {
   it("persists and reloads through the existing MonthRun protocol while ordinary runtime fails closed", async () => {
@@ -91,7 +96,7 @@ describe("January 1990 opt-in certified scenario runtime", () => {
     });
   });
 
-  it("matches authoritative hierarchical January gameplay semantics on a controlled seed/policy corpus", async () => {
+  it("matches authoritative hierarchical January gameplay semantics and certificate bounds on the cutover corpus", async () => {
     const registry = await loadJanuaryTestRegistry();
     const context = projectJanuary1990Content(registry);
     const artifact = await loadJanuaryScenarioArtifactV1();
@@ -144,7 +149,24 @@ describe("January 1990 opt-in certified scenario runtime", () => {
           answers,
         });
 
+        expect(ordinary.terminalState).toBe("completed");
         expect(scenario.terminalState).toBe("completed");
+        expect(scenario.metrics.blockingDecisions).toBeLessThanOrEqual(
+          artifact.certificate.blockingDecisionsMax,
+        );
+        expect(scenario.checkpoint.programCounter - 1).toBeLessThanOrEqual(
+          artifact.certificate.transitionBudgetMax,
+        );
+        expect(
+          scenario.checkpoint.materializedOutcomes.filter(({ outcomeId }) =>
+            PROVIDER_OUTCOME_IDS.has(outcomeId),
+          ),
+        ).toHaveLength(artifact.certificate.providerCallsMax);
+        expect(
+          scenario.checkpoint.materializedOutcomes.filter(
+            ({ outcomeId }) => outcomeId === "january-1990/defect",
+          ),
+        ).toHaveLength(1);
         expect(scenario.checkpoint.terminalResult).toEqual(ordinary.checkpoint.terminalResult);
         expect(scenario.checkpoint.provisionalState).toEqual(ordinary.checkpoint.provisionalState);
         expect(scenario.checkpoint.materializedOutcomes).toEqual(
