@@ -42,12 +42,12 @@
     "balance": {
       "agentGuide": "docs/agents/ARCHITECT-AGENT.md",
       "docs": ["docs/game-design/**", "docs/architecture/AI-FIRST-GAME-DEVELOPMENT.md", "docs/engineering/**"],
-      "code": ["balance/**"]
+      "code": ["balance/**", "packages/game-authoring-schema/src/balance-schema.ts", "scripts/validate-balance.ts"]
     },
     "scenario": {
       "agentGuide": "docs/agents/ARCHITECT-AGENT.md",
-      "docs": ["docs/content/**", "docs/architecture/AI-FIRST-GAME-DEVELOPMENT.md"],
-      "code": ["content/**/scenarios/**"]
+      "docs": ["docs/content/**", "docs/architecture/AI-FIRST-GAME-DEVELOPMENT.md", "docs/engineering/GAMECTL.md"],
+      "code": ["content/**/scenarios/**", "packages/game-authoring-schema/src/scenario-schema.ts", "packages/game-devtools/src/scenario/**", "scripts/gamectl-scenario.ts", "scripts/check-january-scenario-artifact.ts", "tools/scenario-shadow/**"]
     },
     "simulation": {
       "agentGuide": "docs/agents/ARCHITECT-AGENT.md",

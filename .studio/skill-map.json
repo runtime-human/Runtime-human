@@ -18,7 +18,7 @@
       "name": "runtime-implement",
       "path": ".agents/skills/runtime-implement",
       "status": "active",
-      "activation": "bounded generic code implementation tasks (wrapper invoking the matching domain skill)"
+      "activation": "bounded generic code implementation tasks when no dedicated active domain skill owns the work"
     },
     {
       "name": "runtime-content",
@@ -53,32 +53,32 @@
     {
       "name": "runtime-balance",
       "path": ".agents/skills/runtime-balance",
-      "status": "planned",
-      "activation": "after the balance authoring layer wave: tuning/weights/thresholds with simulation compare"
+      "status": "active",
+      "activation": "closed balance tuning/weights/thresholds with schema validation, derived checks and deterministic gameplay evidence"
     },
     {
       "name": "runtime-scenario",
       "path": ".agents/skills/runtime-scenario",
-      "status": "planned",
-      "activation": "after scenario v1 wave: typed scenario topology, gates, reachability"
+      "status": "active",
+      "activation": "typed scenario-v1 authoring, compilation, capability resolution, certification and existing gamectl scenario commands"
     },
     {
       "name": "runtime-simulation",
       "path": ".agents/skills/runtime-simulation",
-      "status": "planned",
-      "activation": "after simulation wave: deterministic simulate/replay/explain/fixture workflows"
+      "status": "active",
+      "activation": "deterministic simulate/compare, fixtures, repro/replay/trace/explain and property evidence"
     },
     {
       "name": "runtime-persistence",
       "path": ".agents/skills/runtime-persistence",
       "status": "planned",
-      "activation": "after persistence tooling wave: Rust-owned persistence, save compatibility, recovery diagnostics"
+      "activation": "after Rust-owned read-only persistence inspection/save devtools exist"
     },
     {
       "name": "runtime-harness",
       "path": ".agents/skills/runtime-harness",
       "status": "planned",
-      "activation": "after harness tooling waves: Studio/Nx/gamectl/Storybook agent integration changes"
+      "activation": "after Studio/CI harness ownership is separated from broad game-semantic tooling paths"
     }
   ]
 }
