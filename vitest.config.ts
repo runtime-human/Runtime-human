@@ -170,6 +170,7 @@ export default defineConfig({
         "tests/studio-pr-evidence.test.ts",
         "tests/studio-routing.test.ts",
         "tests/studio-task-exact-head.test.ts",
+        "tests/studio-verify-exact-head.test.ts",
         "tests/studioctl-cli.test.ts",
         "tests/versioning.test.ts",
       ]),
