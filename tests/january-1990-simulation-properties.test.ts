@@ -5,6 +5,7 @@ import {
   projectJanuary1990Content,
   JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
 } from "@runtime-human/game-application";
+import { JANUARY_1990_SCENARIO_ARTIFACT } from "@runtime-human/game-content";
 import {
   createJanuary1990MonthPlan,
   createJanuary1990MonthSteps,
@@ -19,7 +20,13 @@ import {
   transitionMonthRun,
   Xoshiro256StarStar,
 } from "@runtime-human/game-core";
-import { createJanuary1990Simulation, SIMULATION_POLICY_IDS } from "@runtime-human/game-simulation";
+import {
+  createJanuary1990Simulation,
+  createJanuary1990SimulationV4,
+  JANUARY_1990_CANONICAL_SIMULATION_CORPUS_FINGERPRINT,
+  JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1,
+  SIMULATION_POLICY_IDS,
+} from "@runtime-human/game-simulation";
 import {
   DETERMINISM_MANIFEST_V1,
   parseDecisionId,
@@ -45,10 +52,20 @@ async function createHarness() {
     balance: JANUARY_1990_DEFAULT_BALANCE,
     saveSchemaFingerprint: JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
   });
+  const simulationV4 = createJanuary1990SimulationV4({
+    context,
+    balance: JANUARY_1990_DEFAULT_BALANCE,
+    saveSchemaFingerprint: JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
+    scenarioIdentity: {
+      scenarioId: JANUARY_1990_SCENARIO_ARTIFACT.program.scenarioId,
+      programFingerprint: JANUARY_1990_SCENARIO_ARTIFACT.program.programFingerprint,
+      certificateFingerprint: JANUARY_1990_SCENARIO_ARTIFACT.certificate.certificateFingerprint,
+    },
+  });
   const steps = createJanuary1990MonthSteps(context, JANUARY_1990_DEFAULT_BALANCE);
   const plan = createJanuary1990MonthPlan(context);
   const rulesetFingerprint = createJanuary1990RulesFingerprint(JANUARY_1990_DEFAULT_BALANCE);
-  return { context, simulation, steps, plan, rulesetFingerprint };
+  return { context, simulation, simulationV4, steps, plan, rulesetFingerprint };
 }
 
 function createInitialCheckpoint(seed: number): MonthRunCheckpointV1 {
@@ -213,5 +230,41 @@ describe("January 1990 simulation properties", () => {
     const first = harness.simulation.simulate(request);
     const second = harness.simulation.simulate(request);
     expect(second).toEqual(first);
+  });
+
+  it("materializes the canonical corpus and scenario identity in report v4", () => {
+    const first = harness.simulationV4.simulateCorpus(
+      JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1,
+    );
+    const second = harness.simulationV4.simulateCorpus(
+      JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1,
+    );
+
+    expect(first.schemaVersion).toBe("simulation-report-v4");
+    expect(first.seedRange).toEqual({ start: 1, end: 64 });
+    expect(first.policies).toEqual([...SIMULATION_POLICY_IDS]);
+    expect(first.runs).toBe(192);
+    expect(first.aggregates.completedRuns).toBe(192);
+    expect(first.invariantFailures).toEqual([]);
+    expect(first.corpus).toEqual({
+      schemaVersion: "simulation-corpus-v1",
+      corpusId: "january-1990-canonical-v1",
+      fingerprint: JANUARY_1990_CANONICAL_SIMULATION_CORPUS_FINGERPRINT,
+    });
+    expect(first.scenario).toEqual({
+      scenarioId: JANUARY_1990_SCENARIO_ARTIFACT.program.scenarioId,
+      programFingerprint: JANUARY_1990_SCENARIO_ARTIFACT.program.programFingerprint,
+      certificateFingerprint: JANUARY_1990_SCENARIO_ARTIFACT.certificate.certificateFingerprint,
+    });
+    expect(second).toEqual(first);
+  });
+
+  it("rejects a corpus bound to a different scenario identity", () => {
+    expect(() =>
+      harness.simulationV4.simulateCorpus({
+        ...JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1,
+        scenarioId: "january-1990.other",
+      }),
+    ).toThrow(/does not match/u);
   });
 });
