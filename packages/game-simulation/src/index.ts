@@ -18,6 +18,25 @@ export {
 } from "./january-simulation-v3";
 export type { January1990SimulationV3, SimulationReportV3 } from "./january-simulation-v3";
 export {
+  createJanuary1990SimulationV4,
+  SIMULATION_REPORT_SCHEMA_VERSION_V4,
+} from "./january-simulation-v4";
+export type {
+  CreateJanuary1990SimulationV4Input,
+  January1990SimulationV4,
+  SimulationCorpusIdentityV1,
+  SimulationReportV4,
+  SimulationScenarioIdentityV1,
+} from "./january-simulation-v4";
+export {
+  fingerprintSimulationCorpusV1,
+  JANUARY_1990_CANONICAL_SIMULATION_CORPUS_FINGERPRINT,
+  JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1,
+  parseSimulationCorpusV1,
+  SIMULATION_CORPUS_SCHEMA_VERSION,
+} from "./simulation-corpus";
+export type { SimulationCorpusParseResultV1, SimulationCorpusV1 } from "./simulation-corpus";
+export {
   createJanuary1990RngShadowReport,
   JANUARY_RNG_SHADOW_REPORT_SCHEMA_VERSION,
 } from "./january-rng-shadow";
