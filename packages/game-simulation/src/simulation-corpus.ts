@@ -29,9 +29,8 @@ export const JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1: SimulationCorpusV1 = O
   policies: Object.freeze([...SIMULATION_POLICY_IDS]),
 });
 
-export const JANUARY_1990_CANONICAL_SIMULATION_CORPUS_FINGERPRINT = fingerprintSimulationCorpusV1(
-  JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1,
-);
+export const JANUARY_1990_CANONICAL_SIMULATION_CORPUS_FINGERPRINT =
+  fingerprintSimulationCorpusV1(JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1);
 
 export function parseSimulationCorpusV1(value: unknown): SimulationCorpusParseResultV1 {
   const corpus = closedRecord(value, [
