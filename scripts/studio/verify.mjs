@@ -37,13 +37,29 @@ function git(argsList) {
   return result.stdout ?? "";
 }
 
+function revParse(ref) {
+  const output = git(["rev-parse", ref]);
+  return output ? output.trim().split(/\r?\n/)[0] : null;
+}
+
 const zonesConfig = loadJson(".studio/zones.json");
 const contextMap = loadJson(".studio/context-map.json");
-const baseLabel = args.one("base") ?? args.one("diff") ?? "HEAD";
-const changedRaw = [
-  ...git(["diff", "--name-only", "-z", baseLabel]).split("\0").filter(Boolean),
-  ...git(["ls-files", "--others", "--exclude-standard", "-z"]).split("\0").filter(Boolean),
-];
+const explicitBase = args.one("base") ?? args.one("diff");
+const headRef = args.one("head");
+const baseLabel = explicitBase ?? "HEAD";
+const baseSha = revParse(baseLabel);
+const headSha = revParse(headRef ?? "HEAD");
+const changedRaw = [];
+if (headRef) {
+  changedRaw.push(
+    ...git(["diff", "--name-only", "-z", baseSha, headSha]).split("\0").filter(Boolean),
+  );
+} else {
+  changedRaw.push(
+    ...git(["diff", "--name-only", "-z", baseLabel]).split("\0").filter(Boolean),
+    ...git(["ls-files", "--others", "--exclude-standard", "-z"]).split("\0").filter(Boolean),
+  );
+}
 const changedPaths = [...new Set(changedRaw.map(toPosix))];
 const classification = classifyAffected(changedPaths, zonesConfig, contextMap.policy ?? {});
 for (const overrideZone of args.many("zone")) {
