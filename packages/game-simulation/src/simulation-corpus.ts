@@ -29,8 +29,9 @@ export const JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1: SimulationCorpusV1 = O
   policies: Object.freeze([...SIMULATION_POLICY_IDS]),
 });
 
-export const JANUARY_1990_CANONICAL_SIMULATION_CORPUS_FINGERPRINT =
-  fingerprintSimulationCorpusV1(JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1);
+export const JANUARY_1990_CANONICAL_SIMULATION_CORPUS_FINGERPRINT = fingerprintSimulationCorpusV1(
+  JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1,
+);
 
 export function parseSimulationCorpusV1(value: unknown): SimulationCorpusParseResultV1 {
   const corpus = closedRecord(value, [
@@ -121,10 +122,7 @@ function isSafeNonNegativeInteger(value: unknown): value is number {
 function closedRecord(value: unknown, keys: readonly string[]): Record<string, unknown> | null {
   if (!isPlainRecord(value)) return null;
   const actualKeys = Object.keys(value);
-  if (
-    actualKeys.length !== keys.length ||
-    actualKeys.some((key) => !keys.includes(key))
-  )
+  if (actualKeys.length !== keys.length || actualKeys.some((key) => !keys.includes(key)))
     return null;
   return value;
 }

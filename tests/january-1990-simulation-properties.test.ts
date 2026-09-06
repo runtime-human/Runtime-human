@@ -233,12 +233,8 @@ describe("January 1990 simulation properties", () => {
   });
 
   it("materializes the canonical corpus and scenario identity in report v4", () => {
-    const first = harness.simulationV4.simulateCorpus(
-      JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1,
-    );
-    const second = harness.simulationV4.simulateCorpus(
-      JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1,
-    );
+    const first = harness.simulationV4.simulateCorpus(JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1);
+    const second = harness.simulationV4.simulateCorpus(JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1);
 
     expect(first.schemaVersion).toBe("simulation-report-v4");
     expect(first.seedRange).toEqual({ start: 1, end: 64 });
