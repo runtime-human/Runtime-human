@@ -85,18 +85,20 @@ let nxProjects = null;
 let projectsSource = "zones";
 if (args.has("nx")) {
   const nxBase = headRef ? baseSha : explicitBase ?? "origin/main";
-  const nxArgs = [
-    "pnpm",
-    "exec",
-    "nx",
-    "show",
-    "projects",
-    "--affected",
-    `--base=${nxBase}`,
-    ...(headRef ? [`--head=${headSha}`] : []),
-    "--json",
-  ];
-  const nxResult = runProcess(nxArgs, { cwd: root, encoding: "utf8" });
+  const nxResult = runProcess(
+    [
+      "pnpm",
+      "exec",
+      "nx",
+      "show",
+      "projects",
+      "--affected",
+      `--base=${nxBase}`,
+      ...(headRef ? [`--head=${headSha}`] : []),
+      "--json",
+    ],
+    { cwd: root, encoding: "utf8" },
+  );
   if (nxResult.status === 0 && nxResult.stdout) {
     try {
       nxProjects = JSON.parse(nxResult.stdout);
