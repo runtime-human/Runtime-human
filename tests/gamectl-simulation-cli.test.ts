@@ -104,7 +104,9 @@ describe("gamectl simulate and replay commands", () => {
     expect(envelope.command).toBe("simulate.run");
     expect(envelope.ok).toBe(true);
     expect(envelope.result.corpusRun.schemaVersion).toBe("simulation-corpus-run-v1");
-    expect(envelope.result.corpusRun.corpus.corpusVersion).toBe("runtime-human-sim-corpus-v1");
+    expect(envelope.result.corpusRun.corpus.corpusVersion).toBe(
+      "runtime-human-sim-corpus-v1",
+    );
     expect(envelope.result.corpusRun.corpus.scenarioId).toBe("january-1990");
     expect(envelope.result.corpusRun.corpus.seedRange).toEqual({ start: 1, end: 64 });
     expect(envelope.result.corpusRun.corpus.policies).toEqual([
@@ -134,7 +136,9 @@ describe("gamectl simulate and replay commands", () => {
     );
 
     expect(exitCode).toBe(2);
-    const envelope = JSON.parse(io.out.join("\n")) as { error: { code: string; message: string } };
+    const envelope = JSON.parse(io.out.join("\n")) as {
+      error: { code: string; message: string };
+    };
     expect(envelope.error.code).toBe("usage-error");
     expect(envelope.error.message).toContain("--corpus cannot be combined");
   });
