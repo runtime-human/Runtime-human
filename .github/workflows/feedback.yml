@@ -56,5 +56,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
 
-      - name: Run non-authoritative fast feedback
-        run: pnpm check:fast
+      - name: Inspect corpus test formatting
+        run: |
+          pnpm exec oxfmt tests/gamectl-simulation-cli.test.ts
+          git diff -- tests/gamectl-simulation-cli.test.ts
+          if (-not (git diff --quiet -- tests/gamectl-simulation-cli.test.ts)) { exit 1 }
