@@ -1,13 +1,7 @@
 import { parseFingerprint, type Fingerprint } from "@runtime-human/game-schema";
 
-import {
-  createJanuary1990SimulationV3,
-  type SimulationReportV3,
-} from "./january-simulation-v3";
-import type {
-  CreateJanuary1990SimulationInput,
-  January1990Simulation,
-} from "./january-simulation";
+import { createJanuary1990SimulationV3, type SimulationReportV3 } from "./january-simulation-v3";
+import type { CreateJanuary1990SimulationInput, January1990Simulation } from "./january-simulation";
 import {
   fingerprintSimulationCorpusV1,
   parseSimulationCorpusV1,
