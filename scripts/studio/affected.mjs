@@ -84,7 +84,7 @@ const risk = classifyRisk(classification.zoneIds, zonesConfig.zones ?? [], {
 let nxProjects = null;
 let projectsSource = "zones";
 if (args.has("nx")) {
-  const nxBase = headRef ? baseSha : explicitBase ?? "origin/main";
+  const nxBase = headRef ? baseSha : (explicitBase ?? "origin/main");
   const nxResult = runProcess(
     [
       "pnpm",
