@@ -225,7 +225,9 @@ export function selectSkills(zoneIds, risk, skillMapEntries) {
   for (const zoneId of zoneIds) {
     for (const name of ZONE_SKILLS[zoneId] ?? []) push(name);
   }
-  const hasDedicatedImplementation = ordered.some((name) => DEDICATED_IMPLEMENTATION_SKILLS.has(name));
+  const hasDedicatedImplementation = ordered.some((name) =>
+    DEDICATED_IMPLEMENTATION_SKILLS.has(name),
+  );
   if (
     !hasDedicatedImplementation &&
     zoneIds.some((zoneId) => GENERIC_IMPLEMENTATION_ZONES.has(zoneId))
