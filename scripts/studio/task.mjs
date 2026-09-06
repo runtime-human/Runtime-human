@@ -111,19 +111,23 @@ if (errors.length > 0) {
 const explicitBase = args.one("base") ?? args.one("diff");
 const headRef = args.one("head");
 const baseLabel = explicitBase ?? "HEAD";
-const changedRaw = [];
-if (explicitBase) {
-  const diffOutput = git(["diff", "--name-only", "-z", baseLabel]);
-  if (diffOutput !== null) changedRaw.push(...diffOutput.split("\0").filter(Boolean));
-} else {
-  const diffOutput = git(["diff", "--name-only", "-z", "HEAD"]);
-  if (diffOutput !== null) changedRaw.push(...diffOutput.split("\0").filter(Boolean));
-}
-const untracked = git(["ls-files", "--others", "--exclude-standard", "-z"]);
-if (untracked !== null) changedRaw.push(...untracked.split("\0").filter(Boolean));
-
 const baseSha = revParse(baseLabel);
 const headSha = revParse(headRef ?? "HEAD");
+if (errors.length > 0) {
+  for (const error of errors) console.error(error);
+  process.exit(1);
+}
+
+const changedRaw = [];
+if (headRef) {
+  const diffOutput = git(["diff", "--name-only", "-z", baseSha, headSha]);
+  if (diffOutput !== null) changedRaw.push(...diffOutput.split("\0").filter(Boolean));
+} else {
+  const diffOutput = git(["diff", "--name-only", "-z", baseLabel]);
+  if (diffOutput !== null) changedRaw.push(...diffOutput.split("\0").filter(Boolean));
+  const untracked = git(["ls-files", "--others", "--exclude-standard", "-z"]);
+  if (untracked !== null) changedRaw.push(...untracked.split("\0").filter(Boolean));
+}
 if (errors.length > 0) {
   for (const error of errors) console.error(error);
   process.exit(1);
