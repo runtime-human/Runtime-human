@@ -43,12 +43,13 @@ Domain invariants live in their canonical homes — read the matching home befor
 - persistence: `packages/game-persistence-contracts`, `packages/game-platform-contracts`, `apps/desktop/src-tauri`;
 - UI: `packages/game-ui`, `packages/game-ui-fixtures`, `apps/desktop/src`, `apps/desktop/.storybook`;
 - orchestration/tooling: `.studio/`, `.agents/skills/`, `scripts/studio/`;
-- game devtools: `packages/game-devtools` (`pnpm gamectl`: doctor, catalog list/show/refs/impact, content validate/source — [GAMECTL](docs/engineering/GAMECTL.md));
+- game devtools: `packages/game-devtools` (`pnpm gamectl`: doctor, catalog, content, simulation, fixtures/replay/explain and scenario check/compile/inspect — [GAMECTL](docs/engineering/GAMECTL.md));
 - simulation: `packages/game-simulation` (deterministic policy-driven simulation, repro/replay + trace contracts, quality explain, report compare, gameplay fixture parser, fast-check properties);
 - fixtures: `fixtures/gameplay/` (intent fixtures), `fixtures/repro/` (committed regression repros);
 - authoring schema: `packages/game-authoring-schema` (TypeBox pilot, [AUTHORING-TOOLCHAIN](docs/engineering/AUTHORING-TOOLCHAIN.md));
 - balance: `balance/` (closed tuning families, `pnpm balance:check`, [BALANCE-LAYER](docs/engineering/BALANCE-LAYER.md));
-- planned harness additions: scenario layer, `gamectl balance/*`, save devtools.
+- scenario: typed `scenario-v1` authoring/compiler/certification plus current `gamectl scenario check|compile|inspect` surface;
+- planned harness additions: `gamectl balance/*`, save/persistence devtools and separated harness ownership.
 
 Load only your zone from `.studio/context-map.json`; never bulk-read the docs tree.
 
@@ -71,6 +72,7 @@ Never weaken a test or guard to make a gate pass.
 - task scoping/envelope: `pnpm studio:task -- --id <id> [--diff <ref>]` → `.studio/runtime/tasks/<id>/envelope.json`;
 - repo config/docs/public/skill integrity: `pnpm studio:check`, `pnpm public:check`, `pnpm docs:check`;
 - content/schema validation: `pnpm content:check`, `pnpm gamectl content validate`; balance tuning: `pnpm balance:check`;
+- scenario authoring/runtime artifacts: `pnpm scenario:check`; `pnpm gamectl scenario check|compile|inspect <path>` with the command-specific registry/artifact arguments;
 - game entities/refs/impact: `pnpm gamectl catalog list|show|refs|impact [--json]` (v1, read-only);
 - gameplay evidence: deterministic January tests + `gamectl simulate run`, `gamectl simulate compare`, `gamectl replay [--trace]`, `gamectl explain`, `gamectl fixture list/materialize` ([GAMECTL](docs/engineering/GAMECTL.md));
 - repository impact: `pnpm studio:affected -- --base <ref> [--nx]` (zones+paths; optional Nx affected graph; local cache via nx.json, no Nx Cloud);
@@ -83,14 +85,17 @@ Never weaken a test or guard to make a gate pass.
 Use the minimum matching set from `.agents/skills/` (registry: `.studio/skill-map.json`):
 
 - architecture/R3 analysis: `runtime-architecture`;
-- bounded code task: `runtime-implement`;
+- bounded code task without a dedicated domain owner: `runtime-implement`;
 - content: `runtime-content`;
+- balance tuning: `runtime-balance`;
+- scenario authoring/compiler/certification: `runtime-scenario`;
+- deterministic simulation/repro/evidence: `runtime-simulation`;
 - UI/Storybook/tokens: `runtime-ui`;
 - test authoring/repro/fixtures: `runtime-qa`;
 - independent testing / independent review: `runtime-test`, `runtime-review`;
 - Orca coordination: `runtime-producer`.
 
-Planned skills activate only when created: `runtime-balance`, `runtime-scenario`, `runtime-simulation`, `runtime-persistence`, `runtime-harness`. Skills route work; they never redefine canon or model routing.
+Planned skills activate only when their owned capability boundary exists: `runtime-persistence`, `runtime-harness`. Skills route work; they never redefine canon or model routing.
 
 ## Change gates
 
