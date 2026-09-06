@@ -118,7 +118,7 @@ describe("studio:task exact head mode", () => {
     expect(envelope.stats.changedFiles).toBe(1);
     expect(envelope.stats.consideredFiles).toBe(1);
     expect(envelope.mustRead).toContain("scripts/studio/exact.mjs");
-    expect(envelope.mustRead).not.toContain("docs/INDEX.md");
+    expect(envelope.mustRead).toContain("docs/INDEX.md");
     expect(envelope.mustRead).not.toContain("tests/untracked-leak.test.ts");
   });
 
