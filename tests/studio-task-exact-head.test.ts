@@ -90,22 +90,26 @@ function makeRepo() {
   return { root, base, head };
 }
 
+function runTask(root: string, args: string[]) {
+  const script = path.resolve(import.meta.dirname, "../scripts/studio/task.mjs");
+  return JSON.parse(
+    execFileSync(process.execPath, [script, ...args, "--json"], {
+      cwd: root,
+      encoding: "utf8",
+    }),
+  ) as {
+    base: { sha: string };
+    head: { sha: string; includesUncommitted: boolean };
+    zones: string[];
+    stats: { changedFiles: number; consideredFiles: number };
+    mustRead: string[];
+  };
+}
+
 describe("studio:task exact head mode", () => {
   it("derives changed paths only from the explicit immutable base/head pair", () => {
     const { root, base, head } = makeRepo();
-    const script = path.resolve(import.meta.dirname, "../scripts/studio/task.mjs");
-    const stdout = execFileSync(
-      process.execPath,
-      [script, "--id", "RH-EXACT", "--base", base, "--head", head, "--json"],
-      { cwd: root, encoding: "utf8" },
-    );
-    const envelope = JSON.parse(stdout) as {
-      base: { sha: string };
-      head: { sha: string; includesUncommitted: boolean };
-      zones: string[];
-      stats: { changedFiles: number; consideredFiles: number };
-      mustRead: string[];
-    };
+    const envelope = runTask(root, ["--id", "RH-EXACT", "--base", base, "--head", head]);
 
     expect(envelope.base.sha).toBe(base);
     expect(envelope.head.sha).toBe(head);
@@ -116,5 +120,20 @@ describe("studio:task exact head mode", () => {
     expect(envelope.mustRead).toContain("scripts/studio/exact.mjs");
     expect(envelope.mustRead).not.toContain("docs/INDEX.md");
     expect(envelope.mustRead).not.toContain("tests/untracked-leak.test.ts");
+  });
+
+  it("preserves dirty and untracked inputs in worktree mode", () => {
+    const { root, base, head } = makeRepo();
+    const envelope = runTask(root, ["--id", "RH-WORKTREE", "--base", base]);
+
+    expect(envelope.base.sha).toBe(base);
+    expect(envelope.head.sha).toBe(head);
+    expect(envelope.head.includesUncommitted).toBe(true);
+    expect(envelope.zones).toEqual(["tooling", "qa-performance", "canon"]);
+    expect(envelope.stats.changedFiles).toBe(3);
+    expect(envelope.stats.consideredFiles).toBe(3);
+    expect(envelope.mustRead).toContain("scripts/studio/exact.mjs");
+    expect(envelope.mustRead).toContain("docs/INDEX.md");
+    expect(envelope.mustRead).toContain("tests/untracked-leak.test.ts");
   });
 });
