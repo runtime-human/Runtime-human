@@ -15,7 +15,15 @@
     },
     {
       "id": "content",
-      "paths": ["content/**", "packages/game-content/**", "packages/game-content-compiler/**", "packages/game-authoring-schema/**"],
+      "paths": [
+        "content/**",
+        "packages/game-content/**",
+        "packages/game-content-compiler/**",
+        "packages/game-authoring-schema/package.json",
+        "packages/game-authoring-schema/tsconfig.json",
+        "packages/game-authoring-schema/src/content-source-schema.ts",
+        "packages/game-authoring-schema/src/index.ts"
+      ],
       "minimumRisk": "R2",
       "preferredProfile": "content",
       "promoteToR3On": ["stable content ID", "canonical historical fact", "content-to-state authority"]
@@ -56,7 +64,26 @@
     },
     {
       "id": "tooling",
-      "paths": [".studio/**", ".agents/skills/**", ".github/**", "scripts/studio/**", "scripts/studioctl.mjs", "scripts/versioning.mjs", "scripts/versioning.d.mts", "scripts/gamectl.ts", "scripts/gamectl-entry.ts", "scripts/gamectl-capabilities.mjs", "scripts/gamectl-capabilities.d.mts", "packages/game-devtools/**", "nx.json"],
+      "paths": [
+        ".studio/**",
+        ".agents/skills/**",
+        ".github/**",
+        "scripts/studio/**",
+        "scripts/studioctl.mjs",
+        "scripts/versioning.mjs",
+        "scripts/versioning.d.mts",
+        "scripts/gamectl.ts",
+        "scripts/gamectl-entry.ts",
+        "scripts/gamectl-capabilities.mjs",
+        "scripts/gamectl-capabilities.d.mts",
+        "packages/game-devtools/package.json",
+        "packages/game-devtools/tsconfig.json",
+        "packages/game-devtools/src/index.ts",
+        "packages/game-devtools/src/catalog/**",
+        "packages/game-devtools/src/diagnostics/**",
+        "packages/game-devtools/src/doctor/**",
+        "nx.json"
+      ],
       "minimumRisk": "R1"
     },
     {
