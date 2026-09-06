@@ -95,25 +95,18 @@ describe("Studio domain skill routing", () => {
 
     expect(selectSkills(["balance"], "R2", skillMap.skills)).toEqual(["runtime-balance"]);
     expect(selectSkills(["scenario"], "R2", skillMap.skills)).toEqual(["runtime-scenario"]);
-    expect(selectSkills(["simulation"], "R2", skillMap.skills)).toEqual([
-      "runtime-simulation",
-    ]);
+    expect(selectSkills(["simulation"], "R2", skillMap.skills)).toEqual(["runtime-simulation"]);
   });
 
-  it(
-    "does not add generic runtime-implement when a dedicated domain owns overlapping tooling",
-    () => {
-      const active = [
-        { name: "runtime-architecture", status: "active" },
-        { name: "runtime-implement", status: "active" },
-        { name: "runtime-scenario", status: "active" },
-      ];
+  it("does not add generic runtime-implement when a dedicated domain owns overlapping tooling", () => {
+    const active = [
+      { name: "runtime-architecture", status: "active" },
+      { name: "runtime-implement", status: "active" },
+      { name: "runtime-scenario", status: "active" },
+    ];
 
-      expect(selectSkills(["scenario", "tooling"], "R2", active)).toEqual([
-        "runtime-scenario",
-      ]);
-    },
-  );
+    expect(selectSkills(["scenario", "tooling"], "R2", active)).toEqual(["runtime-scenario"]);
+  });
 
   it("keeps R3 architecture review ahead of the owning domain skill", () => {
     const skillMap = readConfig(".studio/skill-map.json") as {
@@ -167,11 +160,9 @@ describe("Studio domain skill routing", () => {
       config.zones,
       { fallbackZone: "tooling" },
     );
-    const devtools = resolveZones(
-      ["packages/game-devtools/src/catalog/catalog.ts"],
-      config.zones,
-      { fallbackZone: "tooling" },
-    );
+    const devtools = resolveZones(["packages/game-devtools/src/catalog/catalog.ts"], config.zones, {
+      fallbackZone: "tooling",
+    });
 
     expect(authoring.selected.map((entry) => entry.id)).toEqual(["content"]);
     expect(devtools.selected.map((entry) => entry.id)).toEqual(["tooling"]);
