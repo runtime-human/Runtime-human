@@ -4,11 +4,18 @@ import { buildTierCommands } from "../scripts/studio/harness-lib.mjs";
 
 function planFor(zoneId: string, tier: "V0" | "V1" = "V0") {
   return buildTierCommands(tier, {
+    resolution: {
+      selected: [{ id: zoneId, matched: [`${zoneId}/example`] }],
+      unmatched: [],
+      ignored: [],
+    },
     zoneIds: [zoneId],
+    projects: [],
     tests: [],
     storybook: false,
     rust: false,
     contentCompiler: zoneId === "balance" || zoneId === "scenario",
+    exclusiveConflict: false,
   });
 }
 
