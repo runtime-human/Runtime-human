@@ -117,38 +117,32 @@ describe("canonical simulation corpus v1", () => {
     expect(JSON.stringify(second)).toBe(JSON.stringify(first));
   });
 
-  it(
-    "materializes explicit scenario artifact identity separately from corpus identity",
-    async () => {
-      const simulation = (await import("@runtime-human/game-simulation")) as Record<
-        string,
-        unknown
-      >;
-      const runCanonical = simulation.runJanuary1990CanonicalSimulationV1 as
-        | ((input: {
-            context: unknown;
-            balance: unknown;
-            saveSchemaFingerprint: unknown;
-            artifact: unknown;
-          }) => CanonicalSimulationRun)
-        | undefined;
+  it("materializes explicit scenario artifact identity separately from corpus identity", async () => {
+    const simulation = (await import("@runtime-human/game-simulation")) as Record<string, unknown>;
+    const runCanonical = simulation.runJanuary1990CanonicalSimulationV1 as
+      | ((input: {
+          context: unknown;
+          balance: unknown;
+          saveSchemaFingerprint: unknown;
+          artifact: unknown;
+        }) => CanonicalSimulationRun)
+      | undefined;
 
-      expect(runCanonical).toBeTypeOf("function");
-      if (!runCanonical) return;
+    expect(runCanonical).toBeTypeOf("function");
+    if (!runCanonical) return;
 
-      const run = runCanonical({
-        context,
-        balance: JANUARY_1990_DEFAULT_BALANCE,
-        saveSchemaFingerprint: JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
-        artifact: JANUARY_1990_SCENARIO_ARTIFACT,
-      });
+    const run = runCanonical({
+      context,
+      balance: JANUARY_1990_DEFAULT_BALANCE,
+      saveSchemaFingerprint: JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
+      artifact: JANUARY_1990_SCENARIO_ARTIFACT,
+    });
 
-      expect(run.scenarioIdentity).toEqual({
-        programFingerprint: JANUARY_1990_SCENARIO_ARTIFACT.program.programFingerprint,
-        rulesFingerprint: JANUARY_1990_SCENARIO_ARTIFACT.capabilities.rulesFingerprint,
-        policyFingerprint: JANUARY_1990_SCENARIO_ARTIFACT.certificate.policyFingerprint,
-        certificateFingerprint: JANUARY_1990_SCENARIO_ARTIFACT.certificate.certificateFingerprint,
-      });
-    },
-  );
+    expect(run.scenarioIdentity).toEqual({
+      programFingerprint: JANUARY_1990_SCENARIO_ARTIFACT.program.programFingerprint,
+      rulesFingerprint: JANUARY_1990_SCENARIO_ARTIFACT.capabilities.rulesFingerprint,
+      policyFingerprint: JANUARY_1990_SCENARIO_ARTIFACT.certificate.policyFingerprint,
+      certificateFingerprint: JANUARY_1990_SCENARIO_ARTIFACT.certificate.certificateFingerprint,
+    });
+  });
 });
