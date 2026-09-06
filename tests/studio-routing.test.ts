@@ -1,6 +1,9 @@
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+
+import { resolveZones, selectSkills } from "../scripts/studio/context-lib.mjs";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const routeScript = join(repoRoot, "scripts", "studio", "route.mjs");
@@ -12,6 +15,10 @@ function route(args: string[]) {
   });
   expect(result.status, result.stderr || result.stdout).toBe(0);
   return JSON.parse(result.stdout);
+}
+
+function readConfig(path: string) {
+  return JSON.parse(readFileSync(join(repoRoot, path), "utf8"));
 }
 
 describe("Studio model routing", () => {
@@ -64,5 +71,100 @@ describe("Studio model routing", () => {
       readOnly: true,
       freshContext: true,
     });
+  });
+});
+
+describe("Studio domain skill routing", () => {
+  it("activates only domain skills backed by current repository capabilities", () => {
+    const skillMap = readConfig(".studio/skill-map.json") as {
+      skills: Array<{ name: string; status: string }>;
+    };
+    const status = new Map(skillMap.skills.map((entry) => [entry.name, entry.status]));
+
+    expect(status.get("runtime-balance")).toBe("active");
+    expect(status.get("runtime-scenario")).toBe("active");
+    expect(status.get("runtime-simulation")).toBe("active");
+    expect(status.get("runtime-harness")).toBe("planned");
+    expect(status.get("runtime-persistence")).toBe("planned");
+  });
+
+  it("routes balance, scenario and simulation work to their dedicated active skills", () => {
+    const skillMap = readConfig(".studio/skill-map.json") as {
+      skills: Array<{ name: string; status: string }>;
+    };
+
+    expect(selectSkills(["balance"], "R2", skillMap.skills)).toEqual(["runtime-balance"]);
+    expect(selectSkills(["scenario"], "R2", skillMap.skills)).toEqual(["runtime-scenario"]);
+    expect(selectSkills(["simulation"], "R2", skillMap.skills)).toEqual(["runtime-simulation"]);
+  });
+
+  it("does not add generic runtime-implement when a dedicated domain owns overlapping tooling", () => {
+    const active = [
+      { name: "runtime-architecture", status: "active" },
+      { name: "runtime-implement", status: "active" },
+      { name: "runtime-scenario", status: "active" },
+    ];
+
+    expect(selectSkills(["scenario", "tooling"], "R2", active)).toEqual(["runtime-scenario"]);
+  });
+
+  it("keeps R3 architecture review ahead of the owning domain skill", () => {
+    const skillMap = readConfig(".studio/skill-map.json") as {
+      skills: Array<{ name: string; status: string }>;
+    };
+
+    expect(selectSkills(["scenario"], "R3", skillMap.skills)).toEqual([
+      "runtime-architecture",
+      "runtime-scenario",
+    ]);
+  });
+
+  it("gives scenario code a single specialized owner", () => {
+    const config = readConfig(".studio/zones.json") as {
+      zones: Array<{ id: string; paths: string[]; minimumRisk: string }>;
+    };
+    const paths = [
+      "packages/game-authoring-schema/src/scenario-schema.ts",
+      "packages/game-devtools/src/scenario/compiler.ts",
+      "scripts/gamectl-scenario.ts",
+      "scripts/check-january-scenario-artifact.ts",
+    ];
+    const resolution = resolveZones(paths, config.zones, { fallbackZone: "tooling" });
+    const scenario = resolution.selected.find((entry) => entry.id === "scenario");
+
+    expect(resolution.selected.map((entry) => entry.id)).toEqual(["scenario"]);
+    expect(scenario?.matched).toEqual([...paths].sort((a, b) => a.localeCompare(b, "en")));
+  });
+
+  it("gives balance schema and validation a single specialized owner", () => {
+    const config = readConfig(".studio/zones.json") as {
+      zones: Array<{ id: string; paths: string[]; minimumRisk: string }>;
+    };
+    const paths = [
+      "packages/game-authoring-schema/src/balance-schema.ts",
+      "scripts/validate-balance.ts",
+    ];
+    const resolution = resolveZones(paths, config.zones, { fallbackZone: "tooling" });
+    const balance = resolution.selected.find((entry) => entry.id === "balance");
+
+    expect(resolution.selected.map((entry) => entry.id)).toEqual(["balance"]);
+    expect(balance?.matched).toEqual([...paths].sort((a, b) => a.localeCompare(b, "en")));
+  });
+
+  it("keeps generic authoring and devtools paths routed", () => {
+    const config = readConfig(".studio/zones.json") as {
+      zones: Array<{ id: string; paths: string[]; minimumRisk: string }>;
+    };
+    const authoring = resolveZones(
+      ["packages/game-authoring-schema/src/content-source-schema.ts"],
+      config.zones,
+      { fallbackZone: "tooling" },
+    );
+    const devtools = resolveZones(["packages/game-devtools/src/catalog/catalog.ts"], config.zones, {
+      fallbackZone: "tooling",
+    });
+
+    expect(authoring.selected.map((entry) => entry.id)).toEqual(["content"]);
+    expect(devtools.selected.map((entry) => entry.id)).toEqual(["tooling"]);
   });
 });

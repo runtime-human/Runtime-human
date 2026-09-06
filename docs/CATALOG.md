@@ -3,7 +3,7 @@ title: "Runtime Human — полный каталог документации"
 type: index
 status: draft
 canon: false
-updated: 2026-08-31
+updated: 2026-09-06
 ---
 
 # Runtime Human — полный каталог документации

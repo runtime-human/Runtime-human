@@ -22,7 +22,15 @@
     "content": {
       "agentGuide": "docs/agents/CONTENT-AGENT.md",
       "docs": ["docs/content/**", "docs/game-design/**", "docs/adr/**"],
-      "code": ["content/**", "packages/game-content/**", "packages/game-content-compiler/**", "packages/game-authoring-schema/**"]
+      "code": [
+        "content/**",
+        "packages/game-content/**",
+        "packages/game-content-compiler/**",
+        "packages/game-authoring-schema/package.json",
+        "packages/game-authoring-schema/tsconfig.json",
+        "packages/game-authoring-schema/src/content-source-schema.ts",
+        "packages/game-authoring-schema/src/index.ts"
+      ]
     },
     "application": {
       "agentGuide": "docs/agents/ARCHITECT-AGENT.md",
@@ -42,12 +50,12 @@
     "balance": {
       "agentGuide": "docs/agents/ARCHITECT-AGENT.md",
       "docs": ["docs/game-design/**", "docs/architecture/AI-FIRST-GAME-DEVELOPMENT.md", "docs/engineering/**"],
-      "code": ["balance/**"]
+      "code": ["balance/**", "packages/game-authoring-schema/src/balance-schema.ts", "scripts/validate-balance.ts"]
     },
     "scenario": {
       "agentGuide": "docs/agents/ARCHITECT-AGENT.md",
-      "docs": ["docs/content/**", "docs/architecture/AI-FIRST-GAME-DEVELOPMENT.md"],
-      "code": ["content/**/scenarios/**"]
+      "docs": ["docs/content/**", "docs/architecture/AI-FIRST-GAME-DEVELOPMENT.md", "docs/engineering/GAMECTL.md"],
+      "code": ["content/**/scenarios/**", "packages/game-authoring-schema/src/scenario-schema.ts", "packages/game-devtools/src/scenario/**", "scripts/gamectl-scenario.ts", "scripts/check-january-scenario-artifact.ts", "tools/scenario-shadow/**"]
     },
     "simulation": {
       "agentGuide": "docs/agents/ARCHITECT-AGENT.md",
@@ -57,7 +65,26 @@
     "tooling": {
       "agentGuide": "docs/agents/ARCHITECT-AGENT.md",
       "docs": ["docs/architecture/AI-FIRST-GAME-DEVELOPMENT.md", "docs/engineering/**"],
-      "code": [".studio/**", ".agents/skills/**", ".github/**", "scripts/studio/**", "scripts/studioctl.mjs", "scripts/versioning.mjs", "scripts/versioning.d.mts", "scripts/gamectl.ts", "scripts/gamectl-entry.ts", "scripts/gamectl-capabilities.mjs", "scripts/gamectl-capabilities.d.mts", "packages/game-devtools/**", "nx.json"]
+      "code": [
+        ".studio/**",
+        ".agents/skills/**",
+        ".github/**",
+        "scripts/studio/**",
+        "scripts/studioctl.mjs",
+        "scripts/versioning.mjs",
+        "scripts/versioning.d.mts",
+        "scripts/gamectl.ts",
+        "scripts/gamectl-entry.ts",
+        "scripts/gamectl-capabilities.mjs",
+        "scripts/gamectl-capabilities.d.mts",
+        "packages/game-devtools/package.json",
+        "packages/game-devtools/tsconfig.json",
+        "packages/game-devtools/src/index.ts",
+        "packages/game-devtools/src/catalog/**",
+        "packages/game-devtools/src/diagnostics/**",
+        "packages/game-devtools/src/doctor/**",
+        "nx.json"
+      ]
     },
     "canon": {
       "agentGuide": "docs/agents/ARCHITECT-AGENT.md",

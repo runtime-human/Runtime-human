@@ -195,11 +195,21 @@ const ZONE_SKILLS = Object.freeze({
   ui: ["runtime-ui"],
   "qa-performance": ["runtime-qa"],
   canon: ["runtime-architecture"],
-  balance: ["runtime-implement"],
-  scenario: ["runtime-implement"],
-  simulation: ["runtime-implement"],
-  tooling: ["runtime-implement"],
+  balance: ["runtime-balance"],
+  scenario: ["runtime-scenario"],
+  simulation: ["runtime-simulation"],
+  tooling: [],
 });
+
+const GENERIC_IMPLEMENTATION_ZONES = new Set(["core", "persistence", "application", "tooling"]);
+const DEDICATED_IMPLEMENTATION_SKILLS = new Set([
+  "runtime-content",
+  "runtime-ui",
+  "runtime-balance",
+  "runtime-scenario",
+  "runtime-simulation",
+  "runtime-harness",
+]);
 
 export function selectSkills(zoneIds, risk, skillMapEntries) {
   const active = new Set(
@@ -214,6 +224,15 @@ export function selectSkills(zoneIds, risk, skillMapEntries) {
   if (risk === "R3") push("runtime-architecture");
   for (const zoneId of zoneIds) {
     for (const name of ZONE_SKILLS[zoneId] ?? []) push(name);
+  }
+  const hasDedicatedImplementation = ordered.some((name) =>
+    DEDICATED_IMPLEMENTATION_SKILLS.has(name),
+  );
+  if (
+    !hasDedicatedImplementation &&
+    zoneIds.some((zoneId) => GENERIC_IMPLEMENTATION_ZONES.has(zoneId))
+  ) {
+    push("runtime-implement");
   }
   if (ordered.length === 0) push("runtime-implement");
   return ordered;
