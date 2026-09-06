@@ -40,13 +40,13 @@
     },
     {
       "id": "balance",
-      "paths": ["balance/**"],
+      "paths": ["balance/**", "packages/game-authoring-schema/src/balance-schema.ts", "scripts/validate-balance.ts"],
       "minimumRisk": "R2",
       "promoteToR3On": ["authoritative algorithm transfer out of Game Core", "ruleset fingerprint semantics"]
     },
     {
       "id": "scenario",
-      "paths": ["content/**/scenarios/**"],
+      "paths": ["content/**/scenarios/**", "packages/game-authoring-schema/src/scenario-schema.ts", "packages/game-devtools/src/scenario/**", "scripts/gamectl-scenario.ts", "scripts/check-january-scenario-artifact.ts", "tools/scenario-shadow/**"],
       "minimumRisk": "R2"
     },
     {
