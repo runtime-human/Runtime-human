@@ -1,9 +1,9 @@
 import {
   createJanuary1990MonthPlan,
+  createRootRngState,
   parseJanuaryAccessAnswer,
   parseJanuaryDefectAnswer,
   parseJanuaryLearningAnswer,
-  Xoshiro256StarStar,
   type January1990ContentContext,
 } from "@runtime-human/game-core";
 import {
@@ -55,7 +55,7 @@ export function createJanuary1990BeginCommand(
     runId: parseMonthRunId(input.runId),
     plan: createJanuary1990MonthPlan(context),
     compatibility,
-    initialRngState: Xoshiro256StarStar.fromSeed(input.seed).exportState(),
+    initialRngState: createRootRngState(input.seed),
   });
 }
 
