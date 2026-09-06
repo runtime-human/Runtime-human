@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 
 import type { Fingerprint } from "@runtime-human/game-schema";
-import * as simulationPackage from "@runtime-human/game-simulation";
 import {
   compareSimulationReportsV1,
+  fingerprintSimulationCorpusV1,
+  JANUARY_1990_CANONICAL_SIMULATION_CORPUS_FINGERPRINT,
+  JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1,
+  parseSimulationCorpusV1,
   parseSimulationReportV1,
+  SIMULATION_CORPUS_SCHEMA_VERSION,
   SIMULATION_POLICY_IDS,
   type SimulationCompareReportV1,
   type SimulationReportV1,
@@ -249,9 +253,56 @@ describe("simulation compare v1", () => {
 });
 
 describe("ENGINE-03 canonical simulation corpus", () => {
-  it("publishes a versioned canonical January corpus contract", () => {
-    const exports = simulationPackage as unknown as Record<string, unknown>;
-    expect(exports.SIMULATION_CORPUS_SCHEMA_VERSION).toBe("simulation-corpus-v1");
-    expect(exports.JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1).toBeDefined();
+  it("publishes a closed versioned January corpus in canonical order", () => {
+    expect(SIMULATION_CORPUS_SCHEMA_VERSION).toBe("simulation-corpus-v1");
+    expect(JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1).toEqual({
+      schemaVersion: "simulation-corpus-v1",
+      corpusId: "january-1990-canonical-v1",
+      scenarioId: "january-1990.shadow-proof",
+      executionProfile: "hierarchical-v1",
+      seedRange: { start: 1, end: 64 },
+      policies: [...SIMULATION_POLICY_IDS],
+    });
+    expect(Object.isFrozen(JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1)).toBe(true);
+    expect(Object.isFrozen(JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1.seedRange)).toBe(true);
+    expect(Object.isFrozen(JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1.policies)).toBe(true);
+  });
+
+  it("fingerprints only the deterministic corpus contract", () => {
+    expect(JANUARY_1990_CANONICAL_SIMULATION_CORPUS_FINGERPRINT).toMatch(/^[0-9a-f]{64}$/u);
+    expect(
+      fingerprintSimulationCorpusV1({
+        ...JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1,
+        seedRange: { ...JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1.seedRange },
+        policies: [...JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1.policies],
+      }),
+    ).toBe(JANUARY_1990_CANONICAL_SIMULATION_CORPUS_FINGERPRINT);
+    expect(
+      fingerprintSimulationCorpusV1({
+        ...JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1,
+        seedRange: { start: 1, end: 63 },
+      }),
+    ).not.toBe(JANUARY_1990_CANONICAL_SIMULATION_CORPUS_FINGERPRINT);
+  });
+
+  it("fails closed for malformed or non-canonical corpus inputs", () => {
+    const valid = JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1;
+    const cases: readonly unknown[] = [
+      null,
+      { ...valid, extra: true },
+      { ...valid, schemaVersion: "simulation-corpus-v2" },
+      { ...valid, corpusId: "January Corpus" },
+      { ...valid, scenarioId: "January Scenario" },
+      { ...valid, executionProfile: "legacy-sequential-v1" },
+      { ...valid, seedRange: { start: 64, end: 1 } },
+      { ...valid, seedRange: { start: -1, end: 64 } },
+      { ...valid, policies: [] },
+      { ...valid, policies: [SIMULATION_POLICY_IDS[0], SIMULATION_POLICY_IDS[0]] },
+      { ...valid, policies: [...SIMULATION_POLICY_IDS].toReversed() },
+      Object.assign(Object.create(null), valid),
+    ];
+    for (const candidate of cases) {
+      expect(parseSimulationCorpusV1(candidate).kind).toBe("invalid");
+    }
   });
 });
