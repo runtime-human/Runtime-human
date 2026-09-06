@@ -4,6 +4,7 @@ import type { Fingerprint } from "@runtime-human/game-schema";
 import {
   createJanuary1990SimulationForExecutionProfile,
   type CreateJanuary1990SimulationInput,
+  type January1990Simulation,
 } from "./january-simulation";
 import { JANUARY_RNG_EVIDENCE_V2, type JanuaryRngEvidenceV2 } from "./january-rng-evidence-v2";
 import type {
@@ -38,13 +39,20 @@ export type January1990SimulationV3 = Readonly<{
 export function createJanuary1990SimulationV3(
   input: CreateJanuary1990SimulationInput,
 ): January1990SimulationV3 {
-  const hierarchical = createJanuary1990SimulationForExecutionProfile(
-    input,
-    JANUARY_1990_RNG_EXECUTION_PROFILES_V1.hierarchical.id,
+  return promoteJanuary1990SimulationV3(
+    createJanuary1990SimulationForExecutionProfile(
+      input,
+      JANUARY_1990_RNG_EXECUTION_PROFILES_V1.hierarchical.id,
+    ),
   );
+}
+
+export function promoteJanuary1990SimulationV3(
+  simulation: January1990Simulation,
+): January1990SimulationV3 {
   return Object.freeze({
     simulate(request) {
-      const report = hierarchical.simulate(request);
+      const report = simulation.simulate(request);
       return Object.freeze({
         schemaVersion: SIMULATION_REPORT_SCHEMA_VERSION_V3,
         rulesetFingerprint: report.rulesetFingerprint,
@@ -58,7 +66,7 @@ export function createJanuary1990SimulationV3(
       });
     },
     runOnce(input_) {
-      return hierarchical.runOnce(input_);
+      return simulation.runOnce(input_);
     },
   });
 }
