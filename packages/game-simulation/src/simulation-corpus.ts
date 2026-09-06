@@ -1,7 +1,4 @@
-import {
-  JANUARY_1990_RNG_EXECUTION_PROFILES_V1,
-  fingerprint,
-} from "@runtime-human/game-core";
+import { JANUARY_1990_RNG_EXECUTION_PROFILES_V1, fingerprint } from "@runtime-human/game-core";
 import type { Fingerprint } from "@runtime-human/game-schema";
 
 import { SIMULATION_POLICY_IDS, type SimulationPolicyIdV1 } from "./simulation-types";
@@ -50,7 +47,8 @@ export function parseSimulationCorpusV1(value: unknown): SimulationCorpusParseRe
     return invalid(`Simulation corpus schemaVersion must be ${SIMULATION_CORPUS_SCHEMA_VERSION}`);
   }
   if (!isStableCorpusId(corpus.corpusId)) return invalid("Simulation corpus corpusId is invalid");
-  if (!isStableCorpusId(corpus.scenarioId)) return invalid("Simulation corpus scenarioId is invalid");
+  if (!isStableCorpusId(corpus.scenarioId))
+    return invalid("Simulation corpus scenarioId is invalid");
   if (corpus.executionProfile !== JANUARY_1990_RNG_EXECUTION_PROFILES_V1.hierarchical.id) {
     return invalid("Simulation corpus executionProfile must be hierarchical-v1");
   }
@@ -62,12 +60,16 @@ export function parseSimulationCorpusV1(value: unknown): SimulationCorpusParseRe
     !isSafeNonNegativeInteger(seedRange.end) ||
     seedRange.start > seedRange.end
   ) {
-    return invalid("Simulation corpus seedRange must be an ordered non-negative safe-integer range");
+    return invalid(
+      "Simulation corpus seedRange must be an ordered non-negative safe-integer range",
+    );
   }
 
   const policies = parsePolicies(corpus.policies);
   if (policies === null) {
-    return invalid("Simulation corpus policies must be unique and follow canonical policy ordering");
+    return invalid(
+      "Simulation corpus policies must be unique and follow canonical policy ordering",
+    );
   }
 
   return {
@@ -120,7 +122,11 @@ function isSafeNonNegativeInteger(value: unknown): value is number {
 function closedRecord(value: unknown, keys: readonly string[]): Record<string, unknown> | null {
   if (!isPlainRecord(value)) return null;
   const actualKeys = Object.keys(value);
-  if (actualKeys.length !== keys.length || actualKeys.some((key) => !keys.includes(key))) return null;
+  if (
+    actualKeys.length !== keys.length ||
+    actualKeys.some((key) => !keys.includes(key))
+  )
+    return null;
   return value;
 }
 
