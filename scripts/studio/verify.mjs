@@ -52,18 +52,12 @@ const headSha = revParse(headRef ?? "HEAD");
 const changedRaw = [];
 if (headRef) {
   changedRaw.push(
-    ...git(["diff", "--name-only", "-z", baseSha, headSha])
-      .split("\0")
-      .filter(Boolean),
+    ...git(["diff", "--name-only", "-z", baseSha, headSha]).split("\0").filter(Boolean),
   );
 } else {
   changedRaw.push(
-    ...git(["diff", "--name-only", "-z", baseLabel])
-      .split("\0")
-      .filter(Boolean),
-    ...git(["ls-files", "--others", "--exclude-standard", "-z"])
-      .split("\0")
-      .filter(Boolean),
+    ...git(["diff", "--name-only", "-z", baseLabel]).split("\0").filter(Boolean),
+    ...git(["ls-files", "--others", "--exclude-standard", "-z"]).split("\0").filter(Boolean),
   );
 }
 const changedPaths = [...new Set(changedRaw.map(toPosix))];
