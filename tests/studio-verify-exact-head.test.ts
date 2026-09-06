@@ -69,17 +69,9 @@ function makeRepo() {
 
 function writeFakePnpm(root: string) {
   const bin = path.join(root, "fake-bin");
-  writeText(
-    root,
-    "fake-bin/pnpm",
-    `#!/bin/sh\nprintf "%s\\n" "$*" >> "$PNPM_CALLS"\nexit 0\n`,
-  );
+  writeText(root, "fake-bin/pnpm", `#!/bin/sh\nprintf "%s\\n" "$*" >> "$PNPM_CALLS"\nexit 0\n`);
   fs.chmodSync(path.join(bin, "pnpm"), 0o755);
-  writeText(
-    root,
-    "fake-bin/pnpm.cmd",
-    `@echo off\necho %*>>"%PNPM_CALLS%"\nexit /b 0\n`,
-  );
+  writeText(root, "fake-bin/pnpm.cmd", `@echo off\necho %*>>"%PNPM_CALLS%"\nexit /b 0\n`);
   return bin;
 }
 
