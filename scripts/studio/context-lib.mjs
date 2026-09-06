@@ -195,10 +195,10 @@ const ZONE_SKILLS = Object.freeze({
   ui: ["runtime-ui"],
   "qa-performance": ["runtime-qa"],
   canon: ["runtime-architecture"],
-  balance: ["runtime-implement"],
+  balance: ["runtime-balance"],
   scenario: ["runtime-implement"],
-  simulation: ["runtime-implement"],
-  tooling: ["runtime-implement"],
+  simulation: ["runtime-simulation"],
+  tooling: ["runtime-harness"],
 });
 
 export function selectSkills(zoneIds, risk, skillMapEntries) {

@@ -53,32 +53,32 @@
     {
       "name": "runtime-balance",
       "path": ".agents/skills/runtime-balance",
-      "status": "planned",
-      "activation": "after the balance authoring layer wave: tuning/weights/thresholds with simulation compare"
+      "status": "active",
+      "activation": "closed balance tuning/weights/thresholds with schema validation, derived checks and deterministic simulation evidence"
     },
     {
       "name": "runtime-scenario",
       "path": ".agents/skills/runtime-scenario",
       "status": "planned",
-      "activation": "after scenario v1 wave: typed scenario topology, gates, reachability"
+      "activation": "after scenario v1 commands/contracts exist: typed scenario topology, gates and reachability"
     },
     {
       "name": "runtime-simulation",
       "path": ".agents/skills/runtime-simulation",
-      "status": "planned",
-      "activation": "after simulation wave: deterministic simulate/replay/explain/fixture workflows"
+      "status": "active",
+      "activation": "deterministic simulate/compare, fast-check properties, semantic fixtures, repro/replay/trace/explain workflows"
     },
     {
       "name": "runtime-persistence",
       "path": ".agents/skills/runtime-persistence",
       "status": "planned",
-      "activation": "after persistence tooling wave: Rust-owned persistence, save compatibility, recovery diagnostics"
+      "activation": "after read-only Rust-owned persistence inspection exists: save compatibility, recovery diagnostics and dev tooling"
     },
     {
       "name": "runtime-harness",
       "path": ".agents/skills/runtime-harness",
-      "status": "planned",
-      "activation": "after harness tooling waves: Studio/Nx/gamectl/Storybook agent integration changes"
+      "status": "active",
+      "activation": "Studio/Nx/gamectl/Storybook agent integration and repository-owned AI/developer harness changes"
     }
   ]
 }
