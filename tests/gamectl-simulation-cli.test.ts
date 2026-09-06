@@ -104,9 +104,7 @@ describe("gamectl simulate and replay commands", () => {
     expect(envelope.command).toBe("simulate.run");
     expect(envelope.ok).toBe(true);
     expect(envelope.result.corpusRun.schemaVersion).toBe("simulation-corpus-run-v1");
-    expect(envelope.result.corpusRun.corpus.corpusVersion).toBe(
-      "runtime-human-sim-corpus-v1",
-    );
+    expect(envelope.result.corpusRun.corpus.corpusVersion).toBe("runtime-human-sim-corpus-v1");
     expect(envelope.result.corpusRun.corpus.scenarioId).toBe("january-1990");
     expect(envelope.result.corpusRun.corpus.seedRange).toEqual({ start: 1, end: 64 });
     expect(envelope.result.corpusRun.corpus.policies).toEqual([
@@ -123,15 +121,7 @@ describe("gamectl simulate and replay commands", () => {
   it("rejects simulation modifiers when a canonical corpus is selected", async () => {
     const io = collectIo();
     const exitCode = await runGamectlCli(
-      [
-        "simulate",
-        "run",
-        "--corpus",
-        "runtime-human-sim-corpus-v1",
-        "--seeds",
-        "1..2",
-        "--json",
-      ],
+      ["simulate", "run", "--corpus", "runtime-human-sim-corpus-v1", "--seeds", "1..2", "--json"],
       io,
     );
 
