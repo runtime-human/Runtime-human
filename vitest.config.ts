@@ -163,6 +163,7 @@ export default defineConfig({
         "tests/scenario-certificate.test.ts",
         "tests/scenario-compiler.test.ts",
         "tests/studio-context.test.ts",
+        "tests/studio-domain-verification.test.ts",
         "tests/studio-findings.test.ts",
         "tests/studio-harness.test.ts",
         "tests/studio-pr-evidence.test.ts",

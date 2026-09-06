@@ -206,6 +206,8 @@ export function buildTierCommands(tier, affected) {
     commands.push(["pnpm", "docs:check"]);
   }
   if (contentCompiler) commands.push(["pnpm", "content:check"]);
+  if (zoneIds.includes("balance")) commands.push(["pnpm", "balance:check"]);
+  if (zoneIds.includes("scenario")) commands.push(["pnpm", "scenario:check"]);
   if (tests.length > 0) commands.push(["pnpm", "exec", "vitest", "run", ...tests.slice(0, 8)]);
   if (storybook) {
     notes.push(

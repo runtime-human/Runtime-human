@@ -3,7 +3,7 @@ title: "Verification tiers V0-V4"
 type: engine
 status: draft
 canon: true
-updated: 2026-08-31
+updated: 2026-09-06
 ---
 
 # Verification tiers V0–V4
@@ -12,8 +12,8 @@ updated: 2026-08-31
 
 | Tier | Назначение | Состав | Доступность |
 |---|---|---|---|
-| **V0** | edit loop | один фокусный test file / `--project`; `pnpm content:check` по затронутым source; fmt/lint по затронутым путям | `pnpm studio:verify -- --tier V0 --diff <ref>` / `pnpm studio:exec -- <cmd>` |
-| **V1** | worker completion (affected) | тесты затронутых проектов/зон; compiler/schema checks при изменении content; фокусные Storybook/browser проверки при UI; determinism/golden при изменении правил | `pnpm studio:affected [--nx]` + `pnpm studio:verify -- --tier V1` |
+| **V0** | edit loop | один фокусный test file / `--project`; `pnpm content:check` по затронутым compiler-backed source; `pnpm balance:check` / `pnpm scenario:check` для соответствующих доменов; fmt/lint по затронутым путям | `pnpm studio:verify -- --tier V0 --diff <ref>` / `pnpm studio:exec -- <cmd>` |
+| **V1** | worker completion (affected) | тесты затронутых проектов/зон; compiler/schema/domain checks при изменении content/balance/scenario; фокусные Storybook/browser проверки при UI; determinism/golden при изменении правил | `pnpm studio:affected [--nx]` + `pnpm studio:verify -- --tier V1` |
 | **V2** | PR candidate | весь affected set: typecheck/lint/tests; browser UI если UI; фокусный Rust если persistence/platform; без дублирующего typecheck в build-цепочке | `pnpm studio:verify -- --tier V2` |
 | **V3** | full merge gate | `pnpm verify` | serialized GitHub `foundation`; для PR — только explicit `verify:v3` candidate label; для `main` push/manual dispatch — всегда full gate |
 | **V4** | release | `pnpm verify:release` | после V3 |
@@ -45,8 +45,8 @@ updated: 2026-08-31
 Краткая форма; полные контракты — в профильных agent guides (`docs/agents/README.md`):
 
 - content: schema/stable ID/refs/chronology/provenance/reachability чисты;
-- balance (planned): closed tables полны, fingerprint обновился детерминированно, simulation compare рассмотрен;
-- scenario (planned): graph analyzer чист, нет прямой mutation, replay стабилен;
+- balance: closed tables полны, `pnpm balance:check` чист, fingerprint обновился детерминированно, relevant simulation evidence рассмотрено;
+- scenario: `pnpm scenario:check` чист, capability/certificate bounds сохранены, нет прямой mutation, replay/runtime equivalence проверены когда execution authority затронут;
 - core gameplay: failing regression/property first, pure boundaries сохранены, golden обновлён намеренно;
 - UI: story обновлён, browser/a11y где нужно, long RU, визуальное evidence для layout/game-feel;
 - persistence: R3-классификация, compatibility assessment, Rust tests, durability не ослаблен;
