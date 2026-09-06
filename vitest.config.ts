@@ -162,6 +162,7 @@ export default defineConfig({
         "tests/scenario-capability-registry.test.ts",
         "tests/scenario-certificate.test.ts",
         "tests/scenario-compiler.test.ts",
+        "tests/studio-affected-exact-head.test.ts",
         "tests/studio-context.test.ts",
         "tests/studio-domain-verification.test.ts",
         "tests/studio-findings.test.ts",
