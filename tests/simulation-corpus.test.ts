@@ -4,7 +4,11 @@ import {
   JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
   projectJanuary1990Content,
 } from "@runtime-human/game-application";
-import { JANUARY_1990_DEFAULT_BALANCE } from "@runtime-human/game-core";
+import { JANUARY_1990_SCENARIO_ARTIFACT } from "@runtime-human/game-content";
+import {
+  createJanuary1990ScenarioRuntimeRulesFingerprint,
+  JANUARY_1990_DEFAULT_BALANCE,
+} from "@runtime-human/game-core";
 
 import { loadJanuaryTestRegistry } from "./helpers/january-1990-runtime-fixture";
 
@@ -20,8 +24,15 @@ type CanonicalSimulationRun = Readonly<{
   schemaVersion: string;
   corpus: CanonicalCorpus;
   corpusFingerprint: string;
+  scenarioIdentity: Readonly<{
+    programFingerprint: string;
+    rulesFingerprint: string;
+    policyFingerprint: string;
+    certificateFingerprint: string;
+  }>;
   report: Readonly<{
     schemaVersion: string;
+    rulesetFingerprint: string;
     seedRange: Readonly<{ start: number; end: number }>;
     policies: readonly string[];
     runs: number;
@@ -66,7 +77,7 @@ describe("canonical simulation corpus v1", () => {
     expect(changed).not.toBe(first);
   });
 
-  it("runs the canonical corpus into a byte-stable simulation-report-v3 envelope", async () => {
+  it("runs the canonical corpus through the certified scenario authority", async () => {
     const simulation = (await import("@runtime-human/game-simulation")) as Record<string, unknown>;
     const corpus = simulation.JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1 as CanonicalCorpus;
     const runCanonical = simulation.runJanuary1990CanonicalSimulationV1 as
@@ -74,6 +85,7 @@ describe("canonical simulation corpus v1", () => {
           context: unknown;
           balance: unknown;
           saveSchemaFingerprint: unknown;
+          artifact: unknown;
         }) => CanonicalSimulationRun)
       | undefined;
 
@@ -84,6 +96,7 @@ describe("canonical simulation corpus v1", () => {
       context,
       balance: JANUARY_1990_DEFAULT_BALANCE,
       saveSchemaFingerprint: JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
+      artifact: JANUARY_1990_SCENARIO_ARTIFACT,
     };
     const first = runCanonical(input);
     const second = runCanonical(input);
@@ -92,9 +105,44 @@ describe("canonical simulation corpus v1", () => {
     expect(first.corpus).toEqual(corpus);
     expect(first.corpusFingerprint).toMatch(/^[0-9a-f]{64}$/u);
     expect(first.report.schemaVersion).toBe("simulation-report-v3");
+    expect(first.report.rulesetFingerprint).toBe(
+      createJanuary1990ScenarioRuntimeRulesFingerprint(
+        JANUARY_1990_DEFAULT_BALANCE,
+        JANUARY_1990_SCENARIO_ARTIFACT,
+      ),
+    );
     expect(first.report.seedRange).toEqual(corpus.seedRange);
     expect(first.report.policies).toEqual(corpus.policies);
     expect(first.report.runs).toBe(192);
     expect(JSON.stringify(second)).toBe(JSON.stringify(first));
+  });
+
+  it("materializes explicit scenario artifact identity separately from corpus identity", async () => {
+    const simulation = (await import("@runtime-human/game-simulation")) as Record<string, unknown>;
+    const runCanonical = simulation.runJanuary1990CanonicalSimulationV1 as
+      | ((input: {
+          context: unknown;
+          balance: unknown;
+          saveSchemaFingerprint: unknown;
+          artifact: unknown;
+        }) => CanonicalSimulationRun)
+      | undefined;
+
+    expect(runCanonical).toBeTypeOf("function");
+    if (!runCanonical) return;
+
+    const run = runCanonical({
+      context,
+      balance: JANUARY_1990_DEFAULT_BALANCE,
+      saveSchemaFingerprint: JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
+      artifact: JANUARY_1990_SCENARIO_ARTIFACT,
+    });
+
+    expect(run.scenarioIdentity).toEqual({
+      programFingerprint: JANUARY_1990_SCENARIO_ARTIFACT.program.programFingerprint,
+      rulesFingerprint: JANUARY_1990_SCENARIO_ARTIFACT.capabilities.rulesFingerprint,
+      policyFingerprint: JANUARY_1990_SCENARIO_ARTIFACT.certificate.policyFingerprint,
+      certificateFingerprint: JANUARY_1990_SCENARIO_ARTIFACT.certificate.certificateFingerprint,
+    });
   });
 });
