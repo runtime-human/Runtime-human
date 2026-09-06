@@ -53,13 +53,23 @@ if (errors.length > 0) {
 const explicitBase = args.one("base") ?? args.one("diff");
 const headRef = args.one("head");
 const baseLabel = explicitBase ?? "HEAD";
-const changedRaw = [];
-const diffOutput = git(["diff", "--name-only", "-z", baseLabel]);
-changedRaw.push(...diffOutput.split("\0").filter(Boolean));
-const untracked = git(["ls-files", "--others", "--exclude-standard", "-z"]);
-changedRaw.push(...untracked.split("\0").filter(Boolean));
 const baseSha = revParse(baseLabel);
 const headSha = revParse(headRef ?? "HEAD");
+if (errors.length > 0) {
+  for (const error of errors) console.error(error);
+  process.exit(1);
+}
+
+const changedRaw = [];
+if (headRef) {
+  const diffOutput = git(["diff", "--name-only", "-z", baseSha, headSha]);
+  changedRaw.push(...diffOutput.split("\0").filter(Boolean));
+} else {
+  const diffOutput = git(["diff", "--name-only", "-z", baseLabel]);
+  changedRaw.push(...diffOutput.split("\0").filter(Boolean));
+  const untracked = git(["ls-files", "--others", "--exclude-standard", "-z"]);
+  changedRaw.push(...untracked.split("\0").filter(Boolean));
+}
 if (errors.length > 0) {
   for (const error of errors) console.error(error);
   process.exit(1);
@@ -74,9 +84,19 @@ const risk = classifyRisk(classification.zoneIds, zonesConfig.zones ?? [], {
 let nxProjects = null;
 let projectsSource = "zones";
 if (args.has("nx")) {
-  const nxBase = explicitBase ?? "origin/main";
+  const nxBase = headRef ? baseSha : (explicitBase ?? "origin/main");
   const nxResult = runProcess(
-    ["pnpm", "exec", "nx", "show", "projects", "--affected", `--base=${nxBase}`, "--json"],
+    [
+      "pnpm",
+      "exec",
+      "nx",
+      "show",
+      "projects",
+      "--affected",
+      `--base=${nxBase}`,
+      ...(headRef ? [`--head=${headSha}`] : []),
+      "--json",
+    ],
     { cwd: root, encoding: "utf8" },
   );
   if (nxResult.status === 0 && nxResult.stdout) {
