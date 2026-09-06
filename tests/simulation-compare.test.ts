@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { Fingerprint } from "@runtime-human/game-schema";
+import * as simulationPackage from "@runtime-human/game-simulation";
 import {
   compareSimulationReportsV1,
   parseSimulationReportV1,
@@ -244,5 +245,13 @@ describe("simulation compare v1", () => {
     if (negative.kind === "failure") {
       expect(negative.diagnostics[0]?.code).toBe("COMPARE_THRESHOLD_INVALID");
     }
+  });
+});
+
+describe("ENGINE-03 canonical simulation corpus", () => {
+  it("publishes a versioned canonical January corpus contract", () => {
+    const exports = simulationPackage as unknown as Record<string, unknown>;
+    expect(exports.SIMULATION_CORPUS_SCHEMA_VERSION).toBe("simulation-corpus-v1");
+    expect(exports.JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1).toBeDefined();
   });
 });
