@@ -8,7 +8,11 @@ export type {
   RngDomainPurposeV1,
   RngDomainV1,
 } from "./determinism/rng-domain";
-export { deriveRandomSource, deriveRngState } from "./determinism/rng-derivation";
+export {
+  createRootRngState,
+  deriveRandomSource,
+  deriveRngState,
+} from "./determinism/rng-derivation";
 export { Xoshiro256StarStar } from "./determinism/xoshiro256ss";
 export {
   RNG_DERIVATION_MANIFEST_V1,

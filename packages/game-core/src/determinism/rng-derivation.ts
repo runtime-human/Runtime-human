@@ -12,6 +12,10 @@ import { Xoshiro256StarStar } from "./xoshiro256ss";
 const RNG_DERIVATION_DOMAIN = "runtime-human:rng-derivation:v1";
 const ZERO_XOSHIRO256_STATE = /^0{64}$/u;
 
+export function createRootRngState(seed: bigint): SerializedXoshiro256State {
+  return Xoshiro256StarStar.fromSeed(seed).exportState();
+}
+
 export function deriveRngState(
   rootState: unknown,
   domainPath: RngDomainPathV1,

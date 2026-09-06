@@ -133,6 +133,7 @@ export default defineConfig({
         "tests/authoring-schema-equivalence.test.ts",
         "tests/balance-authoring-schema-parity.test.ts",
         "tests/check-boundaries.test.ts",
+        "tests/check-boundaries-rng-containment.test.ts",
         "tests/check-build-only-dependencies.test.ts",
         "tests/ci-feedback-candidate.test.ts",
         "tests/desktop-content-csp.test.ts",

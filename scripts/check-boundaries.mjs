@@ -12,6 +12,7 @@ const GAME_CORE_DIRECT_XOSHIRO_ALLOWLIST = new Set([
   "packages/game-core/src/index.ts",
   "packages/game-core/src/january-1990/january-month-steps.ts",
 ]);
+const PRODUCTION_RNG_AUTHORITY_PACKAGES = new Set(["game-application", "desktop"]);
 const JANUARY_LEGACY_RUNTIME_IDENTIFIER_ALLOWLIST = new Set([
   "packages/game-application/src/index.ts",
   "packages/game-application/src/january-1990/create-january-authority-cutover-runtime.ts",
@@ -295,6 +296,24 @@ function validateGameCoreRngAuthority(root, directory, shortName) {
   );
 }
 
+function productionRngAuthorityDiagnostics(root, file) {
+  if (!findWorkspaceImports(file).some(({ dependency }) => dependency === "game-core")) return [];
+
+  const source = maskCommentsAndStrings(fs.readFileSync(file, "utf8"));
+  if (!/\bXoshiro256StarStar\b/u.test(source)) return [];
+
+  return [
+    `${repositoryPath(root, file)}: production runtime cannot import raw Xoshiro RNG authority; use managed MonthRun RNG authority`,
+  ];
+}
+
+function validateProductionRngAuthorityContainment(root, directory, shortName) {
+  if (!PRODUCTION_RNG_AUTHORITY_PACKAGES.has(shortName)) return [];
+  return walkSourceFiles(path.join(directory, "src")).flatMap((file) =>
+    productionRngAuthorityDiagnostics(root, file),
+  );
+}
+
 function januaryLegacyRuntimeDiagnostics(root, file) {
   const relativeFile = repositoryPath(root, file);
   if (JANUARY_LEGACY_RUNTIME_IDENTIFIER_ALLOWLIST.has(relativeFile)) return [];
@@ -347,6 +366,7 @@ export function validateWorkspace(root) {
       ),
       ...validateSourceImports(root, directory, shortName, allowed, knownPackages),
       ...validateGameCoreRngAuthority(root, directory, shortName),
+      ...validateProductionRngAuthorityContainment(root, directory, shortName),
       ...validateJanuaryLegacyRuntimeContainment(root, directory),
     );
   }

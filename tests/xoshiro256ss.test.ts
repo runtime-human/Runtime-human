@@ -6,6 +6,7 @@ import {
   RNG_DOMAIN_PURPOSES_V1,
   Xoshiro256StarStar,
   createRngDomainPathV1,
+  createRootRngState,
   deriveRandomSource,
   deriveRngState,
   type RngDomainPathV1,
@@ -39,6 +40,7 @@ describe("Xoshiro256StarStar", () => {
 
   it("matches SplitMix64 seed expansion", () => {
     expect(Xoshiro256StarStar.fromSeed(42n).exportState()).toBe(SEED_42_STATE);
+    expect(createRootRngState(42n)).toBe(SEED_42_STATE);
   });
 
   it("restores an identical continuation", () => {
