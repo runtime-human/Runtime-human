@@ -1,7 +1,7 @@
-import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 
 import { resolveZones, selectSkills } from "../scripts/studio/context-lib.mjs";
 
@@ -100,20 +100,15 @@ describe("Studio domain skill routing", () => {
     ]);
   });
 
-  it(
-    "does not add generic runtime-implement when a dedicated domain owns overlapping tooling",
-    () => {
-      const active = [
-        { name: "runtime-architecture", status: "active" },
-        { name: "runtime-implement", status: "active" },
-        { name: "runtime-scenario", status: "active" },
-      ];
+  it("does not add generic runtime-implement when a dedicated domain owns overlapping tooling", () => {
+    const active = [
+      { name: "runtime-architecture", status: "active" },
+      { name: "runtime-implement", status: "active" },
+      { name: "runtime-scenario", status: "active" },
+    ];
 
-      expect(selectSkills(["scenario", "tooling"], "R2", active)).toEqual([
-        "runtime-scenario",
-      ]);
-    },
-  );
+    expect(selectSkills(["scenario", "tooling"], "R2", active)).toEqual(["runtime-scenario"]);
+  });
 
   it("keeps R3 architecture review ahead of the owning domain skill", () => {
     const skillMap = readConfig(".studio/skill-map.json") as {
