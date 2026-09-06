@@ -56,5 +56,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
 
+      - name: Probe exact Engine03 formatter output
+        run: |
+          pnpm exec oxfmt packages/game-simulation/src/simulation-corpus.ts tests/january-1990-simulation-properties.test.ts
+          git diff -- packages/game-simulation/src/simulation-corpus.ts tests/january-1990-simulation-properties.test.ts
+
       - name: Run non-authoritative fast feedback
         run: pnpm check:fast
