@@ -8,7 +8,9 @@ import { afterEach, describe, expect, it } from "vitest";
 const tempRoots: string[] = [];
 
 afterEach(() => {
-  for (const root of tempRoots.splice(0)) fs.rmSync(root, { recursive: true, force: true });
+  for (const root of tempRoots.splice(0)) {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
 
 function git(root: string, ...args: string[]) {
@@ -59,9 +61,17 @@ function makeRepo() {
   writeJson(root, ".studio/skill-map.json", {
     schemaVersion: 1,
     skills: [
-      { name: "runtime-implement", path: ".agents/skills/runtime-implement", status: "active" },
+      {
+        name: "runtime-implement",
+        path: ".agents/skills/runtime-implement",
+        status: "active",
+      },
       { name: "runtime-qa", path: ".agents/skills/runtime-qa", status: "active" },
-      { name: "runtime-architecture", path: ".agents/skills/runtime-architecture", status: "active" },
+      {
+        name: "runtime-architecture",
+        path: ".agents/skills/runtime-architecture",
+        status: "active",
+      },
     ],
   });
 
