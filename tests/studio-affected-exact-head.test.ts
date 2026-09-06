@@ -67,17 +67,35 @@ function makeRepo() {
   return { root, base, head };
 }
 
-function runAffected(root: string, args: string[]) {
+function writeFakePnpm(root: string) {
+  const bin = path.join(root, "fake-bin");
+  writeText(
+    root,
+    "fake-bin/pnpm",
+    `#!/bin/sh\ncase " $* " in\n  *" --head=$EXPECTED_HEAD "*) printf '%s\\n' '["exact-project"]' ;;\n  *) printf '%s\\n' '["leaked-project"]' ;;\nesac\n`,
+  );
+  fs.chmodSync(path.join(bin, "pnpm"), 0o755);
+  writeText(
+    root,
+    "fake-bin/pnpm.cmd",
+    `@echo off\necho %* | findstr /C:"--head=%EXPECTED_HEAD%" >nul\nif errorlevel 1 (\n  echo ["leaked-project"]\n) else (\n  echo ["exact-project"]\n)\n`,
+  );
+  return bin;
+}
+
+function runAffected(root: string, args: string[], env: NodeJS.ProcessEnv = process.env) {
   const script = path.resolve(import.meta.dirname, "../scripts/studio/affected.mjs");
   return JSON.parse(
     execFileSync(process.execPath, [script, ...args, "--json"], {
       cwd: root,
       encoding: "utf8",
+      env,
     }),
   ) as {
     base: { sha: string };
     head: { ref: string; sha: string };
     zones: string[];
+    projects: string[];
     risk: string;
   };
 }
@@ -92,6 +110,19 @@ describe("studio:affected exact head mode", () => {
     expect(affected.head.ref).toBe(head);
     expect(affected.zones).toEqual(["tooling"]);
     expect(affected.risk).toBe("R1");
+  });
+
+  it("passes the explicit immutable head through to Nx affected", () => {
+    const { root, base, head } = makeRepo();
+    const fakeBin = writeFakePnpm(root);
+    const affected = runAffected(root, ["--base", base, "--head", head, "--nx"], {
+      ...process.env,
+      EXPECTED_HEAD: head,
+      PATH: `${fakeBin}${path.delimiter}${process.env.PATH ?? ""}`,
+    });
+
+    expect(affected.projects).toContain("exact-project");
+    expect(affected.projects).not.toContain("leaked-project");
   });
 
   it("preserves dirty and untracked inputs in worktree mode", () => {
