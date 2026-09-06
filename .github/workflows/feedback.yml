@@ -56,5 +56,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
 
+      - name: Show canonical verify fixture formatting
+        run: |
+          pnpm exec oxfmt tests/studio-verify-exact-head.test.ts
+          git diff -- tests/studio-verify-exact-head.test.ts
+          exit 1
+
       - name: Run non-authoritative fast feedback
         run: pnpm check:fast
