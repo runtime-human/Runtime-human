@@ -50,15 +50,5 @@ jobs:
           node-version: "24.20.0"
           package-manager-cache: false
 
-      - name: Materialize canonical docs indexes
-        run: node scripts/build-toc.mjs
-
-      - name: Upload canonical docs indexes
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: docs-index-probe-${{ github.event.pull_request.head.sha }}
-          path: |
-            docs/MANIFEST.jsonc
-            docs/CATALOG.md
-          retention-days: 1
-          if-no-files-found: error
+      - name: Verify docs front-matter and manifest
+        run: node scripts/build-toc.mjs --check
