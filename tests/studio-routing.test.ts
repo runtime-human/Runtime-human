@@ -100,6 +100,16 @@ describe("Studio domain skill routing", () => {
     ]);
   });
 
+  it("does not add generic runtime-implement when a dedicated domain owns overlapping tooling", () => {
+    const active = [
+      { name: "runtime-architecture", status: "active" },
+      { name: "runtime-implement", status: "active" },
+      { name: "runtime-scenario", status: "active" },
+    ];
+
+    expect(selectSkills(["scenario", "tooling"], "R2", active)).toEqual(["runtime-scenario"]);
+  });
+
   it("keeps R3 architecture review ahead of the owning domain skill", () => {
     const skillMap = readConfig(".studio/skill-map.json") as {
       skills: Array<{ name: string; status: string }>;
