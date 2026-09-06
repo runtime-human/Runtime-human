@@ -46,7 +46,7 @@ afterEach(() => {
 });
 
 describe("production RNG authority containment", () => {
-  it("rejects the public Xoshiro escape from game-core into production runtime composition", () => {
+  it("rejects the public Xoshiro escape from game-core into game-application", () => {
     const root = createRoot();
     addPackage(root, "packages", "game-core");
     addPackage(
@@ -63,6 +63,42 @@ describe("production RNG authority containment", () => {
     expect(validateWorkspace(root)).toContainEqual(
       expect.stringContaining("production runtime cannot import raw Xoshiro RNG authority"),
     );
+  });
+
+  it("rejects a namespace Xoshiro escape from game-core into desktop", () => {
+    const root = createRoot();
+    addPackage(root, "packages", "game-core");
+    addPackage(
+      root,
+      "apps",
+      "desktop",
+      ["game-core"],
+      [
+        'import * as gameCore from "@runtime-human/game-core";',
+        "export const rogueAuthority = gameCore.Xoshiro256StarStar.fromSeed(42n);",
+      ].join("\n"),
+    );
+
+    expect(validateWorkspace(root)).toContainEqual(
+      expect.stringContaining("production runtime cannot import raw Xoshiro RNG authority"),
+    );
+  });
+
+  it("allows production composition to seed only serialized root RNG state", () => {
+    const root = createRoot();
+    addPackage(root, "packages", "game-core");
+    addPackage(
+      root,
+      "packages",
+      "game-application",
+      ["game-core"],
+      [
+        'import { createRootRngState } from "@runtime-human/game-core";',
+        "export const initialRngState = createRootRngState(42n);",
+      ].join("\n"),
+    );
+
+    expect(validateWorkspace(root)).toEqual([]);
   });
 
   it("does not classify offline game-simulation RNG construction as production authority", () => {
