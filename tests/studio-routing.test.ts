@@ -126,7 +126,7 @@ describe("Studio domain skill routing", () => {
     ]);
   });
 
-  it("classifies scenario authoring and tooling paths into the scenario zone", () => {
+  it("gives scenario code a single specialized owner", () => {
     const config = readConfig(".studio/zones.json") as {
       zones: Array<{ id: string; paths: string[]; minimumRisk: string }>;
     };
@@ -139,10 +139,11 @@ describe("Studio domain skill routing", () => {
     const resolution = resolveZones(paths, config.zones, { fallbackZone: "tooling" });
     const scenario = resolution.selected.find((entry) => entry.id === "scenario");
 
+    expect(resolution.selected.map((entry) => entry.id)).toEqual(["scenario"]);
     expect(scenario?.matched).toEqual([...paths].sort((a, b) => a.localeCompare(b, "en")));
   });
 
-  it("classifies balance schema and validator paths into the balance zone", () => {
+  it("gives balance schema and validation a single specialized owner", () => {
     const config = readConfig(".studio/zones.json") as {
       zones: Array<{ id: string; paths: string[]; minimumRisk: string }>;
     };
@@ -153,6 +154,26 @@ describe("Studio domain skill routing", () => {
     const resolution = resolveZones(paths, config.zones, { fallbackZone: "tooling" });
     const balance = resolution.selected.find((entry) => entry.id === "balance");
 
+    expect(resolution.selected.map((entry) => entry.id)).toEqual(["balance"]);
     expect(balance?.matched).toEqual([...paths].sort((a, b) => a.localeCompare(b, "en")));
+  });
+
+  it("keeps generic authoring and devtools paths routed", () => {
+    const config = readConfig(".studio/zones.json") as {
+      zones: Array<{ id: string; paths: string[]; minimumRisk: string }>;
+    };
+    const authoring = resolveZones(
+      ["packages/game-authoring-schema/src/content-source-schema.ts"],
+      config.zones,
+      { fallbackZone: "tooling" },
+    );
+    const devtools = resolveZones(
+      ["packages/game-devtools/src/catalog/catalog.ts"],
+      config.zones,
+      { fallbackZone: "tooling" },
+    );
+
+    expect(authoring.selected.map((entry) => entry.id)).toEqual(["content"]);
+    expect(devtools.selected.map((entry) => entry.id)).toEqual(["tooling"]);
   });
 });
