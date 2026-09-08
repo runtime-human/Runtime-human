@@ -72,6 +72,79 @@ describe("gamectl simulate and replay commands", () => {
     expect(envelope.result.report.schemaVersion).toBe("simulation-report-v1");
   });
 
+  it("runs the versioned canonical simulation corpus", async () => {
+    const io = collectIo();
+    const exitCode = await runGamectlCli(
+      ["simulate", "run", "--corpus", "runtime-human-sim-corpus-v1", "--json"],
+      io,
+    );
+
+    expect(exitCode).toBe(0);
+    const envelope = JSON.parse(io.out.join("\n")) as {
+      schemaVersion: string;
+      command: string;
+      ok: boolean;
+      result: {
+        corpusRun: {
+          schemaVersion: string;
+          corpusFingerprint: string;
+          corpus: {
+            corpusVersion: string;
+            scenarioId: string;
+            seedRange: { start: number; end: number };
+            policies: string[];
+            executionProfile: string;
+          };
+          report: { runs: number; schemaVersion: string };
+        };
+      };
+    };
+
+    expect(envelope.schemaVersion).toBe("runtime-human-gamectl-v1");
+    expect(envelope.command).toBe("simulate.run");
+    expect(envelope.ok).toBe(true);
+    expect(envelope.result.corpusRun.schemaVersion).toBe("simulation-corpus-run-v1");
+    expect(envelope.result.corpusRun.corpus.corpusVersion).toBe("runtime-human-sim-corpus-v1");
+    expect(envelope.result.corpusRun.corpus.scenarioId).toBe("january-1990");
+    expect(envelope.result.corpusRun.corpus.seedRange).toEqual({ start: 1, end: 64 });
+    expect(envelope.result.corpusRun.corpus.policies).toEqual([
+      "always-first-valid",
+      "learning-first",
+      "random-valid-v1",
+    ]);
+    expect(envelope.result.corpusRun.corpus.executionProfile).toBe("hierarchical-v1");
+    expect(envelope.result.corpusRun.corpusFingerprint).toMatch(/^[0-9a-f]{64}$/u);
+    expect(envelope.result.corpusRun.report.schemaVersion).toBe("simulation-report-v3");
+    expect(envelope.result.corpusRun.report.runs).toBe(192);
+  });
+
+  it("rejects simulation modifiers when a canonical corpus is selected", async () => {
+    const io = collectIo();
+    const exitCode = await runGamectlCli(
+      ["simulate", "run", "--corpus", "runtime-human-sim-corpus-v1", "--seeds", "1..2", "--json"],
+      io,
+    );
+
+    expect(exitCode).toBe(2);
+    const envelope = JSON.parse(io.out.join("\n")) as {
+      error: { code: string; message: string };
+    };
+    expect(envelope.error.code).toBe("usage-error");
+    expect(envelope.error.message).toContain("--corpus cannot be combined");
+  });
+
+  it("rejects an unknown simulation corpus", async () => {
+    const io = collectIo();
+    const exitCode = await runGamectlCli(
+      ["simulate", "run", "--corpus", "runtime-human-sim-corpus-v2", "--json"],
+      io,
+    );
+
+    expect(exitCode).toBe(2);
+    const envelope = JSON.parse(io.out.join("\n")) as { error: { code: string } };
+    expect(envelope.error.code).toBe("invalid-filter");
+  });
+
   it("simulates from a gameplay fixture", async () => {
     const io = collectIo();
     const exitCode = await runGamectlCli(
