@@ -62,6 +62,12 @@ export type January1990Simulation = Readonly<{
   ): JanuarySimulationTerminalRunV1;
 }>;
 
+export type ResolvedJanuary1990SimulationRuntime = Readonly<{
+  steps: readonly MonthRunStep[];
+  rulesetFingerprint: Fingerprint;
+  determinismManifest: DeterminismManifest;
+}>;
+
 export function createJanuary1990Simulation(
   input: CreateJanuary1990SimulationInput,
 ): January1990Simulation {
@@ -75,20 +81,30 @@ export function createJanuary1990SimulationForExecutionProfile(
   input: CreateJanuary1990SimulationInput,
   rngExecutionProfile: January1990RngExecutionProfileId,
 ): January1990Simulation {
-  const context = input.context;
   const hierarchical =
     rngExecutionProfile === JANUARY_1990_RNG_EXECUTION_PROFILES_V1.hierarchical.id;
-  const steps = hierarchical
-    ? createJanuary1990HierarchicalMonthSteps(context, input.balance)
-    : createJanuary1990MonthSteps(context, input.balance);
+
+  return createJanuary1990SimulationForResolvedRuntime(input, {
+    steps: hierarchical
+      ? createJanuary1990HierarchicalMonthSteps(input.context, input.balance)
+      : createJanuary1990MonthSteps(input.context, input.balance),
+    rulesetFingerprint: createJanuary1990RulesFingerprintForExecutionProfile(
+      input.balance,
+      rngExecutionProfile,
+    ),
+    determinismManifest: hierarchical
+      ? JANUARY_1990_HIERARCHICAL_DETERMINISM_MANIFEST
+      : DETERMINISM_MANIFEST_V1,
+  });
+}
+
+export function createJanuary1990SimulationForResolvedRuntime(
+  input: CreateJanuary1990SimulationInput,
+  runtime: ResolvedJanuary1990SimulationRuntime,
+): January1990Simulation {
+  const context = input.context;
   const plan = createJanuary1990MonthPlan(context);
-  const rulesetFingerprint = createJanuary1990RulesFingerprintForExecutionProfile(
-    input.balance,
-    rngExecutionProfile,
-  );
-  const determinismManifest = hierarchical
-    ? JANUARY_1990_HIERARCHICAL_DETERMINISM_MANIFEST
-    : DETERMINISM_MANIFEST_V1;
+  const { steps, rulesetFingerprint, determinismManifest } = runtime;
 
   return Object.freeze({
     simulate(request) {
