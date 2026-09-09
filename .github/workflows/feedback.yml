@@ -33,6 +33,7 @@ jobs:
         with:
           persist-credentials: false
           show-progress: false
+          fetch-depth: 2
 
       - name: Set up pnpm
         uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
@@ -58,3 +59,66 @@ jobs:
 
       - name: Run non-authoritative fast feedback
         run: pnpm check:fast
+
+      - name: Resolve exact tested PR parents
+        id: tested-parents
+        run: |
+          $ErrorActionPreference = "Stop"
+          $line = git rev-list --parents -n 1 "${{ github.sha }}"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $parts = $line -split '\s+'
+          if ($parts.Count -ne 3) { throw "tested PR commit must have exactly two parents" }
+          $baseSha = $parts[1]
+          $headSha = $parts[2]
+          if ($baseSha -ne "${{ github.event.pull_request.base.sha }}") {
+            throw "tested PR base parent does not match pull request base"
+          }
+          if ($headSha -ne "${{ github.event.pull_request.head.sha }}") {
+            throw "tested PR head parent does not match pull request head"
+          }
+          "base_sha=$baseSha" >> $env:GITHUB_OUTPUT
+          "head_sha=$headSha" >> $env:GITHUB_OUTPUT
+
+      - name: Classify simulation smoke scope
+        id: simulation-smoke-scope
+        run: |
+          $ErrorActionPreference = "Stop"
+          $inspectionOutput = @(pnpm studioctl inspect --base "${{ steps.tested-parents.outputs.base_sha }}" --head "${{ steps.tested-parents.outputs.head_sha }}" --json)
+          $code = $LASTEXITCODE
+          if ($code -ne 0) { exit $code }
+          $jsonLine = $inspectionOutput | Where-Object { $_ -match '^\s*\{' } | Select-Object -Last 1
+          if (-not $jsonLine) { throw "studioctl inspect did not emit JSON" }
+          $inspection = $jsonLine | ConvertFrom-Json
+          $simulationZones = @("core", "application", "content", "balance", "scenario", "simulation")
+          $zoneAffected = @($inspection.zones | Where-Object { $simulationZones -contains $_ }).Count -gt 0
+          $authorityAffected = $inspection.authorityImpact.gameplay -or $inspection.authorityImpact.schema
+          $ciAuthorityAffected = $inspection.authorityImpact.ciGovernance
+          $affected = $authorityAffected -or $zoneAffected -or $ciAuthorityAffected
+          $reason = if ($authorityAffected) { "authority" } elseif ($zoneAffected) { "zone" } elseif ($ciAuthorityAffected) { "ci-governance" } else { "not-affected" }
+          "affected=$($affected.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "reason=$reason" >> $env:GITHUB_OUTPUT
+
+      - name: Run simulation smoke
+        if: steps.simulation-smoke-scope.outputs.affected == 'true'
+        run: |
+          $ErrorActionPreference = "Stop"
+          $output = @(node --import tsx scripts/gamectl-entry.ts simulate run --corpus january-1990-smoke-v1 --json)
+          $code = $LASTEXITCODE
+          $jsonText = $output -join [Environment]::NewLine
+          if (-not $jsonText.Trim()) { throw "simulation smoke did not emit JSON" }
+          $envelope = $jsonText | ConvertFrom-Json
+          if ($envelope.command -ne "simulate.run" -or $envelope.result.report.schemaVersion -ne "simulation-report-v4") {
+            throw "simulation smoke did not emit a V4 report"
+          }
+          $report = $envelope.result.report
+          @(
+            "## Runtime Human simulation smoke",
+            "",
+            "- Scope: ${{ steps.simulation-smoke-scope.outputs.reason }}",
+            "- Corpus: $($report.corpus.corpusId)",
+            "- Runs: $($report.runs)",
+            "- Invariant failures: $(@($report.invariantFailures).Count)",
+            "- PR head: ${{ steps.tested-parents.outputs.head_sha }}",
+            "- Tested merge: ${{ github.sha }}"
+          ) | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+          exit $code
