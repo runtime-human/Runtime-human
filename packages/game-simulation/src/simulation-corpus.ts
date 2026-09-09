@@ -33,6 +33,19 @@ export const JANUARY_1990_CANONICAL_SIMULATION_CORPUS_FINGERPRINT = fingerprintS
   JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1,
 );
 
+export const JANUARY_1990_SMOKE_SIMULATION_CORPUS_V1: SimulationCorpusV1 = Object.freeze({
+  schemaVersion: SIMULATION_CORPUS_SCHEMA_VERSION,
+  corpusId: "january-1990-smoke-v1",
+  scenarioId: JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1.scenarioId,
+  executionProfile: JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1.executionProfile,
+  seedRange: Object.freeze({ start: 1, end: 4 }),
+  policies: Object.freeze([...SIMULATION_POLICY_IDS]),
+});
+
+export const JANUARY_1990_SMOKE_SIMULATION_CORPUS_FINGERPRINT = fingerprintSimulationCorpusV1(
+  JANUARY_1990_SMOKE_SIMULATION_CORPUS_V1,
+);
+
 export function parseSimulationCorpusV1(value: unknown): SimulationCorpusParseResultV1 {
   const corpus = closedRecord(value, [
     "corpusId",
