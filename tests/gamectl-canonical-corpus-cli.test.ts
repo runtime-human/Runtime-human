@@ -80,20 +80,59 @@ describe("ENGINE-03 canonical gamectl corpus", () => {
     });
   });
 
+  it("runs the closed January smoke corpus as a strict bounded subset", async () => {
+    const io = collectIo();
+    const exitCode = await runGamectlCli(
+      ["simulate", "run", "--corpus", "january-1990-smoke-v1", "--json"],
+      io,
+    );
+
+    expect(exitCode).toBe(0);
+    expect(io.err).toEqual([]);
+
+    const envelope = JSON.parse(io.out.join("\n")) as {
+      result: {
+        corpusId: string;
+        report: {
+          schemaVersion: string;
+          runs: number;
+          seedRange: { start: number; end: number };
+          policies: string[];
+          invariantFailures: unknown[];
+          corpus: { schemaVersion: string; corpusId: string; fingerprint: string };
+        };
+      };
+    };
+
+    expect(envelope.result.corpusId).toBe("january-1990-smoke-v1");
+    expect(envelope.result.report.schemaVersion).toBe("simulation-report-v4");
+    expect(envelope.result.report.runs).toBe(12);
+    expect(envelope.result.report.seedRange).toEqual({ start: 1, end: 4 });
+    expect(envelope.result.report.policies).toHaveLength(3);
+    expect(envelope.result.report.invariantFailures).toEqual([]);
+    expect(envelope.result.report.corpus).toMatchObject({
+      schemaVersion: "simulation-corpus-v1",
+      corpusId: "january-1990-smoke-v1",
+    });
+    expect(envelope.result.report.corpus.fingerprint).toMatch(/^[0-9a-f]{64}$/u);
+  });
+
   it("rejects canonical corpus overrides instead of silently changing the contract", async () => {
-    for (const override of [
-      ["--seeds", "1..2"],
-      ["--policies", "all"],
-      ["--fixture", "january-start"],
-    ] as const) {
-      const io = collectIo();
-      const exitCode = await runGamectlCli(
-        ["simulate", "run", "--corpus", "january-1990-canonical-v1", ...override, "--json"],
-        io,
-      );
-      expect(exitCode).toBe(2);
-      const envelope = JSON.parse(io.out.join("\n")) as { error: { code: string } };
-      expect(envelope.error.code).toBe("invalid-filter");
+    for (const corpusId of ["january-1990-canonical-v1", "january-1990-smoke-v1"] as const) {
+      for (const override of [
+        ["--seeds", "1..2"],
+        ["--policies", "all"],
+        ["--fixture", "january-start"],
+      ] as const) {
+        const io = collectIo();
+        const exitCode = await runGamectlCli(
+          ["simulate", "run", "--corpus", corpusId, ...override, "--json"],
+          io,
+        );
+        expect(exitCode).toBe(2);
+        const envelope = JSON.parse(io.out.join("\n")) as { error: { code: string } };
+        expect(envelope.error.code).toBe("invalid-filter");
+      }
     }
   });
 
