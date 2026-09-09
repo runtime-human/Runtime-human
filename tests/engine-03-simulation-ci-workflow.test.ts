@@ -77,7 +77,9 @@ describe("ENGINE-03 simulation regression CI workflow", () => {
     expect(workflow).toContain(
       'runtime-human-simulation-regression-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}',
     );
-    expect(workflow).toContain("steps.simulation-scope.outputs.affected == 'true'");
+    expect(workflow).toContain(
+      "steps.simulation-scope.outputs.affected == 'true'",
+    );
 
     const uploadIndex = workflow.indexOf("name: Upload simulation regression evidence");
     const evidenceIndex = workflow.indexOf("name: Materialize exact PR evidence");
