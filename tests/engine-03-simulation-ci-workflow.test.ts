@@ -69,6 +69,22 @@ describe("ENGINE-03 simulation regression CI workflow", () => {
     expect(gateIndex).toBeGreaterThan(uploadIndex);
   });
 
+  it("binds the uploaded simulation artifact into the existing PR evidence plane", async () => {
+    const workflow = await readWorkflow();
+
+    expect(workflow).toContain("--simulation-evidence-dir");
+    expect(workflow).toContain("--simulation-artifact");
+    expect(workflow).toContain(
+      'runtime-human-simulation-regression-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}',
+    );
+    expect(workflow).toContain("steps.simulation-scope.outputs.affected == 'true'");
+
+    const uploadIndex = workflow.indexOf("name: Upload simulation regression evidence");
+    const evidenceIndex = workflow.indexOf("name: Materialize exact PR evidence");
+    expect(uploadIndex).toBeGreaterThan(-1);
+    expect(evidenceIndex).toBeGreaterThan(uploadIndex);
+  });
+
   it("keeps the regression job read-only and does not use pull_request_target", async () => {
     const workflow = await readWorkflow();
 
