@@ -35,6 +35,24 @@ export const JANUARY_RNG_EVIDENCE_V2: JanuaryRngEvidenceV2 = Object.freeze({
 });
 
 export function parseJanuaryRngEvidenceV2(value: unknown): JanuaryRngEvidenceParseResultV2 {
+  const parsed = parseJanuaryRngEvidenceV2Structural(value);
+  if (parsed.kind !== "ok") return parsed;
+  const budget = parsed.evidence.authority.declaredCallBudget;
+  if (
+    budget.content !== JANUARY_1990_RNG_CALL_BUDGET.content ||
+    budget.narrative !== JANUARY_1990_RNG_CALL_BUDGET.narrative ||
+    budget.outcome !== JANUARY_1990_RNG_CALL_BUDGET.outcome
+  ) {
+    return invalid(
+      "RNG evidence declared call budget does not match the January authority contract",
+    );
+  }
+  return parsed;
+}
+
+export function parseJanuaryRngEvidenceV2Structural(
+  value: unknown,
+): JanuaryRngEvidenceParseResultV2 {
   const evidence = closedRecord(value, ["authority", "rngDerivationVersion", "schemaVersion"]);
   if (evidence === null) return invalid("RNG evidence must match the closed v2 field set");
   if (evidence.schemaVersion !== JANUARY_RNG_EVIDENCE_SCHEMA_VERSION_V2) {
@@ -72,13 +90,11 @@ export function parseJanuaryRngEvidenceV2(value: unknown): JanuaryRngEvidencePar
   const budget = closedRecord(authority.declaredCallBudget, ["content", "narrative", "outcome"]);
   if (
     budget === null ||
-    budget.content !== JANUARY_1990_RNG_CALL_BUDGET.content ||
-    budget.narrative !== JANUARY_1990_RNG_CALL_BUDGET.narrative ||
-    budget.outcome !== JANUARY_1990_RNG_CALL_BUDGET.outcome
+    !isNonNegativeSafeInteger(budget.content) ||
+    !isNonNegativeSafeInteger(budget.narrative) ||
+    !isNonNegativeSafeInteger(budget.outcome)
   ) {
-    return invalid(
-      "RNG evidence declared call budget does not match the January authority contract",
-    );
+    return invalid("RNG evidence declared call budget must contain non-negative safe integers");
   }
 
   return {
@@ -90,9 +106,9 @@ export function parseJanuaryRngEvidenceV2(value: unknown): JanuaryRngEvidencePar
         mode: "hierarchical-v1",
         derivationManifest: RNG_DERIVATION_MANIFEST_V1,
         declaredCallBudget: Object.freeze({
-          content: JANUARY_1990_RNG_CALL_BUDGET.content,
-          narrative: JANUARY_1990_RNG_CALL_BUDGET.narrative,
-          outcome: JANUARY_1990_RNG_CALL_BUDGET.outcome,
+          content: budget.content,
+          narrative: budget.narrative,
+          outcome: budget.outcome,
         }),
       }),
     }),
@@ -136,6 +152,10 @@ function isPlainRecord(value: unknown): value is Record<string, unknown> {
     !Array.isArray(value) &&
     Object.getPrototypeOf(value) === Object.prototype
   );
+}
+
+function isNonNegativeSafeInteger(value: unknown): value is number {
+  return Number.isSafeInteger(value) && typeof value === "number" && value >= 0;
 }
 
 function invalid(message: string): JanuaryRngEvidenceParseResultV2 {
