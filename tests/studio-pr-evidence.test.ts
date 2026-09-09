@@ -14,6 +14,8 @@ import {
 } from "../scripts/studio/evidence-lib.mjs";
 
 const tempRoots: string[] = [];
+const SIMULATION_EVIDENCE_SCHEMA = "runtime-human-simulation-regression-evidence-v1";
+const CORPUS_FINGERPRINT = "a".repeat(64);
 
 afterEach(() => {
   for (const root of tempRoots.splice(0)) fs.rmSync(root, { recursive: true, force: true });
@@ -85,6 +87,49 @@ function makeRepo() {
   const tree = git(root, "rev-parse", `${head}^{tree}`);
   const tested = git(root, "commit-tree", tree, "-p", base, "-p", head, "-m", "synthetic merge");
   return { root, base, head, tested };
+}
+
+function writeSimulationEvidence(
+  root: string,
+  evidenceDir: string,
+  input: Readonly<{
+    base: string;
+    head: string;
+    includeDiff?: boolean;
+    verdict?: "pass" | "pass-with-changes" | "fail";
+  }>,
+) {
+  const relativeDir = path.relative(root, evidenceDir);
+  writeJson(root, path.join(relativeDir, "inspection.json"), {
+    schemaVersion: "runtime-human-change-inspection-v1",
+    baseSha: input.base,
+    headSha: input.head,
+  });
+  if (input.includeDiff === false) return;
+
+  const identity = {
+    reportSchemaVersion: "simulation-report-v4",
+    corpus: {
+      schemaVersion: "simulation-corpus-v1",
+      corpusId: "january-1990-canonical-v1",
+      fingerprint: CORPUS_FINGERPRINT,
+    },
+  };
+  writeJson(root, path.join(relativeDir, "diff.json"), {
+    schemaVersion: "runtime-human-gamectl-v1",
+    command: "simulate.compare",
+    ok: input.verdict !== "fail",
+    result: {
+      schemaVersion: "simulation-diff-v1",
+      baseline: identity,
+      candidate: identity,
+      hardInvariantChanges: input.verdict === "fail" ? [{ invariant: "softLocks" }] : [],
+      metricChanges: input.verdict === "pass-with-changes" ? [{ metric: "quality.clarity" }] : [],
+      distributionChanges: [],
+      fingerprintChanges: [],
+      verdict: input.verdict ?? "pass",
+    },
+  });
 }
 
 describe("runtime-human-pr-evidence-v1", () => {
@@ -214,6 +259,90 @@ describe("runtime-human-pr-evidence-v1", () => {
     ).toThrow(/Invalid JSONL.*ledger\.jsonl:1/u);
   });
 
+  it("binds a complete simulation diff summary and artifact reference to exact PR identity", () => {
+    const { root, base, head, tested } = makeRepo();
+    const evidenceDir = path.join(root, "out", "simulation-regression");
+    const artifactName = `runtime-human-simulation-regression-999-${head}`;
+    writeSimulationEvidence(root, evidenceDir, { base, head, verdict: "pass-with-changes" });
+
+    const value = collectPrEvidence(root, {
+      base,
+      head,
+      tested,
+      status: "success",
+      exitCode: 0,
+      simulationEvidenceDir: evidenceDir,
+      simulationArtifactName: artifactName,
+    });
+
+    expect(value.simulationRegression).toEqual({
+      schemaVersion: SIMULATION_EVIDENCE_SCHEMA,
+      status: "complete",
+      baseSha: base,
+      headSha: head,
+      testedSha: tested,
+      artifact: { name: artifactName, diffPath: "diff.json" },
+      corpus: {
+        schemaVersion: "simulation-corpus-v1",
+        corpusId: "january-1990-canonical-v1",
+        fingerprint: CORPUS_FINGERPRINT,
+      },
+      verdict: "pass-with-changes",
+      changes: { hardInvariants: 0, metrics: 1, distributions: 0, fingerprints: 0 },
+    });
+
+    const summary = renderPrEvidenceSummary(value);
+    expect(summary).toContain("Simulation regression");
+    expect(summary).toContain("pass-with-changes");
+    expect(summary).toContain("january-1990-canonical-v1");
+    expect(summary).toContain(artifactName);
+  });
+
+  it("marks an expected simulation diff as unavailable without silently dropping its exact pair", () => {
+    const { root, base, head, tested } = makeRepo();
+    const evidenceDir = path.join(root, "out", "simulation-regression");
+    const artifactName = `runtime-human-simulation-regression-999-${head}`;
+    writeSimulationEvidence(root, evidenceDir, { base, head, includeDiff: false });
+
+    const value = collectPrEvidence(root, {
+      base,
+      head,
+      tested,
+      status: "failure",
+      exitCode: 1,
+      simulationEvidenceDir: evidenceDir,
+      simulationArtifactName: artifactName,
+    });
+
+    expect(value.simulationRegression).toEqual({
+      schemaVersion: SIMULATION_EVIDENCE_SCHEMA,
+      status: "unavailable",
+      baseSha: base,
+      headSha: head,
+      testedSha: tested,
+      artifact: { name: artifactName },
+      reason: "simulation-diff-unavailable",
+    });
+  });
+
+  it("fails closed when simulation evidence belongs to a stale base/head pair", () => {
+    const { root, base, head, tested } = makeRepo();
+    const evidenceDir = path.join(root, "out", "simulation-regression");
+    writeSimulationEvidence(root, evidenceDir, { base, head: base });
+
+    expect(() =>
+      collectPrEvidence(root, {
+        base,
+        head,
+        tested,
+        status: "success",
+        exitCode: 0,
+        simulationEvidenceDir: evidenceDir,
+        simulationArtifactName: `runtime-human-simulation-regression-999-${head}`,
+      }),
+    ).toThrow(/stale simulation evidence/u);
+  });
+
   it("materializes JSON and Markdown through the real studioctl entrypoint", () => {
     const { root, base, head, tested } = makeRepo();
     const script = path.resolve(import.meta.dirname, "../scripts/studioctl.mjs");
@@ -253,5 +382,50 @@ describe("runtime-human-pr-evidence-v1", () => {
     });
     expect(JSON.parse(fs.readFileSync(evidencePath, "utf8"))).toMatchObject({ testedSha: tested });
     expect(fs.readFileSync(summaryPath, "utf8")).toContain("Runtime Human PR evidence");
+  });
+
+  it("materializes simulation regression binding through studioctl evidence", () => {
+    const { root, base, head, tested } = makeRepo();
+    const script = path.resolve(import.meta.dirname, "../scripts/studioctl.mjs");
+    const evidenceDir = path.join(root, "out", "simulation-regression");
+    const artifactName = `runtime-human-simulation-regression-999-${head}`;
+    writeSimulationEvidence(root, evidenceDir, { base, head });
+
+    const stdout = execFileSync(
+      process.execPath,
+      [
+        script,
+        "evidence",
+        "--root",
+        root,
+        "--base",
+        base,
+        "--head",
+        head,
+        "--tested",
+        tested,
+        "--status",
+        "success",
+        "--exit-code",
+        "0",
+        "--simulation-evidence-dir",
+        evidenceDir,
+        "--simulation-artifact",
+        artifactName,
+        "--json",
+      ],
+      { encoding: "utf8" },
+    );
+
+    expect(JSON.parse(stdout).simulationRegression).toMatchObject({
+      schemaVersion: SIMULATION_EVIDENCE_SCHEMA,
+      status: "complete",
+      baseSha: base,
+      headSha: head,
+      testedSha: tested,
+      artifact: { name: artifactName, diffPath: "diff.json" },
+      corpus: { corpusId: "january-1990-canonical-v1", fingerprint: CORPUS_FINGERPRINT },
+      verdict: "pass",
+    });
   });
 });

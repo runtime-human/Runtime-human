@@ -25,6 +25,13 @@ describe("ENGINE-03 simulation regression CI workflow", () => {
     expect(workflow).toContain("$inspection.authorityImpact.ciGovernance");
   });
 
+  it("rejects a synthetic merge whose exact base parent is stale", async () => {
+    const workflow = await readWorkflow();
+
+    expect(workflow).toContain('if ($baseSha -ne "${{ github.event.pull_request.base.sha }}") {');
+    expect(workflow).toContain("tested PR base parent does not match pull request base");
+  });
+
   it("runs one canonical corpus on the exact PR base and head then compares V4 reports", async () => {
     const workflow = await readWorkflow();
 
@@ -67,6 +74,13 @@ describe("ENGINE-03 simulation regression CI workflow", () => {
     expect(summaryIndex).toBeGreaterThan(-1);
     expect(uploadIndex).toBeGreaterThan(summaryIndex);
     expect(gateIndex).toBeGreaterThan(uploadIndex);
+  });
+
+  it("binds simulation evidence into exact PR evidence materialization", async () => {
+    const workflow = await readWorkflow();
+
+    expect(workflow).toContain("--simulation-evidence-dir");
+    expect(workflow).toContain("--simulation-artifact");
   });
 
   it("keeps the regression job read-only and does not use pull_request_target", async () => {
