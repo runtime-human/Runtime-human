@@ -27,6 +27,33 @@ describe("remote CI feedback and candidate V3", () => {
     expect(feedback).not.toContain("pull_request_target");
   });
 
+  it("runs a bounded head-only simulation smoke for Studio-classified affected PRs", () => {
+    const feedback = read(".github/workflows/feedback.yml");
+
+    expect(feedback).toContain("fetch-depth: 2");
+    expect(feedback).toContain("name: Resolve exact tested PR parents");
+    expect(feedback).toContain("tested PR base parent does not match pull request base");
+    expect(feedback).toContain("tested PR head parent does not match pull request head");
+    expect(feedback).toContain("name: Classify simulation smoke scope");
+    expect(feedback).toContain(
+      'pnpm studioctl inspect --base "${{ steps.tested-parents.outputs.base_sha }}" --head "${{ steps.tested-parents.outputs.head_sha }}" --json',
+    );
+    expect(feedback).toContain(
+      '$simulationZones = @("core", "application", "content", "balance", "scenario", "simulation")',
+    );
+    expect(feedback).toContain("$inspection.authorityImpact.gameplay");
+    expect(feedback).toContain("$inspection.authorityImpact.schema");
+    expect(feedback).toContain("$inspection.authorityImpact.ciGovernance");
+    expect(feedback).toContain("name: Run simulation smoke");
+    expect(feedback).toContain("steps.simulation-smoke-scope.outputs.affected == 'true'");
+    expect(feedback).toContain(
+      "gamectl-entry.ts simulate run --corpus january-1990-smoke-v1 --json",
+    );
+    expect(feedback).toContain("Runtime Human simulation smoke");
+    expect(feedback).toContain("$env:GITHUB_STEP_SUMMARY");
+    expect(feedback).not.toContain("january-1990-canonical-v1");
+  });
+
   it("refreshes explicit PR V3 candidates after their head synchronizes", () => {
     const foundation = read(".github/workflows/foundation.yml");
 
@@ -38,6 +65,7 @@ describe("remote CI feedback and candidate V3", () => {
     expect(foundation).toContain("contains(github.event.pull_request.labels.*.name, 'verify:v3')");
     expect(foundation).toContain("pnpm verify");
     expect(foundation).toContain("pnpm studioctl evidence");
+    expect(foundation).toContain("january-1990-canonical-v1");
     expect(foundation).toContain("contents: read");
     expect(foundation).toContain("cancel-in-progress: true");
     expect(foundation).not.toContain("pull_request_target");
@@ -56,12 +84,14 @@ describe("remote CI feedback and candidate V3", () => {
     );
   });
 
-  it("keeps the control-plane forcing function aligned with candidate refresh semantics", () => {
+  it("keeps the control-plane forcing function aligned with candidate refresh and smoke semantics", () => {
     const checker = read("scripts/studio/check-control-plane.mjs");
 
     expect(checker).toContain('"types: [labeled, synchronize]"');
     expect(checker).toContain("\"github.event.action == 'synchronize'\"");
     expect(checker).toContain("\"contains(github.event.pull_request.labels.*.name, 'verify:v3')\"");
+    expect(checker).toContain('"name: Classify simulation smoke scope"');
+    expect(checker).toContain('"january-1990-smoke-v1"');
   });
 
   it("retains full V3 on main and manual dispatch without duplicating command bodies", () => {

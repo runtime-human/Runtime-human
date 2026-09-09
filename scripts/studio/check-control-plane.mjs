@@ -168,8 +168,15 @@ if (feedback) {
     "runs-on: windows-2025",
     "cancel-in-progress: true",
     "contents: read",
+    "fetch-depth: 2",
     "pnpm install --frozen-lockfile --reporter=silent",
     "pnpm check:fast",
+    "name: Resolve exact tested PR parents",
+    "tested PR base parent does not match pull request base",
+    "tested PR head parent does not match pull request head",
+    "name: Classify simulation smoke scope",
+    "pnpm studioctl inspect",
+    "january-1990-smoke-v1",
   ];
   for (const snippet of requiredSnippets) {
     assert(feedback.includes(snippet), `feedback wiring missing ${snippet}`);

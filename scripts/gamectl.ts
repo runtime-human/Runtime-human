@@ -24,6 +24,7 @@ import {
   createJanuary1990SimulationV4,
   diffSimulationReportsV1,
   JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1,
+  JANUARY_1990_SMOKE_SIMULATION_CORPUS_V1,
   parseSimulationReportV4,
   SIMULATION_REPORT_SCHEMA_VERSION_V4,
   type SimulationDiffV1,
@@ -35,6 +36,10 @@ import { runScenarioGamectlCli } from "./gamectl-scenario";
 export type { GamectlIo } from "./gamectl-core";
 
 const ENVELOPE_SCHEMA_VERSION = "runtime-human-gamectl-v1" as const;
+const CLOSED_SIMULATION_CORPORA = Object.freeze([
+  JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1,
+  JANUARY_1990_SMOKE_SIMULATION_CORPUS_V1,
+]);
 
 type CanonicalCorpusValues = Readonly<{
   json: boolean;
@@ -382,7 +387,8 @@ async function runCanonicalCorpusCli(
   }
 
   const corpusId = values.corpus;
-  if (corpusId !== JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1.corpusId) {
+  const corpus = CLOSED_SIMULATION_CORPORA.find((candidate) => candidate.corpusId === corpusId);
+  if (corpus === undefined) {
     return emitCorpusFailure(
       values.json,
       io,
@@ -401,7 +407,7 @@ async function runCanonicalCorpusCli(
       values.json,
       io,
       "invalid-filter",
-      `canonical simulation corpus cannot be overridden by ${overrideFlags.join(", ")}`,
+      `closed simulation corpus cannot be overridden by ${overrideFlags.join(", ")}`,
     );
   }
 
@@ -478,7 +484,7 @@ async function runCanonicalCorpusCli(
         certificateFingerprint: JANUARY_1990_SCENARIO_ARTIFACT.certificate.certificateFingerprint,
       },
     });
-    const report = simulation.simulateCorpus(JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1);
+    const report = simulation.simulateCorpus(corpus);
 
     if (values.json) {
       io.stdout(
