@@ -97,7 +97,8 @@ describe("remote CI feedback and candidate V3", () => {
   it("keeps Rust compilation cache bounded and non-authoritative", () => {
     const foundation = read(".github/workflows/foundation.yml");
     const checker = read("scripts/studio/check-control-plane.mjs");
-    const cacheBlock = foundation.split("- name: Cache Rust compilation")[1]?.split("- name:")[0] ?? "";
+    const cacheBlock =
+      foundation.split("- name: Cache Rust compilation")[1]?.split("- name:")[0] ?? "";
 
     expect(foundation).toContain(
       "Mozilla-Actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11",
