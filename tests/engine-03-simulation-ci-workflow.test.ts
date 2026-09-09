@@ -37,10 +37,18 @@ describe("ENGINE-03 simulation regression CI workflow", () => {
       'git checkout --detach "${{ steps.tested-parents.outputs.head_sha }}"',
     );
     expect(
-      workflow.match(/pnpm gamectl simulate run --corpus january-1990-canonical-v1 --json/g),
+      workflow.match(/gamectl-entry\.ts simulate run --corpus january-1990-canonical-v1 --json/g),
     ).toHaveLength(2);
     expect(workflow).toContain("name: Compare canonical simulation reports");
-    expect(workflow).toContain("pnpm gamectl simulate compare");
+    expect(workflow).toContain("gamectl-entry.ts simulate compare");
+  });
+
+  it("preserves complete multiline gamectl JSON before parsing and artifacting", async () => {
+    const workflow = await readWorkflow();
+
+    expect(workflow.match(/\$jsonText = \$output -join \[Environment\]::NewLine/g)).toHaveLength(3);
+    expect(workflow.match(/\$jsonText \| Set-Content -Path/g)).toHaveLength(3);
+    expect(workflow.match(/\$jsonText \| ConvertFrom-Json/g)).toHaveLength(3);
   });
 
   it("publishes summary and artifacts before preserving a simulation failure", async () => {
