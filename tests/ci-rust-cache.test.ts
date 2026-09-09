@@ -5,18 +5,20 @@ import { describe, expect, it } from "vitest";
 
 const root = resolve(import.meta.dirname, "..");
 const read = (path: string) => readFileSync(resolve(root, path), "utf8");
+const SCCACHE_ACTION =
+  "Mozilla-Actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11";
+const CACHE_ACTION = "actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0";
+const CACHE_KEY =
+  "key: rust-sccache-v1-${{ runner.os }}-rust-1.97.1-${{ hashFiles('apps/desktop/src-tauri/Cargo.lock', 'apps/desktop/src-tauri/Cargo.toml') }}";
+const CACHE_RESTORE_PREFIX = "rust-sccache-v1-${{ runner.os }}-rust-1.97.1-";
 
 describe("authoritative V3 Rust compilation cache", () => {
   it("uses a bounded pinned sccache cache without caching verification authority", () => {
     const foundation = read(".github/workflows/foundation.yml");
 
-    expect(foundation).toContain(
-      "Mozilla-Actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11",
-    );
+    expect(foundation).toContain(SCCACHE_ACTION);
     expect(foundation).toContain('version: "v0.17.0"');
-    expect(foundation).toContain(
-      "actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0",
-    );
+    expect(foundation).toContain(CACHE_ACTION);
     expect(foundation).toContain("RUSTC_WRAPPER: sccache");
     expect(foundation).toContain("SCCACHE_DIR: ${{ github.workspace }}\\.cache\\sccache");
     expect(foundation).toContain('SCCACHE_CACHE_SIZE: "2G"');
@@ -26,11 +28,9 @@ describe("authoritative V3 Rust compilation cache", () => {
     )?.[0];
     expect(cacheBlock).toBeDefined();
     expect(cacheBlock).toContain("path: .cache/sccache");
-    expect(cacheBlock).toContain(
-      "key: rust-sccache-v1-${{ runner.os }}-rust-1.97.1-${{ hashFiles('apps/desktop/src-tauri/Cargo.lock', 'apps/desktop/src-tauri/Cargo.toml') }}",
-    );
+    expect(cacheBlock).toContain(CACHE_KEY);
     expect(cacheBlock).toContain("restore-keys: |");
-    expect(cacheBlock).toContain("rust-sccache-v1-${{ runner.os }}-rust-1.97.1-");
+    expect(cacheBlock).toContain(CACHE_RESTORE_PREFIX);
     expect(cacheBlock).not.toMatch(/(?:evidence|simulation|node_modules)/u);
 
     expect(foundation).not.toContain("SCCACHE_GHA_ENABLED");
@@ -44,12 +44,8 @@ describe("authoritative V3 Rust compilation cache", () => {
   it("keeps the control-plane forcing function aligned with Rust cache safety", () => {
     const checker = read("scripts/studio/check-control-plane.mjs");
 
-    expect(checker).toContain(
-      '"Mozilla-Actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11"',
-    );
-    expect(checker).toContain(
-      '"actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0"',
-    );
+    expect(checker).toContain(`"${SCCACHE_ACTION}"`);
+    expect(checker).toContain(`"${CACHE_ACTION}"`);
     expect(checker).toContain('"RUSTC_WRAPPER: sccache"');
     expect(checker).toContain('"SCCACHE_CACHE_SIZE: \\"2G\\""');
     expect(checker).toContain('"path: .cache/sccache"');
