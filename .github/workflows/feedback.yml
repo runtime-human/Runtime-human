@@ -56,10 +56,5 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
 
-      - name: Print Stage E formatter oracle
-        run: |
-          pnpm exec oxfmt scripts/studio/evidence-lib.mjs
-          git diff -- scripts/studio/evidence-lib.mjs
-
       - name: Run non-authoritative fast feedback
         run: pnpm check:fast
