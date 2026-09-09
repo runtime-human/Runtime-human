@@ -101,14 +101,8 @@ function validateSimulationInspection(value, baseSha, headSha) {
   if (inspection.schemaVersion !== CHANGE_INSPECTION_SCHEMA) {
     throw new Error(`simulation inspection schema must be ${CHANGE_INSPECTION_SCHEMA}`);
   }
-  const evidenceBaseSha = requireFullSha(
-    inspection.baseSha,
-    "simulation inspection.baseSha",
-  );
-  const evidenceHeadSha = requireFullSha(
-    inspection.headSha,
-    "simulation inspection.headSha",
-  );
+  const evidenceBaseSha = requireFullSha(inspection.baseSha, "simulation inspection.baseSha");
+  const evidenceHeadSha = requireFullSha(inspection.headSha, "simulation inspection.headSha");
   if (evidenceBaseSha !== baseSha || evidenceHeadSha !== headSha) {
     throw new Error(
       `stale simulation evidence: expected ${baseSha}..${headSha}, got ${evidenceBaseSha}..${evidenceHeadSha}`,
@@ -150,11 +144,7 @@ function collectSimulationRegressionEvidence({
   const normalizedEvidenceDir = requireNonEmptyString(evidenceDir, "simulationEvidenceDir");
   const normalizedArtifactName = requireNonEmptyString(artifactName, "simulationArtifactName");
   const inspectionPath = path.join(normalizedEvidenceDir, "inspection.json");
-  validateSimulationInspection(
-    readJson(inspectionPath, "simulation inspection"),
-    baseSha,
-    headSha,
-  );
+  validateSimulationInspection(readJson(inspectionPath, "simulation inspection"), baseSha, headSha);
 
   const artifact = { name: normalizedArtifactName };
   const diffPath = path.join(normalizedEvidenceDir, "diff.json");
@@ -182,14 +172,8 @@ function collectSimulationRegressionEvidence({
     throw new Error("simulation diff verdict must be pass, pass-with-changes, or fail");
   }
 
-  const baselineCorpus = validateSimulationIdentity(
-    diff.baseline,
-    "simulation diff.baseline",
-  );
-  const candidateCorpus = validateSimulationIdentity(
-    diff.candidate,
-    "simulation diff.candidate",
-  );
+  const baselineCorpus = validateSimulationIdentity(diff.baseline, "simulation diff.baseline");
+  const candidateCorpus = validateSimulationIdentity(diff.candidate, "simulation diff.candidate");
   if (
     baselineCorpus.corpusId !== candidateCorpus.corpusId ||
     baselineCorpus.fingerprint !== candidateCorpus.fingerprint
@@ -264,15 +248,7 @@ export function buildPrEvidence({
 
 export function collectPrEvidence(
   root,
-  {
-    base,
-    head,
-    tested,
-    status,
-    exitCode,
-    simulationEvidenceDir,
-    simulationArtifactName,
-  },
+  { base, head, tested, status, exitCode, simulationEvidenceDir, simulationArtifactName },
 ) {
   const inspection = inspectChange(root, { base, head });
   const testedSha = resolveCommit(root, tested);
