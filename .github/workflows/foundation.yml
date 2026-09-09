@@ -272,29 +272,13 @@ jobs:
           $status = "${{ steps.v3.outcome }}"
           $exitCode = "${{ steps.v3.outputs.exit_code }}"
           if (-not $exitCode) { throw "canonical V3 did not expose an exit code" }
-          $evidenceArgs = @(
-            "studioctl",
-            "evidence",
-            "--base", "${{ steps.tested-parents.outputs.base_sha }}",
-            "--head", "${{ steps.tested-parents.outputs.head_sha }}",
-            "--tested", "${{ github.sha }}",
-            "--status", $status,
-            "--exit-code", $exitCode
-          )
           if ("${{ steps.simulation-scope.outputs.affected }}" -eq "true") {
             $simulationEvidenceDir = Join-Path $env:RUNNER_TEMP "runtime-human-simulation-regression"
             $simulationArtifact = "runtime-human-simulation-regression-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}"
-            $evidenceArgs += @(
-              "--simulation-evidence-dir", $simulationEvidenceDir,
-              "--simulation-artifact", $simulationArtifact
-            )
+            pnpm studioctl evidence --base "${{ steps.tested-parents.outputs.base_sha }}" --head "${{ steps.tested-parents.outputs.head_sha }}" --tested "${{ github.sha }}" --status $status --exit-code $exitCode --simulation-evidence-dir $simulationEvidenceDir --simulation-artifact $simulationArtifact --output ".studio/runtime/evidence/runtime-human-pr-evidence-v1.json" --summary-output ".studio/runtime/evidence/summary.md" --json
+          } else {
+            pnpm studioctl evidence --base "${{ steps.tested-parents.outputs.base_sha }}" --head "${{ steps.tested-parents.outputs.head_sha }}" --tested "${{ github.sha }}" --status $status --exit-code $exitCode --output ".studio/runtime/evidence/runtime-human-pr-evidence-v1.json" --summary-output ".studio/runtime/evidence/summary.md" --json
           }
-          $evidenceArgs += @(
-            "--output", ".studio/runtime/evidence/runtime-human-pr-evidence-v1.json",
-            "--summary-output", ".studio/runtime/evidence/summary.md",
-            "--json"
-          )
-          & pnpm @evidenceArgs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Get-Content ".studio/runtime/evidence/summary.md" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
 
