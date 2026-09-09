@@ -201,6 +201,14 @@ if (foundation) {
     "github.event.action == 'synchronize'",
     "contains(github.event.pull_request.labels.*.name, 'verify:v3')",
     "fetch-depth: 2",
+    "Mozilla-Actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11",
+    'version: "v0.17.0"',
+    "actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0",
+    "path: .cache/sccache",
+    "rust-sccache-v1-${{ runner.os }}-rust-1.97.1-",
+    "RUSTC_WRAPPER: sccache",
+    "SCCACHE_DIR: ${{ github.workspace }}\\.cache\\sccache",
+    'SCCACHE_CACHE_SIZE: "2G"',
     "id: v3",
     "continue-on-error: true",
     "pnpm verify",
@@ -228,6 +236,14 @@ if (foundation) {
   assert(
     !foundation.includes("pull_request_target"),
     "foundation must not use pull_request_target",
+  );
+  assert(
+    !foundation.includes("SCCACHE_GHA_ENABLED"),
+    "foundation must use local bounded sccache storage",
+  );
+  assert(
+    !foundation.includes("fail-on-cache-miss: true"),
+    "foundation Rust cache miss must fall back to compilation",
   );
 }
 
