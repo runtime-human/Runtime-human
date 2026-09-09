@@ -26,6 +26,8 @@ const USAGE = [
   "  --root <path>                repository root (default: current directory)",
   "  --output <path>              write evidence JSON",
   "  --summary-output <path>      write compact Markdown summary",
+  "  --simulation-evidence-dir <path>  bind existing simulation-regression evidence",
+  "  --simulation-artifact <name>      record the uploaded simulation artifact name",
 ].join("\n");
 
 function parse(argv) {
@@ -41,6 +43,8 @@ function parse(argv) {
       "exit-code": { type: "string" },
       output: { type: "string" },
       "summary-output": { type: "string" },
+      "simulation-evidence-dir": { type: "string" },
+      "simulation-artifact": { type: "string" },
     },
     allowPositionals: true,
     strict: true,
@@ -90,7 +94,9 @@ export function runStudioctl(argv = process.argv.slice(2)) {
       values.status !== undefined ||
       values["exit-code"] !== undefined ||
       values.output !== undefined ||
-      values["summary-output"] !== undefined
+      values["summary-output"] !== undefined ||
+      values["simulation-evidence-dir"] !== undefined ||
+      values["simulation-artifact"] !== undefined
     ) {
       emitError(values.json, "usage-error", "capabilities takes no command-specific arguments");
       return 2;
@@ -114,7 +120,9 @@ export function runStudioctl(argv = process.argv.slice(2)) {
       values.status !== undefined ||
       values["exit-code"] !== undefined ||
       values.output !== undefined ||
-      values["summary-output"] !== undefined
+      values["summary-output"] !== undefined ||
+      values["simulation-evidence-dir"] !== undefined ||
+      values["simulation-artifact"] !== undefined
     ) {
       emitError(values.json, "usage-error", "inspect requires exactly --base <ref> --head <ref>");
       return 2;
@@ -158,6 +166,16 @@ export function runStudioctl(argv = process.argv.slice(2)) {
       );
       return 2;
     }
+    const hasSimulationEvidenceDir = values["simulation-evidence-dir"] !== undefined;
+    const hasSimulationArtifact = values["simulation-artifact"] !== undefined;
+    if (hasSimulationEvidenceDir !== hasSimulationArtifact) {
+      emitError(
+        values.json,
+        "usage-error",
+        "simulation evidence requires both --simulation-evidence-dir and --simulation-artifact",
+      );
+      return 2;
+    }
     try {
       const root = path.resolve(values.root ?? process.cwd());
       const exitCode = Number(values["exit-code"]);
@@ -167,6 +185,8 @@ export function runStudioctl(argv = process.argv.slice(2)) {
         tested: values.tested,
         status: values.status,
         exitCode,
+        simulationEvidenceDir: values["simulation-evidence-dir"],
+        simulationArtifactName: values["simulation-artifact"],
       });
       const serialized = serializePrEvidence(result);
       const summary = renderPrEvidenceSummary(result);
