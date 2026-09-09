@@ -132,14 +132,14 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           pnpm install --frozen-lockfile --reporter=silent
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          $output = @(pnpm gamectl simulate run --corpus january-1990-canonical-v1 --json)
+          $output = @(node --import tsx scripts/gamectl-entry.ts simulate run --corpus january-1990-canonical-v1 --json)
           $code = $LASTEXITCODE
-          $jsonLine = $output | Where-Object { $_ -match '^\s*\{' } | Select-Object -Last 1
-          if (-not $jsonLine) { throw "base simulation did not emit JSON" }
-          $jsonLine | Set-Content -Path (Join-Path $evidenceDir "base.json") -Encoding utf8
+          $jsonText = $output -join [Environment]::NewLine
+          if (-not $jsonText.Trim()) { throw "base simulation did not emit JSON" }
+          $jsonText | Set-Content -Path (Join-Path $evidenceDir "base.json") -Encoding utf8
           "exit_code=$code" >> $env:GITHUB_OUTPUT
           if ($code -ne 0) { exit $code }
-          $envelope = $jsonLine | ConvertFrom-Json
+          $envelope = $jsonText | ConvertFrom-Json
           if ($envelope.command -ne "simulate.run" -or $envelope.result.report.schemaVersion -ne "simulation-report-v4") {
             throw "base simulation did not emit a V4 report"
           }
@@ -155,14 +155,14 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           pnpm install --frozen-lockfile --reporter=silent
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          $output = @(pnpm gamectl simulate run --corpus january-1990-canonical-v1 --json)
+          $output = @(node --import tsx scripts/gamectl-entry.ts simulate run --corpus january-1990-canonical-v1 --json)
           $code = $LASTEXITCODE
-          $jsonLine = $output | Where-Object { $_ -match '^\s*\{' } | Select-Object -Last 1
-          if (-not $jsonLine) { throw "head simulation did not emit JSON" }
-          $jsonLine | Set-Content -Path (Join-Path $evidenceDir "head.json") -Encoding utf8
+          $jsonText = $output -join [Environment]::NewLine
+          if (-not $jsonText.Trim()) { throw "head simulation did not emit JSON" }
+          $jsonText | Set-Content -Path (Join-Path $evidenceDir "head.json") -Encoding utf8
           "exit_code=$code" >> $env:GITHUB_OUTPUT
           if ($code -ne 0) { exit $code }
-          $envelope = $jsonLine | ConvertFrom-Json
+          $envelope = $jsonText | ConvertFrom-Json
           if ($envelope.command -ne "simulate.run" -or $envelope.result.report.schemaVersion -ne "simulation-report-v4") {
             throw "head simulation did not emit a V4 report"
           }
@@ -181,13 +181,13 @@ jobs:
           $evidenceDir = Join-Path $env:RUNNER_TEMP "runtime-human-simulation-regression"
           $baseReport = Join-Path $evidenceDir "base.json"
           $headReport = Join-Path $evidenceDir "head.json"
-          $output = @(pnpm gamectl simulate compare --base $baseReport --candidate $headReport --json)
+          $output = @(node --import tsx scripts/gamectl-entry.ts simulate compare --base $baseReport --candidate $headReport --json)
           $code = $LASTEXITCODE
-          $jsonLine = $output | Where-Object { $_ -match '^\s*\{' } | Select-Object -Last 1
-          if (-not $jsonLine) { throw "simulation compare did not emit JSON" }
-          $jsonLine | Set-Content -Path (Join-Path $evidenceDir "diff.json") -Encoding utf8
+          $jsonText = $output -join [Environment]::NewLine
+          if (-not $jsonText.Trim()) { throw "simulation compare did not emit JSON" }
+          $jsonText | Set-Content -Path (Join-Path $evidenceDir "diff.json") -Encoding utf8
           "exit_code=$code" >> $env:GITHUB_OUTPUT
-          $envelope = $jsonLine | ConvertFrom-Json
+          $envelope = $jsonText | ConvertFrom-Json
           if ($code -le 1 -and ($envelope.command -ne "simulate.compare" -or $envelope.result.schemaVersion -ne "simulation-diff-v1")) {
             throw "simulation compare did not emit SimulationDiffV1"
           }
