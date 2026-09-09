@@ -3,7 +3,6 @@ import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 
 const WORKFLOW_URL = new URL("../.github/workflows/foundation.yml", import.meta.url);
-const CONTROL_PLANE_URL = new URL("../scripts/studio/control-plane-lib.mjs", import.meta.url);
 
 async function readWorkflow(): Promise<string> {
   return readFile(WORKFLOW_URL, "utf8");
@@ -20,12 +19,10 @@ describe("ENGINE-03 simulation regression CI workflow", () => {
     expect(workflow).toContain(
       "$inspection.authorityImpact.gameplay -or $inspection.authorityImpact.schema",
     );
-  });
-
-  it("keeps content compiler changes in the central gameplay authority classification", async () => {
-    const controlPlane = await readFile(CONTROL_PLANE_URL, "utf8");
-
-    expect(controlPlane).toContain("/^packages\\/game-content-compiler\\//u");
+    expect(workflow).toContain(
+      '$simulationZones = @("core", "application", "content", "balance", "scenario", "simulation")',
+    );
+    expect(workflow).toContain("$inspection.authorityImpact.ciGovernance");
   });
 
   it("runs one canonical corpus on the exact PR base and head then compares V4 reports", async () => {
