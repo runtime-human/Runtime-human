@@ -4,7 +4,10 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const repositoryRoot = resolve(import.meta.dirname, "..");
-const workflow = readFileSync(resolve(repositoryRoot, ".github", "workflows", "foundation.yml"), "utf8");
+const workflow = readFileSync(
+  resolve(repositoryRoot, ".github", "workflows", "foundation.yml"),
+  "utf8",
+);
 
 describe("ENGINE-03 simulation regression CI workflow", () => {
   it("classifies gameplay-affecting PRs through the existing Studio authority model", () => {
@@ -12,14 +15,20 @@ describe("ENGINE-03 simulation regression CI workflow", () => {
     expect(workflow).toContain(
       'pnpm studioctl inspect --base "${{ steps.tested-parents.outputs.base_sha }}" --head "${{ steps.tested-parents.outputs.head_sha }}" --json',
     );
-    expect(workflow).toContain("$inspection.authorityImpact.gameplay -or $inspection.authorityImpact.schema");
+    expect(workflow).toContain(
+      "$inspection.authorityImpact.gameplay -or $inspection.authorityImpact.schema",
+    );
   });
 
   it("runs one canonical corpus on the exact PR base and head then compares V4 reports", () => {
     expect(workflow).toContain("name: Run canonical base simulation");
-    expect(workflow).toContain('git checkout --detach "${{ steps.tested-parents.outputs.base_sha }}"');
+    expect(workflow).toContain(
+      'git checkout --detach "${{ steps.tested-parents.outputs.base_sha }}"',
+    );
     expect(workflow).toContain("name: Run canonical head simulation");
-    expect(workflow).toContain('git checkout --detach "${{ steps.tested-parents.outputs.head_sha }}"');
+    expect(workflow).toContain(
+      'git checkout --detach "${{ steps.tested-parents.outputs.head_sha }}"',
+    );
 
     const corpusRuns = workflow.match(
       /pnpm gamectl simulate run --corpus january-1990-canonical-v1 --json/g,
@@ -38,7 +47,9 @@ describe("ENGINE-03 simulation regression CI workflow", () => {
     expect(workflow).toContain("retention-days: 7");
     expect(workflow).toContain("name: Preserve simulation regression failure");
 
-    const summaryIndex = workflow.indexOf("name: Summarize simulation regression evidence");
+    const summaryIndex = workflow.indexOf(
+      "name: Summarize simulation regression evidence",
+    );
     const uploadIndex = workflow.indexOf("name: Upload simulation regression evidence");
     const gateIndex = workflow.indexOf("name: Preserve simulation regression failure");
     expect(summaryIndex).toBeGreaterThan(-1);
