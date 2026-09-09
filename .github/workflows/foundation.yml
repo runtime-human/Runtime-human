@@ -98,6 +98,171 @@ jobs:
           "base_sha=$baseSha" >> $env:GITHUB_OUTPUT
           "head_sha=$headSha" >> $env:GITHUB_OUTPUT
 
+      - name: Classify simulation regression scope
+        id: simulation-scope
+        if: always() && github.event_name == 'pull_request'
+        run: |
+          $ErrorActionPreference = "Stop"
+          $evidenceDir = Join-Path $env:RUNNER_TEMP "runtime-human-simulation-regression"
+          New-Item -ItemType Directory -Force -Path $evidenceDir | Out-Null
+          $inspectionOutput = @(pnpm studioctl inspect --base "${{ steps.tested-parents.outputs.base_sha }}" --head "${{ steps.tested-parents.outputs.head_sha }}" --json)
+          $code = $LASTEXITCODE
+          if ($code -ne 0) { exit $code }
+          $jsonLine = $inspectionOutput | Where-Object { $_ -match '^\s*\{' } | Select-Object -Last 1
+          if (-not $jsonLine) { throw "studioctl inspect did not emit JSON" }
+          $jsonLine | Set-Content -Path (Join-Path $evidenceDir "inspection.json") -Encoding utf8
+          $inspection = $jsonLine | ConvertFrom-Json
+          $simulationZones = @("core", "application", "content", "balance", "scenario", "simulation")
+          $zoneAffected = @($inspection.zones | Where-Object { $simulationZones -contains $_ }).Count -gt 0
+          $authorityAffected = $inspection.authorityImpact.gameplay -or $inspection.authorityImpact.schema
+          $ciAuthorityAffected = $inspection.authorityImpact.ciGovernance
+          $affected = $authorityAffected -or $zoneAffected -or $ciAuthorityAffected
+          $reason = if ($authorityAffected) { "authority" } elseif ($zoneAffected) { "zone" } elseif ($ciAuthorityAffected) { "ci-governance" } else { "not-affected" }
+          "affected=$($affected.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "reason=$reason" >> $env:GITHUB_OUTPUT
+
+      - name: Run canonical base simulation
+        id: simulation-base
+        if: always() && github.event_name == 'pull_request' && steps.simulation-scope.outputs.affected == 'true'
+        continue-on-error: true
+        run: |
+          $ErrorActionPreference = "Stop"
+          $evidenceDir = Join-Path $env:RUNNER_TEMP "runtime-human-simulation-regression"
+          git checkout --detach "${{ steps.tested-parents.outputs.base_sha }}"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          pnpm install --frozen-lockfile --reporter=silent
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $output = @(node --import tsx scripts/gamectl-entry.ts simulate run --corpus january-1990-canonical-v1 --json)
+          $code = $LASTEXITCODE
+          $jsonText = $output -join [Environment]::NewLine
+          if (-not $jsonText.Trim()) { throw "base simulation did not emit JSON" }
+          $jsonText | Set-Content -Path (Join-Path $evidenceDir "base.json") -Encoding utf8
+          "exit_code=$code" >> $env:GITHUB_OUTPUT
+          if ($code -ne 0) { exit $code }
+          $envelope = $jsonText | ConvertFrom-Json
+          if ($envelope.command -ne "simulate.run" -or $envelope.result.report.schemaVersion -ne "simulation-report-v4") {
+            throw "base simulation did not emit a V4 report"
+          }
+
+      - name: Run canonical head simulation
+        id: simulation-head
+        if: always() && github.event_name == 'pull_request' && steps.simulation-scope.outputs.affected == 'true'
+        continue-on-error: true
+        run: |
+          $ErrorActionPreference = "Stop"
+          $evidenceDir = Join-Path $env:RUNNER_TEMP "runtime-human-simulation-regression"
+          git checkout --detach "${{ steps.tested-parents.outputs.head_sha }}"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          pnpm install --frozen-lockfile --reporter=silent
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $output = @(node --import tsx scripts/gamectl-entry.ts simulate run --corpus january-1990-canonical-v1 --json)
+          $code = $LASTEXITCODE
+          $jsonText = $output -join [Environment]::NewLine
+          if (-not $jsonText.Trim()) { throw "head simulation did not emit JSON" }
+          $jsonText | Set-Content -Path (Join-Path $evidenceDir "head.json") -Encoding utf8
+          "exit_code=$code" >> $env:GITHUB_OUTPUT
+          if ($code -ne 0) { exit $code }
+          $envelope = $jsonText | ConvertFrom-Json
+          if ($envelope.command -ne "simulate.run" -or $envelope.result.report.schemaVersion -ne "simulation-report-v4") {
+            throw "head simulation did not emit a V4 report"
+          }
+
+      - name: Compare canonical simulation reports
+        id: simulation-compare
+        if: >-
+          always() &&
+          github.event_name == 'pull_request' &&
+          steps.simulation-scope.outputs.affected == 'true' &&
+          steps.simulation-base.outcome == 'success' &&
+          steps.simulation-head.outcome == 'success'
+        continue-on-error: true
+        run: |
+          $ErrorActionPreference = "Stop"
+          $evidenceDir = Join-Path $env:RUNNER_TEMP "runtime-human-simulation-regression"
+          $baseReport = Join-Path $evidenceDir "base.json"
+          $headReport = Join-Path $evidenceDir "head.json"
+          $output = @(node --import tsx scripts/gamectl-entry.ts simulate compare --base $baseReport --candidate $headReport --json)
+          $code = $LASTEXITCODE
+          $jsonText = $output -join [Environment]::NewLine
+          if (-not $jsonText.Trim()) { throw "simulation compare did not emit JSON" }
+          $jsonText | Set-Content -Path (Join-Path $evidenceDir "diff.json") -Encoding utf8
+          "exit_code=$code" >> $env:GITHUB_OUTPUT
+          $envelope = $jsonText | ConvertFrom-Json
+          if ($code -le 1 -and ($envelope.command -ne "simulate.compare" -or $envelope.result.schemaVersion -ne "simulation-diff-v1")) {
+            throw "simulation compare did not emit SimulationDiffV1"
+          }
+          exit $code
+
+      - name: Summarize simulation regression evidence
+        if: always() && github.event_name == 'pull_request' && steps.simulation-scope.outputs.affected == 'true'
+        run: |
+          $ErrorActionPreference = "Stop"
+          $evidenceDir = Join-Path $env:RUNNER_TEMP "runtime-human-simulation-regression"
+          $basePath = Join-Path $evidenceDir "base.json"
+          $headPath = Join-Path $evidenceDir "head.json"
+          $diffPath = Join-Path $evidenceDir "diff.json"
+          $baseRuns = "n/a"
+          $headRuns = "n/a"
+          $verdict = "not-compared"
+          $hardChanges = "n/a"
+          $metricChanges = "n/a"
+          $distributionChanges = "n/a"
+          $fingerprintChanges = "n/a"
+          if (Test-Path $basePath) {
+            $base = Get-Content $basePath -Raw | ConvertFrom-Json
+            if ($base.result.report.runs -ne $null) { $baseRuns = [string]$base.result.report.runs }
+          }
+          if (Test-Path $headPath) {
+            $head = Get-Content $headPath -Raw | ConvertFrom-Json
+            if ($head.result.report.runs -ne $null) { $headRuns = [string]$head.result.report.runs }
+          }
+          if (Test-Path $diffPath) {
+            $diffEnvelope = Get-Content $diffPath -Raw | ConvertFrom-Json
+            if ($diffEnvelope.result.schemaVersion -eq "simulation-diff-v1") {
+              $verdict = [string]$diffEnvelope.result.verdict
+              $hardChanges = [string]@($diffEnvelope.result.hardInvariantChanges).Count
+              $metricChanges = [string]@($diffEnvelope.result.metricChanges).Count
+              $distributionChanges = [string]@($diffEnvelope.result.distributionChanges).Count
+              $fingerprintChanges = [string]@($diffEnvelope.result.fingerprintChanges).Count
+            } elseif ($diffEnvelope.error.code) {
+              $verdict = "error:$($diffEnvelope.error.code)"
+            }
+          }
+          $compareExit = "${{ steps.simulation-compare.outputs.exit_code }}"
+          if (-not $compareExit) { $compareExit = "n/a" }
+          @(
+            "## Runtime Human simulation regression",
+            "",
+            "- Scope: ${{ steps.simulation-scope.outputs.reason }}",
+            "- Corpus: january-1990-canonical-v1",
+            "- Base: ${{ steps.tested-parents.outputs.base_sha }}",
+            "- Head: ${{ steps.tested-parents.outputs.head_sha }}",
+            "- Runs: $baseRuns base / $headRuns head",
+            "- Verdict: $verdict",
+            "- Hard invariant changes: $hardChanges",
+            "- Metric changes: $metricChanges",
+            "- Distribution changes: $distributionChanges",
+            "- Fingerprint changes: $fingerprintChanges",
+            "- Compare exit: $compareExit"
+          ) | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+
+      - name: Upload simulation regression evidence
+        if: always() && github.event_name == 'pull_request' && steps.simulation-scope.outputs.affected == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: runtime-human-simulation-regression-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+          path: ${{ runner.temp }}/runtime-human-simulation-regression
+          retention-days: 7
+          if-no-files-found: error
+          include-hidden-files: true
+
+      - name: Restore exact tested PR candidate
+        if: always() && github.event_name == 'pull_request' && steps.simulation-scope.outputs.affected == 'true'
+        run: |
+          $ErrorActionPreference = "Stop"
+          git checkout --detach "${{ github.sha }}"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - name: Materialize exact PR evidence
         if: always() && github.event_name == 'pull_request'
         run: |
@@ -117,6 +282,16 @@ jobs:
           retention-days: 7
           if-no-files-found: error
           include-hidden-files: true
+
+      - name: Preserve simulation regression failure
+        if: >-
+          always() &&
+          github.event_name == 'pull_request' &&
+          steps.simulation-scope.outputs.affected == 'true' &&
+          (steps.simulation-base.outcome != 'success' ||
+           steps.simulation-head.outcome != 'success' ||
+           steps.simulation-compare.outcome != 'success')
+        run: exit 1
 
       - name: Preserve canonical V3 failure
         if: always() && steps.v3.outcome != 'success'
