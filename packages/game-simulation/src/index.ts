@@ -143,6 +143,22 @@ export type {
   SimulationReportParseResultV2,
 } from "./simulation-compare-v2";
 export {
+  diffSimulationReportsV1,
+  parseSimulationReportV4,
+  SIMULATION_DIFF_SCHEMA_VERSION,
+} from "./simulation-diff-v1";
+export type {
+  SimulationDiffFailureV1,
+  SimulationDiffFingerprintRowV1,
+  SimulationDiffIdentityV1,
+  SimulationDiffNumericRowV1,
+  SimulationDiffResultV1,
+  SimulationDiffV1,
+  SimulationDiffVerdictV1,
+  SimulationReportDiagnosticV4,
+  SimulationReportParseResultV4,
+} from "./simulation-diff-v1";
+export {
   REPRO_RUNNER_ID,
   SIMULATION_POLICY_IDS,
   SIMULATION_REPORT_SCHEMA_VERSION,
