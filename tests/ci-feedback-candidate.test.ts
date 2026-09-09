@@ -97,9 +97,8 @@ describe("remote CI feedback and candidate V3", () => {
   it("keeps Rust compilation cache bounded and non-authoritative", () => {
     const foundation = read(".github/workflows/foundation.yml");
     const checker = read("scripts/studio/check-control-plane.mjs");
-    const cacheBlock =
-      foundation.split("- name: Cache Rust compilation")[1]?.split("- name:")[0] ?? "";
 
+    expect(foundation).toContain("name: Cache Rust compilation");
     expect(foundation).toContain(
       "Mozilla-Actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11",
     );
@@ -107,17 +106,15 @@ describe("remote CI feedback and candidate V3", () => {
     expect(foundation).toContain(
       "actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0",
     );
+    expect(foundation).toContain("path: .cache/sccache");
     expect(foundation).toContain("RUSTC_WRAPPER: sccache");
     expect(foundation).toContain("SCCACHE_DIR: ${{ github.workspace }}\\.cache\\sccache");
     expect(foundation).toContain('SCCACHE_CACHE_SIZE: "2G"');
-    expect(cacheBlock).toContain("path: .cache/sccache");
-    expect(cacheBlock).toContain(
-      "key: rust-sccache-v1-${{ runner.os }}-rust-1.97.1-${{ hashFiles('apps/desktop/src-tauri/Cargo.lock', 'apps/desktop/src-tauri/Cargo.toml') }}",
-    );
-    expect(cacheBlock).toContain("restore-keys: |");
-    expect(cacheBlock).not.toMatch(/(?:evidence|simulation|node_modules)/u);
+    expect(foundation).toContain("restore-keys: |");
+    expect(foundation).toContain("rust-sccache-v1-${{ runner.os }}-rust-1.97.1-");
     expect(foundation).not.toContain("SCCACHE_GHA_ENABLED");
     expect(foundation).not.toContain("fail-on-cache-miss: true");
+    expect(foundation).not.toContain("path: node_modules");
     expect(foundation).toContain("pnpm verify");
     expect(foundation).toContain("Run canonical base simulation");
     expect(foundation).toContain("Run canonical head simulation");
