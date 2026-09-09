@@ -32,6 +32,8 @@ export {
   fingerprintSimulationCorpusV1,
   JANUARY_1990_CANONICAL_SIMULATION_CORPUS_FINGERPRINT,
   JANUARY_1990_CANONICAL_SIMULATION_CORPUS_V1,
+  JANUARY_1990_SMOKE_SIMULATION_CORPUS_FINGERPRINT,
+  JANUARY_1990_SMOKE_SIMULATION_CORPUS_V1,
   parseSimulationCorpusV1,
   SIMULATION_CORPUS_SCHEMA_VERSION,
 } from "./simulation-corpus";
@@ -90,91 +92,38 @@ export type {
   GameReproReplayResultV2,
   GameReproV2,
 } from "./january-repro-v2";
+export { createJanuary1990SimulationV1 } from "./january-simulation-v1";
+export type { January1990SimulationV1, SimulationReportV1 } from "./january-simulation-v1";
 export {
-  GAME_REPRO_SCHEMA_VERSION_V3,
-  parseGameReproV3,
-  replayJanuaryReproV3,
-} from "./january-repro-v3";
-export type {
-  GameReproDiagnosticV3,
-  GameReproReplayResultV3,
-  GameReproV3,
-} from "./january-repro-v3";
-export { parseGameplayFixtureV1, GAMEPLAY_FIXTURE_SCHEMA_VERSION } from "./gameplay-fixture";
-export type {
-  GameplayFixtureAnswersV1,
-  GameplayFixtureDiagnosticV1,
-  GameplayFixtureV1,
-} from "./gameplay-fixture";
-export {
-  JANUARY_QUALITY_EXPLAIN_RULE_VERSION,
-  QUALITY_EXPLAIN_SCHEMA_VERSION,
-  deriveJanuaryOutcomeRollV1,
-  explainJanuaryQualityV1,
-} from "./quality-explain";
-export type {
-  JanuaryOutcomeRollDerivationV1,
-  JanuaryOutcomeSelectionV1,
-  JanuaryQualityExplainContributionV1,
-  JanuaryQualityExplainDiagnosticV1,
-  JanuaryQualityExplainInputsV1,
-  JanuaryQualityExplanationV1,
-  JanuaryQualityExplainResultV1,
-} from "./quality-explain";
-export {
-  SIMULATION_COMPARE_METRIC_IDS,
-  SIMULATION_COMPARE_SCHEMA_VERSION,
-  compareSimulationReportsV1,
-  parseSimulationReportV1,
-} from "./simulation-compare";
-export type {
-  SimulationCompareDispositionV1,
-  SimulationCompareFailureV1,
-  SimulationCompareMetricIdV1,
-  SimulationCompareMetricRowV1,
-  SimulationCompareReportV1,
-  SimulationCompareResultV1,
-  SimulationReportDiagnosticV1,
-  SimulationReportParseResultV1,
-} from "./simulation-compare";
-export { compareSimulationReportsV2, parseSimulationReportV2 } from "./simulation-compare-v2";
-export type {
-  SimulationReportDiagnosticV2,
-  SimulationReportParseResultV2,
-} from "./simulation-compare-v2";
-export {
-  diffSimulationReportsV1,
-  parseSimulationReportV4,
-  SIMULATION_DIFF_SCHEMA_VERSION,
-} from "./simulation-diff-v1";
-export type {
-  SimulationDiffFailureV1,
-  SimulationDiffFingerprintRowV1,
-  SimulationDiffIdentityV1,
-  SimulationDiffNumericRowV1,
-  SimulationDiffResultV1,
-  SimulationDiffV1,
-  SimulationDiffVerdictV1,
-  SimulationReportDiagnosticV4,
-  SimulationReportParseResultV4,
-} from "./simulation-diff-v1";
-export {
-  REPRO_RUNNER_ID,
   SIMULATION_POLICY_IDS,
-  SIMULATION_REPORT_SCHEMA_VERSION,
+  type JanuarySimulationPolicyV1,
+  type SimulationPolicyIdV1,
 } from "./simulation-types";
+export {
+  createDefaultSimulationPolicyRegistryV1,
+  createSimulationPolicyRegistryV1,
+} from "./simulation-policy-registry";
 export type {
-  JanuaryAnswerSelectionV1,
-  JanuarySimulationPolicyV1,
-  JanuarySimulationTerminalRunV1,
-  SimulationAggregatesV1,
-  SimulationChoiceDistributionV1,
-  SimulationInvariantFailureV1,
-  SimulationInvariantIdV1,
-  SimulationMetricSnapshotV1,
-  SimulationPolicyIdV1,
-  SimulationReportV1,
-  SimulationRequestV1,
-  SimulationRunResultV1,
-  SimulationTerminalStateV1,
-} from "./simulation-types";
+  SimulationPolicyRegistryDiagnosticV1,
+  SimulationPolicyRegistryParseResultV1,
+  SimulationPolicyRegistryV1,
+} from "./simulation-policy-registry";
+export { createSimulationReportV1 } from "./simulation-report";
+export type { CreateSimulationReportV1Input } from "./simulation-report";
+export { compareSimulationReportsV1 } from "./simulation-compare";
+export type {
+  SimulationComparisonDiagnosticV1,
+  SimulationComparisonResultV1,
+  SimulationThresholdsV1,
+} from "./simulation-compare";
+export { diffSimulationReportsV1, SIMULATION_DIFF_SCHEMA_VERSION_V1 } from "./simulation-diff-v1";
+export type {
+  SimulationDiffBuildResultV1,
+  SimulationDiffDiagnosticV1,
+  SimulationDiffV1,
+  SimulationDistributionChangeV1,
+  SimulationDistributionPointV1,
+  SimulationFingerprintChangeV1,
+  SimulationHardInvariantChangeV1,
+  SimulationMetricChangeV1,
+} from "./simulation-diff-v1";
