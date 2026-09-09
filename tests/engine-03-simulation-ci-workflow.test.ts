@@ -1,0 +1,54 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+import { describe, expect, it } from "vitest";
+
+const repositoryRoot = resolve(import.meta.dirname, "..");
+const workflow = readFileSync(resolve(repositoryRoot, ".github", "workflows", "foundation.yml"), "utf8");
+
+describe("ENGINE-03 simulation regression CI workflow", () => {
+  it("classifies gameplay-affecting PRs through the existing Studio authority model", () => {
+    expect(workflow).toContain("name: Classify simulation regression scope");
+    expect(workflow).toContain(
+      'pnpm studioctl inspect --base "${{ steps.tested-parents.outputs.base_sha }}" --head "${{ steps.tested-parents.outputs.head_sha }}" --json',
+    );
+    expect(workflow).toContain("$inspection.authorityImpact.gameplay -or $inspection.authorityImpact.schema");
+  });
+
+  it("runs one canonical corpus on the exact PR base and head then compares V4 reports", () => {
+    expect(workflow).toContain("name: Run canonical base simulation");
+    expect(workflow).toContain('git checkout --detach "${{ steps.tested-parents.outputs.base_sha }}"');
+    expect(workflow).toContain("name: Run canonical head simulation");
+    expect(workflow).toContain('git checkout --detach "${{ steps.tested-parents.outputs.head_sha }}"');
+
+    const corpusRuns = workflow.match(
+      /pnpm gamectl simulate run --corpus january-1990-canonical-v1 --json/g,
+    );
+    expect(corpusRuns).toHaveLength(2);
+
+    expect(workflow).toContain("name: Compare canonical simulation reports");
+    expect(workflow).toContain("pnpm gamectl simulate compare");
+  });
+
+  it("publishes summary and artifacts before preserving a simulation failure", () => {
+    expect(workflow).toContain("name: Summarize simulation regression evidence");
+    expect(workflow).toContain("Runtime Human simulation regression");
+    expect(workflow).toContain("$env:GITHUB_STEP_SUMMARY");
+    expect(workflow).toContain("name: Upload simulation regression evidence");
+    expect(workflow).toContain("retention-days: 7");
+    expect(workflow).toContain("name: Preserve simulation regression failure");
+
+    const summaryIndex = workflow.indexOf("name: Summarize simulation regression evidence");
+    const uploadIndex = workflow.indexOf("name: Upload simulation regression evidence");
+    const gateIndex = workflow.indexOf("name: Preserve simulation regression failure");
+    expect(summaryIndex).toBeGreaterThan(-1);
+    expect(uploadIndex).toBeGreaterThan(summaryIndex);
+    expect(gateIndex).toBeGreaterThan(uploadIndex);
+  });
+
+  it("keeps the regression job read-only and does not use pull_request_target", () => {
+    expect(workflow).toContain("permissions:\n  contents: read");
+    expect(workflow).not.toContain("pull_request_target:");
+    expect(workflow).toContain("$env:RUNNER_TEMP");
+  });
+});
