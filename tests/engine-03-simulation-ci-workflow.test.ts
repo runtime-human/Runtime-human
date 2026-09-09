@@ -69,6 +69,13 @@ describe("ENGINE-03 simulation regression CI workflow", () => {
     expect(gateIndex).toBeGreaterThan(uploadIndex);
   });
 
+  it("binds simulation evidence into exact PR evidence materialization", async () => {
+    const workflow = await readWorkflow();
+
+    expect(workflow).toContain("--simulation-evidence-dir");
+    expect(workflow).toContain("--simulation-artifact");
+  });
+
   it("keeps the regression job read-only and does not use pull_request_target", async () => {
     const workflow = await readWorkflow();
 
