@@ -79,15 +79,13 @@ describe("ENGINE-03 simulation regression CI workflow", () => {
   it("materializes and proves a deterministic hard-regression repro before summary and artifact upload", async () => {
     const workflow = await readWorkflow();
 
-    expect(workflow).toContain(
-      "name: Materialize and replay deterministic simulation failure",
-    );
+    expect(workflow).toContain("name: Materialize and replay deterministic simulation failure");
     expect(workflow).toContain("failure.repro.json");
     expect(workflow).toContain("repro-materialization.json");
     expect(workflow).toContain("replay.json");
     expect(workflow).toContain("gamectl-entry.ts simulate repro");
     expect(workflow).toContain("gamectl-entry.ts replay");
-    expect(workflow).toContain("result.kind -ne \"reproduced\"");
+    expect(workflow).toContain('result.kind -ne "reproduced"');
     expect(workflow).toContain("pnpm gamectl replay failure.repro.json --json");
 
     const reproIndex = workflow.indexOf(
