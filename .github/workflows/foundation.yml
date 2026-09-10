@@ -213,6 +213,46 @@ jobs:
           }
           exit $code
 
+      - name: Materialize and replay deterministic simulation failure
+        id: simulation-repro
+        if: >-
+          always() &&
+          github.event_name == 'pull_request' &&
+          steps.simulation-scope.outputs.affected == 'true' &&
+          steps.simulation-base.outcome == 'success' &&
+          steps.simulation-head.outcome == 'success' &&
+          steps.simulation-compare.outputs.exit_code == '1'
+        continue-on-error: true
+        run: |
+          $ErrorActionPreference = "Stop"
+          $evidenceDir = Join-Path $env:RUNNER_TEMP "runtime-human-simulation-regression"
+          $headReport = Join-Path $evidenceDir "head.json"
+          $reproPath = Join-Path $evidenceDir "failure.repro.json"
+          $materializationPath = Join-Path $evidenceDir "repro-materialization.json"
+          $replayPath = Join-Path $evidenceDir "replay.json"
+          git checkout --detach "${{ steps.tested-parents.outputs.head_sha }}"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          $materializationOutput = @(node --import tsx scripts/gamectl-entry.ts simulate repro --report $headReport --output $reproPath --json)
+          $materializationCode = $LASTEXITCODE
+          $materializationText = $materializationOutput -join [Environment]::NewLine
+          if (-not $materializationText.Trim()) { throw "simulation repro materialization did not emit JSON" }
+          $materializationText | Set-Content -Path $materializationPath -Encoding utf8
+          $materialization = $materializationText | ConvertFrom-Json
+          if ($materializationCode -ne 0 -or $materialization.command -ne "simulate.repro" -or $materialization.result.kind -ne "materialized") {
+            throw "deterministic simulation failure could not be materialized"
+          }
+
+          $replayOutput = @(node --import tsx scripts/gamectl-entry.ts replay $reproPath --root "${{ github.workspace }}" --json)
+          $replayCode = $LASTEXITCODE
+          $replayText = $replayOutput -join [Environment]::NewLine
+          if (-not $replayText.Trim()) { throw "simulation repro replay did not emit JSON" }
+          $replayText | Set-Content -Path $replayPath -Encoding utf8
+          $replay = $replayText | ConvertFrom-Json
+          if ($replayCode -ne 0 -or $replay.command -ne "replay" -or $replay.result.kind -ne "reproduced") {
+            throw "deterministic simulation failure repro did not replay on exact head"
+          }
+
       - name: Summarize simulation regression evidence
         if: always() && github.event_name == 'pull_request' && steps.simulation-scope.outputs.affected == 'true'
         run: |
@@ -221,6 +261,7 @@ jobs:
           $basePath = Join-Path $evidenceDir "base.json"
           $headPath = Join-Path $evidenceDir "head.json"
           $diffPath = Join-Path $evidenceDir "diff.json"
+          $reproPath = Join-Path $evidenceDir "failure.repro.json"
           $baseRuns = "n/a"
           $headRuns = "n/a"
           $verdict = "not-compared"
@@ -228,6 +269,7 @@ jobs:
           $metricChanges = "n/a"
           $distributionChanges = "n/a"
           $fingerprintChanges = "n/a"
+          $reproCommand = "n/a"
           if (Test-Path $basePath) {
             $base = Get-Content $basePath -Raw | ConvertFrom-Json
             if ($base.result.report.runs -ne $null) { $baseRuns = [string]$base.result.report.runs }
@@ -248,6 +290,9 @@ jobs:
               $verdict = "error:$($diffEnvelope.error.code)"
             }
           }
+          if (Test-Path $reproPath) {
+            $reproCommand = "pnpm gamectl replay failure.repro.json --json"
+          }
           $compareExit = "${{ steps.simulation-compare.outputs.exit_code }}"
           if (-not $compareExit) { $compareExit = "n/a" }
           @(
@@ -263,7 +308,8 @@ jobs:
             "- Metric changes: $metricChanges",
             "- Distribution changes: $distributionChanges",
             "- Fingerprint changes: $fingerprintChanges",
-            "- Compare exit: $compareExit"
+            "- Compare exit: $compareExit",
+            "- Repro: $reproCommand"
           ) | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
 
       - name: Upload simulation regression evidence
@@ -316,7 +362,9 @@ jobs:
           steps.simulation-scope.outputs.affected == 'true' &&
           (steps.simulation-base.outcome != 'success' ||
            steps.simulation-head.outcome != 'success' ||
-           steps.simulation-compare.outcome != 'success')
+           steps.simulation-compare.outcome != 'success' ||
+           (steps.simulation-compare.outputs.exit_code == '1' &&
+            steps.simulation-repro.outcome != 'success'))
         run: exit 1
 
       - name: Preserve canonical V3 failure
