@@ -32,7 +32,9 @@ export function materializeJanuarySimulationFailureReproV3(
   for (const accepted of input.run.checkpoint.acceptedDecisions) {
     const command = commandFromAcceptedDecision(accepted.decisionId, accepted.answer);
     if (command === null) {
-      return unavailable(`Accepted decision ${accepted.decisionId} cannot be represented by game-repro-v3`);
+      return unavailable(
+        `Accepted decision ${accepted.decisionId} cannot be represented by game-repro-v3`,
+      );
     }
     commands.push(command);
   }
@@ -72,9 +74,7 @@ function commandFromAcceptedDecision(
   });
 }
 
-function reproDecisionContract(
-  decisionId: string,
-): Readonly<{
+function reproDecisionContract(decisionId: string): Readonly<{
   decisionId: GameReproDecisionIdV1;
   schemaVersion: string;
   field: "route" | "practice" | "response";
