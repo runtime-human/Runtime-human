@@ -27,12 +27,22 @@ import {
   type JanuarySimulationTerminalRunV1,
 } from "@runtime-human/game-simulation";
 
-import { runGamectlCli, type GamectlIo } from "../scripts/gamectl";
 import { loadJanuaryTestRegistry } from "./helpers/january-1990-runtime-fixture";
+
+type GamectlIo = Readonly<{ stdout: (line: string) => void; stderr: (line: string) => void }>;
+type GamectlCliModule = Readonly<{
+  runGamectlCli: (argv: readonly string[], io: GamectlIo) => Promise<number>;
+}>;
 
 const tempDirectories: string[] = [];
 const balance = JANUARY_1990_DEFAULT_BALANCE;
 const repositoryRoot = path.resolve(import.meta.dirname, "..");
+const gamectlModuleUrl = new URL("../scripts/gamectl.ts", import.meta.url).href;
+
+async function runGamectlCli(argv: readonly string[], io: GamectlIo): Promise<number> {
+  const module = (await import(gamectlModuleUrl)) as GamectlCliModule;
+  return module.runGamectlCli(argv, io);
+}
 
 function collectIo(): GamectlIo & { out: string[]; err: string[] } {
   const out: string[] = [];
