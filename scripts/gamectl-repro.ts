@@ -27,7 +27,6 @@ import {
   parseSimulationReportV4,
   replayJanuaryReproV3,
   SIMULATION_POLICY_IDS,
-  type JanuarySimulationTerminalRunV1,
   type SimulationInvariantFailureV1,
   type SimulationPolicyIdV1,
   type SimulationTerminalStateV1,
@@ -144,7 +143,9 @@ export async function runSimulationReproV3Cli(
       );
     }
 
-    const absoluteOutput = isAbsolute(outputPath) ? outputPath : resolve(repositoryRoot, outputPath);
+    const absoluteOutput = isAbsolute(outputPath)
+      ? outputPath
+      : resolve(repositoryRoot, outputPath);
     await writeFile(absoluteOutput, `${JSON.stringify(materialized.repro, null, 2)}\n`, "utf8");
     const result = Object.freeze({
       kind: "materialized" as const,
@@ -216,9 +217,7 @@ export async function runReplayV3Cli(
   }
 }
 
-function selectFirstApplicableFailure(
-  failures: readonly SimulationInvariantFailureV1[],
-): Readonly<{
+function selectFirstApplicableFailure(failures: readonly SimulationInvariantFailureV1[]): Readonly<{
   failure: SimulationInvariantFailureV1;
   seed: number;
   policyId: SimulationPolicyIdV1;
@@ -249,7 +248,10 @@ function selectFirstApplicableFailure(
 
 async function loadJanuaryRuntime(repositoryRoot: string) {
   const contentRoot = resolve(repositoryRoot, "apps", "desktop", "public", "content");
-  const runtime = createCompiledContentRuntime({ canonicalize: canonicalizeAuthoritative, fingerprint });
+  const runtime = createCompiledContentRuntime({
+    canonicalize: canonicalizeAuthoritative,
+    fingerprint,
+  });
   const manifest = runtime.parseCompiledContentManifest(
     await readFile(resolve(contentRoot, "manifest.json"), "utf8"),
   );
@@ -257,7 +259,10 @@ async function loadJanuaryRuntime(repositoryRoot: string) {
   const chunks = await Promise.all(
     chunkIds.map(async (chunkId) =>
       runtime.parseCompiledContentChunk(
-        await readFile(resolve(contentRoot, "chunks", ...chunkId.split("/")).concat(".json"), "utf8"),
+        await readFile(
+          resolve(contentRoot, "chunks", ...chunkId.split("/")).concat(".json"),
+          "utf8",
+        ),
       ),
     ),
   );
@@ -267,14 +272,21 @@ async function loadJanuaryRuntime(repositoryRoot: string) {
   const balanceFiles = await loadBalanceSourceFiles({ repositoryRoot });
   const balanceCompilation = compileBalanceSet(balanceFiles);
   if (balanceCompilation.kind === "failure") {
-    throw new TypeError(`balance files are invalid: ${balanceCompilation.diagnostics.length} diagnostic(s)`);
+    throw new TypeError(
+      `balance files are invalid: ${balanceCompilation.diagnostics.length} diagnostic(s)`,
+    );
   }
   const slice = balanceCompilation.slices.find(
     (candidate) => candidate.sliceId === JANUARY_1990_BALANCE_SLICE_ID,
   );
-  if (slice === undefined) throw new TypeError(`balance set has no ${JANUARY_1990_BALANCE_SLICE_ID} slice`);
+  if (slice === undefined)
+    throw new TypeError(`balance set has no ${JANUARY_1990_BALANCE_SLICE_ID} slice`);
   const { schemaVersion: _qualitySchema, sliceId: _qualitySlice, ...quality } = slice.quality;
-  const { schemaVersion: _skillSchema, sliceId: _skillSlice, ...skillEvidence } = slice.skillEvidence;
+  const {
+    schemaVersion: _skillSchema,
+    sliceId: _skillSlice,
+    ...skillEvidence
+  } = slice.skillEvidence;
   const balance = parseJanuary1990Balance({
     schemaVersion: "january-1990-balance-v1",
     sliceId: slice.sliceId,
@@ -378,7 +390,12 @@ async function readJsonValue(
         ? (error as { code?: unknown }).code
         : undefined;
     if (code === "ENOENT") {
-      return { kind: "failure", code: "report-not-found", message: `file not found: ${path}`, exitCode: 2 };
+      return {
+        kind: "failure",
+        code: "report-not-found",
+        message: `file not found: ${path}`,
+        exitCode: 2,
+      };
     }
     return {
       kind: "failure",
@@ -408,7 +425,9 @@ function emitSuccess(
   ok = true,
 ): void {
   if (json) {
-    io.stdout(JSON.stringify({ schemaVersion: ENVELOPE_SCHEMA_VERSION, command, ok, result }, null, 2));
+    io.stdout(
+      JSON.stringify({ schemaVersion: ENVELOPE_SCHEMA_VERSION, command, ok, result }, null, 2),
+    );
     return;
   }
   if (quiet) {
