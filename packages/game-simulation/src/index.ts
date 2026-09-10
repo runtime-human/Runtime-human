@@ -102,6 +102,8 @@ export type {
   GameReproReplayResultV3,
   GameReproV3,
 } from "./january-repro-v3";
+export { materializeJanuarySimulationFailureReproV3 } from "./january-failure-repro-v3";
+export type { JanuarySimulationFailureReproMaterializationV1 } from "./january-failure-repro-v3";
 export { parseGameplayFixtureV1, GAMEPLAY_FIXTURE_SCHEMA_VERSION } from "./gameplay-fixture";
 export type {
   GameplayFixtureAnswersV1,
