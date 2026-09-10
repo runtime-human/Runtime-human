@@ -9,6 +9,8 @@ use rusqlite::{
     version_number,
 };
 
+use crate::desktop_performance::{DesktopPerformanceEventName, DesktopPerformanceRecorder};
+
 use super::{
     error::PersistenceError,
     failpoint,
@@ -39,19 +41,85 @@ pub(crate) struct Database {
 
 impl Database {
     pub(crate) fn open_or_create(path: &Path) -> Result<Self, PersistenceError> {
-        prepare_writable_path(path)?;
-        ensure_supported_sqlite_version()?;
+        Self::open_or_create_with_performance(path, DesktopPerformanceRecorder::default())
+    }
 
-        let mut connection = Connection::open(path)
-            .map_err(|source| PersistenceError::storage("opening the database", source))?;
-        ensure_writable_schema_compatibility(&connection)?;
-        configure_writable_connection(&connection)?;
-        migrate_if_required(&mut connection)?;
-        verify_migration_manifest(&connection)?;
-        verify_integrity(&connection)?;
+    pub(crate) fn open_or_create_with_performance(
+        path: &Path,
+        performance: DesktopPerformanceRecorder,
+    ) -> Result<Self, PersistenceError> {
+        performance.measure(
+            DesktopPerformanceEventName::PersistenceBootstrapPath,
+            None,
+            None,
+            None,
+            || prepare_writable_path(path),
+        )?;
+        performance.measure(
+            DesktopPerformanceEventName::PersistenceBootstrapSqliteVersion,
+            None,
+            None,
+            None,
+            ensure_supported_sqlite_version,
+        )?;
 
-        let previous_clean_shutdown = metadata_value(&connection, "clean_shutdown")?;
-        set_clean_shutdown(&mut connection, false)?;
+        let mut connection = performance.measure(
+            DesktopPerformanceEventName::PersistenceBootstrapConnectionOpen,
+            None,
+            None,
+            None,
+            || {
+                Connection::open(path)
+                    .map_err(|source| PersistenceError::storage("opening the database", source))
+            },
+        )?;
+        performance.measure(
+            DesktopPerformanceEventName::PersistenceBootstrapSchemaCheck,
+            None,
+            None,
+            None,
+            || ensure_writable_schema_compatibility(&connection),
+        )?;
+        performance.measure(
+            DesktopPerformanceEventName::PersistenceBootstrapConnectionConfigure,
+            None,
+            None,
+            None,
+            || configure_writable_connection(&connection),
+        )?;
+        performance.measure(
+            DesktopPerformanceEventName::PersistenceBootstrapMigration,
+            None,
+            None,
+            None,
+            || migrate_if_required(&mut connection),
+        )?;
+        performance.measure(
+            DesktopPerformanceEventName::PersistenceBootstrapManifestVerify,
+            None,
+            None,
+            None,
+            || verify_migration_manifest(&connection),
+        )?;
+        performance.measure(
+            DesktopPerformanceEventName::PersistenceBootstrapIntegrityVerify,
+            None,
+            None,
+            None,
+            || verify_integrity(&connection),
+        )?;
+
+        let previous_clean_shutdown = performance.measure(
+            DesktopPerformanceEventName::PersistenceBootstrapCleanMarker,
+            None,
+            None,
+            None,
+            || {
+                let previous_clean_shutdown = metadata_value(&connection, "clean_shutdown")?;
+                set_clean_shutdown(&mut connection, false)?;
+                Ok(previous_clean_shutdown)
+            },
+        )?;
 
         Ok(Self {
             path: path.to_path_buf(),

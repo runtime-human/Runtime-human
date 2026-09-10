@@ -205,8 +205,9 @@ jobs:
             pnpmVersion = (pnpm --version).Trim()
             rustcVersion = (rustc --version).Trim()
             cargoVersion = (cargo --version).Trim()
-            warmupCount = [int]$env:E3_WARMUP_COUNT
-            measurementCount = [int]$env:E3_MEASUREMENT_COUNT
+            databaseClasses = @("new-database", "existing-clean-database")
+            warmupCountPerGroup = [int]$env:E3_WARMUP_COUNT
+            measurementCountPerGroup = [int]$env:E3_MEASUREMENT_COUNT
           }
           $provenance |
             ConvertTo-Json -Depth 3 |
@@ -218,7 +219,7 @@ jobs:
           $scenario = "startup-shell-fmp"
           $processClass = "cold-process"
           $osCache = "warm-os-cache"
-          $database = "new-database"
+          $databaseClasses = @("new-database", "existing-clean-database")
           $warmupCount = [int]$env:E3_WARMUP_COUNT
           $measurementCount = [int]$env:E3_MEASUREMENT_COUNT
           $capturePaths = [System.Collections.Generic.List[string]]::new()
@@ -254,10 +255,10 @@ jobs:
               $payload.classification.sampleRole -ne $Role -or
               $payload.sampleIndex -ne $Index
             ) {
-              throw "Capture classification does not match E3 series identity for $Role/$Index"
+              throw "Capture classification does not match E3 series identity for $database/$Role/$Index"
             }
             if ($payload.rustSnapshot.droppedEvents -ne 0) {
-              throw "Rust recorder dropped $($payload.rustSnapshot.droppedEvents) event(s) for $Role/$Index"
+              throw "Rust recorder dropped $($payload.rustSnapshot.droppedEvents) event(s) for $database/$Role/$Index"
             }
             $browserNames = @($payload.browserEntries | ForEach-Object { $_.name })
             foreach ($required in @(
@@ -267,7 +268,7 @@ jobs:
               "app.first_meaningful_paint"
             )) {
               if ($required -notin $browserNames) {
-                throw "Required browser milestone is missing for $Role/${Index}: $required"
+                throw "Required browser milestone is missing for $database/$Role/${Index}: $required"
               }
             }
             $rustNames = @($payload.rustSnapshot.events | ForEach-Object { $_.name })
@@ -279,7 +280,7 @@ jobs:
               "mainWindowAvailable"
             )) {
               if ($required -notin $rustNames) {
-                throw "Required Rust milestone is missing for $Role/${Index}: $required"
+                throw "Required Rust milestone is missing for $database/$Role/${Index}: $required"
               }
             }
             $invalidQueueDepth = @(
@@ -287,11 +288,11 @@ jobs:
                 Where-Object { $_.queueDepth -ne $null -and $_.name -ne "persistenceQueueWait" }
             )
             if ($invalidQueueDepth.Count -gt 0) {
-              throw "queueDepth is present outside persistenceQueueWait for $Role/$Index"
+              throw "queueDepth is present outside persistenceQueueWait for $database/$Role/$Index"
             }
             $externalProperties = @($payload.externalDurationsMicros.PSObject.Properties)
             if ($externalProperties.Count -ne 0) {
-              throw "Startup E3 capture must not fabricate cross-clock external durations for $Role/$Index"
+              throw "Startup E3 capture must not fabricate cross-clock external durations for $database/$Role/$Index"
             }
           }
 
@@ -300,7 +301,7 @@ jobs:
               [Parameter(Mandatory = $true)][string]$Role,
               [Parameter(Mandatory = $true)][int]$Index
             )
-            Write-Host "Capturing E3 sample role=$Role index=$Index"
+            Write-Host "Capturing E3 sample database=$database role=$Role index=$Index"
             pnpm evidence:desktop:capture:startup -- `
               "--commit=$env:MEASURED_COMMIT" `
               "--process=$processClass" `
@@ -309,7 +310,7 @@ jobs:
               "--sample-role=$Role" `
               "--sample-index=$Index"
             if ($LASTEXITCODE -ne 0) {
-              throw "Desktop evidence capture failed for $Role/$Index with exit code $LASTEXITCODE"
+              throw "Desktop evidence capture failed for $database/$Role/$Index with exit code $LASTEXITCODE"
             }
             $path = "artifacts/performance/raw/$scenario-$processClass-$osCache-$database-$Role-$Index.json"
             Assert-Capture -Path $path -Role $Role -Index $Index
@@ -317,11 +318,13 @@ jobs:
           }
 
           try {
-            for ($index = 0; $index -lt $warmupCount; $index += 1) {
-              Invoke-Capture -Role "warmup" -Index $index
-            }
-            for ($index = 0; $index -lt $measurementCount; $index += 1) {
-              Invoke-Capture -Role "measurement" -Index $index
+            foreach ($database in $databaseClasses) {
+              for ($index = 0; $index -lt $warmupCount; $index += 1) {
+                Invoke-Capture -Role "warmup" -Index $index
+              }
+              for ($index = 0; $index -lt $measurementCount; $index += 1) {
+                Invoke-Capture -Role "measurement" -Index $index
+              }
             }
 
             $reportPath = "artifacts/performance/e3-startup-series-report.json"
@@ -344,38 +347,48 @@ jobs:
             if ($report.commit -ne $env:MEASURED_COMMIT) {
               throw "E3 report commit $($report.commit) does not match $env:MEASURED_COMMIT"
             }
+            $expectedCaptureCount = $databaseClasses.Count * ($warmupCount + $measurementCount)
+            $expectedWarmupCount = $databaseClasses.Count * $warmupCount
+            $expectedMeasurementCount = $databaseClasses.Count * $measurementCount
             if (
-              $report.captureCount -ne ($warmupCount + $measurementCount) -or
-              $report.warmupCount -ne $warmupCount -or
-              $report.measurementCount -ne $measurementCount -or
-              @($report.captures).Count -ne ($warmupCount + $measurementCount)
+              $report.captureCount -ne $expectedCaptureCount -or
+              $report.warmupCount -ne $expectedWarmupCount -or
+              $report.measurementCount -ne $expectedMeasurementCount -or
+              @($report.captures).Count -ne $expectedCaptureCount
             ) {
-              throw "E3 report sample counts do not match the fixed 5+30 contract"
+              throw "E3 report sample counts do not match the fixed per-group 5+30 contract"
             }
             $groups = @($report.groups)
-            if ($groups.Count -ne 1) {
-              throw "E3 startup series must produce exactly one comparable group; received $($groups.Count)"
+            if ($groups.Count -ne $databaseClasses.Count) {
+              throw "E3 startup series must produce one comparable group per database population; received $($groups.Count)"
             }
-            $group = $groups[0]
-            if (
-              $group.scenario -ne $scenario -or
-              $group.classification.process -ne $processClass -or
-              $group.classification.osCache -ne $osCache -or
-              $group.classification.database -ne $database -or
-              $group.sampleCount -ne $measurementCount -or
-              $group.droppedRustEvents -ne 0
-            ) {
-              throw "E3 report group does not match the reviewed startup series contract"
-            }
-            $missingExternal = @(
-              $group.missingMetrics |
-                Where-Object { $_.name -eq "external.processToShellFmpMicros" }
-            )
-            if (
-              $missingExternal.Count -ne 1 -or
-              $missingExternal[0].count -ne $measurementCount
-            ) {
-              throw "E3 report must retain process-to-shell-FMP as an explicitly missing cross-clock metric"
+            foreach ($database in $databaseClasses) {
+              $matchingGroups = @(
+                $groups |
+                  Where-Object {
+                    $_.scenario -eq $scenario -and
+                    $_.classification.process -eq $processClass -and
+                    $_.classification.osCache -eq $osCache -and
+                    $_.classification.database -eq $database
+                  }
+              )
+              if ($matchingGroups.Count -ne 1) {
+                throw "E3 report must contain exactly one comparable group for $database"
+              }
+              $group = $matchingGroups[0]
+              if ($group.sampleCount -ne $measurementCount -or $group.droppedRustEvents -ne 0) {
+                throw "E3 report group does not match the reviewed startup series contract for $database"
+              }
+              $missingExternal = @(
+                $group.missingMetrics |
+                  Where-Object { $_.name -eq "external.processToShellFmpMicros" }
+              )
+              if (
+                $missingExternal.Count -ne 1 -or
+                $missingExternal[0].count -ne $measurementCount
+              ) {
+                throw "E3 report must retain process-to-shell-FMP as an explicitly missing cross-clock metric for $database"
+              }
             }
           } catch {
             $seriesFailure = $_
@@ -405,6 +418,8 @@ jobs:
           path: |
             artifacts/performance/raw/startup-shell-fmp-cold-process-warm-os-cache-new-database-warmup-*.json
             artifacts/performance/raw/startup-shell-fmp-cold-process-warm-os-cache-new-database-measurement-*.json
+            artifacts/performance/raw/startup-shell-fmp-cold-process-warm-os-cache-existing-clean-database-warmup-*.json
+            artifacts/performance/raw/startup-shell-fmp-cold-process-warm-os-cache-existing-clean-database-measurement-*.json
             artifacts/performance/e3-startup-series-report.json
             artifacts/performance/e3-run-provenance.json
           retention-days: 14
