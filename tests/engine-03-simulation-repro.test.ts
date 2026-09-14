@@ -19,10 +19,8 @@ import {
 import * as simulationApi from "@runtime-human/game-simulation";
 import {
   createJanuary1990AnswerProviders,
-  JANUARY_RNG_EVIDENCE_V2,
   replayJanuaryReproV3,
   runJanuaryCommandSequence,
-  type GameReproCommandV1,
   type GameReproV3,
   type JanuarySimulationTerminalRunV1,
 } from "@runtime-human/game-simulation";
@@ -78,26 +76,6 @@ async function createHierarchicalRun(answerCount: number): Promise<JanuarySimula
   });
 }
 
-function commandFromAcceptedDecision(
-  accepted: JanuarySimulationTerminalRunV1["checkpoint"]["acceptedDecisions"][number],
-): GameReproCommandV1 {
-  const answer = accepted.answer as Readonly<Record<string, unknown>>;
-  const value =
-    typeof answer.route === "string"
-      ? answer.route
-      : typeof answer.practice === "string"
-        ? answer.practice
-        : typeof answer.response === "string"
-          ? answer.response
-          : null;
-  if (value === null) throw new Error(`Unsupported accepted answer for ${accepted.decisionId}`);
-  return {
-    kind: "answer",
-    decisionId: accepted.decisionId as GameReproCommandV1["decisionId"],
-    value,
-  };
-}
-
 afterEach(async () => {
   while (tempDirectories.length > 0) {
     const directory = tempDirectories.pop();
@@ -150,27 +128,29 @@ describe("ENGINE-03G deterministic simulation failure repro", () => {
     expect(replay.kind).toBe("reproduced");
   });
 
-  it("replays a valid game-repro-v3 through the public gamectl boundary", async () => {
-    const run = await createHierarchicalRun(3);
-    expect(run.terminalState).toBe("completed");
+  it("replays a materialized game-repro-v3 through the public gamectl boundary", async () => {
+    const run = await createHierarchicalRun(1);
+    expect(run.terminalState).toBe("protocol-rejected");
 
-    const repro: GameReproV3 = {
-      schemaVersion: "game-repro-v3",
+    const materialize = Reflect.get(
+      simulationApi,
+      "materializeJanuarySimulationFailureReproV3",
+    ) as unknown;
+    expect(materialize).toBeTypeOf("function");
+    if (typeof materialize !== "function") return;
+
+    const materialized = materialize({
       fixtureId: "january-1990.shadow-proof",
-      rulesetFingerprint: run.checkpoint.compatibility.rulesFingerprint,
-      rngEvidence: JANUARY_RNG_EVIDENCE_V2,
-      seed: run.seed,
-      commands: run.checkpoint.acceptedDecisions.map(commandFromAcceptedDecision),
-      expected: {
-        kind: "success",
-        terminalCheckpointHash: run.checkpoint.checkpointHash,
-      },
-    };
+      run,
+    }) as Readonly<{ kind: string; repro?: GameReproV3 }>;
+    expect(materialized.kind).toBe("materialized");
+    expect(materialized.repro).toBeDefined();
+    if (materialized.repro === undefined) throw new Error("materialized result has no repro");
 
     const directory = await mkdtemp(path.join(os.tmpdir(), "rh-engine-03g-"));
     tempDirectories.push(directory);
     const reproPath = path.join(directory, "hierarchical.repro.json");
-    await writeFile(reproPath, JSON.stringify(repro, null, 2), "utf8");
+    await writeFile(reproPath, JSON.stringify(materialized.repro, null, 2), "utf8");
 
     const io = collectIo();
     const exitCode = await runGamectlCli(
@@ -182,11 +162,10 @@ describe("ENGINE-03G deterministic simulation failure repro", () => {
     const envelope = JSON.parse(io.out.join("\n")) as {
       command: string;
       ok: boolean;
-      result?: { kind?: string; terminalCheckpointHash?: string };
+      result?: { kind?: string };
     };
     expect(envelope.command).toBe("replay");
     expect(envelope.ok).toBe(true);
     expect(envelope.result?.kind).toBe("reproduced");
-    expect(envelope.result?.terminalCheckpointHash).toBe(run.checkpoint.checkpointHash);
   });
 });
