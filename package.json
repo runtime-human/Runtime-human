@@ -67,7 +67,7 @@
     "@types/react-dom": "19.2.3",
     "ajv": "8.20.0",
     "fast-check": "^4.9.0",
-    "jsdom": "29.1.1",
+    "jsdom": "30.0.1",
     "jsonc-parser": "3.3.1",
     "nx": "23.1.1",
     "oxfmt": "0.59.0",
