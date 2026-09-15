@@ -145,6 +145,7 @@ export default defineConfig({
         "tests/desktop-route.test.ts",
         "tests/docs-metadata-governance.test.ts",
         "tests/engine-03-simulation-ci-workflow.test.ts",
+        "tests/engine-03-simulation-repro.test.ts",
         "tests/game-devtools-catalog.test.ts",
         "tests/gamectl-capabilities.test.ts",
         "tests/gamectl-canonical-corpus-cli.test.ts",

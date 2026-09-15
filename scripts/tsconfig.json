@@ -12,6 +12,7 @@
     "./check-january-scenario-artifact.ts",
     "./gamectl.ts",
     "./gamectl-core.ts",
+    "./gamectl-repro.ts",
     "./gamectl-scenario.ts",
     "./validate-balance.ts",
     "./performance/**/*.ts"

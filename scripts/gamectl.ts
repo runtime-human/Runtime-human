@@ -31,6 +31,7 @@ import {
 } from "@runtime-human/game-simulation";
 
 import { runGamectlCli as runCoreGamectlCli, type GamectlIo } from "./gamectl-core";
+import { runReplayV3Cli, runSimulationReproV3Cli } from "./gamectl-repro";
 import { runScenarioGamectlCli } from "./gamectl-scenario";
 
 export type { GamectlIo } from "./gamectl-core";
@@ -70,6 +71,12 @@ type LoadedSimulationReport =
     }>;
 
 export async function runGamectlCli(argv: readonly string[], io: GamectlIo): Promise<number> {
+  const reproExit = await runSimulationReproV3Cli(argv, io);
+  if (reproExit !== null) return reproExit;
+
+  const replayExit = await runReplayV3Cli(argv, io);
+  if (replayExit !== null) return replayExit;
+
   const compareExit = await runSimulationCompareV4Cli(argv, io);
   if (compareExit !== null) return compareExit;
 
