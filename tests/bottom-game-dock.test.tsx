@@ -1,5 +1,7 @@
 /** @vitest-environment jsdom */
 
+import { readFileSync } from "node:fs";
+
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
@@ -53,6 +55,18 @@ describe("BottomGameDock", () => {
     for (const tab of inactiveTabs) {
       expect(tab).not.toHaveAttribute("aria-controls");
     }
+  });
+
+  it("keeps keyboard focus visible when Windows forced colors are active", () => {
+    const css = readFileSync(
+      new URL("../apps/desktop/src/shell/bottom-game-dock.css", import.meta.url),
+      "utf8",
+    );
+
+    expect(css).toContain("@media (forced-colors: active)");
+    expect(css).toMatch(
+      /@media \(forced-colors: active\)[\s\S]*\.runtime-bottom-game-dock__tab:focus-visible,[\s\S]*\.runtime-bottom-game-dock__panel:focus-visible[\s\S]*outline:/,
+    );
   });
 
   it("moves roving focus with arrows and Home/End without changing the active tab", () => {
