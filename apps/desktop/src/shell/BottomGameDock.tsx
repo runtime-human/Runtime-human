@@ -25,9 +25,7 @@ export function BottomGameDock({
   const activeItem = activeIndex >= 0 ? items[activeIndex] : undefined;
   const activeItemId = activeItem?.id;
   const previousActiveId = useRef(activeItemId);
-  const [focusedId, setFocusedId] = useState<string | undefined>(
-    activeItemId ?? items[0]?.id,
-  );
+  const [focusedId, setFocusedId] = useState<string | undefined>(activeItemId ?? items[0]?.id);
 
   useEffect(() => {
     const activeChanged = previousActiveId.current !== activeItemId;
@@ -35,10 +33,7 @@ export function BottomGameDock({
 
     setFocusedId((currentFocusedId) => {
       if (activeChanged) return activeItemId ?? items[0]?.id;
-      if (
-        currentFocusedId !== undefined &&
-        items.some((item) => item.id === currentFocusedId)
-      ) {
+      if (currentFocusedId !== undefined && items.some((item) => item.id === currentFocusedId)) {
         return currentFocusedId;
       }
       return activeItemId ?? items[0]?.id;
