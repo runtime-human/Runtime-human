@@ -33,10 +33,7 @@ export function BottomGameDock({
 
     setFocusedId((currentFocusedId) => {
       if (activeChanged) return activeItemId ?? items[0]?.id;
-      if (
-        currentFocusedId !== undefined &&
-        items.some((item) => item.id === currentFocusedId)
-      ) {
+      if (currentFocusedId !== undefined && items.some((item) => item.id === currentFocusedId)) {
         return currentFocusedId;
       }
       return activeItemId ?? items[0]?.id;
