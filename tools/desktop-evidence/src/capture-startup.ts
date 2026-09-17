@@ -1,5 +1,5 @@
 import { access, rm } from "node:fs/promises";
-import { resolve } from "node:path";
+import { join, resolve } from "node:path";
 import type { Writable } from "node:stream";
 import { pathToFileURL } from "node:url";
 
@@ -7,6 +7,7 @@ import { cleanupWdioSession, startWdioSession } from "@wdio/tauri-service";
 
 import { captureBrowserEntries, waitForFirstMeaningfulPaint } from "./capture-browser.js";
 import { createStartupEvidenceCapabilities } from "./capture-capabilities.js";
+import { prepareStartupDatabasePopulation } from "./capture-database.js";
 import { captureWindowsHostProfile } from "./capture-host.js";
 import { parseStartupCaptureArguments } from "./capture-options.js";
 import {
@@ -24,6 +25,8 @@ const TEMPORARY_STATE_REMOVE_RETRY_DELAY_MS = 100;
 type CaptureLifecycleStage =
   | "options-validated"
   | "temporary-state-created"
+  | "database-seed-starting"
+  | "database-seed-complete"
   | "capabilities-created"
   | "session-starting"
   | "session-started"
@@ -44,6 +47,25 @@ export async function captureStartupShellFmp(arguments_: readonly string[]): Pro
   recordStage("temporary-state-created");
   let browser: EvidenceBrowser | undefined;
   try {
+    if (options.database === "existing-clean-database") {
+      recordStage("database-seed-starting");
+    }
+    await prepareStartupDatabasePopulation(options.database, {
+      startSession: () => startEvidenceSession(options.binaryPath, isolatedDataDirectory),
+      waitUntilReady: async (seedBrowser) => {
+        await waitForFirstMeaningfulPaint(seedBrowser);
+      },
+      cleanupSession: async (seedBrowser) => {
+        await cleanupWdioSession(seedBrowser);
+      },
+      assertDatabaseExists: async () => {
+        await access(join(isolatedDataDirectory, "runtime-human.sqlite3"));
+      },
+    });
+    if (options.database === "existing-clean-database") {
+      recordStage("database-seed-complete");
+    }
+
     const capabilities = createStartupEvidenceCapabilities(
       options.binaryPath,
       isolatedDataDirectory,
@@ -98,6 +120,20 @@ export async function captureStartupShellFmp(arguments_: readonly string[]): Pro
       recordStage("cleanup-complete");
     }
   }
+}
+
+async function startEvidenceSession(
+  binaryPath: string,
+  isolatedDataDirectory: string,
+): Promise<EvidenceBrowser> {
+  const capabilities = createStartupEvidenceCapabilities(binaryPath, isolatedDataDirectory);
+  return startWdioSession(capabilities, {
+    rootDir: REPOSITORY_ROOT,
+    // @wdio/tauri-service 1.2.0 still preflights MSEdgeDriver on Windows before
+    // selecting the embedded provider, so disabling this can fail before session startup.
+    autoDownloadEdgeDriver: true,
+    autoInstallTauriDriver: false,
+  });
 }
 
 export function requiredPreparedEvidenceDirectory(
