@@ -3,7 +3,10 @@ import { basename } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { prepareStartupDatabasePopulation } from "../tools/desktop-evidence/src/capture-database.js";
+import {
+  assertStartupDatabaseRecoveryStatus,
+  prepareStartupDatabasePopulation,
+} from "../tools/desktop-evidence/src/capture-database.js";
 import { parseStartupCaptureArguments } from "../tools/desktop-evidence/src/capture-options.js";
 
 const WORKFLOW_URL = new URL(
@@ -123,7 +126,7 @@ describe("PERF-02A E3 hosted Windows series workflow", () => {
       cleanupSession: async () => {
         called = true;
       },
-      assertDatabaseExists: async () => {
+      materializeDatabase: async () => {
         called = true;
       },
     });
@@ -131,7 +134,7 @@ describe("PERF-02A E3 hosted Windows series workflow", () => {
     expect(called).toBe(false);
   });
 
-  it("prepares an existing clean database before measuring the next cold process", async () => {
+  it("materializes an existing clean database only after the seed session is closed", async () => {
     const calls: string[] = [];
     const session = Object.freeze({ id: "seed" });
 
@@ -148,15 +151,15 @@ describe("PERF-02A E3 hosted Windows series workflow", () => {
         expect(candidate).toBe(session);
         calls.push("cleanup");
       },
-      assertDatabaseExists: async () => {
-        calls.push("database");
+      materializeDatabase: async () => {
+        calls.push("materialize");
       },
     });
 
-    expect(calls).toEqual(["start", "ready", "cleanup", "database"]);
+    expect(calls).toEqual(["start", "ready", "cleanup", "materialize"]);
   });
 
-  it("always cleans the seed session when readiness fails", async () => {
+  it("does not materialize the seed database when readiness fails", async () => {
     const calls: string[] = [];
     const session = Object.freeze({ id: "seed" });
 
@@ -173,8 +176,8 @@ describe("PERF-02A E3 hosted Windows series workflow", () => {
         cleanupSession: async () => {
           calls.push("cleanup");
         },
-        assertDatabaseExists: async () => {
-          calls.push("database");
+        materializeDatabase: async () => {
+          calls.push("materialize");
         },
       }),
     ).rejects.toThrow("seed readiness failed");
@@ -182,10 +185,52 @@ describe("PERF-02A E3 hosted Windows series workflow", () => {
     expect(calls).toEqual(["start", "ready", "cleanup"]);
   });
 
-  it("wires database preparation into the physical startup capture", async () => {
+  it("accepts existing-clean only when the measured process observed a healthy prior shutdown", async () => {
+    await expect(
+      assertStartupDatabaseRecoveryStatus("existing-clean-database", async () => ({
+        kind: "found",
+        value: {
+          schemaVersion: "recovery-status-v1",
+          status: "healthy",
+          writable: true,
+          backupAvailable: false,
+        },
+      })),
+    ).resolves.toBeUndefined();
+  });
+
+  it("rejects an unclean measured startup instead of mislabeling it existing-clean", async () => {
+    await expect(
+      assertStartupDatabaseRecoveryStatus("existing-clean-database", async () => ({
+        kind: "found",
+        value: {
+          schemaVersion: "recovery-status-v1",
+          status: "unclean-but-valid",
+          writable: true,
+          backupAvailable: false,
+        },
+      })),
+    ).rejects.toThrow("existing-clean-database requires healthy recovery status");
+  });
+
+  it("does not probe recovery status for a new-database capture", async () => {
+    let called = false;
+
+    await assertStartupDatabaseRecoveryStatus("new-database", async () => {
+      called = true;
+      throw new Error("new-database must not probe prior recovery status");
+    });
+
+    expect(called).toBe(false);
+  });
+
+  it("isolates seed WebView state and validates recovery in the physical startup capture", async () => {
     const source = await readCaptureStartup();
 
-    expect(source).toContain("prepareStartupDatabasePopulation");
-    expect(source).toContain('join(isolatedDataDirectory, "runtime-human.sqlite3")');
+    expect(source).toContain('const seedDataDirectory = join(isolatedDataDirectory, "seed")');
+    expect(source).toContain("startEvidenceSession(options.binaryPath, seedDataDirectory)");
+    expect(source).toContain("materializeSeedDatabase(seedDataDirectory, isolatedDataDirectory)");
+    expect(source).toContain('"persistence_get_recovery_status_v1"');
+    expect(source).toContain("assertStartupDatabaseRecoveryStatus");
   });
 });
