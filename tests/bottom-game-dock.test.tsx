@@ -103,7 +103,9 @@ describe("BottomGameDock", () => {
     expect(events).toHaveFocus();
     expect(events).toHaveAttribute("tabindex", "0");
 
-    rerender(<BottomGameDock activeId="status" items={[...ITEMS]} onActiveChange={onActiveChange} />);
+    rerender(
+      <BottomGameDock activeId="status" items={[...ITEMS]} onActiveChange={onActiveChange} />,
+    );
 
     expect(events).toHaveAttribute("tabindex", "0");
     expect(status).toHaveAttribute("tabindex", "-1");
