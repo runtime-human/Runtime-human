@@ -39,6 +39,22 @@ describe("BottomGameDock", () => {
     expect(screen.queryByText("Журнал сеанса")).not.toBeInTheDocument();
   });
 
+  it("does not expose dangling aria-controls for inactive tabs", () => {
+    render(<BottomGameDock activeId="events" items={ITEMS} onActiveChange={() => undefined} />);
+
+    const activeTab = screen.getByRole("tab", { name: "События" });
+    const panel = screen.getByRole("tabpanel");
+    const inactiveTabs = [
+      screen.getByRole("tab", { name: "Состояние" }),
+      screen.getByRole("tab", { name: "Журнал" }),
+    ];
+
+    expect(activeTab).toHaveAttribute("aria-controls", panel.id);
+    for (const tab of inactiveTabs) {
+      expect(tab).not.toHaveAttribute("aria-controls");
+    }
+  });
+
   it("moves roving focus with arrows and Home/End without changing the active tab", () => {
     const onActiveChange = vi.fn();
     render(<BottomGameDock activeId="status" items={ITEMS} onActiveChange={onActiveChange} />);
@@ -71,6 +87,27 @@ describe("BottomGameDock", () => {
     expect(status).toHaveAttribute("tabindex", "-1");
     expect(onActiveChange).not.toHaveBeenCalled();
     expect(screen.getByRole("tabpanel")).toHaveTextContent("Сохранение завершено");
+  });
+
+  it("preserves roving focus across equivalent parent rerenders", () => {
+    const onActiveChange = vi.fn();
+    const { rerender } = render(
+      <BottomGameDock activeId="status" items={[...ITEMS]} onActiveChange={onActiveChange} />,
+    );
+
+    const status = screen.getByRole("tab", { name: "Состояние" });
+    const events = screen.getByRole("tab", { name: "События" });
+
+    status.focus();
+    fireEvent.keyDown(status, { key: "ArrowRight" });
+    expect(events).toHaveFocus();
+    expect(events).toHaveAttribute("tabindex", "0");
+
+    rerender(<BottomGameDock activeId="status" items={[...ITEMS]} onActiveChange={onActiveChange} />);
+
+    expect(events).toHaveAttribute("tabindex", "0");
+    expect(status).toHaveAttribute("tabindex", "-1");
+    expect(onActiveChange).not.toHaveBeenCalled();
   });
 
   it("requests controlled activation from click, Enter and Space", () => {
