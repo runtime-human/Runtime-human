@@ -70,3 +70,12 @@
     transition: none;
   }
 }
+
+@media (forced-colors: active) {
+  .runtime-bottom-game-dock__tab:focus-visible,
+  .runtime-bottom-game-dock__panel:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+}
