@@ -1,14 +1,41 @@
 import { readFile } from "node:fs/promises";
+import { basename } from "node:path";
 
 import { describe, expect, it } from "vitest";
+
+import {
+  assertStartupDatabaseRecoveryStatus,
+  prepareStartupDatabasePopulation,
+} from "../tools/desktop-evidence/src/capture-database.js";
+import { parseStartupCaptureArguments } from "../tools/desktop-evidence/src/capture-options.js";
 
 const WORKFLOW_URL = new URL(
   "../.github/workflows/perf-02a-e3-windows-series.yml",
   import.meta.url,
 );
+const CAPTURE_STARTUP_URL = new URL(
+  "../tools/desktop-evidence/src/capture-startup.ts",
+  import.meta.url,
+);
+const COMMIT = "a".repeat(40);
 
 async function readWorkflow(): Promise<string> {
   return readFile(WORKFLOW_URL, "utf8");
+}
+
+async function readCaptureStartup(): Promise<string> {
+  return readFile(CAPTURE_STARTUP_URL, "utf8");
+}
+
+function captureArguments(database: string): string[] {
+  return [
+    `--commit=${COMMIT}`,
+    "--process=cold-process",
+    "--os-cache=warm-os-cache",
+    `--database=${database}`,
+    "--sample-role=measurement",
+    "--sample-index=7",
+  ];
 }
 
 describe("PERF-02A E3 hosted Windows series workflow", () => {
@@ -35,6 +62,15 @@ describe("PERF-02A E3 hosted Windows series workflow", () => {
     expect(workflow).not.toContain("workflow_dispatch");
   });
 
+  it("captures both canonical database populations on one exact host", async () => {
+    const workflow = await readWorkflow();
+
+    expect(workflow).toContain('$databaseClasses = @("new-database", "existing-clean-database")');
+    expect(workflow).toContain("foreach ($database in $databaseClasses)");
+    expect(workflow).toContain("$databaseClasses.Count * ($warmupCount + $measurementCount)");
+    expect(workflow).toContain("$groups.Count -ne $databaseClasses.Count");
+  });
+
   it("uses delimiter-safe PowerShell interpolation before milestone colons", async () => {
     const workflow = await readWorkflow();
 
@@ -47,5 +83,154 @@ describe("PERF-02A E3 hosted Windows series workflow", () => {
 
     expect(workflow).toContain("$missingExternal[0].count -ne $measurementCount");
     expect(workflow).not.toContain("$missingExternal[0].missingCount");
+  });
+
+  it("accepts the canonical existing-clean-database startup population", () => {
+    const options = parseStartupCaptureArguments(
+      captureArguments("existing-clean-database"),
+      process.cwd(),
+    );
+
+    expect(options.database).toBe("existing-clean-database");
+    expect(basename(options.outputPath)).toBe(
+      "startup-shell-fmp-cold-process-warm-os-cache-existing-clean-database-measurement-7.json",
+    );
+  });
+
+  it("keeps the original new-database population valid", () => {
+    const options = parseStartupCaptureArguments(captureArguments("new-database"), process.cwd());
+
+    expect(options.database).toBe("new-database");
+  });
+
+  it("rejects database classes without canonical capture semantics", () => {
+    expect(() => parseStartupCaptureArguments(captureArguments("existing-database"))).toThrow(
+      "--database has an unsupported value",
+    );
+    expect(() => parseStartupCaptureArguments(captureArguments("mystery-database"))).toThrow(
+      "--database has an unsupported value",
+    );
+  });
+
+  it("does not preseed the new-database population", async () => {
+    let called = false;
+
+    await prepareStartupDatabasePopulation("new-database", {
+      startSession: async () => {
+        called = true;
+        return Object.freeze({ id: "seed" });
+      },
+      waitUntilReady: async () => {
+        called = true;
+      },
+      cleanupSession: async () => {
+        called = true;
+      },
+      materializeDatabase: async () => {
+        called = true;
+      },
+    });
+
+    expect(called).toBe(false);
+  });
+
+  it("materializes an existing clean database only after the seed session is closed", async () => {
+    const calls: string[] = [];
+    const session = Object.freeze({ id: "seed" });
+
+    await prepareStartupDatabasePopulation("existing-clean-database", {
+      startSession: async () => {
+        calls.push("start");
+        return session;
+      },
+      waitUntilReady: async (candidate) => {
+        expect(candidate).toBe(session);
+        calls.push("ready");
+      },
+      cleanupSession: async (candidate) => {
+        expect(candidate).toBe(session);
+        calls.push("cleanup");
+      },
+      materializeDatabase: async () => {
+        calls.push("materialize");
+      },
+    });
+
+    expect(calls).toEqual(["start", "ready", "cleanup", "materialize"]);
+  });
+
+  it("does not materialize the seed database when readiness fails", async () => {
+    const calls: string[] = [];
+    const session = Object.freeze({ id: "seed" });
+
+    await expect(
+      prepareStartupDatabasePopulation("existing-clean-database", {
+        startSession: async () => {
+          calls.push("start");
+          return session;
+        },
+        waitUntilReady: async () => {
+          calls.push("ready");
+          throw new Error("seed readiness failed");
+        },
+        cleanupSession: async () => {
+          calls.push("cleanup");
+        },
+        materializeDatabase: async () => {
+          calls.push("materialize");
+        },
+      }),
+    ).rejects.toThrow("seed readiness failed");
+
+    expect(calls).toEqual(["start", "ready", "cleanup"]);
+  });
+
+  it("accepts existing-clean only when the measured process observed a healthy prior shutdown", async () => {
+    await expect(
+      assertStartupDatabaseRecoveryStatus("existing-clean-database", async () => ({
+        kind: "found",
+        value: {
+          schemaVersion: "recovery-status-v1",
+          status: "healthy",
+          writable: true,
+          backupAvailable: false,
+        },
+      })),
+    ).resolves.toBeUndefined();
+  });
+
+  it("rejects an unclean measured startup instead of mislabeling it existing-clean", async () => {
+    await expect(
+      assertStartupDatabaseRecoveryStatus("existing-clean-database", async () => ({
+        kind: "found",
+        value: {
+          schemaVersion: "recovery-status-v1",
+          status: "unclean-but-valid",
+          writable: true,
+          backupAvailable: false,
+        },
+      })),
+    ).rejects.toThrow("existing-clean-database requires healthy recovery status");
+  });
+
+  it("does not probe recovery status for a new-database capture", async () => {
+    let called = false;
+
+    await assertStartupDatabaseRecoveryStatus("new-database", async () => {
+      called = true;
+      throw new Error("new-database must not probe prior recovery status");
+    });
+
+    expect(called).toBe(false);
+  });
+
+  it("isolates seed WebView state and validates recovery in the physical startup capture", async () => {
+    const source = await readCaptureStartup();
+
+    expect(source).toContain('const seedDataDirectory = join(isolatedDataDirectory, "seed")');
+    expect(source).toContain("startEvidenceSession(options.binaryPath, seedDataDirectory)");
+    expect(source).toContain("materializeSeedDatabase(seedDataDirectory, isolatedDataDirectory)");
+    expect(source).toContain('"persistence_get_recovery_status_v1"');
+    expect(source).toContain("assertStartupDatabaseRecoveryStatus");
   });
 });
