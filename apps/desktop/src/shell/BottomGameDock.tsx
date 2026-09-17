@@ -23,11 +23,25 @@ export function BottomGameDock({
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const activeIndex = items.findIndex((item) => item.id === activeId);
   const activeItem = activeIndex >= 0 ? items[activeIndex] : undefined;
-  const [focusedId, setFocusedId] = useState<string | undefined>(activeItem?.id ?? items[0]?.id);
+  const activeItemId = activeItem?.id;
+  const previousActiveId = useRef(activeItemId);
+  const [focusedId, setFocusedId] = useState<string | undefined>(activeItemId ?? items[0]?.id);
 
   useEffect(() => {
-    setFocusedId(activeItem?.id ?? items[0]?.id);
-  }, [activeItem?.id, items]);
+    const activeChanged = previousActiveId.current !== activeItemId;
+    previousActiveId.current = activeItemId;
+
+    setFocusedId((currentFocusedId) => {
+      if (activeChanged) return activeItemId ?? items[0]?.id;
+      if (
+        currentFocusedId !== undefined &&
+        items.some((item) => item.id === currentFocusedId)
+      ) {
+        return currentFocusedId;
+      }
+      return activeItemId ?? items[0]?.id;
+    });
+  }, [activeItemId, items]);
 
   function focusTab(index: number): void {
     const item = items[index];
@@ -81,7 +95,7 @@ export function BottomGameDock({
 
           return (
             <button
-              aria-controls={panelId}
+              aria-controls={selected ? panelId : undefined}
               aria-selected={selected}
               className="runtime-bottom-game-dock__tab"
               id={tabId}
