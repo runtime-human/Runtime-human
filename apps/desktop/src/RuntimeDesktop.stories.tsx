@@ -36,10 +36,7 @@ function createSession(view: JanuarySessionView, busy = false, ready = true): Ja
 
 function atDesktopViewport(width: number, height: number): Decorator {
   return (Story) => (
-    <div
-      data-story-viewport={`${width}x${height}`}
-      style={{ width, height, overflow: "hidden" }}
-    >
+    <div data-story-viewport={`${width}x${height}`} style={{ width, height, overflow: "hidden" }}>
       <Story />
     </div>
   );
