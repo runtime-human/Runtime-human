@@ -42,7 +42,9 @@ export function RuntimeDesktop({ route, navigate, session }: RuntimeDesktopProps
       onNavigate={(id) => {
         if (isDesktopRouteId(id)) navigate(id);
       }}
-      playerRail={\n        overviewView === null ? undefined : <CareerOverviewPlayerRail view={overviewView} />\n      }
+      playerRail={
+        overviewView === null ? undefined : <CareerOverviewPlayerRail view={overviewView} />
+      }
       profile="Локальная карьера"
       status={
         <>
