@@ -38,7 +38,9 @@ describe("RuntimeDesktop routing composition", () => {
     const overview = screen.getByRole("region", { name: "Обзор карьеры" });
     expect(within(overview).getByRole("heading", { name: "Обзор карьеры" })).toBeInTheDocument();
     expect(within(overview).getByText("Готов к началу")).toBeInTheDocument();
-    expect(within(overview).queryByRole("button", { name: "Начать январь" })).not.toBeInTheDocument();
+    expect(
+      within(overview).queryByRole("button", { name: "Начать январь" }),
+    ).not.toBeInTheDocument();
 
     const navigation = screen.getByRole("navigation", { name: "Разделы карьеры" });
     expect(within(navigation).getByRole("link", { name: /Обзор карьеры/u })).toHaveAttribute(
