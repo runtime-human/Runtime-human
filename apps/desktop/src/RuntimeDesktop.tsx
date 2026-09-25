@@ -29,13 +29,13 @@ const PLANNED_NAVIGATION = Object.freeze<readonly DesktopNavigationItem[]>([
 export function RuntimeDesktop({ route, navigate, session }: RuntimeDesktopProps) {
   const navigation = buildNavigation(route.id);
   const currentMonth = route.id === "current-month";
-  const overviewView = currentMonth ? null : projectCareerOverviewView(session.view);
+  const overviewView = projectCareerOverviewView(session.view);
 
   return (
     <DesktopShell
       breadcrumb={currentMonth ? "Январь 1990" : "Обзор карьеры"}
       contextRail={
-        overviewView === null ? undefined : <CareerOverviewContextRail view={overviewView} />
+        currentMonth ? undefined : <CareerOverviewContextRail view={overviewView} />
       }
       era="Персональные компьютеры"
       navigation={navigation}
@@ -43,7 +43,7 @@ export function RuntimeDesktop({ route, navigate, session }: RuntimeDesktopProps
         if (isDesktopRouteId(id)) navigate(id);
       }}
       playerRail={
-        overviewView === null ? undefined : <CareerOverviewPlayerRail view={overviewView} />
+        currentMonth ? undefined : <CareerOverviewPlayerRail view={overviewView} />
       }
       profile="Локальная карьера"
       status={
