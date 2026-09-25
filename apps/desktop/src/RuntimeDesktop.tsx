@@ -34,9 +34,7 @@ export function RuntimeDesktop({ route, navigate, session }: RuntimeDesktopProps
   return (
     <DesktopShell
       breadcrumb={currentMonth ? "Январь 1990" : "Обзор карьеры"}
-      contextRail={
-        currentMonth ? undefined : <CareerOverviewContextRail view={overviewView} />
-      }
+      contextRail={currentMonth ? undefined : <CareerOverviewContextRail view={overviewView} />}
       era="Персональные компьютеры"
       navigation={navigation}
       onNavigate={(id) => {
