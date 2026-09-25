@@ -8,6 +8,10 @@ export type CareerOverviewScreenProps = Readonly<{
   onRetry(): void;
 }>;
 
+export type CareerOverviewRailProps = Readonly<{
+  view: CareerOverviewView;
+}>;
+
 const QUALITY_LABELS = Object.freeze({
   clarity: "Ясность",
   correctness: "Корректность",
@@ -22,19 +26,48 @@ export function CareerOverviewScreen({
   return (
     <section aria-label="Обзор карьеры" className="career-overview" id="career-overview">
       <article className="career-overview-hero">
-        <p className="career-overview-eyebrow">Текущая история</p>
-        <h1>Обзор карьеры</h1>
+        <header className="career-overview-heading">
+          <p className="career-overview-eyebrow">Текущая история</p>
+          <h1>Обзор карьеры</h1>
+        </header>
         {renderState(view, onOpenCurrentMonth, onRetry)}
       </article>
+    </section>
+  );
+}
 
-      <aside className="career-overview-note" aria-label="Сведения о сохранении">
-        <span>Сохранение</span>
-        <strong>Подтверждённый прогресс</strong>
-        <p>
-          Обзор показывает уже загруженное состояние января. При переходах между разделами игровой
-          сеанс не запускается заново.
-        </p>
-      </aside>
+export function CareerOverviewPlayerRail({ view }: CareerOverviewRailProps) {
+  const summary = playerRailSummary(view);
+
+  return (
+    <section aria-label="Кратко о карьере" className="career-overview-rail">
+      <header className="career-overview-rail-heading">
+        <span>История программиста</span>
+        <strong>{summary.title}</strong>
+      </header>
+      <dl className="career-overview-rail-list">
+        <RailFact label="Период" value="Январь 1990" />
+        <RailFact label="Состояние" value={summary.state} />
+      </dl>
+      <p className="career-overview-rail-copy">{summary.detail}</p>
+    </section>
+  );
+}
+
+export function CareerOverviewContextRail({ view }: CareerOverviewRailProps) {
+  const facts = contextRailFacts(view);
+
+  return (
+    <section aria-label="Контекст обзора" className="career-overview-rail">
+      <header className="career-overview-rail-heading">
+        <span>Контекст</span>
+        <strong>{facts.title}</strong>
+      </header>
+      <dl className="career-overview-rail-list">
+        {facts.rows.map((fact) => (
+          <RailFact key={fact.label} label={fact.label} value={fact.value} />
+        ))}
+      </dl>
     </section>
   );
 }
@@ -186,6 +219,15 @@ function Fact({ label, value }: Readonly<{ label: string; value: string }>) {
   );
 }
 
+function RailFact({ label, value }: Readonly<{ label: string; value: string }>) {
+  return (
+    <div>
+      <dt>{label}</dt>
+      <dd>{value}</dd>
+    </div>
+  );
+}
+
 function PrimaryAction({ label, onClick }: Readonly<{ label: string; onClick(): void }>) {
   return (
     <button className="career-overview-action" onClick={onClick} type="button">
@@ -193,6 +235,122 @@ function PrimaryAction({ label, onClick }: Readonly<{ label: string; onClick(): 
       <span aria-hidden="true">→</span>
     </button>
   );
+}
+
+function playerRailSummary(
+  view: CareerOverviewView,
+): Readonly<{ title: string; state: string; detail: string }> {
+  switch (view.kind) {
+    case "loading":
+      return Object.freeze({
+        title: "Локальная карьера",
+        state: "Загрузка",
+        detail: "Проверяем локальное сохранение перед продолжением истории.",
+      });
+    case "new-career":
+      return Object.freeze({
+        title: "Начало пути",
+        state: "Готов к началу",
+        detail: "Первый игровой месяц ещё не начат.",
+      });
+    case "active-month":
+      return Object.freeze({
+        title: "Первый месяц",
+        state: stageLabel(view.stage),
+        detail: "Январь продолжается с последней сохранённой точки.",
+      });
+    case "completed-month":
+      return Object.freeze({
+        title: "Первый результат",
+        state: "Январь завершён",
+        detail: "Результат месяца уже сохранён.",
+      });
+    case "terminal":
+      return Object.freeze({
+        title: "Первый месяц",
+        state: terminalStatusLabel(view.status),
+        detail: "Месяц остановлен без нового подтверждённого результата.",
+      });
+    case "blocked":
+      return Object.freeze({
+        title: "Локальная карьера",
+        state: "Требуется проверка",
+        detail: blockedReasonLabel(view.reason),
+      });
+    case "rejected":
+      return Object.freeze({
+        title: "Локальная карьера",
+        state: view.retryable ? "Можно повторить" : "Недоступно",
+        detail: "Состояние карьеры не изменяется из-за ошибки обзора.",
+      });
+  }
+}
+
+function contextRailFacts(
+  view: CareerOverviewView,
+): Readonly<{ title: string; rows: readonly Readonly<{ label: string; value: string }>[] }> {
+  switch (view.kind) {
+    case "loading":
+      return Object.freeze({
+        title: "Январь 1990",
+        rows: Object.freeze([
+          Object.freeze({ label: "Проверка", value: "Локальное сохранение" }),
+          Object.freeze({ label: "Состояние", value: "Загрузка" }),
+        ]),
+      });
+    case "new-career":
+      return Object.freeze({
+        title: "Январь 1990",
+        rows: Object.freeze([
+          Object.freeze({ label: "Период", value: "Не начат" }),
+          Object.freeze({ label: "Следующий шаг", value: "Открыть январь" }),
+        ]),
+      });
+    case "active-month":
+      return Object.freeze({
+        title: "Январь 1990",
+        rows: Object.freeze([
+          Object.freeze({ label: "Этап", value: stageLabel(view.stage) }),
+          Object.freeze({ label: "Прогресс", value: `${view.progress}%` }),
+          Object.freeze({ label: "Сохранение", value: `Версия ${view.runRevision}` }),
+        ]),
+      });
+    case "completed-month":
+      return Object.freeze({
+        title: "Январь 1990",
+        rows: Object.freeze([
+          Object.freeze({ label: "Результат", value: "Месяц завершён" }),
+          Object.freeze({ label: "Сохранение", value: `Версия ${view.saveRevision}` }),
+        ]),
+      });
+    case "terminal":
+      return Object.freeze({
+        title: "Январь 1990",
+        rows: Object.freeze([
+          Object.freeze({ label: "Статус", value: terminalStatusLabel(view.status) }),
+          Object.freeze({ label: "Результат", value: "Новый результат не сохранён" }),
+        ]),
+      });
+    case "blocked":
+      return Object.freeze({
+        title: "Защитная остановка",
+        rows: Object.freeze([
+          Object.freeze({ label: "Причина", value: blockedReasonLabel(view.reason) }),
+          Object.freeze({ label: "Данные", value: "Сохранены без изменений" }),
+        ]),
+      });
+    case "rejected":
+      return Object.freeze({
+        title: "Ошибка обзора",
+        rows: Object.freeze([
+          Object.freeze({
+            label: "Повтор",
+            value: view.retryable ? "Безопасный повтор доступен" : "Недоступен",
+          }),
+          Object.freeze({ label: "Состояние", value: "Без изменений" }),
+        ]),
+      });
+  }
 }
 
 function stageLabel(stage: Extract<CareerOverviewView, { kind: "active-month" }>["stage"]): string {

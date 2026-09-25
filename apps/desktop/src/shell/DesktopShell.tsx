@@ -12,6 +12,9 @@ export type DesktopShellProps = Readonly<{
   profile: string;
   status: ReactNode;
   children: ReactNode;
+  playerRail?: ReactNode;
+  contextRail?: ReactNode;
+  bottomDock?: ReactNode;
   onNavigate?(id: string): void;
 }>;
 
@@ -22,6 +25,9 @@ export function DesktopShell({
   profile,
   status,
   children,
+  playerRail,
+  contextRail,
+  bottomDock,
   onNavigate,
 }: DesktopShellProps) {
   const currentRoute = navigation.find(
@@ -29,40 +35,46 @@ export function DesktopShell({
       item.kind === "route" && item.current,
   );
 
+  const defaultPlayerRail = (
+    <div className="runtime-player-summary">
+      <span aria-hidden="true" className="runtime-status-dot" />
+      <span>
+        <small>Профиль</small>
+        <strong>{profile}</strong>
+      </span>
+    </div>
+  );
+
+  const defaultContextRail = (
+    <div className="runtime-context-summary">
+      <div aria-label="Положение в карьере" className="runtime-breadcrumbs">
+        <span>Карьера</span>
+        <span aria-hidden="true">/</span>
+        <strong>{breadcrumb}</strong>
+      </div>
+      <div className="runtime-era-meta">
+        <span>Эпоха</span>
+        <strong>{era}</strong>
+      </div>
+    </div>
+  );
+
+  const defaultBottomDock = (
+    <div
+      aria-label="Состояние сохранения"
+      aria-live="polite"
+      className="runtime-statusbar"
+      role="status"
+    >
+      {status}
+    </div>
+  );
+
   return (
     <GameShell
-      bottomDock={
-        <div
-          aria-label="Состояние сохранения"
-          aria-live="polite"
-          className="runtime-statusbar"
-          role="status"
-        >
-          {status}
-        </div>
-      }
-      contextRail={
-        <div className="runtime-context-summary">
-          <div aria-label="Положение в карьере" className="runtime-breadcrumbs">
-            <span>Карьера</span>
-            <span aria-hidden="true">/</span>
-            <strong>{breadcrumb}</strong>
-          </div>
-          <div className="runtime-era-meta">
-            <span>Эпоха</span>
-            <strong>{era}</strong>
-          </div>
-        </div>
-      }
-      playerRail={
-        <div className="runtime-player-summary">
-          <span aria-hidden="true" className="runtime-status-dot" />
-          <span>
-            <small>Профиль</small>
-            <strong>{profile}</strong>
-          </span>
-        </div>
-      }
+      bottomDock={bottomDock ?? defaultBottomDock}
+      contextRail={contextRail ?? defaultContextRail}
+      playerRail={playerRail ?? defaultPlayerRail}
       scene={<div id="runtime-content">{children}</div>}
       topHud={
         <div className="runtime-game-hud">

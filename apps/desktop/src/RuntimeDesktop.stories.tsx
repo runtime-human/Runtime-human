@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { Decorator, Meta, StoryObj } from "@storybook/react-vite";
 
 import { fingerprint } from "@runtime-human/game-core";
 import {
@@ -15,6 +15,7 @@ import type { JanuarySessionState } from "./january/use-january-session";
 import { resolveDesktopRoute } from "./routing/desktop-route";
 import "./design/runtime-human-tokens.css";
 import "./shell/desktop-shell.css";
+import "./shell/game-shell.css";
 import "./overview/career-overview.css";
 import "./january/january-runtime.css";
 
@@ -33,10 +34,27 @@ function createSession(view: JanuarySessionView, busy = false, ready = true): Ja
   });
 }
 
+function atDesktopViewport(width: number, height: number): Decorator {
+  return (Story) => (
+    <div data-story-viewport={`${width}x${height}`} style={{ width, height, overflow: "hidden" }}>
+      <Story />
+    </div>
+  );
+}
+
 const idleSession = createSession({
   kind: "idle",
   saveId,
   saveRevision: parseSaveRevision(0),
+});
+
+const completedSession = createSession({
+  kind: "committed",
+  saveId,
+  runId,
+  saveRevision: parseSaveRevision(1),
+  checkpointHash,
+  result: createJanuary1990ResultFixture(),
 });
 
 const meta: Meta<typeof RuntimeDesktop> = {
@@ -108,14 +126,7 @@ export const OverviewDefectStage: Story = {
 
 export const OverviewCompleted: Story = {
   args: {
-    session: createSession({
-      kind: "committed",
-      saveId,
-      runId,
-      saveRevision: parseSaveRevision(1),
-      checkpointHash,
-      result: createJanuary1990ResultFixture(),
-    }),
+    session: completedSession,
   },
 };
 
@@ -151,6 +162,41 @@ export const OverviewRetryableFailure: Story = {
       code: "PersistenceUnavailable",
       message: "Ответ хранилища не был получен, но операция могла завершиться.",
       retryable: true,
+    }),
+  },
+};
+
+export const OverviewCompact1280x720: Story = {
+  decorators: [atDesktopViewport(1280, 720)],
+  args: {
+    session: createSession({
+      kind: "learning-decision",
+      saveId,
+      runId,
+      runRevision: parseMonthRunRevision(4),
+      checkpointHash,
+      prompt: { schemaVersion: "january-learning-prompt-v1" },
+    }),
+  },
+};
+
+export const OverviewFull1920x1080: Story = {
+  decorators: [atDesktopViewport(1920, 1080)],
+  args: {
+    session: completedSession,
+  },
+};
+
+export const OverviewLongRussianBlocked: Story = {
+  decorators: [atDesktopViewport(1280, 720)],
+  args: {
+    session: createSession({
+      kind: "blocked",
+      reason: "corrupted-checkpoint",
+      message:
+        "Сохранённый прогресс января повреждён и требует проверки перед продолжением. Игра оставляет данные без изменений и не подменяет причину остановки общим сообщением.",
+      saveId,
+      runId,
     }),
   },
 };
