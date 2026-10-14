@@ -14,6 +14,7 @@ import { createJanuary1990ResultFixture } from "./january-result.fixture";
 import "../design/runtime-human-tokens.css";
 import "../shell/desktop-shell.css";
 import "./january-runtime.css";
+import "./january-reference-stage.css";
 
 const saveId = parseSaveId("storybook-january-save");
 const runId = parseMonthRunId("storybook-january-run");
