@@ -1,0 +1,429 @@
+/* REF-01A: cinematic January composition. This layer consumes existing
+   read-model states only; no gameplay authority, portraits or fake stats. */
+
+.january-frame--scene {
+  display: flex;
+  width: 100%;
+  max-width: none;
+  min-height: 100%;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  color: var(--game-fg);
+  background: var(--game-bg-deep);
+}
+
+.january-frame--scene .january-header {
+  gap: 0.75rem;
+  padding: 0.6rem var(--game-stage-gutter);
+  border-bottom: 1px solid var(--game-border-soft);
+  background: var(--game-surface-1);
+}
+
+.january-frame--scene .january-brand {
+  color: var(--game-fg-2);
+  font-size: 0.6875rem;
+  letter-spacing: 0.11em;
+}
+
+.january-frame--scene .january-era {
+  margin-top: 0.2rem;
+  color: var(--game-muted);
+}
+
+.january-frame--scene .january-local-badge {
+  padding: 0.35rem 0.65rem;
+  border-color: var(--game-border);
+  border-radius: var(--game-radius-control);
+  background: var(--game-surface-2);
+}
+
+.january-frame--scene .january-layout {
+  display: flex;
+  min-width: 0;
+  flex: 1 0 auto;
+  flex-direction: column;
+  gap: 0;
+}
+
+.january-frame--scene .january-context {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0;
+  order: -1;
+}
+
+.january-frame--scene .january-terminal {
+  position: relative;
+  display: flex;
+  min-height: clamp(14rem, 28vh, 22rem);
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(1rem, 2vw, 2.5rem);
+  overflow: hidden;
+  padding: clamp(1.25rem, 2vw, 2.25rem) var(--game-stage-gutter) 3rem;
+  border: 0;
+  border-bottom: 1px solid var(--game-border-strong);
+  border-radius: 0;
+  background:
+    radial-gradient(ellipse at 77% 75%, rgb(197 104 35 / 50%) 0%, transparent 46%),
+    linear-gradient(90deg, rgb(4 11 17 / 96%) 0%, rgb(6 16 25 / 90%) 40%, rgb(16 36 47 / 44%) 100%),
+    repeating-linear-gradient(90deg, #0a1821 0 3rem, #142d3b 3.05rem 3.1rem, #0d202b 3.2rem 6rem);
+  box-shadow: inset 0 -5rem 6rem rgb(0 0 0 / 30%);
+}
+
+.january-frame--scene .january-terminal::after {
+  position: absolute;
+  right: -3%;
+  bottom: 1.9rem;
+  width: 48%;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: rgb(5 8 11 / 70%);
+  box-shadow: 0 0.25rem 2rem 1rem rgb(0 0 0 / 35%);
+  content: "";
+  pointer-events: none;
+}
+
+.january-scene-copy {
+  position: relative;
+  z-index: 2;
+  max-width: 32rem;
+  flex: 1 1 55%;
+  align-self: flex-start;
+}
+
+.january-scene-kicker {
+  margin: 0;
+  color: var(--game-accent);
+  font-family: var(--game-font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+}
+
+.january-scene-copy h2 {
+  margin: clamp(0.65rem, 1.8vw, 1.3rem) 0;
+  color: #f3e6d3;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.15rem, 3.5vw, 4rem);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.january-scene-copy > p:last-child {
+  max-width: 42ch;
+  margin: 0;
+  color: #d5dee0;
+  font-size: clamp(0.8rem, 1.1vw, 1rem);
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.january-frame--scene .january-terminal pre {
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+  width: min(39%, 23rem);
+  min-width: 11rem;
+  min-height: 8.5rem;
+  flex: 0 1 39%;
+  margin: 0 2% 0 0;
+  overflow: auto;
+  padding: 1.2rem 1rem;
+  border: clamp(0.4rem, 0.7vw, 0.8rem) solid #35424a;
+  border-bottom-width: clamp(0.65rem, 1vw, 1rem);
+  border-radius: 0.75rem 0.75rem 1rem 1rem;
+  color: #b4e6d1;
+  background: radial-gradient(ellipse at 50% 30%, #10342e, #03110f 78%);
+  box-shadow:
+    0 1rem 2.5rem rgb(0 0 0 / 75%),
+    inset 0 0 1.5rem rgb(21 114 82 / 20%),
+    0 0 0 2px #1b252b;
+  font-size: clamp(0.65rem, 0.85vw, 0.875rem);
+  line-height: 1.75;
+  transform: perspective(48rem) rotateY(-5deg);
+}
+
+.january-frame--scene .january-terminal-bar {
+  position: absolute;
+  z-index: 3;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  justify-content: flex-start;
+  gap: 1.5rem;
+  padding: 0.7rem var(--game-stage-gutter);
+  border-top: 1px solid var(--game-border);
+  border-bottom: 0;
+  background: rgb(4 12 19 / 72%);
+}
+
+.january-frame--scene .january-terminal-meta {
+  display: none;
+}
+
+.january-frame--scene .january-session-panel {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.65rem var(--game-stage-gutter);
+  border: 0;
+  border-bottom: 1px solid var(--game-border-soft);
+  border-radius: 0;
+  background: var(--game-surface-1);
+}
+
+.january-frame--scene .january-session-heading {
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+}
+
+.january-frame--scene .january-session-panel dl {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem 1.25rem;
+  margin: 0;
+}
+
+.january-frame--scene .january-session-panel dl > div {
+  gap: 0.4rem;
+}
+
+.january-frame--scene .january-session-panel dd {
+  color: var(--game-fg-2);
+}
+
+.january-frame--scene .january-card {
+  min-width: 0;
+  min-height: 0;
+  flex: 1 0 auto;
+  padding: clamp(1rem, 1.6vw, 1.7rem) var(--game-stage-gutter);
+  border: 0;
+  border-radius: 0;
+  background: var(--game-bg-deep);
+  color: var(--game-fg);
+  box-shadow: none;
+}
+
+.january-frame--scene .january-event-label {
+  margin: 0 0 0.65rem;
+  color: var(--game-accent);
+  font-family: var(--game-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.january-frame--scene .january-card-heading {
+  justify-content: flex-start;
+  gap: 1rem;
+}
+
+.january-frame--scene .january-eyebrow {
+  color: var(--game-muted);
+  font-weight: 600;
+}
+
+.january-frame--scene .january-tone {
+  padding: 0.2rem 0.5rem;
+  border-color: var(--game-border-strong);
+  border-radius: var(--game-radius-control);
+  color: var(--game-fg-2);
+  background: var(--game-surface-2);
+}
+
+.january-frame--scene .january-card h1 {
+  max-width: none;
+  margin: 0.5rem 0 0;
+  color: var(--game-fg);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.5rem, 2.2vw, 2.35rem);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+}
+
+.january-frame--scene .january-summary {
+  max-width: 72ch;
+  margin-top: 0.55rem;
+  color: var(--game-fg-2);
+  font-size: clamp(0.8rem, 1vw, 0.95rem);
+}
+
+.january-frame--scene .january-detail {
+  max-width: 78ch;
+  color: var(--game-muted);
+  font-size: 0.8rem;
+}
+
+.january-frame--scene .january-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  align-items: stretch;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 0;
+}
+
+.january-frame--scene .january-choice {
+  display: flex;
+  min-width: 0;
+  min-height: 9.25rem;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.6rem;
+  padding: 0.9rem;
+  border-color: var(--game-border);
+  border-radius: var(--game-radius-panel);
+  background: linear-gradient(140deg, var(--game-surface-2), var(--game-surface-1));
+  color: var(--game-fg);
+  box-shadow: inset 0 1px rgb(255 255 255 / 3%);
+  transform: none;
+}
+
+.january-frame--scene .january-choice:hover:not(:disabled) {
+  border-color: var(--game-accent);
+  background: var(--game-surface-hover);
+  transform: none;
+}
+
+.january-frame--scene .january-choice:focus-visible {
+  border-color: var(--game-accent);
+  outline: 2px solid var(--game-accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--game-accent-soft);
+}
+
+.january-frame--scene .january-choice-index {
+  color: var(--game-accent);
+}
+
+.january-frame--scene .january-choice-copy {
+  display: flex;
+  width: 100%;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.january-frame--scene .january-choice-copy strong {
+  color: var(--game-fg);
+  font-size: clamp(0.84rem, 1vw, 1rem);
+}
+
+.january-frame--scene .january-choice-copy small {
+  margin-top: 0.4rem;
+  color: var(--game-fg-2);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.january-frame--scene .january-choice-action {
+  display: block;
+  align-self: stretch;
+  margin-top: auto;
+  padding: 0.55rem 0.25rem 0 0;
+  border-top: 1px solid var(--game-border-soft);
+  color: var(--game-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.january-frame--scene .january-choice-arrow {
+  display: none;
+}
+
+.january-frame--scene .january-quality {
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 0;
+}
+
+.january-frame--scene .january-quality-item strong {
+  color: var(--game-fg);
+}
+
+.january-frame--scene .january-quality-track {
+  background: var(--game-surface-3);
+}
+
+.january-frame--scene .january-quality-track span {
+  background: var(--game-accent);
+}
+
+.january-frame--scene .january-primary {
+  width: min(100%, 21rem);
+  margin-top: 1.3rem;
+}
+
+.january-chronology {
+  display: flex;
+  min-height: 2.8rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem 1rem;
+  padding: 0.6rem var(--game-stage-gutter);
+  border-top: 1px solid var(--game-border-strong);
+  color: var(--game-muted);
+  background: var(--game-surface-1);
+  font-family: var(--game-font-mono);
+  font-size: 0.67rem;
+}
+
+.january-chronology strong {
+  color: var(--game-accent);
+  font-weight: 600;
+}
+
+@media (max-width: 1360px) {
+  .january-frame--scene .january-terminal {
+    min-height: 13rem;
+  }
+
+  .january-frame--scene .january-choice {
+    min-height: 8rem;
+  }
+
+  .january-frame--scene .january-session-heading {
+    display: none;
+  }
+}
+
+@media (max-width: 1250px) {
+  .january-frame--scene .january-terminal pre {
+    width: 40%;
+    min-width: 9rem;
+    padding: 0.7rem;
+  }
+
+  .january-frame--scene .january-scene-copy h2 {
+    font-size: 2.15rem;
+  }
+
+  .january-frame--scene .january-choices {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 10.5rem), 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .january-frame--scene .january-choice {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .january-frame--scene .january-terminal,
+  .january-frame--scene .january-choice {
+    border: 1px solid CanvasText;
+    forced-color-adjust: auto;
+  }
+}
