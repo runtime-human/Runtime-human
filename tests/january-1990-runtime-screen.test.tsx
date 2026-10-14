@@ -124,6 +124,7 @@ describe("January 1990 runtime screen", () => {
     expect(screen.queryByRole("navigation", { name: "Разделы карьеры" })).not.toBeInTheDocument();
     expect(screen.queryByRole("status", { name: "Состояние сохранения" })).not.toBeInTheDocument();
   });
+
   it("projects a reference-style scene without invented NPC or skill state", () => {
     const onChoose = vi.fn();
     render(
@@ -143,7 +144,9 @@ describe("January 1990 runtime screen", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Январь 1990" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Программа работает неверно" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Программа работает неверно" }),
+    ).toBeInTheDocument();
     expect(screen.getByLabelText("Хронология первого месяца")).toHaveTextContent(
       "ЯНВ · Первая программа",
     );
@@ -154,5 +157,4 @@ describe("January 1990 runtime screen", () => {
     fireEvent.click(screen.getByRole("button", { name: /Попросить объяснение/u }));
     expect(onChoose).toHaveBeenCalledExactlyOnceWith("ask-for-guidance");
   });
-
 });
