@@ -79,7 +79,9 @@ export function JanuaryRuntimeScreen({
                   <span className="january-choice-copy">
                     <strong>{choice.label}</strong>
                     <small>{choice.description}</small>
-                    <span aria-hidden="true" className="january-choice-action">Выбрать подход →</span>
+                    <span aria-hidden="true" className="january-choice-action">
+                      Выбрать подход →
+                    </span>
                   </span>
                   <span aria-hidden="true" className="january-choice-arrow">
                     →
@@ -136,7 +138,10 @@ export function JanuaryRuntimeScreen({
             <div className="january-scene-copy">
               <p className="january-scene-kicker">Глава 1 · Начало пути</p>
               <h2>Январь 1990</h2>
-              <p>Персональные компьютеры становятся доступнее, но первый шаг ещё требует времени, внимания и практики.</p>
+              <p>
+                Персональные компьютеры становятся доступнее, но первый шаг ещё требует времени,
+                внимания и практики.
+              </p>
             </div>
             <div className="january-terminal-bar">
               <span>GW-BASIC · DOS</span>
