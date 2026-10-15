@@ -58,6 +58,7 @@ export default defineConfig({
     projects: [
       nodeProject("core-node", [
         "tests/determinism-golden.test.ts",
+        "tests/professional-lab-v1.test.ts",
         "tests/determinism-manifest.test.ts",
         "tests/deterministic-hash.test.ts",
         "tests/xoshiro256ss.test.ts",

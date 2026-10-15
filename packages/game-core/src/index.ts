@@ -110,3 +110,21 @@ export { runUntilBoundary } from "./month-run/runner";
 export type { MonthRunRunResult, MonthRunStep } from "./month-run/runner";
 export { transitionMonthRun } from "./month-run/transition";
 export type { AuthoritativeJsonValue } from "@runtime-human/game-schema";
+export {
+  applyProfessionalExperienceLabV1,
+  createProfessionalLabStateV1,
+  parseProfessionalLabEpisodeV1,
+  parseProfessionalLabStateV1,
+  PROFESSIONAL_LAB_RULES_V1,
+  projectProfessionalLabFluencyV1,
+} from "./progression/professional-lab-v1";
+export type {
+  ProfessionalLabEpisodeV1,
+  ProfessionalLabLastEpisodeV1,
+  ProfessionalLabResultV1,
+  ProfessionalLabSkillDeltaV1,
+  ProfessionalLabSkillIdV1,
+  ProfessionalLabSkillV1,
+  ProfessionalLabStateV1,
+  ProfessionalLabTechnologyV1,
+} from "./progression/professional-lab-v1";
