@@ -1,4 +1,5 @@
 import { JanuaryRuntimeScreen } from "./january/JanuaryRuntimeScreen";
+import { JanuarySaveStatus } from "./january/JanuarySaveStatus";
 import type { JanuarySessionState } from "./january/use-january-session";
 import { projectCareerOverviewView } from "./overview/career-overview-model";
 import { CareerOverviewScreen } from "./overview/CareerOverviewScreen";
@@ -38,7 +39,7 @@ export function RuntimeDesktop({ route, navigate, session }: RuntimeDesktopProps
       status={
         <>
           <span>Локальное сохранение и восстановление сеанса</span>
-          <strong>{session.busy ? "Операция выполняется" : "Состояние сохранено"}</strong>
+          <JanuarySaveStatus busy={session.busy} view={session.view} />
         </>
       }
     >

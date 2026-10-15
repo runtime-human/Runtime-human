@@ -1,7 +1,13 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
+
+import {
+  REQUIRED_ACTION_PINS,
+  findActionPinViolations,
+  formatActionPin,
+} from "./action-pins-lib.mjs";
 
 const root = process.cwd();
 const errors = [];
@@ -34,6 +40,8 @@ const requiredFiles = [
   "scripts/studioctl.mjs",
   "scripts/studio/control-plane-lib.mjs",
   "scripts/studio/control-plane-lib.d.mts",
+  "scripts/studio/action-pins-lib.mjs",
+  "scripts/studio/action-pins-lib.d.mts",
   "scripts/studio/evidence-lib.mjs",
   "scripts/studio/evidence-lib.d.mts",
   "scripts/studio/remote-command.mjs",
@@ -201,9 +209,12 @@ if (foundation) {
     "github.event.action == 'synchronize'",
     "contains(github.event.pull_request.labels.*.name, 'verify:v3')",
     "fetch-depth: 2",
-    "Mozilla-Actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11",
+    formatActionPin(
+      "Mozilla-Actions/sccache-action",
+      REQUIRED_ACTION_PINS["Mozilla-Actions/sccache-action"],
+    ),
     'version: "v0.17.0"',
-    "actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0",
+    formatActionPin("actions/cache", REQUIRED_ACTION_PINS["actions/cache"]),
     "path: .cache/sccache",
     "rust-sccache-v1-${{ runner.os }}-rust-1.97.1-",
     "RUSTC_WRAPPER: sccache",
@@ -220,7 +231,7 @@ if (foundation) {
     "${{ github.event.pull_request.head.sha }}",
     "${{ github.sha }}",
     "pnpm studioctl evidence",
-    "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+    formatActionPin("actions/upload-artifact", REQUIRED_ACTION_PINS["actions/upload-artifact"]),
     "retention-days: 7",
     "if-no-files-found: error",
     "include-hidden-files: true",
@@ -288,6 +299,24 @@ if (remoteCommand) {
     !runBlocks.includes("github.event.comment.body"),
     "remote command must never interpolate comment.body into shell source",
   );
+}
+
+const workflowDir = resolve(root, ".github/workflows");
+if (existsSync(workflowDir)) {
+  const workflows = Object.fromEntries(
+    readdirSync(workflowDir)
+      .filter((name) => /\.ya?ml$/u.test(name))
+      .toSorted()
+      .map((name) => [
+        `.github/workflows/${name}`,
+        readFileSync(resolve(workflowDir, name), "utf8"),
+      ]),
+  );
+  for (const violation of findActionPinViolations(workflows)) {
+    errors.push(`action pin policy: ${violation}`);
+  }
+} else {
+  errors.push("missing .github/workflows");
 }
 
 if (errors.length > 0) {
