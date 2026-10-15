@@ -1,3 +1,4 @@
+import { createProfessionalLabStateV1 } from "@runtime-human/game-core";
 import { parseSaveRecord } from "@runtime-human/game-persistence-contracts";
 import type { SaveRecordV1 } from "@runtime-human/game-persistence-contracts";
 import type { SaveId, SaveRevision } from "@runtime-human/game-schema";
@@ -5,6 +6,7 @@ import type { SaveId, SaveRevision } from "@runtime-human/game-schema";
 import type { PersistenceService } from "../persistence-service";
 import {
   prepareCommittedJanuaryProfessionalCandidateV2,
+  ProfessionalImportRefusedError,
   type ProfessionalSaveCandidateV2,
 } from "./professional-save-candidate-v2";
 
@@ -25,6 +27,8 @@ export type ProfessionalImportInspectionV2 =
         | "active-month-run"
         | "persistence-unavailable"
         | "source-changed"
+        | "nothing-to-import"
+        | "non-canonical-source-snapshot"
         | "incompatible-source";
     }>;
 
@@ -32,14 +36,20 @@ export type ProfessionalImportInspectionV2 =
  * Read-only preflight against the actual PersistenceService.
  *
  * This intentionally does NOT return a migration authorization. The absence
- * of an active run and an unchanged revision are observations, not locks.
- * B2C must revalidate them inside an atomic worker CAS before writing.
+ * of an active run and an unchanged revision are observations, not locks
+ * (TOCTOU is acknowledged). B2C must revalidate them, and re-derive the
+ * candidate from the stored save, inside an atomic worker CAS before writing.
+ * `observedRevision` / `observedSnapshotSha256` are the CAS preconditions the
+ * B2C upgrade command consumes; `eligible-preview` is never authorization.
  */
 export async function inspectCommittedJanuaryProfessionalImportV2(
   persistence: Pick<PersistenceService, "getRecoveryStatus" | "loadSave" | "loadActiveMonthRun">,
   saveId: SaveId,
   aptitudes: Readonly<{ reasoning: number; learning: number }>,
 ): Promise<ProfessionalImportInspectionV2> {
+  // Invalid aptitudes are a caller error: reject before any IO, never as a save problem.
+  createProfessionalLabStateV1(aptitudes.reasoning, aptitudes.learning);
+
   const recovery = await persistence.getRecoveryStatus({
     schemaVersion: "get-recovery-status-query-v1",
   });
@@ -114,9 +124,8 @@ export async function inspectCommittedJanuaryProfessionalImportV2(
       migrationIsAtomic: false,
     });
   } catch (error) {
-    // Invalid aptitudes are caller/programmer errors, not a corrupt legacy save.
-    if (error instanceof TypeError && error.message.includes("aptitude")) {
-      throw error;
+    if (error instanceof ProfessionalImportRefusedError) {
+      return Object.freeze({ kind: "blocked", reason: error.reason });
     }
     return Object.freeze({ kind: "blocked", reason: "incompatible-source" });
   }

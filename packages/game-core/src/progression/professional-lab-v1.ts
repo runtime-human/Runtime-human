@@ -50,6 +50,49 @@ export const PROFESSIONAL_LAB_RULES_V1 = Object.freeze({
   newContextNoveltyBps: 10_000,
 } as const);
 
+/**
+ * Version token of the lab APPLY algorithm (gain formulas, rounding, novelty,
+ * decay). Rules numbers alone do not capture a formula change, so any change to
+ * `applyProfessionalExperienceLabV1` / `projectProfessionalLabFluencyV1`
+ * semantics MUST bump this token. It is part of the save-candidate rules
+ * fingerprint.
+ */
+export const PROFESSIONAL_LAB_ALGORITHM_VERSION_V1 = "professional-lab-apply-v1";
+
+/**
+ * Structural manifest of the serialized lab state: field names and numeric
+ * bounds enforced by `parseProfessionalLabStateV1`. Used to derive the
+ * save-candidate schema fingerprint from the real contract instead of
+ * literals. A test pins it against the parser.
+ */
+export const PROFESSIONAL_LAB_STATE_MANIFEST_V1 = Object.freeze({
+  schemaVersion: "professional-lab-state-v1",
+  stateFields: Object.freeze([
+    "aptitudes",
+    "lastEpisode",
+    "recentContexts",
+    "schemaVersion",
+    "skills",
+    "technology",
+  ]),
+  aptitudeFields: Object.freeze(["learning", "reasoning"]),
+  aptitudeBounds: Object.freeze({ minimum: 0, maximum: 1_000 }),
+  skillFields: Object.freeze(["fluency", "lastPracticedMonth", "mastery", "skillId"]),
+  skillIds: Object.freeze([
+    "data-modelling",
+    "debugging",
+    "problem-solving",
+    "programming",
+    "testing-quality",
+  ]),
+  skillPointBounds: Object.freeze({ minimum: 0, maximum: 10_000 }),
+  technologyFields: Object.freeze(["familiarity", "lastPracticedMonth", "technologyId"]),
+  technologyIds: Object.freeze(["gw-basic"]),
+  lastEpisodeFields: Object.freeze(["hash", "id", "monthIndex"]),
+  monthBounds: Object.freeze({ minimum: 0, maximum: 12_000 }),
+  maximumRecentContexts: PROFESSIONAL_LAB_RULES_V1.maximumRecentContexts,
+} as const);
+
 export type ProfessionalLabSkillIdV1 =
   | "problem-solving"
   | "programming"

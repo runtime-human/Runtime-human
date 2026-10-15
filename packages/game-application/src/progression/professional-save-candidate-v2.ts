@@ -2,10 +2,11 @@ import {
   canonicalizeAuthoritative,
   createProfessionalLabStateV1,
   fingerprint,
-  parseJanuary1990Result,
   parseProfessionalLabStateV1,
   sha256Hex,
+  PROFESSIONAL_LAB_ALGORITHM_VERSION_V1,
   PROFESSIONAL_LAB_RULES_V1,
+  PROFESSIONAL_LAB_STATE_MANIFEST_V1,
   type ProfessionalLabStateV1,
 } from "@runtime-human/game-core";
 import { parseSaveRecord, type SaveRecordV1 } from "@runtime-human/game-persistence-contracts";
@@ -18,9 +19,13 @@ import {
   type SaveRevision,
 } from "@runtime-human/game-schema";
 
-import { projectCommittedJanuaryProfessionalSourceV1 } from "../january-1990/january-professional-experience-bridge";
+import {
+  projectCommittedJanuaryProfessionalSourceV1,
+  requireCommittedJanuaryMonthEvidenceV1,
+} from "../january-1990/january-professional-experience-bridge";
 import {
   createJanuary1990InitialSaveSnapshot,
+  JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
   parseJanuary1990SaveSnapshot,
   type January1990SaveSnapshotV1,
 } from "../january-1990/january-save-snapshot";
@@ -30,6 +35,12 @@ import {
  * Its fingerprint is deliberately different from January v1.
  * The production MonthRun cutover and atomic compare-and-swap belong to B2C.
  * Lab rules are not yet balanced or eligible to award professional grades.
+ *
+ * The legacy receipt is a SELF-CONSISTENCY record, not proof of authenticity:
+ * anyone able to build a full candidate can build a consistent receipt. B2C
+ * must re-derive the candidate from the stored January save inside the atomic
+ * compare-and-swap (and check the MonthRun checkpoint row) before writing.
+ * See docs/persistence/SAVE-COMPATIBILITY.md.
  */
 export type ProfessionalLegacyReceiptV1 = Readonly<{
   schemaVersion: "professional-legacy-january-receipt-v1";
@@ -65,25 +76,54 @@ const RECEIPT_FIELDS = Object.freeze([
 ]);
 const HASH_PATTERN = /^[0-9a-f]{64}$/u;
 
-/** Isolated version marker, never equal to the old January v1 fingerprint. */
+/**
+ * Isolated structural version marker, never equal to the old January v1
+ * fingerprint. It covers the candidate/receipt field sets, the January v1
+ * save-schema fingerprint, the lab-state field/bound/skill manifest, the
+ * snapshot hash domain and the import policy. It does NOT cover numeric
+ * rules (see the rules fingerprint below).
+ */
 export const PROFESSIONAL_SAVE_CANDIDATE_V2_FINGERPRINT = fingerprint(
   "professional-save-candidate-schema-v2",
   {
     schemaVersion: "professional-save-candidate-v2",
     fields: CANDIDATE_FIELDS,
     receiptFields: RECEIPT_FIELDS,
-    januarySchema: "january-1990-save-snapshot-v1",
-    professionalSchema: "professional-lab-state-v1",
-    rulesContract: "professional-lab-rules-v1",
+    januarySchemaFingerprint: JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
+    professionalState: PROFESSIONAL_LAB_STATE_MANIFEST_V1,
+    receiptSnapshotHashDomain: "sha256(canonicalizeAuthoritative(january-snapshot))",
     legacyImportPolicy: "only-committed-unassessed-no-retroactive-gain",
   },
 );
 
-/** Numerical tuning changes this hash without changing the structural schema hash. */
+/**
+ * Semantic rules marker: the numeric lab rules table plus the apply-algorithm
+ * version token. Tuning or a formula change alters this hash without altering
+ * the structural schema hash above.
+ */
 export const PROFESSIONAL_SAVE_CANDIDATE_V2_RULES_FINGERPRINT = fingerprint(
   "professional-lab-rules-v1",
-  PROFESSIONAL_LAB_RULES_V1,
+  {
+    algorithm: PROFESSIONAL_LAB_ALGORITHM_VERSION_V1,
+    rules: PROFESSIONAL_LAB_RULES_V1,
+  },
 );
+
+export type ProfessionalImportRefusalReason =
+  | "nothing-to-import"
+  | "non-canonical-source-snapshot"
+  | "incompatible-source";
+
+/** Typed refusal so preflight can report a precise reason without message sniffing. */
+export class ProfessionalImportRefusedError extends TypeError {
+  readonly reason: ProfessionalImportRefusalReason;
+
+  constructor(reason: ProfessionalImportRefusalReason, message: string) {
+    super(message);
+    this.name = "ProfessionalImportRefusedError";
+    this.reason = reason;
+  }
+}
 
 export function createFreshProfessionalSaveCandidateV2(
   reasoning: number,
@@ -106,14 +146,25 @@ export function prepareCommittedJanuaryProfessionalCandidateV2(
   reasoning: number,
   learning: number,
 ): ProfessionalSaveCandidateV2 {
+  // Caller errors first: invalid aptitudes throw a plain TypeError before any save is read.
+  const professional = createProfessionalLabStateV1(reasoning, learning);
   const save = parseSaveRecord(originalSave);
+  refuseIdleJanuarySave(save);
   const source = projectCommittedJanuaryProfessionalSourceV1(save);
   const january = parseJanuary1990SaveSnapshot(JSON.parse(save.snapshot.json) as unknown);
+  // The receipt hash domain is the canonical snapshot form. A valid but differently
+  // serialized v1 payload must be refused explicitly, never silently mis-hashed.
+  if (sha256Hex(canonicalizeAuthoritative(january)) !== save.snapshot.sha256) {
+    throw new ProfessionalImportRefusedError(
+      "non-canonical-source-snapshot",
+      "January save payload is valid but not canonically serialized; it cannot be imported",
+    );
+  }
 
   return parseProfessionalSaveCandidateV2({
     schemaVersion: "professional-save-candidate-v2",
     january,
-    professional: createProfessionalLabStateV1(reasoning, learning),
+    professional,
     legacyImport: {
       schemaVersion: "professional-legacy-january-receipt-v1",
       originalSaveId: save.saveId,
@@ -124,6 +175,28 @@ export function prepareCommittedJanuaryProfessionalCandidateV2(
       assessmentStatus: "unassessed",
     },
   });
+}
+
+/** An intact January v1 save with no completed month has no history to import. */
+function refuseIdleJanuarySave(save: SaveRecordV1): void {
+  if (
+    save.saveSchemaFingerprint !== JANUARY_1990_SAVE_SCHEMA_FINGERPRINT ||
+    sha256Hex(save.snapshot.json) !== save.snapshot.sha256
+  ) {
+    return; // the source projection reports the precise incompatibility
+  }
+  let snapshot: January1990SaveSnapshotV1;
+  try {
+    snapshot = parseJanuary1990SaveSnapshot(JSON.parse(save.snapshot.json) as unknown);
+  } catch {
+    return;
+  }
+  if (snapshot.completedMonth === null) {
+    throw new ProfessionalImportRefusedError(
+      "nothing-to-import",
+      "January save has no completed month to import",
+    );
+  }
 }
 
 export function parseProfessionalSaveCandidateV2(value: unknown): ProfessionalSaveCandidateV2 {
@@ -149,8 +222,9 @@ export function parseProfessionalSaveCandidateV2(value: unknown): ProfessionalSa
     if (completed === null) {
       throw new TypeError("Legacy import receipt requires a completed January month");
     }
-    // A stored v1 wrapper alone is insufficient: validate real provider outcome semantics.
-    parseJanuary1990Result(completed.terminalResult);
+    // A stored v1 wrapper alone is insufficient: validate provider outcome semantics,
+    // canonical skill evidence and the stored programming outcome.
+    requireCommittedJanuaryMonthEvidenceV1(completed);
     if (
       legacyImport.originalRunId !== completed.runId ||
       legacyImport.originalSaveRevision !== completed.baseSaveRevision + 1
@@ -219,8 +293,8 @@ function closedRecord(
   ) {
     throw new TypeError(`Professional ${label} must be a plain JSON object`);
   }
-  const actual = Object.keys(value).sort();
-  const expected = [...fields].sort();
+  const actual = Object.keys(value).toSorted();
+  const expected = [...fields].toSorted();
   if (actual.length !== expected.length || actual.some((key, index) => key !== expected[index])) {
     throw new TypeError(`Professional ${label} has unknown or missing fields`);
   }
