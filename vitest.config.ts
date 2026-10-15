@@ -137,6 +137,7 @@ export default defineConfig({
         "tests/check-boundaries.test.ts",
         "tests/check-boundaries-rng-containment.test.ts",
         "tests/check-build-only-dependencies.test.ts",
+        "tests/ci-action-pins.test.ts",
         "tests/ci-feedback-candidate.test.ts",
         "tests/desktop-content-csp.test.ts",
         "tests/desktop-e3-series-workflow.test.ts",
