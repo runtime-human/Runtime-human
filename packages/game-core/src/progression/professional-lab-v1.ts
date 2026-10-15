@@ -191,8 +191,7 @@ export function parseProfessionalLabStateV1(value: unknown): ProfessionalLabStat
     throw new TypeError("Professional state schema is not supported");
   }
   const aptitudes = closedRecord(record.aptitudes, ["learning", "reasoning"], "aptitudes");
-  const lastEpisode =
-    record.lastEpisode === null ? null : parseLastEpisode(record.lastEpisode);
+  const lastEpisode = record.lastEpisode === null ? null : parseLastEpisode(record.lastEpisode);
   if (!Array.isArray(record.skills) || record.skills.length > SKILLS.length) {
     throw new TypeError("Professional state requires bounded skills");
   }
@@ -200,16 +199,17 @@ export function parseProfessionalLabStateV1(value: unknown): ProfessionalLabStat
   if (skills.some((s, i) => i > 0 && (skills[i - 1]?.skillId ?? "") >= s.skillId)) {
     throw new TypeError("Professional state skills must be sorted and unique");
   }
-  if (!Array.isArray(record.recentContexts) ||
-      record.recentContexts.length > PROFESSIONAL_LAB_RULES_V1.maximumRecentContexts) {
+  if (
+    !Array.isArray(record.recentContexts) ||
+    record.recentContexts.length > PROFESSIONAL_LAB_RULES_V1.maximumRecentContexts
+  ) {
     throw new TypeError("Professional state requires bounded recent contexts");
   }
   const recentContexts = record.recentContexts.map((x) => hashValue(x, "recent context"));
   if (new Set(recentContexts).size !== recentContexts.length) {
     throw new TypeError("Professional recent contexts must be unique");
   }
-  const technology =
-    record.technology === null ? null : parseTechnology(record.technology);
+  const technology = record.technology === null ? null : parseTechnology(record.technology);
   const state = Object.freeze({
     schemaVersion: "professional-lab-state-v1" as const,
     aptitudes: Object.freeze({
@@ -221,16 +221,26 @@ export function parseProfessionalLabStateV1(value: unknown): ProfessionalLabStat
     recentContexts: Object.freeze(recentContexts),
     lastEpisode,
   });
-  if (lastEpisode === null && (skills.length !== 0 || technology !== null || recentContexts.length !== 0)) {
+  if (
+    lastEpisode === null &&
+    (skills.length !== 0 || technology !== null || recentContexts.length !== 0)
+  ) {
     throw new TypeError("Uncommitted professional state cannot contain progress");
   }
   if (lastEpisode !== null && recentContexts.length === 0) {
     throw new TypeError("Committed professional state requires a context");
   }
-  if (lastEpisode !== null && skills.some((skill) => skill.lastPracticedMonth > lastEpisode.monthIndex)) {
+  if (
+    lastEpisode !== null &&
+    skills.some((skill) => skill.lastPracticedMonth > lastEpisode.monthIndex)
+  ) {
     throw new TypeError("Skill practice cannot postdate last episode");
   }
-  if (lastEpisode !== null && technology !== null && technology.lastPracticedMonth > lastEpisode.monthIndex) {
+  if (
+    lastEpisode !== null &&
+    technology !== null &&
+    technology.lastPracticedMonth > lastEpisode.monthIndex
+  ) {
     throw new TypeError("Technology practice cannot postdate last episode");
   }
   return state;
@@ -246,8 +256,11 @@ export function applyProfessionalExperienceLabV1(
   const hash = fingerprint("professional-lab-episode-v1", episode);
   const previous = state.lastEpisode;
   if (previous !== null && episode.monthIndex <= previous.monthIndex) {
-    if (episode.monthIndex === previous.monthIndex && previous.id === episode.id &&
-        previous.hash === hash) {
+    if (
+      episode.monthIndex === previous.monthIndex &&
+      previous.id === episode.id &&
+      previous.hash === hash
+    ) {
       return Object.freeze({
         kind: "replayed" as const,
         state,
@@ -270,8 +283,9 @@ export function applyProfessionalExperienceLabV1(
   const feedbackBps = PROFESSIONAL_LAB_RULES_V1.feedbackBps[episode.feedback];
   const participationBps = PROFESSIONAL_LAB_RULES_V1.participationBps[episode.participation];
   const skillSet = new Set(episode.skillIds);
-  const allIds = [...new Set([...state.skills.map((s) => s.skillId), ...episode.skillIds])]
-    .sort(compareText);
+  const allIds = [
+    ...new Set([...state.skills.map((s) => s.skillId), ...episode.skillIds]),
+  ].sort(compareText);
   const deltas: ProfessionalLabSkillDeltaV1[] = [];
   const skills = allIds.map((id) => {
     const old = state.skills.find((skill) => skill.skillId === id);
@@ -287,14 +301,20 @@ export function applyProfessionalExperienceLabV1(
     }
     const diminishingBps = 10_000 - Number((BigInt(mastery) * 5_000n) / 10_000n);
     // All intermediate multiplications and round-half-even are exact BigInt.
-    const masteryGain = boundedGain(mastery, roundHalfEven(
-      PROFESSIONAL_LAB_RULES_V1.baseMastery,
-      [challengeBps, noveltyBps, feedbackBps, capacityBps, diminishingBps],
-    ));
-    const fluencyGain = boundedGain(priorFluency, roundHalfEven(
-      PROFESSIONAL_LAB_RULES_V1.baseFluency,
-      [participationBps, outcomeBps],
-    ));
+    const masteryGain = boundedGain(
+      mastery,
+      roundHalfEven(PROFESSIONAL_LAB_RULES_V1.baseMastery, [
+        challengeBps,
+        noveltyBps,
+        feedbackBps,
+        capacityBps,
+        diminishingBps,
+      ]),
+    );
+    const fluencyGain = boundedGain(
+      priorFluency,
+      roundHalfEven(PROFESSIONAL_LAB_RULES_V1.baseFluency, [participationBps, outcomeBps]),
+    );
     deltas.push(Object.freeze({ skillId: id, masteryGain, fluencyGain }));
     return Object.freeze({
       skillId: id,
@@ -304,14 +324,16 @@ export function applyProfessionalExperienceLabV1(
     });
   });
   const previousFamiliarity = state.technology?.familiarity ?? 0;
-  const familiarityGain = boundedGain(previousFamiliarity, roundHalfEven(
-    PROFESSIONAL_LAB_RULES_V1.baseFamiliarity,
-    [noveltyBps, outcomeBps],
-  ));
-  const contexts = Object.freeze([
-    ...state.recentContexts.filter((context) => context !== episode.contextFingerprint),
-    episode.contextFingerprint,
-  ].slice(-PROFESSIONAL_LAB_RULES_V1.maximumRecentContexts));
+  const familiarityGain = boundedGain(
+    previousFamiliarity,
+    roundHalfEven(PROFESSIONAL_LAB_RULES_V1.baseFamiliarity, [noveltyBps, outcomeBps]),
+  );
+  const contexts = Object.freeze(
+    [
+      ...state.recentContexts.filter((context) => context !== episode.contextFingerprint),
+      episode.contextFingerprint,
+    ].slice(-PROFESSIONAL_LAB_RULES_V1.maximumRecentContexts),
+  );
 
   const next = parseProfessionalLabStateV1({
     schemaVersion: "professional-lab-state-v1",
@@ -359,7 +381,9 @@ function roundHalfEven(base: number, multipliers: readonly number[]): number {
   const quotient = numerator / denominator;
   const remainder = numerator % denominator;
   const doubled = remainder * 2n;
-  const rounded = quotient + (doubled > denominator || (doubled === denominator && quotient % 2n === 1n) ? 1n : 0n);
+  const rounded =
+    quotient +
+    (doubled > denominator || (doubled === denominator && quotient % 2n === 1n) ? 1n : 0n);
   return Number(rounded);
 }
 
@@ -368,7 +392,11 @@ function boundedGain(current: number, proposed: number): number {
 }
 
 function parseSkill(value: unknown): ProfessionalLabSkillV1 {
-  const record = closedRecord(value, ["fluency", "lastPracticedMonth", "mastery", "skillId"], "skill");
+  const record = closedRecord(
+    value,
+    ["fluency", "lastPracticedMonth", "mastery", "skillId"],
+    "skill",
+  );
   const skillId = oneOf(record.skillId, SKILLS, "skill ID");
   return Object.freeze({
     skillId,
@@ -379,7 +407,11 @@ function parseSkill(value: unknown): ProfessionalLabSkillV1 {
 }
 
 function parseTechnology(value: unknown): ProfessionalLabTechnologyV1 {
-  const record = closedRecord(value, ["familiarity", "lastPracticedMonth", "technologyId"], "technology");
+  const record = closedRecord(
+    value,
+    ["familiarity", "lastPracticedMonth", "technologyId"],
+    "technology",
+  );
   if (record.technologyId !== "gw-basic") throw new TypeError("Unknown professional technology");
   return Object.freeze({
     technologyId: "gw-basic",
@@ -411,8 +443,12 @@ function closedRecord(
   keys: readonly string[],
   label: string,
 ): Readonly<Record<string, unknown>> {
-  if (typeof value !== "object" || value === null || Array.isArray(value) ||
-      Object.getPrototypeOf(value) !== Object.prototype) {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    Array.isArray(value) ||
+    Object.getPrototypeOf(value) !== Object.prototype
+  ) {
     throw new TypeError(`Professional ${label} must be a plain object`);
   }
   const actual = Object.keys(value).sort(compareText);
