@@ -6,7 +6,8 @@ import { createJanuary1990ResultFixture } from "../apps/desktop/src/january/janu
 
 describe("January programmer development projection", () => {
   it("shows verified practice without claiming mastery or awarding a grade", () => {
-    const development = projectJanuaryProgrammerDevelopment(createJanuary1990ResultFixture());
+    const result = createJanuary1990ResultFixture();
+    const development = projectJanuaryProgrammerDevelopment(result);
 
     expect(development.month).toBe("1990-01");
     expect(development.practiceSignals.map((skill) => skill.label)).toEqual([
