@@ -1,5 +1,6 @@
 export {
   createJanuary1990AuthorityCutoverRuntime,
+  createJanuaryProfessionalLabEpisodeV1,
   createJanuary1990BeginCommand,
   createJanuary1990Compatibility,
   createJanuary1990InitialSaveSnapshot,
@@ -16,6 +17,7 @@ export {
   parseJanuary1990SaveSnapshot,
   projectJanuary1990Content,
   projectJanuary1990RuntimeView,
+  projectCommittedJanuaryProfessionalSourceV1,
 } from "./january-1990";
 export type {
   CreateJanuary1990AuthorityCutoverRuntimeInput,
@@ -24,6 +26,8 @@ export type {
   CreateJanuary1990ScenarioCompatibilityInput,
   CreateJanuary1990ScenarioRuntimeInput,
   January1990BeginInput,
+  JanuaryProfessionalLabAssessmentV1,
+  JanuaryProfessionalSourceV1,
   January1990CompletedMonthV1,
   January1990DecisionViewKind,
   January1990QualityScores,
