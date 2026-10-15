@@ -91,6 +91,7 @@ export default defineConfig({
       ]),
       nodeProject("application-node", [
         "tests/career-overview-model.test.ts",
+        "tests/january-save-status.test.ts",
         "tests/persistence-application.test.ts",
         "tests/persistence-service.test.ts",
         "tests/persisted-month-run-orchestrator.test.ts",
@@ -138,6 +139,7 @@ export default defineConfig({
         "tests/check-boundaries.test.ts",
         "tests/check-boundaries-rng-containment.test.ts",
         "tests/check-build-only-dependencies.test.ts",
+        "tests/ci-action-pins.test.ts",
         "tests/ci-feedback-candidate.test.ts",
         "tests/desktop-content-csp.test.ts",
         "tests/desktop-e3-series-workflow.test.ts",
