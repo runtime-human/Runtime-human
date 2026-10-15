@@ -4,11 +4,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { fingerprint } from "@runtime-human/game-core";
-import {
-  parseMonthRunId,
-  parseMonthRunRevision,
-  parseSaveId,
-} from "@runtime-human/game-schema";
+import { parseMonthRunId, parseMonthRunRevision, parseSaveId } from "@runtime-human/game-schema";
 
 import { JanuaryRuntimeScreen } from "../apps/desktop/src/january/JanuaryRuntimeScreen";
 
