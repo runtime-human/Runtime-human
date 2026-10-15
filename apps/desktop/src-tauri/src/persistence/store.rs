@@ -539,6 +539,7 @@ impl Database {
             .filter(|value| *value <= MAX_SAFE_INTEGER)
             .ok_or_else(|| PersistenceError::Invariant("save revision exhausted".to_owned()))?;
         let sequence = allocate_sequence(&transaction)?;
+        super::failpoint::hit("professional_upgrade_before_save_cas");
         let rows = transaction
             .execute(
                 "UPDATE save_games SET
@@ -571,6 +572,7 @@ impl Database {
         if rows != 1 {
             return Err(PersistenceError::SaveRevisionConflict);
         }
+        super::failpoint::hit("professional_upgrade_after_save_cas");
         let upgraded = load_save_record(&transaction, &command.save_id)?
             .ok_or_else(|| PersistenceError::Invariant("upgraded save disappeared".to_owned()))?;
         let accepted = UpgradeProfessionalSaveAcceptedV1 {
@@ -587,9 +589,11 @@ impl Database {
             current.last_committed_run_id.as_deref(),
             sequence,
         )?;
+        super::failpoint::hit("professional_upgrade_after_receipt_insert");
         transaction.commit().map_err(|error| {
             PersistenceError::storage("committing the professional save upgrade", error)
         })?;
+        super::failpoint::hit("professional_upgrade_after_commit_before_reply");
         Ok(MutationOutcome::Accepted(accepted))
     }
 

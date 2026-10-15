@@ -6,6 +6,9 @@ use super::{
     database::Database,
     error::PersistenceError,
     hash::{sha256_hex, verify_sha256},
+    professional_upgrade_contract::{
+        PROFESSIONAL_TARGET_FINGERPRINT, UpgradeAnchor, validate_professional_target_structure,
+    },
 };
 
 impl Database {
@@ -102,6 +105,12 @@ fn verify_committed_save_links(connection: &Connection) -> Result<(), Persistenc
         return Err(PersistenceError::CorruptedStoredPayload);
     }
 
+    // The one-time v1 -> v2 professional import advances the save revision but must
+    // NOT rewrite the historical MonthRun's committed_save_revision. Every save
+    // carrying the pinned v2 fingerprint MUST prove that exact +1 transition with a
+    // matching immutable import and durable transaction receipt (regardless of
+    // whether the revisions happen to be equal). Any other save keeps the strict
+    // equality rule: no arbitrary revision drift is ever accepted.
     let invalid_latest_links: i64 = connection
         .query_row(
             "SELECT COUNT(*)
@@ -112,9 +121,57 @@ fn verify_committed_save_links(connection: &Connection) -> Result<(), Persistenc
                  run.run_id IS NULL
                  OR run.save_id <> save.save_id
                  OR run.status <> 'committed'
-                 OR run.committed_save_revision <> save.revision
+                 OR run.committed_save_revision IS NULL
+                 OR (
+                   save.save_schema_fingerprint <> ?1
+                   AND run.committed_save_revision <> save.revision
+                 )
+                 OR (
+                   save.save_schema_fingerprint = ?1
+                   AND NOT COALESCE((
+                     save.revision = run.committed_save_revision + 1
+                     AND json_extract(save.snapshot_json, '$.schemaVersion')
+                         = 'professional-save-candidate-v2'
+                     AND json_extract(save.snapshot_json, '$.legacyImport.schemaVersion')
+                         = 'professional-legacy-january-receipt-v1'
+                     AND json_extract(save.snapshot_json, '$.legacyImport.assessmentStatus')
+                         = 'unassessed'
+                     AND json_extract(save.snapshot_json, '$.legacyImport.originalSaveId')
+                         = save.save_id
+                     AND json_extract(save.snapshot_json, '$.legacyImport.originalRunId')
+                         = run.run_id
+                     AND json_extract(save.snapshot_json, '$.legacyImport.originalSaveRevision')
+                         = run.committed_save_revision
+                     AND json_extract(save.snapshot_json, '$.january.completedMonth.runId')
+                         = run.run_id
+                     AND json_extract(save.snapshot_json, '$.january.completedMonth.baseSaveRevision')
+                         = run.base_save_revision
+                     AND EXISTS (
+                       SELECT 1 FROM request_receipts AS receipt
+                       WHERE receipt.operation = 'upgrade-professional-save-v1'
+                         AND receipt.save_id = save.save_id
+                         AND receipt.run_id = run.run_id
+                         AND json_extract(receipt.result_json, '$.schemaVersion')
+                             = 'upgrade-professional-save-accepted-v1'
+                         AND json_extract(receipt.result_json, '$.save.saveId') = save.save_id
+                         AND json_extract(receipt.result_json, '$.save.revision') = save.revision
+                         AND json_extract(receipt.result_json, '$.save.lastCommittedRunId')
+                             = run.run_id
+                         AND json_extract(receipt.result_json, '$.save.createdSequence')
+                             = save.created_sequence
+                         AND json_extract(receipt.result_json, '$.save.updatedSequence')
+                             = save.updated_sequence
+                         AND json_extract(receipt.result_json, '$.save.saveSchemaFingerprint')
+                             = save.save_schema_fingerprint
+                         AND json_extract(receipt.result_json, '$.save.snapshot.sha256')
+                             = save.snapshot_sha256
+                         AND json_extract(receipt.result_json, '$.save.snapshot.json')
+                             = save.snapshot_json
+                     )
+                   ), 0)
+                 )
                )",
-            [],
+            [PROFESSIONAL_TARGET_FINGERPRINT],
             |row| row.get(0),
         )
         .map_err(|source| {
@@ -122,6 +179,75 @@ fn verify_committed_save_links(connection: &Connection) -> Result<(), Persistenc
         })?;
     if invalid_latest_links != 0 {
         return Err(PersistenceError::CorruptedStoredPayload);
+    }
+    verify_professional_v2_saves(connection)
+}
+
+/// Independent Rust-side structural validation of every save carrying the pinned
+/// professional v2 fingerprint. Snapshot hash consistency alone only proves the
+/// bytes were not altered after writing; this re-applies the write-time
+/// `validate_transition` rules (zero-credit professional block, unassessed legacy
+/// receipt, January history identity and source fingerprint) so a hash-consistent
+/// but partial or malformed professional block fails closed.
+fn verify_professional_v2_saves(connection: &Connection) -> Result<(), PersistenceError> {
+    let mut statement = connection
+        .prepare(
+            "SELECT save.save_id, save.snapshot_json, save.revision,
+                    save.last_committed_run_id, run.previous_checkpoint_hash
+             FROM save_games AS save
+             LEFT JOIN month_runs AS run ON run.run_id = save.last_committed_run_id
+             WHERE save.save_schema_fingerprint = ?1
+             ORDER BY save.save_id",
+        )
+        .map_err(|source| PersistenceError::storage("preparing professional v2 scan", source))?;
+    let mut rows = statement
+        .query([PROFESSIONAL_TARGET_FINGERPRINT])
+        .map_err(|source| PersistenceError::storage("querying professional v2 saves", source))?;
+    while let Some(row) = rows
+        .next()
+        .map_err(|source| PersistenceError::storage("reading professional v2 saves", source))?
+    {
+        let save_id: String = row
+            .get(0)
+            .map_err(|source| PersistenceError::storage("reading professional save id", source))?;
+        let snapshot_json: String = row.get(1).map_err(|source| {
+            PersistenceError::storage("reading professional save snapshot", source)
+        })?;
+        let revision = read_u64(row, 2)?;
+        let run_id: Option<String> = row.get(3).map_err(|source| {
+            PersistenceError::storage("reading professional save run link", source)
+        })?;
+        let completed_checkpoint_hash: Option<String> = row.get(4).map_err(|source| {
+            PersistenceError::storage("reading professional run completed checkpoint", source)
+        })?;
+        let target: serde_json::Value = serde_json::from_str(&snapshot_json)
+            .map_err(|_| PersistenceError::CorruptedStoredPayload)?;
+        let legacy = target
+            .get("january")
+            .ok_or(PersistenceError::CorruptedStoredPayload)?;
+        // The upgrade advanced the legacy revision by exactly one.
+        let legacy_revision = revision
+            .checked_sub(1)
+            .ok_or(PersistenceError::CorruptedStoredPayload)?;
+        if run_id.is_none()
+            || legacy
+                .pointer("/completedMonth/completedCheckpointHash")
+                .and_then(serde_json::Value::as_str)
+                != completed_checkpoint_hash.as_deref()
+        {
+            return Err(PersistenceError::CorruptedStoredPayload);
+        }
+        validate_professional_target_structure(
+            &target,
+            legacy,
+            &UpgradeAnchor {
+                save_id: &save_id,
+                run_id: run_id.as_deref(),
+                legacy_revision,
+                legacy_snapshot_sha256: None,
+            },
+        )
+        .map_err(|_| PersistenceError::CorruptedStoredPayload)?;
     }
     Ok(())
 }

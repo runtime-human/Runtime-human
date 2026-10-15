@@ -11,9 +11,9 @@ use super::{
     BackupMetadataV1, BeginPersistedMonthRunAcceptedV1, BeginPersistedMonthRunCommandV1,
     CommitPersistedMonthRunAcceptedV1, CommitPersistedMonthRunCommandV1, CreateBackupCommandV1,
     CreateSaveAcceptedV1, CreateSaveCommandV1, GetRecoveryStatusQueryV1, LoadActiveMonthRunQueryV1,
-    LoadMonthRunQueryV1, LoadSaveQueryV1, MonthRunRecordV1, PersistenceError, PersistenceHandle,
-    PersistenceMutationResultV1, PersistenceQueryResultV1, RecoveryStatusV1, SaveRecordV1,
-    StoreMonthRunBoundaryAcceptedV1, StoreMonthRunBoundaryCommandV1,
+    LoadMonthRunQueryV1, LoadSaveQueryV1, MonthRunRecordV1, MutationOutcome, PersistenceError,
+    PersistenceHandle, PersistenceMutationResultV1, PersistenceQueryResultV1, RecoveryStatusV1,
+    SaveRecordV1, StoreMonthRunBoundaryAcceptedV1, StoreMonthRunBoundaryCommandV1,
     UpgradeProfessionalSaveAcceptedV1, UpgradeProfessionalSaveCommandV1,
     worker::PersistenceOperationContext,
 };
@@ -45,12 +45,31 @@ pub(crate) async fn persistence_upgrade_professional_save_v1(
     Ok(run_blocking_observed(
         handle,
         DesktopPerformanceOperationCategory::Mutation,
-        move |handle, operation| {
-            handle.upgrade_professional_save_with_operation(command, operation)
-        },
+        move |handle, operation| dispatch_professional_upgrade_v1(handle, operation, command),
     )
     .await
     .into())
+}
+
+/// B2C1 is an internal recovery/migration laboratory, not an enabled
+/// production migration path. The command is intentionally fail-closed at
+/// the Tauri boundary, even when invoked directly outside the player UI.
+/// Unlock only alongside verified pre-upgrade backup/restore and a writable
+/// v2 MonthRun runtime; the SQLite engine remains testable independently.
+pub(super) fn dispatch_professional_upgrade_v1(
+    handle: Arc<PersistenceHandle>,
+    operation: PersistenceOperationContext,
+    command: UpgradeProfessionalSaveCommandV1,
+) -> Result<MutationOutcome<UpgradeProfessionalSaveAcceptedV1>, PersistenceError> {
+    require_professional_upgrade_activation_v1()?;
+    handle.upgrade_professional_save_with_operation(command, operation)
+}
+
+fn require_professional_upgrade_activation_v1() -> Result<(), PersistenceError> {
+    Err(PersistenceError::InvalidCommand(
+        "professional save migration requires verified backup and writable v2 MonthRun support"
+            .to_owned(),
+    ))
 }
 
 #[tauri::command]
