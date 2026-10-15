@@ -74,9 +74,15 @@ export const PROFESSIONAL_SAVE_CANDIDATE_V2_FINGERPRINT = fingerprint(
     receiptFields: RECEIPT_FIELDS,
     januarySchema: "january-1990-save-snapshot-v1",
     professionalSchema: "professional-lab-state-v1",
-    labRulesFingerprint: fingerprint("professional-lab-rules-v1", PROFESSIONAL_LAB_RULES_V1),
+    rulesContract: "professional-lab-rules-v1",
     legacyImportPolicy: "only-committed-unassessed-no-retroactive-gain",
   },
+);
+
+/** Numerical tuning changes this hash without changing the structural schema hash. */
+export const PROFESSIONAL_SAVE_CANDIDATE_V2_RULES_FINGERPRINT = fingerprint(
+  "professional-lab-rules-v1",
+  PROFESSIONAL_LAB_RULES_V1,
 );
 
 export function createFreshProfessionalSaveCandidateV2(
