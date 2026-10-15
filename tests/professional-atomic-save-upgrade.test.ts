@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildProfessionalSaveUpgradeCommandV1,
-  createPersistenceService,
   inspectCommittedJanuaryProfessionalImportV2,
   PROFESSIONAL_SAVE_CANDIDATE_V2_FINGERPRINT,
 } from "@runtime-human/game-application";
