@@ -469,6 +469,308 @@ fn receipt_provenance_tamper_matrix_fails_closed() {
     }
 }
 
+fn upgraded_database() -> (TempDir, Database, UpgradeCommand) {
+    let (temp, mut database) = committed_database();
+    let request = command(&database);
+    let accepted = database
+        .upgrade_professional_save(request.clone())
+        .expect("commit a valid professional upgrade");
+    assert!(matches!(accepted, MutationOutcome::Accepted(_)));
+    database
+        .verify_application_integrity()
+        .expect("unchanged upgraded save is valid");
+    (temp, database, request)
+}
+
+fn assert_corrupted(database: &Database, case: &str) {
+    assert!(
+        matches!(
+            database.verify_application_integrity(),
+            Err(PersistenceError::CorruptedStoredPayload)
+        ),
+        "recovery accepted corrupted professional state: {case}"
+    );
+}
+
+/// Rewrites the stored receipt JSON and recomputes its hash so only the
+/// provenance predicate under test (not the receipt hash) can reject it.
+fn rewrite_receipt(database: &mut Database, request_id: &str, edit: impl FnOnce(&mut Value)) {
+    let original: String = database
+        .connection()
+        .expect("read receipt")
+        .query_row(
+            "SELECT result_json FROM request_receipts WHERE request_id = ?1",
+            [request_id],
+            |row| row.get(0),
+        )
+        .expect("load receipt");
+    let mut receipt: Value = serde_json::from_str(&original).expect("decode receipt");
+    edit(&mut receipt);
+    let altered = serde_json::to_string(&receipt).expect("serialize receipt");
+    let changed = database
+        .connection_mut()
+        .expect("write receipt fixture")
+        .execute(
+            "UPDATE request_receipts SET result_json = ?1, result_sha256 = ?2
+             WHERE request_id = ?3",
+            rusqlite::params![altered, sha256_hex(altered.as_bytes()), request_id],
+        )
+        .expect("update receipt");
+    assert_eq!(changed, 1);
+}
+
+/// Forges a *hash-consistent* v2 snapshot: the save row, its snapshot hash and
+/// the matching receipt copy are all rewritten together, so every SQL provenance
+/// predicate still holds and only the Rust structural validation can reject it.
+fn forge_hash_consistent_snapshot(
+    database: &mut Database,
+    request: &UpgradeCommand,
+    edit: impl FnOnce(&mut Value),
+) {
+    let stored: String = database
+        .connection()
+        .expect("read save")
+        .query_row(
+            "SELECT snapshot_json FROM save_games WHERE save_id = ?1",
+            [&request.save_id],
+            |row| row.get(0),
+        )
+        .expect("load upgraded snapshot");
+    let mut snapshot: Value = serde_json::from_str(&stored).expect("decode snapshot");
+    edit(&mut snapshot);
+    let forged = serde_json::to_string(&snapshot).expect("serialize forged snapshot");
+    let forged_sha = sha256_hex(forged.as_bytes());
+    let changed = database
+        .connection_mut()
+        .expect("write save fixture")
+        .execute(
+            "UPDATE save_games SET snapshot_json = ?1, snapshot_sha256 = ?2 WHERE save_id = ?3",
+            rusqlite::params![forged, forged_sha, request.save_id],
+        )
+        .expect("forge save snapshot");
+    assert_eq!(changed, 1);
+    rewrite_receipt(database, &request.request_id, |receipt| {
+        let embedded = receipt["save"]["snapshot"]
+            .as_object_mut()
+            .expect("embedded snapshot");
+        embedded.insert("json".to_owned(), Value::String(forged));
+        embedded.insert("sha256".to_owned(), Value::String(forged_sha));
+    });
+}
+
+#[test]
+fn plain_v1_save_with_revision_drift_is_still_rejected() {
+    let (_temp, mut database) = committed_database();
+    database
+        .verify_application_integrity()
+        .expect("untouched legacy v1 save is valid");
+    let changed = database
+        .connection_mut()
+        .expect("writable database")
+        .execute("UPDATE save_games SET revision = revision + 1", [])
+        .expect("drift legacy revision");
+    assert_eq!(changed, 1);
+    // No upgrade happened: no v2 fingerprint, no receipt. The +1 allowance is
+    // only for the receipt-proven upgrade, never for general revision drift.
+    assert_corrupted(&database, "plain v1 revision +1");
+    database.close().expect("close tampered test database");
+}
+
+#[test]
+fn every_single_receipt_predicate_mismatch_fails_closed() {
+    enum Edit {
+        Receipt(fn(&mut Value)),
+        Sql(&'static str),
+    }
+    let cases = [
+        (
+            "receipt result schemaVersion",
+            Edit::Receipt(|r| r["schemaVersion"] = json!("upgrade-other-v1")),
+        ),
+        (
+            "receipt save.saveId",
+            Edit::Receipt(|r| r["save"]["saveId"] = json!("another-save")),
+        ),
+        (
+            "receipt save.lastCommittedRunId",
+            Edit::Receipt(|r| {
+                r["save"]["lastCommittedRunId"] = json!("another-run");
+            }),
+        ),
+        (
+            "receipt save.revision",
+            Edit::Receipt(|r| {
+                let next = r["save"]["revision"].as_u64().expect("revision") + 1;
+                r["save"]["revision"] = json!(next);
+            }),
+        ),
+        (
+            "receipt save.createdSequence",
+            Edit::Receipt(|r| {
+                let next = r["save"]["createdSequence"].as_u64().expect("created") + 1;
+                r["save"]["createdSequence"] = json!(next);
+            }),
+        ),
+        (
+            "receipt save.updatedSequence",
+            Edit::Receipt(|r| {
+                let next = r["save"]["updatedSequence"].as_u64().expect("updated") + 1;
+                r["save"]["updatedSequence"] = json!(next);
+            }),
+        ),
+        (
+            "receipt save.saveSchemaFingerprint",
+            Edit::Receipt(|r| {
+                r["save"]["saveSchemaFingerprint"] = json!("0".repeat(64));
+            }),
+        ),
+        (
+            "receipt embedded snapshot json text",
+            Edit::Receipt(|r| {
+                r["save"]["snapshot"]["json"] = json!("{}");
+            }),
+        ),
+        (
+            "receipt row belongs to another save",
+            Edit::Sql("UPDATE request_receipts SET save_id = 'another-save' WHERE request_id = ?1"),
+        ),
+        (
+            "receipt row belongs to another run",
+            Edit::Sql("UPDATE request_receipts SET run_id = 'another-run' WHERE request_id = ?1"),
+        ),
+        (
+            "receipt row has no save id",
+            Edit::Sql("UPDATE request_receipts SET save_id = NULL WHERE request_id = ?1"),
+        ),
+    ];
+    for (case, edit) in cases {
+        let (_temp, mut database, request) = upgraded_database();
+        match edit {
+            Edit::Receipt(apply) => {
+                rewrite_receipt(&mut database, &request.request_id, apply);
+            }
+            Edit::Sql(statement) => {
+                let changed = database
+                    .connection_mut()
+                    .expect("write receipt fixture")
+                    .execute(statement, [&request.request_id])
+                    .expect("alter receipt row");
+                assert_eq!(changed, 1);
+            }
+        }
+        assert_corrupted(&database, case);
+        database.close().expect("close tampered test database");
+    }
+}
+
+#[test]
+fn upgraded_save_at_equal_revision_requires_receipt_provenance() {
+    // F2: an equal revision must not bypass the v2 provenance requirement.
+    for case in [
+        "equal-revision-with-receipt",
+        "equal-revision-without-receipt",
+    ] {
+        let (_temp, mut database, request) = upgraded_database();
+        let connection = database.connection_mut().expect("write fixture");
+        connection
+            .execute(
+                "UPDATE month_runs SET committed_save_revision = committed_save_revision + 1",
+                [],
+            )
+            .expect("equalize committed revision with the upgraded save");
+        if case == "equal-revision-without-receipt" {
+            let deleted = connection
+                .execute(
+                    "DELETE FROM request_receipts WHERE request_id = ?1",
+                    [&request.request_id],
+                )
+                .expect("delete receipt");
+            assert_eq!(deleted, 1);
+        }
+        assert_corrupted(&database, case);
+        database.close().expect("close tampered test database");
+    }
+}
+
+#[test]
+fn forged_hash_consistent_professional_block_fails_closed() {
+    // Positive control: the forging helper itself preserves a valid save, so a
+    // rejection below is attributable to the edit, not to the rewrite mechanics.
+    let (_temp, mut database, request) = upgraded_database();
+    forge_hash_consistent_snapshot(&mut database, &request, |_| {});
+    database
+        .verify_application_integrity()
+        .expect("no-op forge must remain valid");
+    database.close().expect("close control database");
+
+    type Forge = fn(&mut Value);
+    let cases: [(&str, Forge); 10] = [
+        ("professional block removed", |s| {
+            s.as_object_mut().expect("object").remove("professional");
+        }),
+        ("professional is null", |s| s["professional"] = Value::Null),
+        ("partial professional (technology key missing)", |s| {
+            s["professional"]
+                .as_object_mut()
+                .expect("professional")
+                .remove("technology");
+        }),
+        ("granted skill experience", |s| {
+            s["professional"]["skills"] = json!([{"id": "skill-algorithms", "level": 3}]);
+        }),
+        ("recent contexts not empty", |s| {
+            s["professional"]["recentContexts"] = json!(["ctx"]);
+        }),
+        ("last episode present", |s| {
+            s["professional"]["lastEpisode"] = json!({"id": "episode"});
+        }),
+        ("aptitude out of range", |s| {
+            s["professional"]["aptitudes"]["reasoning"] = json!(1001);
+        }),
+        ("unknown extra professional field", |s| {
+            s["professional"]["grade"] = json!("senior");
+        }),
+        ("legacy import marked assessed", |s| {
+            s["legacyImport"]["assessmentStatus"] = json!("assessed");
+        }),
+        ("source fingerprint not derived from january history", |s| {
+            s["legacyImport"]["sourceFingerprint"] = json!("1".repeat(64));
+        }),
+    ];
+    for (case, forge) in cases {
+        let (_temp, mut database, request) = upgraded_database();
+        forge_hash_consistent_snapshot(&mut database, &request, forge);
+        assert_corrupted(&database, case);
+        database.close().expect("close tampered test database");
+    }
+}
+
+#[test]
+fn forged_january_history_not_matching_the_committed_run_fails_closed() {
+    // A consistent rewrite of the January checkpoint hash inside the v2 snapshot
+    // (with a recomputed source fingerprint) must still disagree with month_runs.
+    let (_temp, mut database, request) = upgraded_database();
+    forge_hash_consistent_snapshot(&mut database, &request, |s| {
+        let forged_hash = "2".repeat(64);
+        s["january"]["completedMonth"]["completedCheckpointHash"] = json!(forged_hash);
+        let month = &s["january"]["completedMonth"];
+        let source = json!({
+            "domain": "runtime-human:fingerprint:v1",
+            "namespace": "january-professional-committed-source-v1",
+            "value": {
+                "saveId": s["legacyImport"]["originalSaveId"],
+                "runId": month["runId"],
+                "checkpointHash": month["completedCheckpointHash"],
+                "result": month["terminalResult"],
+            }
+        });
+        let sha = sha256_hex(serde_json::to_string(&source).expect("source").as_bytes());
+        s["legacyImport"]["sourceFingerprint"] = json!(sha);
+    });
+    assert_corrupted(&database, "january history disagrees with MonthRun row");
+    database.close().expect("close tampered test database");
+}
+
 #[test]
 fn unclean_valid_professional_upgrade_stays_writable_through_real_worker_startup() {
     let (temp, mut database) = committed_database();

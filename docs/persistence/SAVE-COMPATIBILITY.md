@@ -131,6 +131,17 @@ rather than rewriting the historical MonthRun. A process exit before COMMIT
 must leave the original save without an upgrade receipt; after COMMIT, retry
 must replay the same receipt without a second revision increment.
 
+Every save carrying the pinned v2 fingerprint must satisfy this proof, including
+when its revision happens to equal the historical run revision: v2 saves have no
+equal-revision shortcut. The recovery scan also re-applies, in Rust, the same
+pure structural rules the upgrade write path enforces (zero-credit professional
+block, unassessed legacy receipt, January history identity, recomputed
+`sourceFingerprint`, and the completed-checkpoint hash against the MonthRun row),
+so a hash-consistent snapshot with a partial or malformed professional block
+fails closed. Remaining gap: the recovery scan cannot recompute
+`originalSnapshotSha256` (the original v1 snapshot bytes are no longer stored) nor
+validate January result semantics, which need the TypeScript core.
+
 The import command is **not** enabled as a player action in this slice.
 Although its versioned Tauri IPC name is registered for contract compatibility,
 the production dispatcher explicitly rejects upgrade attempts before reaching
