@@ -15,6 +15,7 @@ use crate::desktop_performance::{
 
 use super::{
     commit_contract::CommitPersistedMonthRunCommandV1,
+    professional_upgrade_contract::UpgradeProfessionalSaveCommandV1,
     contracts::{
         BeginPersistedMonthRunCommandV1, CreateBackupCommandV1, CreateSaveCommandV1,
         LoadActiveMonthRunQueryV1, LoadMonthRunQueryV1, LoadSaveQueryV1,
@@ -25,6 +26,7 @@ use super::{
     records::{
         BackupMetadataV1, BeginPersistedMonthRunAcceptedV1, CommitPersistedMonthRunAcceptedV1,
         CreateSaveAcceptedV1, MonthRunRecordV1, MutationOutcome, RecoveryStatusV1,
+        UpgradeProfessionalSaveAcceptedV1,
         RecoveryStatusV1Value, SaveRecordV1, StoreMonthRunBoundaryAcceptedV1,
     },
 };
@@ -38,6 +40,10 @@ enum DatabaseCommand {
     CreateSave {
         command: CreateSaveCommandV1,
         response: ResponseSender<MutationOutcome<CreateSaveAcceptedV1>>,
+    },
+    UpgradeProfessionalSave {
+        command: UpgradeProfessionalSaveCommandV1,
+        response: ResponseSender<MutationOutcome<UpgradeProfessionalSaveAcceptedV1>>,
     },
     LoadSave {
         query: LoadSaveQueryV1,
@@ -89,6 +95,7 @@ impl DatabaseCommand {
             #[cfg(test)]
             Self::TestBarrier { .. } => DesktopPerformanceOperationCategory::Recovery,
             Self::CreateSave { .. }
+            | Self::UpgradeProfessionalSave { .. }
             | Self::BeginMonthRun { .. }
             | Self::StoreBoundary { .. }
             | Self::CommitMonthRun { .. } => DesktopPerformanceOperationCategory::Mutation,
@@ -289,6 +296,16 @@ impl PersistenceHandle {
     ) -> Result<MutationOutcome<CreateSaveAcceptedV1>, PersistenceError> {
         let (response, receiver) = response_channel();
         self.send(DatabaseCommand::CreateSave { command, response }, operation)?;
+        receive(receiver)
+    }
+
+    pub(crate) fn upgrade_professional_save_with_operation(
+        &self,
+        command: UpgradeProfessionalSaveCommandV1,
+        operation: PersistenceOperationContext,
+    ) -> Result<MutationOutcome<UpgradeProfessionalSaveAcceptedV1>, PersistenceError> {
+        let (response, receiver) = response_channel();
+        self.send(DatabaseCommand::UpgradeProfessionalSave { command, response }, operation)?;
         receive(receiver)
     }
 
@@ -673,6 +690,9 @@ fn dispatch(
     match command {
         DatabaseCommand::CreateSave { command, response } => {
             send_mutation(response, mode, || database.create_save(command))
+        }
+        DatabaseCommand::UpgradeProfessionalSave { command, response } => {
+            send_mutation(response, mode, || database.upgrade_professional_save(command))
         }
         DatabaseCommand::LoadSave { query, response } => {
             send_response(response, database.load_save(query));
