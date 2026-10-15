@@ -4,7 +4,8 @@ use serde_json::{Value, json};
 use tempfile::TempDir;
 
 use super::{
-    Database, LoadSaveQueryV1, MutationOutcome, PersistenceError, UpgradeProfessionalSaveCommandV1,
+    Database, LoadSaveQueryV1, MutationOutcome, PersistenceError, PersistenceHandle,
+    RecoveryStatusV1Value, UpgradeProfessionalSaveCommandV1,
     hash::sha256_hex, january_flow_fixture::load_january_persistence_flow_fixture,
     professional_upgrade_contract::UpgradeProfessionalSaveCommandV1 as UpgradeCommand,
 };
@@ -370,4 +371,65 @@ fn professional_upgrade_revision_gap_requires_a_matching_durable_receipt() {
         Err(PersistenceError::CorruptedStoredPayload)
     ));
     database.close().expect("close tampered test database");
+}
+
+#[test]
+fn unclean_valid_professional_upgrade_stays_writable_through_real_worker_startup() {
+    let (temp, mut database) = committed_database();
+    let request = command(&database);
+    let outcome = database
+        .upgrade_professional_save(request.clone())
+        .expect("commit professional upgrade");
+    assert!(matches!(outcome, MutationOutcome::Accepted(_)));
+
+    // Do not call close(): an interrupted process leaves an unclean marker.
+    drop(database);
+    let worker = PersistenceHandle::start(temp.path().join("save.sqlite3"))
+        .expect("start SQLite worker after unclean upgraded save");
+    let status = worker.recovery_status().expect("load recovery status");
+    assert_eq!(status.status, RecoveryStatusV1Value::UncleanButValid);
+    assert!(status.writable, "valid upgraded save must not be blocked");
+    let saved = worker
+        .load_save(LoadSaveQueryV1 {
+            schema_version: "load-save-query-v1".to_owned(),
+            save_id: request.save_id,
+        })
+        .expect("load upgraded save through worker")
+        .expect("upgraded save exists");
+    assert_eq!(saved.save_schema_fingerprint, TARGET);
+    worker.shutdown().expect("close upgraded worker");
+}
+
+#[test]
+fn unclean_upgrade_without_receipt_enters_recovery_read_only_worker_mode() {
+    let (temp, mut database) = committed_database();
+    let request = command(&database);
+    let outcome = database
+        .upgrade_professional_save(request.clone())
+        .expect("commit professional upgrade");
+    assert!(matches!(outcome, MutationOutcome::Accepted(_)));
+
+    // Remove the provenance as a corruption fixture. Leave the database unclean,
+    // which forces the production worker's startup integrity scan.
+    database
+        .connection_mut()
+        .expect("open database connection")
+        .execute(
+            "DELETE FROM request_receipts WHERE request_id = ?1",
+            [&request.request_id],
+        )
+        .expect("delete authoritative receipt");
+    drop(database);
+
+    let worker = PersistenceHandle::start(temp.path().join("save.sqlite3"))
+        .expect("start worker in recovery mode");
+    let status = worker.recovery_status().expect("load recovery status");
+    assert_eq!(status.status, RecoveryStatusV1Value::Corrupted);
+    assert!(!status.writable);
+    let query = worker.load_save(LoadSaveQueryV1 {
+        schema_version: "load-save-query-v1".to_owned(),
+        save_id: request.save_id,
+    });
+    assert!(matches!(query, Err(PersistenceError::RecoveryRequired)));
+    worker.shutdown().expect("close recovery worker");
 }
