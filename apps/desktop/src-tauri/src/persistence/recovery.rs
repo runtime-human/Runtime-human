@@ -120,7 +120,7 @@ fn verify_committed_save_links(connection: &Connection) -> Result<(), Persistenc
                  OR run.committed_save_revision IS NULL
                  OR (
                    run.committed_save_revision <> save.revision
-                   AND NOT (
+                   AND NOT COALESCE((
                      save.save_schema_fingerprint = ?1
                      AND save.revision = run.committed_save_revision + 1
                      AND json_extract(save.snapshot_json, '$.schemaVersion')
@@ -161,7 +161,7 @@ fn verify_committed_save_links(connection: &Connection) -> Result<(), Persistenc
                          AND json_extract(receipt.result_json, '$.save.snapshot.json')
                              = save.snapshot_json
                      )
-                   )
+                   ), 0)
                  )
                )",
             [PROFESSIONAL_TARGET_FINGERPRINT],
