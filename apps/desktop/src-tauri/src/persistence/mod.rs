@@ -15,13 +15,13 @@ mod january_flow_fixture;
 #[cfg(test)]
 mod january_flow_tests;
 mod migrations;
-mod professional_upgrade_contract;
-#[cfg(test)]
-mod professional_upgrade_tests;
 #[cfg(test)]
 mod performance_baseline_tests;
 #[cfg(test)]
 mod performance_observability_tests;
+mod professional_upgrade_contract;
+#[cfg(test)]
+mod professional_upgrade_tests;
 mod records;
 mod recovery;
 mod recovery_save;
