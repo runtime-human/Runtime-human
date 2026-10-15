@@ -15,6 +15,7 @@ mod january_flow_fixture;
 #[cfg(test)]
 mod january_flow_tests;
 mod migrations;
+mod professional_upgrade_contract;
 #[cfg(test)]
 mod performance_baseline_tests;
 #[cfg(test)]
@@ -47,10 +48,11 @@ pub(crate) use contracts::{
 };
 pub(crate) use database::{Database, RecoveryStatus};
 pub(crate) use error::{PersistenceError, PersistenceErrorV1};
+pub(crate) use professional_upgrade_contract::UpgradeProfessionalSaveCommandV1;
 pub(crate) use records::{
     BackupMetadataV1, BeginPersistedMonthRunAcceptedV1, CommitPersistedMonthRunAcceptedV1,
     CreateSaveAcceptedV1, MonthRunRecordV1, MutationOutcome, PersistenceMutationResultV1,
     PersistenceQueryResultV1, RecoveryStatusV1, RecoveryStatusV1Value, SaveRecordV1,
-    StoreMonthRunBoundaryAcceptedV1,
+    StoreMonthRunBoundaryAcceptedV1, UpgradeProfessionalSaveAcceptedV1,
 };
 pub(crate) use worker::PersistenceHandle;
