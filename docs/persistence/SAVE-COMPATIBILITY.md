@@ -4,7 +4,7 @@ type: engine
 status: draft
 canon: true
 depends_on: [ADR-010, ADR-013, ADR-014, ADR-018]
-updated: 2026-07-18
+updated: 2026-10-15
 ---
 
 # Совместимость сохранений
@@ -106,6 +106,37 @@ This applies to:
 New code cannot silently change past technical result, evidence, employer cause, offer terms or transition reason.
 
 Corruption correction requires explicit repair record and backup.
+
+
+### One-time January v1 → professional candidate v2 import (PROG-01B2C1)
+
+A completed January 1990 v1 save can be wrapped in the distinct
+`professional-save-candidate-v2` schema only by the dedicated, transactional,
+zero-retroactive-credit import operation. The original January snapshot,
+completed run, checkpoint, recorded result and its historical
+`committed_save_revision` remain unchanged.
+
+The operation advances the **save revision exactly once**, writes the new
+snapshot and schema fingerprint and stores a durable request receipt in the
+same SQLite transaction. An upgraded save may therefore have
+`save.revision = last_committed_run.committed_save_revision + 1`; this is
+**not** permission for general revision drift.
+
+When the application performs its recovery integrity scan, this exceptional
+link is valid only when the pinned v2 schema, unassessed historical import
+identity and matching `upgrade-professional-save-v1` receipt prove the exact
+current snapshot, hash, save/run identity, revision and sequence. Missing,
+inconsistent or partial provenance fails closed into corruption recovery,
+rather than rewriting the historical MonthRun. A process exit before COMMIT
+must leave the original save without an upgrade receipt; after COMMIT, retry
+must replay the same receipt without a second revision increment.
+
+The import command is **not** enabled as a player action in this slice.
+Writable v2 MonthRun support, verified pre-upgrade backup/restore and the
+corresponding owner/review gate are separate requirements before any
+user-facing migration. Prior January evidence stays `unassessed`; it never
+retroactively awards mastery, autonomy or grade.
+
 
 ## Active project compatibility
 
