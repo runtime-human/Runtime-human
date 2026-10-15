@@ -169,6 +169,58 @@ Project/career content changes do not delete evidence because evidence stores so
 
 Title, salary, tenure, referral, employer reputation or promotion cannot be migrated into technical grade/evidence.
 
+### `professional-save-candidate-v2` (PROG-01B2B): непостоянный preview
+
+Статус: **только контракт и read-only preflight; ничего не записывается.**
+Кандидат не сохраняется, не включён как действие игрока и не является
+авторизацией миграции. Атомарная запись, MonthRun cutover и compare-and-swap
+принадлежат B2C; лабораторные правила профессиональной прогрессии ещё не
+сбалансированы и не вправе выдавать профессиональный grade.
+
+Идентичность и изоляция fingerprint:
+
+- кандидат имеет собственную схему и собственный структурный fingerprint
+  (`PROFESSIONAL_SAVE_CANDIDATE_V2_FINGERPRINT`), никогда не равный
+  fingerprint January v1; он покрывает наборы полей кандидата и receipt,
+  fingerprint схемы January v1, манифест полей/границ/skill-ID состояния
+  `professional-lab-state-v1`, домен хеша snapshot и политику импорта;
+- числовые правила и версия алгоритма применения лаборатории вынесены в
+  отдельный `PROFESSIONAL_SAVE_CANDIDATE_V2_RULES_FINGERPRINT` (таблица
+  `professional-lab-rules-v1` + токен `professional-lab-apply-v1`); смена
+  формулы без смены токена не должна проходить мимо golden-тестов;
+- изменение любого из двух значений требует нового compatibility assessment;
+  значения закреплены golden-тестами.
+
+Совместимость с January v1: сохранение January v1 классифицируется как
+`requires-migration`; единственный разрешённый путь — будущая атомарная
+операция с резервной копией и нулевым ретроактивным кредитом.
+
+- завершённый January month импортируется только как `unassessed`: история и
+  результат сохраняются, мастерство, автономность и grade не начисляются;
+- idle-сохранение January v1 без завершённого месяца даёт отдельную причину
+  `nothing-to-import`;
+- receipt хеширует snapshot в каноническом виде
+  (`sha256(canonicalizeAuthoritative(january))`). Допустимый, но неканонически
+  сериализованный January v1 payload отклоняется с причиной
+  `non-canonical-source-snapshot`, а не молча принимается или маскируется
+  под `incompatible-source`;
+- receipt и fingerprint источника доказывают самосогласованность, а не
+  подлинность: любой, кто может собрать полный кандидат, может собрать
+  согласованный receipt. B2C обязан заново вывести кандидата из сохранённого
+  January-сохранения (и сверить checkpoint строки MonthRun) внутри атомарного
+  compare-and-swap; `eligible-preview` никогда не авторизует запись (между
+  preflight и записью возможна гонка TOCTOU, она признана);
+- парсер кандидата проверяет каноническое evidence и совпадение сохранённого
+  programming outcome с terminal result, но не может проверить
+  `completedCheckpointHash` без строки MonthRun.
+
+Aptitudes (`reasoning`, `learning`) — скрытое состояние. Пока у них нет
+канонического источника, **решение владельца остаётся открытым**. Предложение:
+до появления экрана новой игры / создания персонажа B2C фиксирует одну
+документированную константу по умолчанию, не принимая значения от вызывающего
+кода и не выводя их из quality scores. Диапазон значений 0..1000, аргументы
+проверяются до любого IO.
+
 ## Career compatibility
 
 ### Active search

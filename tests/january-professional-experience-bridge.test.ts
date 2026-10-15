@@ -13,14 +13,20 @@ import {
   createProfessionalLabStateV1,
   fingerprint,
   JANUARY_1990_CONTENT_IDS,
+  projectProfessionalLabFluencyV1,
 } from "@runtime-human/game-core";
 import { parseMonthRunId, parseSaveId, parseSaveRevision } from "@runtime-human/game-schema";
 import type { SaveRecordV1 } from "@runtime-human/game-persistence-contracts";
 
 import { createJanuary1990ResultFixture } from "../apps/desktop/src/january/january-result.fixture";
+import {
+  createHarnessedJanuaryRuntime,
+  requireJanuaryCommitted,
+  resumeJanuary,
+  startJanuary,
+} from "./helpers/january-1990-runtime-fixture";
 
-function storedOutcome(id: string, scope: string) {
-  const payload = { marker: id };
+function storedOutcome(id: string, scope: string, payload: unknown = { marker: id }) {
   return {
     outcomeId: id,
     scope,
@@ -47,7 +53,11 @@ function committedSave(
         storedOutcome("january-1990/access", "month/content"),
         storedOutcome("january-1990/work", "month/content"),
         storedOutcome("january-1990/defect", "month/narrative"),
-        storedOutcome("january-1990/programming-outcome", "month/outcome"),
+        storedOutcome(
+          "january-1990/programming-outcome",
+          "month/outcome",
+          (result as { programmingOutcome?: unknown }).programmingOutcome ?? {},
+        ),
       ],
     },
   };
@@ -62,6 +72,26 @@ function committedSave(
     updatedSequence: 2,
     ...overrides,
   } as SaveRecordV1;
+}
+
+function resultWith(overrides: Readonly<Record<string, unknown>>) {
+  const result = createJanuary1990ResultFixture();
+  const accessRoute =
+    (overrides.accessRoute as "home-pc" | "shared-school-pc" | undefined) ??
+    result.programmingOutcome.accessRoute;
+  return {
+    ...result,
+    programmingOutcome: {
+      ...result.programmingOutcome,
+      ...overrides,
+      accessRoute,
+      evidence: result.programmingOutcome.evidence.map((entry) =>
+        entry.skillId === JANUARY_1990_CONTENT_IDS.toolUseSkill
+          ? Object.assign({}, entry, { reasonCode: `january-1990.access.${accessRoute}` })
+          : entry,
+      ),
+    },
+  };
 }
 
 function assessment(sourceFingerprint: string): JanuaryProfessionalLabAssessmentV1 {
@@ -238,5 +268,198 @@ describe("PROG-01B2A committed January source bridge", () => {
     expect(assisted.participation).toBe("assisted");
     expect(assisted.skillIds).toEqual(["debugging", "programming"]);
     expect(assisted.classificationStatus).toBe("requires-provider-assessment");
+  });
+  it("measures each participation trigger alone and keeps other paths independent", () => {
+    const participation = (overrides: Readonly<Record<string, unknown>>) =>
+      projectCommittedJanuaryProfessionalSourceV1(committedSave({}, resultWith(overrides)))
+        .participation;
+    const baseline = createJanuary1990ResultFixture().programmingOutcome;
+
+    expect(participation({})).toBe("independent");
+    expect(participation({ defectResponse: "ask-for-guidance" })).toBe("assisted");
+    expect(participation({ learningPractice: "read-and-run" })).toBe("assisted");
+    expect(participation({ defectResponse: "change-input" })).toBe("independent");
+    expect(participation({ defectResponse: "inspect-listing" })).toBe("independent");
+    expect(participation({ accessRoute: "shared-school-pc" })).toBe("independent");
+    expect(["ask-for-guidance", "read-and-run"]).not.toContain(baseline.defectResponse);
+  });
+
+  it("keeps task context independent of player choices while the source still differs", () => {
+    const base = projectCommittedJanuaryProfessionalSourceV1(committedSave());
+    for (const overrides of [
+      { accessRoute: "shared-school-pc" },
+      { learningPractice: "read-and-run" },
+      { defectResponse: "change-input" },
+    ]) {
+      const changed = projectCommittedJanuaryProfessionalSourceV1(
+        committedSave({}, resultWith(overrides)),
+      );
+      expect(changed.contextFingerprint).toBe(base.contextFingerprint);
+      expect(changed.sourceFingerprint).not.toBe(base.sourceFingerprint);
+      expect(changed.episodeId).not.toBe(base.episodeId);
+    }
+  });
+
+  it("rejects forged, copied or mutated sources before any episode is created", () => {
+    const source = projectCommittedJanuaryProfessionalSourceV1(committedSave());
+    const approved = assessment(source.sourceFingerprint);
+    const create = (forged: unknown, value = approved) =>
+      createJanuaryProfessionalLabEpisodeV1(
+        forged as typeof source,
+        value as JanuaryProfessionalLabAssessmentV1,
+      );
+
+    expect(() => create({ ...source, participation: "independent" })).toThrow(/not minted/u);
+    expect(() =>
+      create({ ...source, participation: "independent" }, assessment(source.sourceFingerprint)),
+    ).toThrow(/not minted/u);
+    expect(() =>
+      create({ ...source, skillIds: ["debugging", "programming", "architecture"] }),
+    ).toThrow(/not minted/u);
+    expect(() =>
+      create({
+        ...source,
+        episodeId: `jan90:${fingerprint("forged", "episode")}`,
+        contextFingerprint: fingerprint("forged", "context"),
+      }),
+    ).toThrow(/not minted/u);
+    expect(() => create(JSON.parse(JSON.stringify(source)))).toThrow(/not minted/u);
+    expect(() => create(Object.create(source))).toThrow(/not minted/u);
+    expect(() => create(Object.freeze({ ...source }))).toThrow(/not minted/u);
+    expect(() => create(null)).toThrow(/not minted/u);
+    expect(() => create(undefined)).toThrow(/not minted/u);
+
+    // A genuine source is frozen and cannot be altered in place either.
+    expect(() => {
+      (source as { participation: string }).participation = "independent";
+    }).toThrow(TypeError);
+    expect(() => {
+      (source.skillIds as unknown as string[]).push("architecture");
+    }).toThrow(TypeError);
+    expect(create(source).participation).toBe("independent");
+  });
+
+  it("rejects an assessment issued for a different committed save", () => {
+    const first = projectCommittedJanuaryProfessionalSourceV1(committedSave());
+    const other = projectCommittedJanuaryProfessionalSourceV1(
+      committedSave({ saveId: parseSaveId("january-programmer-other-save") }),
+    );
+
+    expect(other.sourceFingerprint).not.toBe(first.sourceFingerprint);
+    expect(() =>
+      createJanuaryProfessionalLabEpisodeV1(first, assessment(other.sourceFingerprint)),
+    ).toThrow(/does not match/u);
+  });
+
+  it("detaches the assessment so a mutating getter cannot split the checks", () => {
+    const source = projectCommittedJanuaryProfessionalSourceV1(committedSave());
+    let reads = 0;
+    const trap = {
+      schemaVersion: "january-professional-lab-assessment-v1",
+      sourceFingerprint: source.sourceFingerprint,
+      feedback: "useful",
+      outcome: "completed",
+      get challenge() {
+        reads += 1;
+        return reads === 1 ? "familiar" : "independent";
+      },
+    };
+
+    // Accessors are refused outright; they are never evaluated more than once.
+    expect(() =>
+      createJanuaryProfessionalLabEpisodeV1(
+        source,
+        trap as unknown as JanuaryProfessionalLabAssessmentV1,
+      ),
+    ).toThrow(/plain record/u);
+    expect(reads).toBeLessThanOrEqual(1);
+    expect(() =>
+      createJanuaryProfessionalLabEpisodeV1(
+        source,
+        Object.assign(Object.create({ inherited: true }), assessment(source.sourceFingerprint)),
+      ),
+    ).toThrow(/plain record|unknown or missing/u);
+  });
+
+  it("rejects a stored programming outcome that disagrees with the terminal result", () => {
+    const result = createJanuary1990ResultFixture();
+    const save = committedSave({}, result);
+    const snapshot = JSON.parse(save.snapshot.json) as {
+      completedMonth: { outcomes: { payload: unknown; payloadHash: string }[] };
+    };
+    const forgedPayload = {
+      ...result.programmingOutcome,
+      defectResponse: "change-input",
+    };
+    const outcome = snapshot.completedMonth.outcomes[3];
+    if (outcome === undefined) throw new Error("fixture outcome missing");
+    outcome.payload = forgedPayload;
+    outcome.payloadHash = fingerprint("month-run-materialized-outcome-v1", forgedPayload);
+
+    expect(() =>
+      projectCommittedJanuaryProfessionalSourceV1({
+        ...save,
+        snapshot: createCanonicalPayload(snapshot),
+      }),
+    ).toThrow(/stored outcome/u);
+  });
+
+  it("keeps assisted help below independent practice for the same classified task", () => {
+    const independentSource = projectCommittedJanuaryProfessionalSourceV1(committedSave());
+    const assistedSource = projectCommittedJanuaryProfessionalSourceV1(
+      committedSave({}, resultWith({ defectResponse: "ask-for-guidance" })),
+    );
+    const run = (source: typeof independentSource) => {
+      const episode = createJanuaryProfessionalLabEpisodeV1(
+        source,
+        assessment(source.sourceFingerprint),
+      );
+      const applied = applyProfessionalExperienceLabV1(
+        createProfessionalLabStateV1(500, 500),
+        episode,
+      );
+      return applied.state.skills.map((skill) => projectProfessionalLabFluencyV1(skill, 0));
+    };
+
+    const assisted = run(assistedSource);
+    const independent = run(independentSource);
+    expect(assisted).toHaveLength(2);
+    assisted.forEach((fluency, index) => {
+      expect(fluency).toBeLessThanOrEqual(independent[index] ?? Number.POSITIVE_INFINITY);
+    });
+  });
+
+  it("bridges a real committed January save produced by the production flow", async () => {
+    const { harness, runtime, saveId, runId } = await createHarnessedJanuaryRuntime();
+    const access = await startJanuary(runtime, saveId, runId);
+    const learning = await resumeJanuary(runtime, access, {
+      requestId: "resume-bridge-access",
+      answer: { schemaVersion: "january-access-answer-v1", route: "home-pc" },
+    });
+    if (learning.kind !== "waiting-decision") throw new Error("expected learning boundary");
+    const defect = await resumeJanuary(runtime, learning, {
+      requestId: "resume-bridge-learning",
+      answer: { schemaVersion: "january-learning-answer-v1", practice: "edit-and-debug" },
+    });
+    if (defect.kind !== "waiting-decision") throw new Error("expected defect boundary");
+    requireJanuaryCommitted(
+      await resumeJanuary(runtime, defect, {
+        requestId: "resume-bridge-defect",
+        answer: { schemaVersion: "january-defect-answer-v1", response: "inspect-listing" },
+      }),
+    );
+
+    const save = harness.getSave();
+    const source = projectCommittedJanuaryProfessionalSourceV1(save);
+    expect(projectCommittedJanuaryProfessionalSourceV1(save)).toEqual(source);
+    expect(source.participation).toBe("independent");
+    expect(source.sourceRunId).toBe(runId);
+    const input = createJanuaryProfessionalLabEpisodeV1(
+      source,
+      assessment(source.sourceFingerprint),
+    );
+    expect(
+      applyProfessionalExperienceLabV1(createProfessionalLabStateV1(500, 500), input).kind,
+    ).toBe("applied");
   });
 });
