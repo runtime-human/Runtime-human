@@ -155,19 +155,22 @@ describe("PROG-01B2A committed January source bridge", () => {
     ).toThrow(/schema or month/u);
     expect(() =>
       projectCommittedJanuaryProfessionalSourceV1(
-        committedSave({}, {
-          ...result,
-          programmingOutcome: {
-            ...result.programmingOutcome,
-            evidence: [
-              {
-                ...result.programmingOutcome.evidence[0],
-                reasonCode: "january-1990.access.home-pc",
-              },
-              ...result.programmingOutcome.evidence.slice(1),
-            ],
+        committedSave(
+          {},
+          {
+            ...result,
+            programmingOutcome: {
+              ...result.programmingOutcome,
+              evidence: [
+                {
+                  ...result.programmingOutcome.evidence[0],
+                  reasonCode: "january-1990.access.home-pc",
+                },
+                ...result.programmingOutcome.evidence.slice(1),
+              ],
+            },
           },
-        }),
+        ),
       ),
     ).toThrow(/canonical skill evidence/u);
   });
@@ -178,10 +181,7 @@ describe("PROG-01B2A committed January source bridge", () => {
       source,
       assessment(source.sourceFingerprint),
     );
-    const applied = applyProfessionalExperienceLabV1(
-      createProfessionalLabStateV1(500, 500),
-      input,
-    );
+    const applied = applyProfessionalExperienceLabV1(createProfessionalLabStateV1(500, 500), input);
 
     expect(input.provider).toBe("project");
     expect(input.contextFingerprint).toBe(source.contextFingerprint);
@@ -190,9 +190,7 @@ describe("PROG-01B2A committed January source bridge", () => {
     expect(applied.state.skills).toHaveLength(2);
     expect(applied.gradeAwarded).toBe(false);
     expect(applied.independentDeliveryObserved).toBe(false);
-    expect(
-      applyProfessionalExperienceLabV1(applied.state, input).kind,
-    ).toBe("replayed");
+    expect(applyProfessionalExperienceLabV1(applied.state, input).kind).toBe("replayed");
   });
 
   it("refuses guessed grades, mismatched assessment provenance and hidden extras", () => {
