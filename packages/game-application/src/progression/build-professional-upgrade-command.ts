@@ -1,4 +1,7 @@
-import { parseUpgradeProfessionalSaveCommandV1, type UpgradeProfessionalSaveCommandV1 } from "@runtime-human/game-persistence-contracts";
+import {
+  parseUpgradeProfessionalSaveCommandV1,
+  type UpgradeProfessionalSaveCommandV1,
+} from "@runtime-human/game-persistence-contracts";
 import type { RequestId } from "@runtime-human/game-schema";
 
 import { createCanonicalPayload } from "../month-run-persistence-payload";
