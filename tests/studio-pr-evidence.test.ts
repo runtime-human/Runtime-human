@@ -13,6 +13,10 @@ import {
   serializePrEvidence,
 } from "../scripts/studio/evidence-lib.mjs";
 
+// Each test builds a real temporary git repository and spawns several git
+// processes; on hosted Windows runners this can exceed the 5 s default.
+const GIT_FIXTURE_TEST_TIMEOUT_MS = 30_000;
+
 const tempRoots: string[] = [];
 const SIMULATION_EVIDENCE_SCHEMA = "runtime-human-simulation-regression-evidence-v1";
 const CORPUS_FINGERPRINT = "a".repeat(64);
@@ -132,7 +136,7 @@ function writeSimulationEvidence(
   });
 }
 
-describe("runtime-human-pr-evidence-v1", () => {
+describe("runtime-human-pr-evidence-v1", { timeout: GIT_FIXTURE_TEST_TIMEOUT_MS }, () => {
   it("keeps base, candidate head, and tested synthetic merge identities distinct", () => {
     const { root, base, head, tested } = makeRepo();
     const value = collectPrEvidence(root, {
