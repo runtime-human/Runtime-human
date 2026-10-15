@@ -3,8 +3,8 @@ title: "Professional Challenge UI"
 type: ui
 status: draft
 canon: true
-depends_on: [ADR-016]
-updated: 2026-07-18
+depends_on: [ADR-016, ADR-021]
+updated: 2026-10-15
 ---
 
 # Professional Challenge UI
@@ -12,6 +12,8 @@ updated: 2026-07-18
 ## Статус
 
 Нормативная UI-спецификация для [Professional Challenge Engine](../game-design/PROFESSIONAL-CHALLENGE-ENGINE.md) и [ADR-016](../adr/ADR-016-authoritative-professional-challenge-model.md).
+
+Раскладка approach cards, выбор/подтверждение и правила маркеров уточнены [ADR-021](../adr/ADR-021-january-onboarding-decision-model-and-approach-cards.md) (решения владельца 2026-10-15); при расхождении приоритет у ADR-021.
 
 ## 1. Цель
 
@@ -78,7 +80,7 @@ Example:
 
 - глагольный label;
 - 1–2 строки о способе действия;
-- максимум два trade-off markers;
+- максимум два trade-off markers (правила маркеров ниже);
 - availability explanation, если option недоступна;
 - selected state.
 
@@ -93,12 +95,31 @@ Example:
 − выпуск может задержаться
 ```
 
+### Раскладка и выбор (ADR-021 §3)
+
+- 2–4 approach cards одинакового размера стоят **в один ряд** внутри decision zone narrative scene; для четырёх подходов (January) — четыре карточки рядом;
+- нет предвыбора: ни одна карточка не selected при первом показе и после reload; selection — эфемерное локальное состояние renderer;
+- выбор в два шага: выделить карточку → единственная кнопка `Подтвердить`; на карточках собственных action-кнопок нет; пока selection пуст, `Подтвердить` неактивна и объясняет причину;
+- ни одна карточка не выделена визуально без design reason (glow, рамка, размер, primary-стиль, `recommended`); primary-стиль — только у `Подтвердить`;
+- порядок карточек фиксирован контентом и не отражает оценку «лучшего»;
+- reflow обязателен: пока у карточки есть минимальная ширина текста — один ряд, затем 2×2, затем одна колонка (container query); порядок чтения и фокуса не меняется; 200 % zoom и long RU не требуют горизонтального чтения текста;
+- group — `radiogroup`; selected state не кодируется только цветом.
+
+### Маркеры последствий (ADR-021 §5)
+
+- маркер — глиф `+` / `−` / `?` (допускаются стрелка или иконка **вместе** с глифом и словами) плюс текст из compiled content;
+- максимум два маркера на карточку; у каждой карточки есть хотя бы один cost или unknown маркер;
+- не только цвет; цвет, если есть, не evaluative (не красный/зелёный как «хорошо/плохо»);
+- без чисел, процентов, названий навыков/метрик и упоминаний NPC;
+- маркер из закрытого словаря осей и подтверждён предикатом outcome-модели.
+
 ### Правила wording
 
 - не использовать `+15% Debugging`;
 - не маркировать option как recommended/correct без tutorial reason;
 - не раскрывать exact outcome;
 - не использовать jargon без inline explanation;
+- не упоминать наставника/NPC в тексте ситуации, подхода и consequence preview, пока не существует NPC foundation (ADR-021 §7);
 - варианты должны описывать подход, а не эмоцию или косметический стиль;
 - text должен помещаться при long RU localization и 200% scaling.
 
@@ -196,7 +217,7 @@ Example:
 
 - помощь показана как позитивный learning factor;
 - autonomy ограничена честно;
-- mentor/NPC relation consequence может быть отдельной строкой.
+- mentor/NPC relation consequence может быть отдельной строкой в результате и только после появления NPC foundation; в preview — никогда (ADR-021 §7).
 
 ## 9. Progressive disclosure
 
@@ -249,7 +270,8 @@ Today screen при blocking situation показывает:
 - весь project backlog;
 - несколько несвязанных professional choices;
 - отдельные evidence cards;
-- raw finance/life panels, не влияющие на decision.
+- raw finance/life panels, не влияющие на decision;
+- Energy / Stress / Confidence bars (ADR-021 §7).
 
 ## 11. Accessibility
 
@@ -275,7 +297,8 @@ MVP stories:
 - default invalid-input situation;
 - one unavailable option with explanation;
 - long RU text;
-- 200% scaling;
+- 200% scaling (reflow ряд → 2×2 → колонка);
+- четыре карточки в ряд без предвыбора, `Подтвердить` без selection;
 - keyboard focus sequence;
 - high contrast/reduced motion.
 
@@ -293,7 +316,7 @@ MVP stories:
 ### Persistence/recovery
 
 - suspended before answer;
-- selected but not committed;
+- selected but not committed (после reload selection не восстанавливается);
 - reload restored;
 - duplicate answer ignored;
 - provider revision conflict/recovery message.
@@ -325,7 +348,9 @@ Player should:
 Reject UI/content when:
 
 - option text differs only by reward number;
-- one card is visually promoted without design reason;
+- one card is visually promoted without design reason (включая предвыбор);
+- marker uses colour only, shows a number, skill name or NPC, or card has more than two markers;
+- card has its own commit action instead of the single `Подтвердить`;
 - technical jargon determines success comprehension;
 - exact probabilities encourage save-scumming/meta;
 - result omits compromise;
