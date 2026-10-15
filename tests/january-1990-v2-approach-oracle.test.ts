@@ -142,19 +142,13 @@ describe("REF-02A1 isolated January v2 balance oracle", () => {
       ),
     ).toThrow(/Invalid/u);
     expect(() =>
-      assertJanuaryV2ApproachBalance(
-        replace("reduce-scope", { finishThreshold: 9 }),
-      ),
+      assertJanuaryV2ApproachBalance(replace("reduce-scope", { finishThreshold: 9 })),
     ).toThrow(/Invalid/u);
     expect(() =>
-      assertJanuaryV2ApproachBalance(
-        replace("defer-or-recover", { finishThreshold: 1 }),
-      ),
+      assertJanuaryV2ApproachBalance(replace("defer-or-recover", { finishThreshold: 1 })),
     ).toThrow(/Invalid/u);
     expect(() =>
-      assertJanuaryV2ApproachBalance(
-        replace("investigate-first", { participation: "assisted" }),
-      ),
+      assertJanuaryV2ApproachBalance(replace("investigate-first", { participation: "assisted" })),
     ).toThrow(/Invalid/u);
   });
 
