@@ -8,7 +8,7 @@ use super::{
     professional_upgrade_contract::UpgradeProfessionalSaveCommandV1 as UpgradeCommand,
 };
 
-const TARGET: &str = "58a22b3f61be510c7e0dd0c81ebbefeaa5f97f46863dcc0b10485baa6bcaeded";
+const TARGET: &str = "ed6792b4a434c3be7c70adeb6fb8cbf429bfa6d5f9d1444a782bc5a7472759f0";
 
 fn committed_database() -> (TempDir, Database) {
     let temp = TempDir::new().expect("tempdir");
