@@ -427,3 +427,78 @@
     forced-color-adjust: auto;
   }
 }
+
+/* PROG-01A: evidence-backed programmer development after a committed month. */
+.january-progression {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1.25rem;
+  padding: clamp(0.9rem, 1.3vw, 1.4rem);
+  border: 1px solid var(--game-border-strong);
+  border-radius: var(--game-radius-panel);
+  background: var(--game-surface-1);
+}
+
+.january-progression-heading > span {
+  color: var(--game-accent);
+  font-family: var(--game-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.january-progression-heading h2 {
+  margin: 0.4rem 0 0;
+  color: var(--game-fg);
+  font-family: var(--game-font-ui);
+  font-size: clamp(1rem, 1.4vw, 1.3rem);
+}
+
+.january-progression-skills {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.january-progression-skills li {
+  display: grid;
+  align-content: start;
+  gap: 0.4rem;
+  padding: 0.75rem;
+  border: 1px solid var(--game-border);
+  border-radius: var(--game-radius-control);
+  background: var(--game-surface-2);
+}
+
+.january-progression-skills strong {
+  color: var(--game-fg);
+  font-size: 0.84rem;
+}
+
+.january-progression-skills span,
+.january-progression-notes {
+  color: var(--game-fg-2);
+  font-size: 0.77rem;
+  line-height: 1.5;
+}
+
+.january-progression-notes {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.january-progression-notes p {
+  margin: 0;
+}
+
+.january-progression-notes strong {
+  color: var(--game-fg);
+}
+
+.january-progression-grade {
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--game-border-soft);
+}
