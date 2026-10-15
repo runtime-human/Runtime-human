@@ -1,3 +1,4 @@
+import { JanuaryProgrammerDevelopmentPanel } from "./JanuaryProgrammerDevelopmentPanel";
 import { buildJanuaryScreenModel } from "./january-screen-model";
 import type { JanuarySessionChoice, JanuarySessionView } from "./january-session-controller";
 
@@ -89,6 +90,10 @@ export function JanuaryRuntimeScreen({
                 </button>
               ))}
             </div>
+          ) : null}
+
+          {view.kind === "committed" ? (
+            <JanuaryProgrammerDevelopmentPanel result={view.result} />
           ) : null}
 
           {model.qualityScores ? (
