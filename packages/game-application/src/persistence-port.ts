@@ -5,6 +5,7 @@ export type PersistenceInvokePort = <T>(
 
 export const PERSISTENCE_COMMANDS = Object.freeze({
   createSave: "persistence_create_save_v1",
+  upgradeProfessionalSave: "persistence_upgrade_professional_save_v1",
   loadSave: "persistence_load_save_v1",
   beginMonthRun: "persistence_begin_month_run_v1",
   loadMonthRun: "persistence_load_month_run_v1",

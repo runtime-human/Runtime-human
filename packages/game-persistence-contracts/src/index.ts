@@ -27,6 +27,14 @@ export type {
   StoreMonthRunBoundaryCommandV1,
 } from "./contracts";
 export { parseCommitPersistedMonthRunCommand } from "./commit";
+export {
+  parseUpgradeProfessionalSaveAcceptedV1,
+  parseUpgradeProfessionalSaveCommandV1,
+} from "./upgrade";
+export type {
+  UpgradeProfessionalSaveAcceptedV1,
+  UpgradeProfessionalSaveCommandV1,
+} from "./upgrade";
 export type { CommitPersistedMonthRunCommandV1 } from "./commit";
 export {
   parseBeginPersistedMonthRunCommand,

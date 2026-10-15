@@ -56,6 +56,13 @@ pub(crate) struct CreateSaveAcceptedV1 {
     pub(crate) save: SaveRecordV1,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub(crate) struct UpgradeProfessionalSaveAcceptedV1 {
+    pub(crate) schema_version: String,
+    pub(crate) save: SaveRecordV1,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub(crate) struct BeginPersistedMonthRunAcceptedV1 {

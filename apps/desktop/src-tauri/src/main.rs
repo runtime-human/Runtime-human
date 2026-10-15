@@ -63,6 +63,7 @@ fn main() {
             desktop_performance::desktop_get_performance_snapshot_v1,
             diagnostics::desktop_get_logging_status_v1,
             persistence::commands::persistence_create_save_v1,
+            persistence::commands::persistence_upgrade_professional_save_v1,
             persistence::commands::persistence_load_save_v1,
             persistence::commands::persistence_begin_month_run_v1,
             persistence::commands::persistence_load_month_run_v1,

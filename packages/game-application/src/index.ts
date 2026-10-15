@@ -1,5 +1,6 @@
 export {
   createJanuary1990AuthorityCutoverRuntime,
+  createJanuaryProfessionalLabEpisodeV1,
   createJanuary1990BeginCommand,
   createJanuary1990Compatibility,
   createJanuary1990InitialSaveSnapshot,
@@ -16,6 +17,7 @@ export {
   parseJanuary1990SaveSnapshot,
   projectJanuary1990Content,
   projectJanuary1990RuntimeView,
+  projectCommittedJanuaryProfessionalSourceV1,
 } from "./january-1990";
 export type {
   CreateJanuary1990AuthorityCutoverRuntimeInput,
@@ -24,6 +26,8 @@ export type {
   CreateJanuary1990ScenarioCompatibilityInput,
   CreateJanuary1990ScenarioRuntimeInput,
   January1990BeginInput,
+  JanuaryProfessionalLabAssessmentV1,
+  JanuaryProfessionalSourceV1,
   January1990CompletedMonthV1,
   January1990DecisionViewKind,
   January1990QualityScores,
@@ -64,3 +68,19 @@ export type {
   PersistedMonthRunOrchestratorOptions,
   PersistedMonthRunResult,
 } from "./persisted-month-run-types";
+
+export {
+  createFreshProfessionalSaveCandidateV2,
+  parseProfessionalSaveCandidateV2,
+  prepareCommittedJanuaryProfessionalCandidateV2,
+  PROFESSIONAL_SAVE_CANDIDATE_V2_FINGERPRINT,
+  PROFESSIONAL_SAVE_CANDIDATE_V2_RULES_FINGERPRINT,
+} from "./progression/professional-save-candidate-v2";
+export type {
+  ProfessionalLegacyReceiptV1,
+  ProfessionalSaveCandidateV2,
+} from "./progression/professional-save-candidate-v2";
+export { inspectCommittedJanuaryProfessionalImportV2 } from "./progression/inspect-professional-import-v2";
+export type { ProfessionalImportInspectionV2 } from "./progression/inspect-professional-import-v2";
+
+export { buildProfessionalSaveUpgradeCommandV1 } from "./progression/build-professional-upgrade-command";

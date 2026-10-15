@@ -58,6 +58,7 @@ export default defineConfig({
     projects: [
       nodeProject("core-node", [
         "tests/determinism-golden.test.ts",
+        "tests/professional-lab-v1.test.ts",
         "tests/determinism-manifest.test.ts",
         "tests/deterministic-hash.test.ts",
         "tests/xoshiro256ss.test.ts",
@@ -101,6 +102,9 @@ export default defineConfig({
         "tests/january-1990-desktop-performance.test.ts",
         "tests/january-1990-desktop-session.test.ts",
         "tests/january-1990-desktop-scenario-authority.test.ts",
+        "tests/january-professional-experience-bridge.test.ts",
+        "tests/professional-save-candidate-v2.test.ts",
+        "tests/professional-atomic-save-upgrade.test.ts",
         "tests/january-1990-persistence-flow.test.ts",
         "tests/january-1990-persisted-restart.test.ts",
         "tests/january-1990-persisted-run.test.ts",

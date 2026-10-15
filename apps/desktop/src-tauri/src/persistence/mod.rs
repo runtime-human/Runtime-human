@@ -19,6 +19,9 @@ mod migrations;
 mod performance_baseline_tests;
 #[cfg(test)]
 mod performance_observability_tests;
+mod professional_upgrade_contract;
+#[cfg(test)]
+mod professional_upgrade_tests;
 mod records;
 mod recovery;
 mod recovery_save;
@@ -47,10 +50,11 @@ pub(crate) use contracts::{
 };
 pub(crate) use database::{Database, RecoveryStatus};
 pub(crate) use error::{PersistenceError, PersistenceErrorV1};
+pub(crate) use professional_upgrade_contract::UpgradeProfessionalSaveCommandV1;
 pub(crate) use records::{
     BackupMetadataV1, BeginPersistedMonthRunAcceptedV1, CommitPersistedMonthRunAcceptedV1,
     CreateSaveAcceptedV1, MonthRunRecordV1, MutationOutcome, PersistenceMutationResultV1,
     PersistenceQueryResultV1, RecoveryStatusV1, RecoveryStatusV1Value, SaveRecordV1,
-    StoreMonthRunBoundaryAcceptedV1,
+    StoreMonthRunBoundaryAcceptedV1, UpgradeProfessionalSaveAcceptedV1,
 };
 pub(crate) use worker::PersistenceHandle;

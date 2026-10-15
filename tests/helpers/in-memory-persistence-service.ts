@@ -84,6 +84,12 @@ export function createInMemoryPersistenceHarness(
         rejected("SaveAlreadyExists", "In-memory harness already contains its seeded save"),
       );
     },
+    async upgradeProfessionalSave() {
+      return rejected(
+        "InvalidCommand",
+        "Professional upgrade is not implemented by the v1 harness",
+      );
+    },
     async loadSave(query) {
       return query.saveId === save.saveId ? { kind: "found", value: save } : { kind: "not-found" };
     },
