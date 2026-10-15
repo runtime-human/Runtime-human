@@ -15,9 +15,8 @@ use super::{
     professional_upgrade_contract::UpgradeProfessionalSaveCommandV1,
     records::{
         BeginPersistedMonthRunAcceptedV1, CommitPersistedMonthRunAcceptedV1, CreateSaveAcceptedV1,
-        UpgradeProfessionalSaveAcceptedV1,
         MonthRunRecordV1, MutationOutcome, RecoveryStatusV1, RecoveryStatusV1Value, SaveRecordV1,
-        StoreMonthRunBoundaryAcceptedV1,
+        StoreMonthRunBoundaryAcceptedV1, UpgradeProfessionalSaveAcceptedV1,
     },
 };
 
@@ -534,12 +533,15 @@ impl Database {
         }
         command.validate_transition(&current)?;
 
-        let revision = current.revision.checked_add(1)
+        let revision = current
+            .revision
+            .checked_add(1)
             .filter(|value| *value <= MAX_SAFE_INTEGER)
             .ok_or_else(|| PersistenceError::Invariant("save revision exhausted".to_owned()))?;
         let sequence = allocate_sequence(&transaction)?;
-        let rows = transaction.execute(
-            "UPDATE save_games SET
+        let rows = transaction
+            .execute(
+                "UPDATE save_games SET
                 revision = ?1,
                 snapshot_json = ?2,
                 snapshot_sha256 = ?3,
@@ -550,19 +552,22 @@ impl Database {
                AND updated_sequence = ?8
                AND snapshot_sha256 = ?9
                AND save_schema_fingerprint = ?10",
-            params![
-                revision,
-                command.snapshot.json,
-                command.snapshot.sha256,
-                command.target_save_schema_fingerprint,
-                sequence,
-                command.save_id,
-                command.expected_save_revision,
-                command.expected_updated_sequence,
-                command.expected_snapshot_sha256,
-                command.expected_source_save_schema_fingerprint,
-            ],
-        ).map_err(|error| PersistenceError::storage("CAS upgrading the professional save", error))?;
+                params![
+                    revision,
+                    command.snapshot.json,
+                    command.snapshot.sha256,
+                    command.target_save_schema_fingerprint,
+                    sequence,
+                    command.save_id,
+                    command.expected_save_revision,
+                    command.expected_updated_sequence,
+                    command.expected_snapshot_sha256,
+                    command.expected_source_save_schema_fingerprint,
+                ],
+            )
+            .map_err(|error| {
+                PersistenceError::storage("CAS upgrading the professional save", error)
+            })?;
         if rows != 1 {
             return Err(PersistenceError::SaveRevisionConflict);
         }
