@@ -82,3 +82,5 @@ export type {
 } from "./progression/professional-save-candidate-v2";
 export { inspectCommittedJanuaryProfessionalImportV2 } from "./progression/inspect-professional-import-v2";
 export type { ProfessionalImportInspectionV2 } from "./progression/inspect-professional-import-v2";
+
+export { buildProfessionalSaveUpgradeCommandV1 } from "./progression/build-professional-upgrade-command";
