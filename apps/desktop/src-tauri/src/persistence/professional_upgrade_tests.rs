@@ -2,9 +2,8 @@ use serde_json::{Value, json};
 use tempfile::TempDir;
 
 use super::{
-    BeginPersistedMonthRunCommandV1, Database, LoadSaveQueryV1, MutationOutcome,
-    PersistenceError, UpgradeProfessionalSaveCommandV1,
-    hash::sha256_hex,
+    BeginPersistedMonthRunCommandV1, Database, LoadSaveQueryV1, MutationOutcome, PersistenceError,
+    UpgradeProfessionalSaveCommandV1, hash::sha256_hex,
     january_flow_fixture::load_january_persistence_flow_fixture,
     professional_upgrade_contract::UpgradeProfessionalSaveCommandV1 as UpgradeCommand,
 };
@@ -13,15 +12,23 @@ const TARGET: &str = "58a22b3f61be510c7e0dd0c81ebbefeaa5f97f46863dcc0b10485baa6b
 
 fn committed_database() -> (TempDir, Database) {
     let temp = TempDir::new().expect("tempdir");
-    let mut database = Database::open_or_create(&temp.path().join("save.sqlite3"))
-        .expect("database");
+    let mut database =
+        Database::open_or_create(&temp.path().join("save.sqlite3")).expect("database");
     let fixture = load_january_persistence_flow_fixture();
-    database.create_save(fixture.create_save).expect("create save");
-    database.begin_month_run(fixture.begin).expect("begin month");
+    database
+        .create_save(fixture.create_save)
+        .expect("create save");
+    database
+        .begin_month_run(fixture.begin)
+        .expect("begin month");
     for boundary in fixture.boundaries {
-        database.store_month_run_boundary(boundary).expect("store boundary");
+        database
+            .store_month_run_boundary(boundary)
+            .expect("store boundary");
     }
-    database.commit_month_run(fixture.commit).expect("commit January");
+    database
+        .commit_month_run(fixture.commit)
+        .expect("commit January");
     (temp, database)
 }
 
@@ -90,30 +97,45 @@ fn command(database: &Database) -> UpgradeCommand {
 fn atomic_upgrade_preserves_history_and_replays_receipt_after_reopen() {
     let (temp, mut database) = committed_database();
     let request = command(&database);
-    let initial = database.load_save(LoadSaveQueryV1 {
-        schema_version: "load-save-query-v1".to_owned(),
-        save_id: request.save_id.clone(),
-    }).unwrap().unwrap();
+    let initial = database
+        .load_save(LoadSaveQueryV1 {
+            schema_version: "load-save-query-v1".to_owned(),
+            save_id: request.save_id.clone(),
+        })
+        .unwrap()
+        .unwrap();
 
-    let accepted = database.upgrade_professional_save(request.clone()).expect("upgrade");
+    let accepted = database
+        .upgrade_professional_save(request.clone())
+        .expect("upgrade");
     let upgraded = match accepted {
         MutationOutcome::Accepted(value) => value.save,
         MutationOutcome::Duplicate(_) => panic!("first upgrade cannot be a replay"),
     };
     assert_eq!(upgraded.revision, initial.revision + 1);
     assert_eq!(upgraded.save_schema_fingerprint, TARGET);
-    assert_eq!(upgraded.last_committed_run_id, initial.last_committed_run_id);
+    assert_eq!(
+        upgraded.last_committed_run_id,
+        initial.last_committed_run_id
+    );
     assert_eq!(upgraded.created_sequence, initial.created_sequence);
     assert_ne!(upgraded.snapshot.sha256, initial.snapshot.sha256);
     let json: Value = serde_json::from_str(&upgraded.snapshot.json).unwrap();
     let old: Value = serde_json::from_str(&initial.snapshot.json).unwrap();
     assert_eq!(json["january"], old);
     assert_eq!(json["legacyImport"]["assessmentStatus"], "unassessed");
-    assert!(json["professional"]["skills"].as_array().unwrap().is_empty());
+    assert!(
+        json["professional"]["skills"]
+            .as_array()
+            .unwrap()
+            .is_empty()
+    );
 
     database.close().expect("close");
     let mut reopened = Database::open_or_create(&temp.path().join("save.sqlite3")).expect("reopen");
-    let replay = reopened.upgrade_professional_save(request.clone()).expect("duplicate");
+    let replay = reopened
+        .upgrade_professional_save(request.clone())
+        .expect("duplicate");
     assert!(matches!(replay, MutationOutcome::Duplicate(value) if value.save == upgraded));
     let mut different = request;
     different.request_id = "upgrade-save-request-other".to_owned();
@@ -143,10 +165,13 @@ fn active_month_and_invalid_history_cannot_be_upgraded() {
     };
     database.begin_month_run(fixture.begin).unwrap();
     // Make CAS reflect the current source before checking active-run guard.
-    let save = database.load_save(LoadSaveQueryV1 {
-        schema_version: "load-save-query-v1".to_owned(),
-        save_id: request.save_id.clone(),
-    }).unwrap().unwrap();
+    let save = database
+        .load_save(LoadSaveQueryV1 {
+            schema_version: "load-save-query-v1".to_owned(),
+            save_id: request.save_id.clone(),
+        })
+        .unwrap()
+        .unwrap();
     let request = UpgradeProfessionalSaveCommandV1 {
         expected_snapshot_sha256: save.snapshot.sha256,
         expected_source_save_schema_fingerprint: save.save_schema_fingerprint,
@@ -163,10 +188,13 @@ fn active_month_and_invalid_history_cannot_be_upgraded() {
 fn rejecting_forged_progress_does_not_modify_original_committed_save() {
     let (_temp, mut database) = committed_database();
     let valid = command(&database);
-    let before = database.load_save(LoadSaveQueryV1 {
-        schema_version: "load-save-query-v1".to_owned(),
-        save_id: valid.save_id.clone(),
-    }).unwrap().unwrap();
+    let before = database
+        .load_save(LoadSaveQueryV1 {
+            schema_version: "load-save-query-v1".to_owned(),
+            save_id: valid.save_id.clone(),
+        })
+        .unwrap()
+        .unwrap();
     let mut invalid = valid;
     let mut value: Value = serde_json::from_str(&invalid.snapshot.json).unwrap();
     value["professional"]["skills"] = json!([{"skillId":"programming", "mastery":10000}]);
@@ -176,9 +204,12 @@ fn rejecting_forged_progress_does_not_modify_original_committed_save() {
         database.upgrade_professional_save(invalid),
         Err(PersistenceError::InvalidCommand(_))
     ));
-    let after = database.load_save(LoadSaveQueryV1 {
-        schema_version: "load-save-query-v1".to_owned(),
-        save_id: before.save_id.clone(),
-    }).unwrap().unwrap();
+    let after = database
+        .load_save(LoadSaveQueryV1 {
+            schema_version: "load-save-query-v1".to_owned(),
+            save_id: before.save_id.clone(),
+        })
+        .unwrap()
+        .unwrap();
     assert_eq!(before, after);
 }
