@@ -14,6 +14,7 @@ use super::{
     LoadMonthRunQueryV1, LoadSaveQueryV1, MonthRunRecordV1, PersistenceError, PersistenceHandle,
     PersistenceMutationResultV1, PersistenceQueryResultV1, RecoveryStatusV1, SaveRecordV1,
     StoreMonthRunBoundaryAcceptedV1, StoreMonthRunBoundaryCommandV1,
+    UpgradeProfessionalSaveAcceptedV1, UpgradeProfessionalSaveCommandV1,
     worker::PersistenceOperationContext,
 };
 
@@ -30,6 +31,21 @@ pub(crate) async fn persistence_create_save_v1(
         handle,
         DesktopPerformanceOperationCategory::Mutation,
         move |handle, operation| handle.create_save_with_operation(command, operation),
+    )
+    .await
+    .into())
+}
+
+#[tauri::command]
+pub(crate) async fn persistence_upgrade_professional_save_v1(
+    state: State<'_, ManagedPersistence>,
+    command: UpgradeProfessionalSaveCommandV1,
+) -> CommandResult<PersistenceMutationResultV1<UpgradeProfessionalSaveAcceptedV1>> {
+    let handle = Arc::clone(state.inner());
+    Ok(run_blocking_observed(
+        handle,
+        DesktopPerformanceOperationCategory::Mutation,
+        move |handle, operation| handle.upgrade_professional_save_with_operation(command, operation),
     )
     .await
     .into())
