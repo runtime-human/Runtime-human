@@ -426,10 +426,16 @@ fn unclean_upgrade_without_receipt_enters_recovery_read_only_worker_mode() {
     let status = worker.recovery_status().expect("load recovery status");
     assert_eq!(status.status, RecoveryStatusV1Value::Corrupted);
     assert!(!status.writable);
-    let query = worker.load_save(LoadSaveQueryV1 {
-        schema_version: "load-save-query-v1".to_owned(),
-        save_id: request.save_id,
-    });
-    assert!(matches!(query, Err(PersistenceError::RecoveryRequired)));
+    // Read-only recovery permits diagnostics but rejects every mutation.
+    let query = worker
+        .load_save(LoadSaveQueryV1 {
+            schema_version: "load-save-query-v1".to_owned(),
+            save_id: request.save_id.clone(),
+        })
+        .expect("read-only recovery should still permit loading the save");
+    assert!(query.is_some());
+    let operation = worker.begin_operation();
+    let mutation = worker.upgrade_professional_save_with_operation(request, operation);
+    assert!(matches!(mutation, Err(PersistenceError::RecoveryRequired)));
     worker.shutdown().expect("close recovery worker");
 }
