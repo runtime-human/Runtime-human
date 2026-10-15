@@ -7,10 +7,7 @@ import {
   PROFESSIONAL_LAB_RULES_V1,
   type ProfessionalLabStateV1,
 } from "@runtime-human/game-core";
-import {
-  parseSaveRecord,
-  type SaveRecordV1,
-} from "@runtime-human/game-persistence-contracts";
+import { parseSaveRecord, type SaveRecordV1 } from "@runtime-human/game-persistence-contracts";
 import {
   parseMonthRunId,
   parseSaveId,
@@ -20,9 +17,7 @@ import {
   type SaveRevision,
 } from "@runtime-human/game-schema";
 
-import {
-  projectCommittedJanuaryProfessionalSourceV1,
-} from "../january-1990/january-professional-experience-bridge";
+import { projectCommittedJanuaryProfessionalSourceV1 } from "../january-1990/january-professional-experience-bridge";
 import {
   createJanuary1990InitialSaveSnapshot,
   parseJanuary1990SaveSnapshot,
