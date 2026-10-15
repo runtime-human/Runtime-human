@@ -51,6 +51,26 @@ TypeBox definitions (packages/game-authoring-schema/src/balance-schema.ts)
 - Desktop-рантайм (`createJanuary1990Runtime`) пока запускается на каноническом снапшоте; точка вайринга `balance` в input уже есть.
 - Посторонние slice в `balance/` отвергаются гейтом `balance:check`, компилятор их валидирует, но не фильтрует.
 
+## REF-02A1 — изолированный v2 outcome oracle
+
+Новый `january-v2-approach-oracle.ts` — чистая детерминированная тестовая модель
+четырёх подходов по ADR-021. Она принимает уже реализованный исход RNG (целое
+`0..9`) и не запускает RNG сама. Exhaustive oracle проверяет 8 контекстов,
+Pareto-anti-dominance, реальную цену `assisted`, преимущество помощи по
+возможности закончить и неизменность множества доступных delivery/quality
+классов при разных backgrounds.
+
+**Статус: REF-02A1 — экспериментальная модель, не production balance.**
+Таблица `JANUARY_V2_PROVISIONAL_APPROACH_TABLE` — временная тестовая
+фикстура; она не является новой authoritative JSONC-family. Следующий
+REF-02A2 должен перенести настройки в отдельную закрытую JSONC-семью,
+реализовать TypeBox/Ajv компиляцию, добавить `pnpm balance:check` для v2,
+детерминированный bounded-trace и закрепить fingerprint. До этого v2 outcome
+не используется в игровом MonthRun; v1 JSONC/fingerprints не изменяются.
+Формальная проверка недоминирования двух background должна учитывать их
+подтверждённые смысловые контекстные преимущества и остаётся открытой:
+равное множество outcome не доказывает отсутствие dominance по timing.
+
 ## Верификация
 
 - `pnpm balance:check` — компиляция и валидация `balance/**`, каноническое равенство с Core-default;
