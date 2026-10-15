@@ -68,15 +68,15 @@ impl UpgradeProfessionalSaveCommandV1 {
 
     /// Defense in depth: never permit the generic persistence worker to install
     /// arbitrary experience, grades, or rewritten January history in an upgrade.
-    pub(crate) fn validate_transition(
-        &self,
-        old: &SaveRecordV1,
-    ) -> Result<(), PersistenceError> {
+    pub(crate) fn validate_transition(&self, old: &SaveRecordV1) -> Result<(), PersistenceError> {
         let target = self.snapshot.validate()?;
         let legacy: Value = serde_json::from_str(&old.snapshot.json)
             .map_err(|_| PersistenceError::CorruptedStoredPayload)?;
         let value = target.as_object().ok_or_else(invalid_upgrade)?;
-        require_keys(value, &["january", "legacyImport", "professional", "schemaVersion"])?;
+        require_keys(
+            value,
+            &["january", "legacyImport", "professional", "schemaVersion"],
+        )?;
         if target["schemaVersion"] != "professional-save-candidate-v2" {
             return Err(invalid_upgrade());
         }
@@ -85,37 +85,48 @@ impl UpgradeProfessionalSaveCommandV1 {
                 "upgrade cannot change committed January history".to_owned(),
             ));
         }
-        let month = legacy.get("completedMonth").and_then(Value::as_object)
+        let month = legacy
+            .get("completedMonth")
+            .and_then(Value::as_object)
             .ok_or_else(invalid_upgrade)?;
         if legacy.get("schemaVersion").and_then(Value::as_str)
             != Some("january-1990-save-snapshot-v1")
-            || month.get("runId").and_then(Value::as_str)
-                != old.last_committed_run_id.as_deref()
-            || month.get("baseSaveRevision").and_then(Value::as_u64)
-                != old.revision.checked_sub(1)
+            || month.get("runId").and_then(Value::as_str) != old.last_committed_run_id.as_deref()
+            || month.get("baseSaveRevision").and_then(Value::as_u64) != old.revision.checked_sub(1)
         {
             return Err(invalid_upgrade());
         }
-        let receipt = target["legacyImport"].as_object().ok_or_else(invalid_upgrade)?;
-        require_keys(receipt, &[
-            "assessmentStatus", "originalRunId", "originalSaveId",
-            "originalSaveRevision", "originalSnapshotSha256", "schemaVersion",
-            "sourceFingerprint",
-        ])?;
+        let receipt = target["legacyImport"]
+            .as_object()
+            .ok_or_else(invalid_upgrade)?;
+        require_keys(
+            receipt,
+            &[
+                "assessmentStatus",
+                "originalRunId",
+                "originalSaveId",
+                "originalSaveRevision",
+                "originalSnapshotSha256",
+                "schemaVersion",
+                "sourceFingerprint",
+            ],
+        )?;
         if receipt.get("schemaVersion").and_then(Value::as_str)
             != Some("professional-legacy-january-receipt-v1")
             || receipt.get("assessmentStatus").and_then(Value::as_str) != Some("unassessed")
             || receipt.get("originalRunId").and_then(Value::as_str)
                 != old.last_committed_run_id.as_deref()
             || receipt.get("originalSaveId").and_then(Value::as_str) != Some(old.save_id.as_str())
-            || receipt.get("originalSaveRevision").and_then(Value::as_u64)
-                != Some(old.revision)
-            || receipt.get("originalSnapshotSha256").and_then(Value::as_str)
+            || receipt.get("originalSaveRevision").and_then(Value::as_u64) != Some(old.revision)
+            || receipt
+                .get("originalSnapshotSha256")
+                .and_then(Value::as_str)
                 != Some(old.snapshot.sha256.as_str())
         {
             return Err(invalid_upgrade());
         }
-        let source_fingerprint = receipt["sourceFingerprint"].as_str()
+        let source_fingerprint = receipt["sourceFingerprint"]
+            .as_str()
             .ok_or_else(invalid_upgrade)?;
         validate_sha256_hex(source_fingerprint, "sourceFingerprint")?;
         let source_value = json!({
@@ -134,20 +145,33 @@ impl UpgradeProfessionalSaveCommandV1 {
                 "professional source fingerprint does not match committed history".to_owned(),
             ));
         }
-        let professional = target["professional"].as_object().ok_or_else(invalid_upgrade)?;
-        require_keys(professional, &[
-            "aptitudes", "lastEpisode", "recentContexts", "schemaVersion",
-            "skills", "technology",
-        ])?;
+        let professional = target["professional"]
+            .as_object()
+            .ok_or_else(invalid_upgrade)?;
+        require_keys(
+            professional,
+            &[
+                "aptitudes",
+                "lastEpisode",
+                "recentContexts",
+                "schemaVersion",
+                "skills",
+                "technology",
+            ],
+        )?;
         if professional["schemaVersion"] != "professional-lab-state-v1"
             || !professional["skills"].as_array().is_some_and(Vec::is_empty)
-            || !professional["recentContexts"].as_array().is_some_and(Vec::is_empty)
+            || !professional["recentContexts"]
+                .as_array()
+                .is_some_and(Vec::is_empty)
             || !professional["lastEpisode"].is_null()
             || !professional["technology"].is_null()
         {
             return Err(invalid_upgrade());
         }
-        let aptitudes = professional["aptitudes"].as_object().ok_or_else(invalid_upgrade)?;
+        let aptitudes = professional["aptitudes"]
+            .as_object()
+            .ok_or_else(invalid_upgrade)?;
         require_keys(aptitudes, &["reasoning", "learning"])?;
         for key in ["reasoning", "learning"] {
             if !aptitudes[key].as_u64().is_some_and(|value| value <= 1000) {
@@ -162,9 +186,7 @@ fn require_keys(
     value: &serde_json::Map<String, Value>,
     allowed: &[&str],
 ) -> Result<(), PersistenceError> {
-    if value.len() != allowed.len()
-        || !value.keys().all(|key| allowed.contains(&key.as_str()))
-    {
+    if value.len() != allowed.len() || !value.keys().all(|key| allowed.contains(&key.as_str())) {
         return Err(invalid_upgrade());
     }
     Ok(())
