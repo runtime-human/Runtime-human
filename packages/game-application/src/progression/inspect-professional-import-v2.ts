@@ -14,6 +14,7 @@ export type ProfessionalImportInspectionV2 =
       candidate: ProfessionalSaveCandidateV2;
       saveId: SaveId;
       observedRevision: SaveRevision;
+      observedUpdatedSequence: number;
       observedSnapshotSha256: string;
       migrationIsAtomic: false;
     }>
@@ -110,6 +111,7 @@ export async function inspectCommittedJanuaryProfessionalImportV2(
       candidate,
       saveId,
       observedRevision: observed.revision,
+      observedUpdatedSequence: observed.updatedSequence,
       observedSnapshotSha256: observed.snapshot.sha256,
       migrationIsAtomic: false,
     });
