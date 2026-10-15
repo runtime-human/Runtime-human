@@ -285,11 +285,11 @@ export function applyProfessionalExperienceLabV1(
         lastPracticedMonth: old?.lastPracticedMonth ?? episode.monthIndex,
       });
     }
-    const diminishingBps = 10_000 - (mastery * 5_000) / 10_000;
+    const diminishingBps = 10_000 - Number((BigInt(mastery) * 5_000n) / 10_000n);
     // All intermediate multiplications and round-half-even are exact BigInt.
     const masteryGain = boundedGain(mastery, roundHalfEven(
       PROFESSIONAL_LAB_RULES_V1.baseMastery,
-      [challengeBps, noveltyBps, feedbackBps, capacityBps, Math.trunc(diminishingBps)],
+      [challengeBps, noveltyBps, feedbackBps, capacityBps, diminishingBps],
     ));
     const fluencyGain = boundedGain(priorFluency, roundHalfEven(
       PROFESSIONAL_LAB_RULES_V1.baseFluency,
