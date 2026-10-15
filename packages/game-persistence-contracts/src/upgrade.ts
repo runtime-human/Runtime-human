@@ -9,11 +9,7 @@ import {
 } from "@runtime-human/game-schema";
 
 import type { CanonicalPayloadV1, SaveRecordV1, Sha256Hex } from "./contracts";
-import {
-  parseCanonicalPayload,
-  parseFingerprint,
-  parseSha256Hex,
-} from "./parsers";
+import { parseCanonicalPayload, parseFingerprint, parseSha256Hex } from "./parsers";
 import { parseSaveRecord } from "./responses";
 
 export type UpgradeProfessionalSaveCommandV1 = Readonly<{
@@ -90,10 +86,7 @@ function exactRecord(value: unknown, keys: readonly string[]): Readonly<Record<s
   const raw = value as Record<string, unknown>;
   const actual = Object.keys(raw).sort();
   const expected = [...keys].sort();
-  if (
-    actual.length !== expected.length ||
-    actual.some((key, index) => key !== expected[index])
-  ) {
+  if (actual.length !== expected.length || actual.some((key, index) => key !== expected[index])) {
     throw new TypeError("Professional upgrade has unknown or missing fields");
   }
   return raw;
