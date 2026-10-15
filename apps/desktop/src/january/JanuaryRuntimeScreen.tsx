@@ -1,3 +1,4 @@
+import { JanuaryProgrammerDevelopmentPanel } from "./JanuaryProgrammerDevelopmentPanel";
 import { buildJanuaryScreenModel } from "./january-screen-model";
 import type { JanuarySessionChoice, JanuarySessionView } from "./january-session-controller";
 
@@ -34,7 +35,7 @@ export function JanuaryRuntimeScreen({
     <section
       aria-busy={busy}
       aria-label="Игровой месяц"
-      className="january-frame"
+      className="january-frame january-frame--scene"
       id="current-month"
       role="region"
     >
@@ -49,25 +50,9 @@ export function JanuaryRuntimeScreen({
         </div>
       </header>
 
-      <div className="january-progress-block">
-        <div className="january-progress-copy">
-          <span>Прогресс месяца</span>
-          <strong>{model.progress}%</strong>
-        </div>
-        <div
-          aria-label={`Прогресс месяца ${model.progress}%`}
-          aria-valuemax={100}
-          aria-valuemin={0}
-          aria-valuenow={model.progress}
-          className="january-progress"
-          role="progressbar"
-        >
-          <span style={{ width: `${model.progress}%` }} />
-        </div>
-      </div>
-
       <div className="january-layout">
         <article className={`january-card january-card--${model.tone}`}>
+          <p className="january-event-label">Первый проект · История становления</p>
           <div className="january-card-heading">
             <p className="january-eyebrow">{model.eyebrow}</p>
             <span className={`january-tone january-tone--${model.tone}`}>
@@ -95,6 +80,9 @@ export function JanuaryRuntimeScreen({
                   <span className="january-choice-copy">
                     <strong>{choice.label}</strong>
                     <small>{choice.description}</small>
+                    <span aria-hidden="true" className="january-choice-action">
+                      Выбрать подход →
+                    </span>
                   </span>
                   <span aria-hidden="true" className="january-choice-arrow">
                     →
@@ -102,6 +90,10 @@ export function JanuaryRuntimeScreen({
                 </button>
               ))}
             </div>
+          ) : null}
+
+          {view.kind === "committed" ? (
+            <JanuaryProgrammerDevelopmentPanel result={view.result} />
           ) : null}
 
           {model.qualityScores ? (
@@ -148,6 +140,14 @@ export function JanuaryRuntimeScreen({
 
         <div className="january-context">
           <aside aria-label="Контекст первой программы" className="january-terminal">
+            <div className="january-scene-copy">
+              <p className="january-scene-kicker">Глава 1 · Начало пути</p>
+              <h2>Январь 1990</h2>
+              <p>
+                Персональные компьютеры становятся доступнее, но первый шаг ещё требует времени,
+                внимания и практики.
+              </p>
+            </div>
             <div className="january-terminal-bar">
               <span>GW-BASIC · DOS</span>
               <span>JAN 1990</span>
@@ -185,6 +185,11 @@ export function JanuaryRuntimeScreen({
           </section>
         </div>
       </div>
+      <footer aria-label="Хронология первого месяца" className="january-chronology">
+        <span>1990 · Первый год</span>
+        <strong aria-current="date">ЯНВ · Первая программа</strong>
+        <span>Продолжение истории — после завершения месяца</span>
+      </footer>
     </section>
   );
 }

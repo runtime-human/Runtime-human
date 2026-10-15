@@ -16,6 +16,7 @@ export {
   parseJanuary1990SaveSnapshot,
   projectJanuary1990Content,
   projectJanuary1990RuntimeView,
+  projectJanuaryProgrammerDevelopment,
 } from "./january-1990";
 export type {
   CreateJanuary1990AuthorityCutoverRuntimeInput,
