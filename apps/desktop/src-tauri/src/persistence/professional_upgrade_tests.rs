@@ -341,3 +341,33 @@ fn child_professional_upgrade_crash() {
     let _unexpected_return = database.upgrade_professional_save(request);
     panic!("professional upgrade failpoint did not terminate the child process");
 }
+
+#[test]
+fn professional_upgrade_revision_gap_requires_a_matching_durable_receipt() {
+    let (_temp, mut database) = committed_database();
+    let request = command(&database);
+    let upgraded = database
+        .upgrade_professional_save(request.clone())
+        .expect("apply professional save upgrade");
+    assert!(matches!(upgraded, MutationOutcome::Accepted(_)));
+
+    // A real January commit stays at its historical revision. The receipt
+    // provides the only authorized proof for the subsequent schema upgrade.
+    database
+        .verify_application_integrity()
+        .expect("valid revision gap with upgrade receipt");
+    let deleted = database
+        .connection_mut()
+        .expect("writable database")
+        .execute(
+            "DELETE FROM request_receipts WHERE request_id = ?1",
+            [&request.request_id],
+        )
+        .expect("remove upgrade provenance");
+    assert_eq!(deleted, 1);
+    assert!(matches!(
+        database.verify_application_integrity(),
+        Err(PersistenceError::CorruptedStoredPayload)
+    ));
+    database.close().expect("close tampered test database");
+}
