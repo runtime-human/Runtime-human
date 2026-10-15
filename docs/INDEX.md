@@ -52,6 +52,7 @@ MVP Casual → playtest → Recommended → proven Extended features
 - [ADR-013 — Professional Progression & Evidence](adr/ADR-013-authoritative-professional-progression-evidence.md)
 - [Professional Progression Engine](game-design/PROFESSIONAL-PROGRESSION-ENGINE.md)
 - [Professional Progression UI](ui/PROFESSIONAL-PROGRESSION-UI.md)
+- [PROG-01B2C2 Writable Professional MonthRun v2 (M1) Implementation Plan](plans/PROG-01B2C2-WRITABLE-PROFESSIONAL-MONTHRUN-V2-PLAN.md)
 - [SD-001 analysis](research/SD-001-PROGRAMMER-PROGRESSION-EVIDENCE-ENGINE-2026-07-17.md)
 
 ## Professional challenges

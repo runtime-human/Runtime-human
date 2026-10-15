@@ -1,12 +1,12 @@
 {
   "_schemaVersion": 1,
-  "updated": "2026-09-05",
+  "updated": "2026-10-15",
   "implementationProfile": "MVP Casual",
   "repository": "runtime-human/Runtime-human",
   "defaultBranch": "main",
   "mainHeadAtPlanning": "1357124e85a5b38c41819ec0413183969c679d60",
-  "mainHeadAtCurrentSliceStart": "8b237c19eebfbed6779192cd64a1b438f161ae8e",
-  "currentPhase": "engine-03-simulation-regression-foundation",
+  "mainHeadAtCurrentSliceStart": "f64bed542c6c6ad18783480f743a5389551cf873",
+  "currentPhase": "prog-01-m1-professional-persistence-definition",
   "milestones": [
     {
       "id": "repository-foundation",
@@ -583,6 +583,190 @@
         "canonicalV3Run": 33971834212,
         "postMergeFoundationRun": 33972302729
       }
+    },
+    {
+      "id": "engine-02-legacy-runtime-containment",
+      "status": "complete",
+      "issue": 158,
+      "pullRequest": 162,
+      "commit": "c4f23abfb368e3940f356991772fe0aeca727d4c",
+      "scope": ["legacy-january-runtime-migration-and-drain-only", "production-composition-through-authority-cutover-adapter", "alias-and-import-bypass-boundary-checks"],
+      "evidence": {
+        "monthRunSemanticsChanged": false,
+        "persistenceProtocolChanged": false,
+        "checkpointSchemaChanged": false,
+        "rngSemanticsChanged": false,
+        "canonicalV3Run": 33972157960
+      }
+    },
+    {
+      "id": "engine-02-authority-cutover-single-save-binding",
+      "status": "complete",
+      "pullRequest": 165,
+      "commit": "f93bee8210215bb820de433cf46c77f59dc13e0a",
+      "scope": ["authority-wrapper-bound-to-one-save-id", "cross-save-reuse-rejected-including-concurrent-first-call", "drained-legacy-authority-released-after-inactive-run"],
+      "evidence": {
+        "saveSchemaChanged": false,
+        "checkpointSchemaChanged": false,
+        "canonicalV3Run": 33988600976
+      }
+    },
+    {
+      "id": "engine-01-raw-rng-authority-containment",
+      "status": "complete",
+      "pullRequest": 166,
+      "commit": "1c8471c42144c9a3268060f2a3b6c9c280e56459",
+      "scope": ["managed-create-root-rng-state-seed-api", "raw-xoshiro-import-ban-in-application-and-desktop", "golden-seed-expansion-evidence"],
+      "evidence": {
+        "offlineSimulationRngPrimitivesChanged": false,
+        "canonicalV3Run": 34009148241
+      }
+    },
+    {
+      "id": "studio-domain-skill-routing",
+      "status": "complete",
+      "pullRequest": 169,
+      "commit": "bede3851a53d515004d4adcc544b500abdda6979",
+      "scope": ["repository-backed-balance-scenario-simulation-skills", "single-domain-ownership-for-specialized-paths", "agent-entry-point-synchronization"],
+      "evidence": {"canonicalV3Run": 34019860814}
+    },
+    {
+      "id": "studio-domain-aware-focused-verification",
+      "status": "complete",
+      "pullRequest": 171,
+      "commit": "c00684ad4c49c403881f1046e17eb12a3e7f8e8f",
+      "scope": ["focused-verification-through-balance-and-scenario-checks", "content-compiler-guard-preserved", "simulation-fallback-preserved"],
+      "evidence": {"canonicalV3Run": 34022349273}
+    },
+    {
+      "id": "studio-task-head-immutability",
+      "status": "complete",
+      "pullRequest": 173,
+      "commit": "2d8b82334e31da21c57d9246b047cffa057e1a82",
+      "scope": ["immutable-task-head-inspection"]
+    },
+    {
+      "id": "studio-affected-head-immutability",
+      "status": "complete",
+      "pullRequest": 174,
+      "commit": "be4e579746860ee4f92369cba849e139161ee468",
+      "scope": ["immutable-affected-head-inspection"]
+    },
+    {
+      "id": "studio-verify-head-immutability",
+      "status": "complete",
+      "pullRequest": 175,
+      "commit": "79660fec68321fdb410027d6c91c7dac59aa8848",
+      "scope": ["immutable-verify-head-planning"]
+    },
+    {
+      "id": "engine-03-simulation-corpus-identity",
+      "status": "complete",
+      "pullRequest": 167,
+      "commit": "72f816d6de284d9a0d5d92efe5bc135862404af2",
+      "scope": ["versioned-simulation-corpus-contract", "corpus-aware-simulation-report-v4"]
+    },
+    {
+      "id": "engine-03-canonical-corpus-in-gamectl",
+      "status": "complete",
+      "pullRequest": 170,
+      "commit": "ddb65b46aefb70c0bce32a010db814ac64f71e2f",
+      "scope": ["canonical-simulation-corpus-gamectl-surface"]
+    },
+    {
+      "id": "engine-03-simulation-diff-v1",
+      "status": "complete",
+      "pullRequest": 172,
+      "commit": "42ea36d8f1a5fa01f4ac939782caab513bc363e5",
+      "scope": ["deterministic-simulation-diff-v1"]
+    },
+    {
+      "id": "engine-03-simulation-diff-in-gamectl",
+      "status": "complete",
+      "pullRequest": 176,
+      "commit": "a16c2ce3c4f26b89baebf7676a620e4efcabb3ec",
+      "scope": ["simulation-diff-gamectl-surface"]
+    },
+    {
+      "id": "engine-03-ci-simulation-regression",
+      "status": "complete",
+      "pullRequest": 178,
+      "commit": "ef67351871f927b6ffd0c65b0351f67e29961de9",
+      "scope": ["automated-simulation-regression-evidence-in-foundation-workflow"]
+    },
+    {
+      "id": "engine-03-pr-evidence-integration",
+      "status": "complete",
+      "pullRequest": 179,
+      "commit": "4dd0843afab5e5c2fcde0344e777fb528d9ce695",
+      "scope": ["simulation-diff-in-pr-evidence"]
+    },
+    {
+      "id": "engine-03-simulation-smoke-cost-control",
+      "status": "complete",
+      "pullRequest": 180,
+      "commit": "53088ea7652e6fac917aa633f71157f5d2e59f08",
+      "scope": ["bounded-simulation-smoke-in-feedback-workflow"]
+    },
+    {
+      "id": "ci-rust-compilation-cache",
+      "status": "complete",
+      "pullRequest": 182,
+      "commit": "55c6270f25bd10ea66dc4e38a95c29125b115e08",
+      "scope": ["bounded-rust-compilation-cache-in-foundation-workflow"]
+    },
+    {
+      "id": "engine-03g-automatic-simulation-repro",
+      "status": "complete",
+      "pullRequest": 184,
+      "commit": "b3270a26ac87fa83a442d4316e8bfdaaad7a1274",
+      "scope": ["deterministic-simulation-regression-repro-materialization", "failure-repro-v3-contract", "gamectl-repro-router"]
+    },
+    {
+      "id": "ui-bottom-game-dock",
+      "status": "complete",
+      "pullRequest": 187,
+      "commit": "05fa73a476e73b9b5187114bce04b779decf0494",
+      "scope": ["bottom-game-dock-component", "focus-and-aria-regression-tests", "forced-colors-focus-visibility", "canonical-stories"]
+    },
+    {
+      "id": "ci-action-pin-policy",
+      "status": "complete",
+      "pullRequest": 205,
+      "commit": "5ab5ce7203090f4faa5ac43bd57c445009796900",
+      "scope": ["single-required-action-pins-table", "upload-artifact-pin-reconciled-with-control-plane", "repository-wide-full-sha-pin-with-version-comment", "cross-workflow-drift-and-unused-required-pin-rejection"],
+      "evidence": {
+        "dependabotBumpRegressionCovered": true
+      }
+    },
+    {
+      "id": "ui-confirmed-save-status",
+      "status": "complete",
+      "pullRequest": 206,
+      "commit": "6a97bd5b0f6a7a8d2909c834f8c82e9b03c47940",
+      "scope": ["save-status-projected-from-current-view", "confirmed-only-with-rust-confirmed-save-or-run-revision", "bootstrap-failure-blocked-terminal-and-rejected-views-not-confirmed"],
+      "evidence": {
+        "persistenceChanged": false
+      }
+    },
+    {
+      "id": "adr-021-january-decision-model-and-ref-02-plan",
+      "status": "complete",
+      "pullRequest": 207,
+      "commit": "f64bed542c6c6ad18783480f743a5389551cf873",
+      "scope": ["adr-021-accepted", "ref-02-slice-plan-a-to-e", "challenge-ui-engine-vertical-slice-domain-model-sync"],
+      "exclusions": ["january-v2-implementation", "save-schema-change", "ui-implementation"],
+      "evidence": {
+        "ownerDecisionDate": "2026-10-15",
+        "januaryV2Implemented": false
+      }
+    },
+    {
+      "id": "prog-01b2c2-writable-professional-month-run-v2",
+      "status": "planned-after-prs-200-201-202-203-merged-in-order",
+      "plan": "docs/plans/PROG-01B2C2-WRITABLE-PROFESSIONAL-MONTHRUN-V2-PLAN.md",
+      "scope": ["professional-state-v2-skills-and-episode-history", "single-v2-save-schema-with-nullable-display-name", "month-run-v2-draft-with-versioned-rules-and-inputs", "provider-bridge-to-experience-episode", "progression-assessor-without-cross-domain-writes", "atomic-save-cas-professional-history-journal-receipt-commit", "v1-to-v2-migration-with-verified-backup-gate", "duplicate-lost-ack-crash-and-corrupted-receipt-recovery"],
+      "exclusions": ["grade-awards", "professional-read-model-and-ui", "january-v2-scenario", "numeric-balance-final-acceptance", "character-name-ui"]
     }
   ],
   "supersededPullRequests": [
