@@ -11,7 +11,7 @@ use super::{
 const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
 // Must stay identical to PROFESSIONAL_SAVE_CANDIDATE_V2_FINGERPRINT in game-application.
 const PROFESSIONAL_TARGET_FINGERPRINT: &str =
-    "58a22b3f61be510c7e0dd0c81ebbefeaa5f97f46863dcc0b10485baa6bcaeded";
+    "ed6792b4a434c3be7c70adeb6fb8cbf429bfa6d5f9d1444a782bc5a7472759f0";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
