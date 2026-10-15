@@ -40,7 +40,7 @@ describe("PROG-01B2C1 atomic upgrade command preparation", () => {
     expect(request.expectedUpdatedSequence).toBe(source.harness.getSave().updatedSequence);
     expect(request.targetSaveSchemaFingerprint).toBe(PROFESSIONAL_SAVE_CANDIDATE_V2_FINGERPRINT);
     expect(request.targetSaveSchemaFingerprint).toBe(
-      "58a22b3f61be510c7e0dd0c81ebbefeaa5f97f46863dcc0b10485baa6bcaeded",
+      "ed6792b4a434c3be7c70adeb6fb8cbf429bfa6d5f9d1444a782bc5a7472759f0",
     );
     expect(parseUpgradeProfessionalSaveCommandV1(request)).toEqual(request);
     expect(source.harness.getSave().revision).toBe(1);
