@@ -170,7 +170,7 @@ function requireJanuaryEvidence(
   evidence: readonly Readonly<{ skillId: string; reasonCode: string }>[],
   accessRoute: "home-pc" | "shared-school-pc",
 ): void {
-  const expected = new Map([
+  const expected = new Map<string, string>([
     [JANUARY_1990_CONTENT_IDS.programWritingSkill, JANUARY_1990_REASON_CODES.inputOutputProject],
     [JANUARY_1990_CONTENT_IDS.debuggingSkill, JANUARY_1990_REASON_CODES.validationFixProject],
     [
