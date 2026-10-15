@@ -3,8 +3,8 @@ title: "Доменная модель Runtime Human"
 type: architecture
 status: draft
 canon: true
-depends_on: [ADR-010, ADR-013, ADR-014, ADR-015, ADR-018]
-updated: 2026-07-18
+depends_on: [ADR-010, ADR-013, ADR-014, ADR-015, ADR-018, ADR-021]
+updated: 2026-10-15
 ---
 
 # Доменная модель Runtime Human
@@ -57,6 +57,8 @@ Authoritative state хранит только поля, необходимые �
 ## 3. CharacterState
 
 Содержит identity, birth date, life stage, traits, health/capacity statuses и ключевые milestones.
+
+Identity включает `displayName` — имя, введённое при старте новой игры (нормализация и валидация — [ADR-021](../adr/ADR-021-january-onboarding-decision-model-and-approach-cards.md) §8). Оно хранится в v2 save schema, не участвует в детерминизме и fingerprint правил; для legacy-сейвов `null`.
 
 Professional state выделен отдельно.
 

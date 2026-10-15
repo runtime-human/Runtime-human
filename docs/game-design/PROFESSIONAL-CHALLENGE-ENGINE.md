@@ -3,8 +3,8 @@ title: "Professional Challenge Engine"
 type: engine
 status: draft
 canon: true
-depends_on: [ADR-015, ADR-016]
-updated: 2026-07-18
+depends_on: [ADR-015, ADR-016, ADR-021]
+updated: 2026-10-15
 ---
 
 # Professional Challenge Engine
@@ -213,6 +213,8 @@ Baseline vocabulary:
 - `defer-or-recover`.
 
 Content template использует только релевантные 2–4 options и может добавить context-specific approach.
+
+[ADR-021](../adr/ADR-021-january-onboarding-decision-model-and-approach-cards.md) §4–5 уточняет `tradeOffs`: элемент — `{ marker, text: LocalizationKey }`, где `marker` принадлежит закрытому словарю `axis × polarity` (авторитетная семантика, входит в prompt checkpoint), а `text` — локализация; на карточку приходится не более двух маркеров, без чисел, названий навыков и NPC.
 
 ### Правила
 
