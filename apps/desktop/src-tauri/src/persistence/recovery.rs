@@ -6,6 +6,7 @@ use super::{
     database::Database,
     error::PersistenceError,
     hash::{sha256_hex, verify_sha256},
+    professional_upgrade_contract::PROFESSIONAL_TARGET_FINGERPRINT,
 };
 
 impl Database {
@@ -102,6 +103,10 @@ fn verify_committed_save_links(connection: &Connection) -> Result<(), Persistenc
         return Err(PersistenceError::CorruptedStoredPayload);
     }
 
+    // The one-time v1 -> v2 professional import advances the save revision but must
+    // NOT rewrite the historical MonthRun's committed_save_revision. Accept this
+    // exact +1 transition only with a matching immutable import and durable
+    // transaction receipt, never for an arbitrary revision drift.
     let invalid_latest_links: i64 = connection
         .query_row(
             "SELECT COUNT(*)
@@ -112,9 +117,54 @@ fn verify_committed_save_links(connection: &Connection) -> Result<(), Persistenc
                  run.run_id IS NULL
                  OR run.save_id <> save.save_id
                  OR run.status <> 'committed'
-                 OR run.committed_save_revision <> save.revision
+                 OR run.committed_save_revision IS NULL
+                 OR (
+                   run.committed_save_revision <> save.revision
+                   AND NOT (
+                     save.save_schema_fingerprint = ?1
+                     AND save.revision = run.committed_save_revision + 1
+                     AND json_extract(save.snapshot_json, '$.schemaVersion')
+                         = 'professional-save-candidate-v2'
+                     AND json_extract(save.snapshot_json, '$.legacyImport.schemaVersion')
+                         = 'professional-legacy-january-receipt-v1'
+                     AND json_extract(save.snapshot_json, '$.legacyImport.assessmentStatus')
+                         = 'unassessed'
+                     AND json_extract(save.snapshot_json, '$.legacyImport.originalSaveId')
+                         = save.save_id
+                     AND json_extract(save.snapshot_json, '$.legacyImport.originalRunId')
+                         = run.run_id
+                     AND json_extract(save.snapshot_json, '$.legacyImport.originalSaveRevision')
+                         = run.committed_save_revision
+                     AND json_extract(save.snapshot_json, '$.january.completedMonth.runId')
+                         = run.run_id
+                     AND json_extract(save.snapshot_json, '$.january.completedMonth.baseSaveRevision')
+                         = run.base_save_revision
+                     AND EXISTS (
+                       SELECT 1 FROM request_receipts AS receipt
+                       WHERE receipt.operation = 'upgrade-professional-save-v1'
+                         AND receipt.save_id = save.save_id
+                         AND receipt.run_id = run.run_id
+                         AND json_extract(receipt.result_json, '$.schemaVersion')
+                             = 'upgrade-professional-save-accepted-v1'
+                         AND json_extract(receipt.result_json, '$.save.saveId') = save.save_id
+                         AND json_extract(receipt.result_json, '$.save.revision') = save.revision
+                         AND json_extract(receipt.result_json, '$.save.lastCommittedRunId')
+                             = run.run_id
+                         AND json_extract(receipt.result_json, '$.save.createdSequence')
+                             = save.created_sequence
+                         AND json_extract(receipt.result_json, '$.save.updatedSequence')
+                             = save.updated_sequence
+                         AND json_extract(receipt.result_json, '$.save.saveSchemaFingerprint')
+                             = save.save_schema_fingerprint
+                         AND json_extract(receipt.result_json, '$.save.snapshot.sha256')
+                             = save.snapshot_sha256
+                         AND json_extract(receipt.result_json, '$.save.snapshot.json')
+                             = save.snapshot_json
+                     )
+                   )
+                 )
                )",
-            [],
+            [PROFESSIONAL_TARGET_FINGERPRINT],
             |row| row.get(0),
         )
         .map_err(|source| {
