@@ -382,9 +382,7 @@ function roundHalfEven(base: number, multipliers: readonly number[]): number {
   const quotient = numerator / denominator;
   const remainder = numerator % denominator;
   const doubled = remainder * 2n;
-  const roundUp =
-    doubled > denominator ||
-    (doubled === denominator && quotient % 2n === 1n);
+  const roundUp = doubled > denominator || (doubled === denominator && quotient % 2n === 1n);
   return Number(quotient + (roundUp ? 1n : 0n));
 }
 
