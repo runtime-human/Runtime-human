@@ -524,13 +524,13 @@ impl Database {
         {
             return Err(PersistenceError::SaveRevisionConflict);
         }
+        if load_active_month_run_record(&transaction, &command.save_id)?.is_some() {
+            return Err(PersistenceError::ActiveRunExists);
+        }
         if current.last_committed_run_id.is_none() {
             return Err(PersistenceError::InvalidCommand(
                 "only completed January saves may be upgraded".to_owned(),
             ));
-        }
-        if load_active_month_run_record(&transaction, &command.save_id)?.is_some() {
-            return Err(PersistenceError::ActiveRunExists);
         }
         command.validate_transition(&current)?;
 
