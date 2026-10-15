@@ -102,6 +102,7 @@ export default defineConfig({
         "tests/january-1990-desktop-performance.test.ts",
         "tests/january-1990-desktop-session.test.ts",
         "tests/january-1990-desktop-scenario-authority.test.ts",
+        "tests/january-professional-experience-bridge.test.ts",
         "tests/january-1990-persistence-flow.test.ts",
         "tests/january-1990-persisted-restart.test.ts",
         "tests/january-1990-persisted-run.test.ts",

@@ -1,4 +1,12 @@
 export { createJanuary1990Runtime } from "./create-january-runtime";
+export {
+  createJanuaryProfessionalLabEpisodeV1,
+  projectCommittedJanuaryProfessionalSourceV1,
+} from "./january-professional-experience-bridge";
+export type {
+  JanuaryProfessionalLabAssessmentV1,
+  JanuaryProfessionalSourceV1,
+} from "./january-professional-experience-bridge";
 export type { CreateJanuary1990RuntimeInput, January1990Runtime } from "./create-january-runtime";
 export { createJanuary1990ScenarioRuntime } from "./create-january-scenario-runtime";
 export type { CreateJanuary1990ScenarioRuntimeInput } from "./create-january-scenario-runtime";
