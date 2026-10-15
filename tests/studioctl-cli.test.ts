@@ -12,6 +12,10 @@ import {
   inspectChange,
 } from "../scripts/studio/control-plane-lib.mjs";
 
+// Each test builds a real temporary git repository and spawns several git
+// processes; on hosted Windows runners this can exceed the 5 s default.
+const GIT_FIXTURE_TEST_TIMEOUT_MS = 30_000;
+
 const tempRoots: string[] = [];
 
 afterEach(() => {
@@ -139,7 +143,7 @@ describe("studioctl capabilities", () => {
   });
 });
 
-describe("studioctl inspect", () => {
+describe("studioctl inspect", { timeout: GIT_FIXTURE_TEST_TIMEOUT_MS }, () => {
   it("projects an exact immutable diff without writing runtime state", () => {
     const { root, base, head } = makeRepo();
     const result = inspectChange(root, { base, head });
