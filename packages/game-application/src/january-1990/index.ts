@@ -1,6 +1,9 @@
 export { createJanuary1990Runtime } from "./create-january-runtime";
 export { projectJanuaryProgrammerDevelopment } from "./january-programmer-development";
-export type { JanuaryProgrammerDevelopment, JanuaryProgrammerPracticeSignal } from "./january-programmer-development";
+export type {
+  JanuaryProgrammerDevelopment,
+  JanuaryProgrammerPracticeSignal,
+} from "./january-programmer-development";
 export type { CreateJanuary1990RuntimeInput, January1990Runtime } from "./create-january-runtime";
 export { createJanuary1990ScenarioRuntime } from "./create-january-scenario-runtime";
 export type { CreateJanuary1990ScenarioRuntimeInput } from "./create-january-scenario-runtime";
