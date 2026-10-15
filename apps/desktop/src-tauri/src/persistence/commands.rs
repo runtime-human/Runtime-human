@@ -45,9 +45,7 @@ pub(crate) async fn persistence_upgrade_professional_save_v1(
     Ok(run_blocking_observed(
         handle,
         DesktopPerformanceOperationCategory::Mutation,
-        move |handle, operation| {
-            dispatch_professional_upgrade_v1(handle, operation, command)
-        },
+        move |handle, operation| dispatch_professional_upgrade_v1(handle, operation, command),
     )
     .await
     .into())
