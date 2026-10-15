@@ -763,8 +763,12 @@
     },
     {
       "id": "prog-01b2c2-writable-professional-month-run-v2",
-      "status": "planned-after-prs-200-201-202-203-merged-in-order",
+      "status": "planned-after-prs-202-203-merged-in-order",
       "plan": "docs/plans/PROG-01B2C2-WRITABLE-PROFESSIONAL-MONTHRUN-V2-PLAN.md",
+      "mergedDependencies": [
+        {"pullRequest": 200, "commit": "24579a1d39b2a06aca80a2c086885bd64f71a0ca"},
+        {"pullRequest": 201, "commit": "6f4822aa0cd795387942d9fdd98ca73b80b78219"}
+      ],
       "scope": ["professional-state-v2-skills-and-episode-history", "single-v2-save-schema-with-nullable-display-name", "month-run-v2-draft-with-versioned-rules-and-inputs", "provider-bridge-to-experience-episode", "progression-assessor-without-cross-domain-writes", "atomic-save-cas-professional-history-journal-receipt-commit", "v1-to-v2-migration-with-verified-backup-gate", "duplicate-lost-ack-crash-and-corrupted-receipt-recovery"],
       "exclusions": ["grade-awards", "professional-read-model-and-ui", "january-v2-scenario", "numeric-balance-final-acceptance", "character-name-ui"]
     }
