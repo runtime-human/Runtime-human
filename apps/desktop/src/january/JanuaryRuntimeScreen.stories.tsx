@@ -10,6 +10,7 @@ import {
 
 import { DesktopShell, type DesktopNavigationItem } from "../shell/DesktopShell";
 import { JanuaryRuntimeScreen } from "./JanuaryRuntimeScreen";
+import { JanuarySaveStatus } from "./JanuarySaveStatus";
 import { createJanuary1990ResultFixture } from "./january-result.fixture";
 import "../design/runtime-human-tokens.css";
 import "../shell/desktop-shell.css";
@@ -47,7 +48,7 @@ const meta: Meta<typeof JanuaryRuntimeScreen> = {
     layout: "fullscreen",
   },
   decorators: [
-    (Story) => (
+    (Story, context) => (
       <DesktopShell
         breadcrumb="Январь 1990"
         era="Персональные компьютеры"
@@ -56,7 +57,7 @@ const meta: Meta<typeof JanuaryRuntimeScreen> = {
         status={
           <>
             <span>Локальное сохранение и восстановление сеанса</span>
-            <strong>Состояние сохранено</strong>
+            <JanuarySaveStatus busy={context.args.busy} view={context.args.view} />
           </>
         }
       >

@@ -90,6 +90,7 @@ export default defineConfig({
       ]),
       nodeProject("application-node", [
         "tests/career-overview-model.test.ts",
+        "tests/january-save-status.test.ts",
         "tests/persistence-application.test.ts",
         "tests/persistence-service.test.ts",
         "tests/persisted-month-run-orchestrator.test.ts",

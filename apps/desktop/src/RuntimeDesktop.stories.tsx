@@ -161,3 +161,28 @@ export const CurrentMonth: Story = {
     session: idleSession,
   },
 };
+
+export const CurrentMonthBlockedRecovery: Story = {
+  args: {
+    route: resolveDesktopRoute("/month/current"),
+    session: createSession({
+      kind: "blocked",
+      reason: "recovery",
+      message: "Предыдущий сеанс завершился неожиданно. Нужно восстановить сохранение.",
+      saveId,
+      runId,
+    }),
+  },
+};
+
+export const CurrentMonthRetryableRejected: Story = {
+  args: {
+    route: resolveDesktopRoute("/month/current"),
+    session: createSession({
+      kind: "rejected",
+      code: "PersistenceUnavailable",
+      message: "Ответ хранилища не был получен, но операция могла завершиться.",
+      retryable: true,
+    }),
+  },
+};
