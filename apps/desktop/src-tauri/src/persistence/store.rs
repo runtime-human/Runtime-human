@@ -12,8 +12,10 @@ use super::{
     database::{Database, RecoveryStatus},
     error::PersistenceError,
     hash::{sha256_hex, verify_sha256},
+    professional_upgrade_contract::UpgradeProfessionalSaveCommandV1,
     records::{
         BeginPersistedMonthRunAcceptedV1, CommitPersistedMonthRunAcceptedV1, CreateSaveAcceptedV1,
+        UpgradeProfessionalSaveAcceptedV1,
         MonthRunRecordV1, MutationOutcome, RecoveryStatusV1, RecoveryStatusV1Value, SaveRecordV1,
         StoreMonthRunBoundaryAcceptedV1,
     },
@@ -23,6 +25,7 @@ const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
 const MAX_RESULT_BYTES: usize = 1024 * 1024;
 
 const OP_CREATE_SAVE: &str = "create-save-v1";
+const OP_UPGRADE_PROFESSIONAL_SAVE: &str = "upgrade-professional-save-v1";
 const OP_BEGIN_MONTH_RUN: &str = "begin-month-run-v1";
 const OP_STORE_BOUNDARY: &str = "store-month-run-boundary-v1";
 const OP_COMMIT_MONTH_RUN: &str = "commit-month-run-v1";
@@ -491,6 +494,96 @@ impl Database {
         )?;
         transaction.commit().map_err(|source| {
             PersistenceError::storage("committing the completed MonthRun", source)
+        })?;
+        Ok(MutationOutcome::Accepted(accepted))
+    }
+
+    pub(crate) fn upgrade_professional_save(
+        &mut self,
+        command: UpgradeProfessionalSaveCommandV1,
+    ) -> Result<MutationOutcome<UpgradeProfessionalSaveAcceptedV1>, PersistenceError> {
+        command.validate()?;
+        let payload_hash = normalized_command_sha256(&command)?;
+        let transaction = immediate(self.connection_mut()?, "upgrading professional save")?;
+
+        if let Some(previous) = classify_receipt::<UpgradeProfessionalSaveAcceptedV1>(
+            &transaction,
+            &command.request_id,
+            OP_UPGRADE_PROFESSIONAL_SAVE,
+            &payload_hash,
+        )? {
+            return Ok(MutationOutcome::Duplicate(previous));
+        }
+
+        let current = load_save_record(&transaction, &command.save_id)?
+            .ok_or(PersistenceError::SaveNotFound)?;
+        if current.revision != command.expected_save_revision
+            || current.updated_sequence != command.expected_updated_sequence
+            || current.snapshot.sha256 != command.expected_snapshot_sha256
+            || current.save_schema_fingerprint != command.expected_source_save_schema_fingerprint
+        {
+            return Err(PersistenceError::SaveRevisionConflict);
+        }
+        if current.last_committed_run_id.is_none() {
+            return Err(PersistenceError::InvalidCommand(
+                "only completed January saves may be upgraded".to_owned(),
+            ));
+        }
+        if load_active_month_run_record(&transaction, &command.save_id)?.is_some() {
+            return Err(PersistenceError::ActiveRunExists);
+        }
+        command.validate_transition(&current)?;
+
+        let revision = current.revision.checked_add(1)
+            .filter(|value| *value <= MAX_SAFE_INTEGER)
+            .ok_or_else(|| PersistenceError::Invariant("save revision exhausted".to_owned()))?;
+        let sequence = allocate_sequence(&transaction)?;
+        let rows = transaction.execute(
+            "UPDATE save_games SET
+                revision = ?1,
+                snapshot_json = ?2,
+                snapshot_sha256 = ?3,
+                save_schema_fingerprint = ?4,
+                updated_sequence = ?5
+             WHERE save_id = ?6
+               AND revision = ?7
+               AND updated_sequence = ?8
+               AND snapshot_sha256 = ?9
+               AND save_schema_fingerprint = ?10",
+            params![
+                revision,
+                command.snapshot.json,
+                command.snapshot.sha256,
+                command.target_save_schema_fingerprint,
+                sequence,
+                command.save_id,
+                command.expected_save_revision,
+                command.expected_updated_sequence,
+                command.expected_snapshot_sha256,
+                command.expected_source_save_schema_fingerprint,
+            ],
+        ).map_err(|error| PersistenceError::storage("CAS upgrading the professional save", error))?;
+        if rows != 1 {
+            return Err(PersistenceError::SaveRevisionConflict);
+        }
+        let upgraded = load_save_record(&transaction, &command.save_id)?
+            .ok_or_else(|| PersistenceError::Invariant("upgraded save disappeared".to_owned()))?;
+        let accepted = UpgradeProfessionalSaveAcceptedV1 {
+            schema_version: "upgrade-professional-save-accepted-v1".to_owned(),
+            save: upgraded,
+        };
+        insert_receipt(
+            &transaction,
+            &command.request_id,
+            OP_UPGRADE_PROFESSIONAL_SAVE,
+            &payload_hash,
+            &accepted,
+            Some(&command.save_id),
+            current.last_committed_run_id.as_deref(),
+            sequence,
+        )?;
+        transaction.commit().map_err(|error| {
+            PersistenceError::storage("committing the professional save upgrade", error)
         })?;
         Ok(MutationOutcome::Accepted(accepted))
     }
