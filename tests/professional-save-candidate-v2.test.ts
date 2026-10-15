@@ -7,6 +7,7 @@ import {
   parseProfessionalSaveCandidateV2,
   prepareCommittedJanuaryProfessionalCandidateV2,
   PROFESSIONAL_SAVE_CANDIDATE_V2_FINGERPRINT,
+  PROFESSIONAL_SAVE_CANDIDATE_V2_RULES_FINGERPRINT,
 } from "@runtime-human/game-application";
 import { fingerprint } from "@runtime-human/game-core";
 import { parseSaveId } from "@runtime-human/game-schema";
@@ -47,6 +48,10 @@ describe("PROG-01B2B versioned professional save candidate", () => {
     expect(Object.isFrozen(restored)).toBe(true);
     expect(Object.isFrozen(restored.professional)).toBe(true);
     expect(PROFESSIONAL_SAVE_CANDIDATE_V2_FINGERPRINT).toMatch(/^[0-9a-f]{64}$/u);
+    expect(PROFESSIONAL_SAVE_CANDIDATE_V2_RULES_FINGERPRINT).toMatch(/^[0-9a-f]{64}$/u);
+    expect(PROFESSIONAL_SAVE_CANDIDATE_V2_RULES_FINGERPRINT).not.toBe(
+      PROFESSIONAL_SAVE_CANDIDATE_V2_FINGERPRINT,
+    );
     expect(PROFESSIONAL_SAVE_CANDIDATE_V2_FINGERPRINT).not.toBe(
       JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
     );
