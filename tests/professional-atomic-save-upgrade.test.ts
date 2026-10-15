@@ -6,9 +6,7 @@ import {
   PROFESSIONAL_SAVE_CANDIDATE_V2_FINGERPRINT,
 } from "@runtime-human/game-application";
 import { parseRequestId } from "@runtime-human/game-schema";
-import {
-  parseUpgradeProfessionalSaveCommandV1,
-} from "@runtime-human/game-persistence-contracts";
+import { parseUpgradeProfessionalSaveCommandV1 } from "@runtime-human/game-persistence-contracts";
 
 import {
   createHarnessedJanuaryRuntime,
