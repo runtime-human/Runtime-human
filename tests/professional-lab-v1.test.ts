@@ -32,17 +32,14 @@ function episode(
 }
 
 describe("PROG-01B1 professional progression lab", () => {
-  it("rewards verified practice through bounded mastery, fluency and technology familiarity", () => {
+  it("rewards verified practice with bounded skills and technology familiarity", () => {
     const result = applyProfessionalExperienceLabV1(
       createProfessionalLabStateV1(500, 500),
       episode(0),
     );
 
     expect(result.kind).toBe("applied");
-    expect(result.state.skills.map((skill) => skill.skillId)).toEqual([
-      "debugging",
-      "programming",
-    ]);
+    expect(result.state.skills.map((skill) => skill.skillId)).toEqual(["debugging", "programming"]);
     expect(result.state.skills[0]).toEqual({
       skillId: "debugging",
       mastery: 58,
@@ -86,10 +83,7 @@ describe("PROG-01B1 professional progression lab", () => {
     const initial = createProfessionalLabStateV1(500, 500);
     const first = applyProfessionalExperienceLabV1(initial, episode(0));
     const repeated = applyProfessionalExperienceLabV1(first.state, episode(1));
-    const novel = applyProfessionalExperienceLabV1(
-      first.state,
-      episode(1, "project/second-io"),
-    );
+    const novel = applyProfessionalExperienceLabV1(first.state, episode(1, "project/second-io"));
 
     expect(repeated.repeatedContext).toBe(true);
     expect(novel.repeatedContext).toBe(false);
@@ -153,9 +147,9 @@ describe("PROG-01B1 professional progression lab", () => {
         contextFingerprint: "bad",
       }),
     ).toThrow(/SHA-256/u);
-    expect(() =>
-      parseProfessionalLabStateV1({ ...initial, grade: "Junior" }),
-    ).toThrow(/fields do not match/u);
+    expect(() => parseProfessionalLabStateV1({ ...initial, grade: "Junior" })).toThrow(
+      /fields do not match/u,
+    );
     expect(() => createProfessionalLabStateV1(500.5, 500)).toThrow(/aptitude/u);
     expect(() =>
       parseProfessionalLabStateV1({
