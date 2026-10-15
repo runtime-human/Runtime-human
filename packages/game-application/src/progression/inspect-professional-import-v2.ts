@@ -36,10 +36,7 @@ export type ProfessionalImportInspectionV2 =
  * B2C must revalidate them inside an atomic worker CAS before writing.
  */
 export async function inspectCommittedJanuaryProfessionalImportV2(
-  persistence: Pick<
-    PersistenceService,
-    "getRecoveryStatus" | "loadSave" | "loadActiveMonthRun"
-  >,
+  persistence: Pick<PersistenceService, "getRecoveryStatus" | "loadSave" | "loadActiveMonthRun">,
   saveId: SaveId,
   aptitudes: Readonly<{ reasoning: number; learning: number }>,
 ): Promise<ProfessionalImportInspectionV2> {
@@ -118,10 +115,7 @@ export async function inspectCommittedJanuaryProfessionalImportV2(
     });
   } catch (error) {
     // Invalid aptitudes are caller/programmer errors, not a corrupt legacy save.
-    if (
-      error instanceof TypeError &&
-      error.message.includes("aptitude")
-    ) {
+    if (error instanceof TypeError && error.message.includes("aptitude")) {
       throw error;
     }
     return Object.freeze({ kind: "blocked", reason: "incompatible-source" });
