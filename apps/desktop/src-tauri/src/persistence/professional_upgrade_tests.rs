@@ -373,7 +373,6 @@ fn professional_upgrade_revision_gap_requires_a_matching_durable_receipt() {
     database.close().expect("close tampered test database");
 }
 
-
 #[test]
 fn receipt_provenance_tamper_matrix_fails_closed() {
     for case in [
