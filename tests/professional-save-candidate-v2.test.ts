@@ -54,11 +54,10 @@ describe("PROG-01B2B versioned professional save candidate", () => {
 
   it("blocks initial saves rather than inventing historical professional progress", async () => {
     const { harness, saveId } = await createHarnessedJanuaryRuntime();
-    const result = await inspectCommittedJanuaryProfessionalImportV2(
-      harness.service,
-      saveId,
-      { reasoning: 500, learning: 500 },
-    );
+    const result = await inspectCommittedJanuaryProfessionalImportV2(harness.service, saveId, {
+      reasoning: 500,
+      learning: 500,
+    });
 
     expect(result).toEqual({ kind: "blocked", reason: "incompatible-source" });
     expect(harness.getSave().revision).toBe(0);
@@ -108,9 +107,9 @@ describe("PROG-01B2B versioned professional save candidate", () => {
     expect(first.candidate.january.completedMonth?.terminalResult).toEqual(
       committed.checkpoint.terminalResult,
     );
-    expect(parseProfessionalSaveCandidateV2(
-      JSON.parse(JSON.stringify(first.candidate)),
-    )).toEqual(first.candidate);
+    expect(parseProfessionalSaveCandidateV2(JSON.parse(JSON.stringify(first.candidate)))).toEqual(
+      first.candidate,
+    );
     expect(source.harness.getStats()).toEqual(statsBefore);
     expect(source.harness.getSave().saveSchemaFingerprint).toBe(
       JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
@@ -127,9 +126,9 @@ describe("PROG-01B2B versioned professional save candidate", () => {
     const receipt = valid.legacyImport;
     if (receipt === null) throw new Error("Expected legacy receipt");
 
-    expect(() =>
-      parseProfessionalSaveCandidateV2({ ...valid, grade: "Junior" }),
-    ).toThrow(/unknown or missing fields/u);
+    expect(() => parseProfessionalSaveCandidateV2({ ...valid, grade: "Junior" })).toThrow(
+      /unknown or missing fields/u,
+    );
     expect(() =>
       parseProfessionalSaveCandidateV2({
         ...valid,
@@ -186,11 +185,10 @@ describe("PROG-01B2B versioned professional save candidate", () => {
       },
     };
 
-    const result = await inspectCommittedJanuaryProfessionalImportV2(
-      race,
-      source.saveId,
-      { reasoning: 500, learning: 500 },
-    );
+    const result = await inspectCommittedJanuaryProfessionalImportV2(race, source.saveId, {
+      reasoning: 500,
+      learning: 500,
+    });
     expect(result).toEqual({ kind: "blocked", reason: "source-changed" });
     expect(source.harness.getStats().commitMutations).toBe(1);
   });
