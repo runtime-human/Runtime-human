@@ -85,7 +85,10 @@ export function createInMemoryPersistenceHarness(
       );
     },
     async upgradeProfessionalSave() {
-      return rejected("InvalidCommand", "Professional upgrade is not implemented by the v1 harness");
+      return rejected(
+        "InvalidCommand",
+        "Professional upgrade is not implemented by the v1 harness",
+      );
     },
     async loadSave(query) {
       return query.saveId === save.saveId ? { kind: "found", value: save } : { kind: "not-found" };
