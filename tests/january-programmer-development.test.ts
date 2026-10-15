@@ -4,77 +4,42 @@ import { projectJanuaryProgrammerDevelopment } from "@runtime-human/game-applica
 
 import { createJanuary1990ResultFixture } from "../apps/desktop/src/january/january-result.fixture";
 
-describe("January programmer development projection", () => {
-  it("shows verified practice without claiming mastery or awarding a grade", () => {
+describe("January programmer development", () => {
+  it("projects three verified practice skills without assigning a grade", () => {
     const result = createJanuary1990ResultFixture();
-    const development = projectJanuaryProgrammerDevelopment(result);
+    const model = projectJanuaryProgrammerDevelopment(result);
 
-    expect(development.month).toBe("1990-01");
-    expect(development.practiceSignals.map((skill) => skill.label)).toEqual([
-      "Написание программ",
-      "Отладка",
-      "Работа с инструментами",
-    ]);
-    expect(development.knowledge).toMatch(/изменение программы/u);
-    expect(development.autonomy).toMatch(/самостоятельного исследования/u);
-    expect(development.technology).toContain("GW-BASIC");
-    expect(development.gradeAssessment).toBe("not-yet-supported");
-    expect(Object.isFrozen(development)).toBe(true);
-    expect(Object.isFrozen(development.practiceSignals)).toBe(true);
-    expect(development.practiceSignals.every((skill) => Object.isFrozen(skill))).toBe(true);
-    expect("xp" in development).toBe(false);
-    expect("mastery" in development).toBe(false);
+    expect(model.month).toBe("1990-01");
+    expect(model.practiceSignals).toHaveLength(3);
+    expect(model.practiceSignals[0]?.label).toBe("Написание программ");
+    expect(model.practiceSignals[1]?.label).toBe("Отладка");
+    expect(model.practiceSignals[2]?.label).toBe("Работа с инструментами");
+    expect(model.gradeAssessment).toBe("not-yet-supported");
+    expect(Object.isFrozen(model.practiceSignals)).toBe(true);
+    expect(JSON.stringify(model)).not.toContain('"amount"');
+    expect(JSON.stringify(model)).not.toContain('"xp"');
+    expect(JSON.stringify(model)).not.toContain('"mastery"');
   });
 
-  it("does not equate assistance with independently demonstrated debugging", () => {
+  it("does not assert autonomous debugging when the player asked for help", () => {
     const result = createJanuary1990ResultFixture();
-    const assisted = projectJanuaryProgrammerDevelopment({
+    const assistedResult = {
       ...result,
       programmingOutcome: {
         ...result.programmingOutcome,
         defectResponse: "ask-for-guidance",
       },
-    });
-
-    expect(assisted.autonomy).toMatch(/не доказательство самостоятельной отладки/u);
-    expect(assisted.nextPractice).toMatch(/без подсказки/u);
-    expect(assisted.practiceSignals[1]?.explanation).toMatch(/с подсказкой/u);
-  });
-
-  it("does not promote a stronger evidence amount to a grade or mastery score", () => {
-    const result = createJanuary1990ResultFixture();
-    const enhanced = {
-      ...result,
-      programmingOutcome: {
-        ...result.programmingOutcome,
-        evidence: result.programmingOutcome.evidence.map((item) => ({
-          ...item,
-          amount: item.amount + 1,
-        })),
-      },
     };
+    const model = projectJanuaryProgrammerDevelopment(assistedResult);
 
-    expect(projectJanuaryProgrammerDevelopment(enhanced)).toEqual(
-      projectJanuaryProgrammerDevelopment(result),
-    );
+    expect(model.autonomy).toMatch(/не доказательство самостоятельной отладки/u);
+    expect(model.nextPractice).toMatch(/без подсказки/u);
+    expect(model.gradeAssessment).toBe("not-yet-supported");
   });
 
-  it("refuses malformed results and duplicate evidence rather than inventing skills", () => {
-    const result = createJanuary1990ResultFixture();
-    expect(() =>
-      projectJanuaryProgrammerDevelopment({ ...result, inventedGrade: "Junior" }),
-    ).toThrow(TypeError);
-    expect(() =>
-      projectJanuaryProgrammerDevelopment({
-        ...result,
-        programmingOutcome: {
-          ...result.programmingOutcome,
-          evidence: [
-            result.programmingOutcome.evidence[0],
-            result.programmingOutcome.evidence[0],
-          ],
-        },
-      }),
-    ).toThrow(/duplicate skill evidence/u);
+  it("rejects unsupported committed results", () => {
+    expect(() => projectJanuaryProgrammerDevelopment({ schemaVersion: "invented" })).toThrow(
+      TypeError,
+    );
   });
 });
