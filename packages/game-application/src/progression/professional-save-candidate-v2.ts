@@ -3,6 +3,7 @@ import {
   createProfessionalLabStateV1,
   fingerprint,
   parseProfessionalLabStateV1,
+  parseJanuary1990Result,
   sha256Hex,
   PROFESSIONAL_LAB_RULES_V1,
   type ProfessionalLabStateV1,
@@ -142,6 +143,8 @@ export function parseProfessionalSaveCandidateV2(value: unknown): ProfessionalSa
     if (completed === null) {
       throw new TypeError("Legacy import receipt requires a completed January month");
     }
+    // A stored v1 wrapper alone is insufficient: validate real provider outcome semantics.
+    parseJanuary1990Result(completed.terminalResult);
     if (
       legacyImport.originalRunId !== completed.runId ||
       legacyImport.originalSaveRevision !== completed.baseSaveRevision + 1
