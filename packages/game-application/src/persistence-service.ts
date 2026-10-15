@@ -7,6 +7,8 @@ import {
   parseCreateBackupCommand,
   parseCreateSaveAccepted,
   parseCreateSaveCommand,
+  parseUpgradeProfessionalSaveCommandV1,
+  parseUpgradeProfessionalSaveAcceptedV1,
   parseGetRecoveryStatusQuery,
   parseLoadActiveMonthRunQuery,
   parseLoadMonthRunQuery,
@@ -26,6 +28,8 @@ import {
   type CreateBackupCommandV1,
   type CreateSaveAcceptedV1,
   type CreateSaveCommandV1,
+  type UpgradeProfessionalSaveCommandV1,
+  type UpgradeProfessionalSaveAcceptedV1,
   type GetRecoveryStatusQueryV1,
   type LoadActiveMonthRunQueryV1,
   type LoadMonthRunQueryV1,
@@ -45,6 +49,9 @@ export type PersistenceService = Readonly<{
   createSave(
     command: CreateSaveCommandV1,
   ): Promise<PersistenceMutationResultV1<CreateSaveAcceptedV1>>;
+  upgradeProfessionalSave(
+    command: UpgradeProfessionalSaveCommandV1,
+  ): Promise<PersistenceMutationResultV1<UpgradeProfessionalSaveAcceptedV1>>;
   loadSave(query: LoadSaveQueryV1): Promise<PersistenceQueryResultV1<SaveRecordV1>>;
   beginMonthRun(
     command: BeginPersistedMonthRunCommandV1,
@@ -73,6 +80,13 @@ export function createPersistenceService(invoke: PersistenceInvokePort): Persist
       const parsed = parseCreateSaveCommand(command);
       const response = await invoke<unknown>(PERSISTENCE_COMMANDS.createSave, { command: parsed });
       return parsePersistenceMutationResult(response, parseCreateSaveAccepted);
+    },
+    async upgradeProfessionalSave(command) {
+      const parsed = parseUpgradeProfessionalSaveCommandV1(command);
+      const result = await invoke<unknown>(PERSISTENCE_COMMANDS.upgradeProfessionalSave, {
+        command: parsed,
+      });
+      return parsePersistenceMutationResult(result, parseUpgradeProfessionalSaveAcceptedV1);
     },
     async loadSave(query) {
       const parsed = parseLoadSaveQuery(query);
