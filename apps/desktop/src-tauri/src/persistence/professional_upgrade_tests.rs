@@ -2,9 +2,8 @@ use serde_json::{Value, json};
 use tempfile::TempDir;
 
 use super::{
-    Database, LoadSaveQueryV1, MutationOutcome, PersistenceError,
-    UpgradeProfessionalSaveCommandV1, hash::sha256_hex,
-    january_flow_fixture::load_january_persistence_flow_fixture,
+    Database, LoadSaveQueryV1, MutationOutcome, PersistenceError, UpgradeProfessionalSaveCommandV1,
+    hash::sha256_hex, january_flow_fixture::load_january_persistence_flow_fixture,
     professional_upgrade_contract::UpgradeProfessionalSaveCommandV1 as UpgradeCommand,
 };
 
