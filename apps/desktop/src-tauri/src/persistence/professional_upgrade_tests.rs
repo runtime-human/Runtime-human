@@ -373,6 +373,103 @@ fn professional_upgrade_revision_gap_requires_a_matching_durable_receipt() {
     database.close().expect("close tampered test database");
 }
 
+
+#[test]
+fn receipt_provenance_tamper_matrix_fails_closed() {
+    for case in [
+        "missing-receipt-sequence",
+        "changed-snapshot-hash",
+        "wrong-operation",
+        "unauthorized-revision-drift",
+    ] {
+        let (_temp, mut database) = committed_database();
+        let request = command(&database);
+        let accepted = database
+            .upgrade_professional_save(request.clone())
+            .expect("commit a valid professional upgrade");
+        assert!(matches!(accepted, MutationOutcome::Accepted(_)));
+        database
+            .verify_application_integrity()
+            .expect("unchanged upgraded save is valid");
+
+        match case {
+            "missing-receipt-sequence" | "changed-snapshot-hash" => {
+                let original_json: String = database
+                    .connection()
+                    .expect("read receipt")
+                    .query_row(
+                        "SELECT result_json FROM request_receipts WHERE request_id = ?1",
+                        [&request.request_id],
+                        |row| row.get(0),
+                    )
+                    .expect("load original receipt");
+                let mut receipt: Value =
+                    serde_json::from_str(&original_json).expect("decode valid receipt");
+                let save = receipt["save"]
+                    .as_object_mut()
+                    .expect("accepted receipt must embed save");
+                if case == "missing-receipt-sequence" {
+                    assert!(save.remove("updatedSequence").is_some());
+                } else {
+                    save.get_mut("snapshot")
+                        .and_then(Value::as_object_mut)
+                        .expect("embedded snapshot")
+                        .insert("sha256".to_owned(), Value::String("0".repeat(64)));
+                }
+                // Recalculate the receipt hash to isolate the provenance check.
+                // Otherwise verify_receipts would catch only a trivial hash mismatch.
+                let altered_json =
+                    serde_json::to_string(&receipt).expect("serialize altered receipt");
+                let altered_sha = sha256_hex(altered_json.as_bytes());
+                let changed = database
+                    .connection_mut()
+                    .expect("write tamper fixture")
+                    .execute(
+                        "UPDATE request_receipts
+                         SET result_json = ?1, result_sha256 = ?2
+                         WHERE request_id = ?3",
+                        rusqlite::params![altered_json, altered_sha, request.request_id],
+                    )
+                    .expect("update receipt fixture");
+                assert_eq!(changed, 1);
+            }
+            "wrong-operation" => {
+                let changed = database
+                    .connection_mut()
+                    .expect("write tamper fixture")
+                    .execute(
+                        "UPDATE request_receipts SET operation = 'create-save-v1'
+                         WHERE request_id = ?1",
+                        [&request.request_id],
+                    )
+                    .expect("alter receipt operation");
+                assert_eq!(changed, 1);
+            }
+            "unauthorized-revision-drift" => {
+                let changed = database
+                    .connection_mut()
+                    .expect("write tamper fixture")
+                    .execute(
+                        "UPDATE save_games SET revision = revision + 1 WHERE save_id = ?1",
+                        [&request.save_id],
+                    )
+                    .expect("alter save revision");
+                assert_eq!(changed, 1);
+            }
+            _ => unreachable!("the tamper matrix is closed"),
+        }
+
+        assert!(
+            matches!(
+                database.verify_application_integrity(),
+                Err(PersistenceError::CorruptedStoredPayload)
+            ),
+            "recovery accepted corrupted professional provenance: {case}"
+        );
+        database.close().expect("close tampered test database");
+    }
+}
+
 #[test]
 fn unclean_valid_professional_upgrade_stays_writable_through_real_worker_startup() {
     let (temp, mut database) = committed_database();
