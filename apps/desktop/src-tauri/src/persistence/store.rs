@@ -12,7 +12,7 @@ use super::{
     database::{Database, RecoveryStatus},
     error::PersistenceError,
     hash::{sha256_hex, verify_sha256},
-    professional_upgrade_contract::UpgradeProfessionalSaveCommandV1,
+    professional_upgrade_contract::{UpgradeProfessionalSaveCommandV1, require_january_v1_save},
     records::{
         BeginPersistedMonthRunAcceptedV1, CommitPersistedMonthRunAcceptedV1, CreateSaveAcceptedV1,
         MonthRunRecordV1, MutationOutcome, RecoveryStatusV1, RecoveryStatusV1Value, SaveRecordV1,
@@ -130,6 +130,7 @@ impl Database {
 
         let save = load_save_record(&transaction, &command.save_id)?
             .ok_or(PersistenceError::SaveNotFound)?;
+        require_january_v1_save(&save)?;
         if save.revision != command.expected_save_revision {
             return Err(PersistenceError::SaveRevisionConflict);
         }
@@ -373,6 +374,7 @@ impl Database {
 
         let current_save = load_save_record(&transaction, &command.save_id)?
             .ok_or(PersistenceError::SaveNotFound)?;
+        require_january_v1_save(&current_save)?;
         if current_save.revision != command.expected_save_revision
             || current_run.base_save_revision != command.expected_save_revision
         {
@@ -523,6 +525,7 @@ impl Database {
         {
             return Err(PersistenceError::SaveRevisionConflict);
         }
+        require_january_v1_save(&current)?;
         if load_active_month_run_record(&transaction, &command.save_id)?.is_some() {
             return Err(PersistenceError::ActiveRunExists);
         }
@@ -532,6 +535,7 @@ impl Database {
             ));
         }
         command.validate_transition(&current)?;
+        verify_committed_run_anchor(&transaction, &current)?;
 
         let revision = current
             .revision
@@ -623,6 +627,37 @@ fn immediate<'connection>(
     connection
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .map_err(|source| PersistenceError::storage(context, source))
+}
+
+/// The January snapshot inside an upgrade must be anchored to the durable
+/// `month_runs` row it claims to summarize: the run must be committed at exactly
+/// the save's current revision (the upgrade has not advanced it yet) and its
+/// completed checkpoint hash must match the snapshot's `completedCheckpointHash`.
+/// This is the write-time counterpart of the recovery scan's anchor checks.
+fn verify_committed_run_anchor(
+    transaction: &Transaction<'_>,
+    save: &SaveRecordV1,
+) -> Result<(), PersistenceError> {
+    let run_id = save
+        .last_committed_run_id
+        .as_deref()
+        .ok_or(PersistenceError::CorruptedStoredPayload)?;
+    let run = load_month_run_record(transaction, run_id)?
+        .ok_or(PersistenceError::CorruptedStoredPayload)?;
+    let january: serde_json::Value = serde_json::from_str(&save.snapshot.json)
+        .map_err(|_| PersistenceError::CorruptedStoredPayload)?;
+    let snapshot_completed_hash = january
+        .pointer("/completedMonth/completedCheckpointHash")
+        .and_then(serde_json::Value::as_str);
+    if run.save_id != save.save_id
+        || run.status != DurableMonthRunStatus::Committed
+        || run.committed_save_revision != Some(save.revision)
+        || run.previous_checkpoint_hash.is_none()
+        || run.previous_checkpoint_hash.as_deref() != snapshot_completed_hash
+    {
+        return Err(PersistenceError::CorruptedStoredPayload);
+    }
+    Ok(())
 }
 
 fn classify_receipt<T: DeserializeOwned>(

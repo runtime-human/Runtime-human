@@ -139,7 +139,15 @@ persistence_store_month_run_boundary_v1
 persistence_commit_month_run_v1
 persistence_create_backup_v1
 persistence_get_recovery_status_v1
+persistence_upgrade_professional_save_v1
 ```
+
+`persistence_upgrade_professional_save_v1` (operation `upgrade-professional-save-v1`, PROG-01B2C1) is
+registered for contract compatibility only: the production dispatcher fails closed until the
+activation criteria in `docs/persistence/SAVE-COMPATIBILITY.md` (writable v2 MonthRun, verified
+backup/restore, owner gate) are met. It is the sole path that changes a save's schema fingerprint;
+`persistence_begin_month_run_v1` and `persistence_commit_month_run_v1` operate on January 1990 v1
+saves only.
 
 No command accepts:
 

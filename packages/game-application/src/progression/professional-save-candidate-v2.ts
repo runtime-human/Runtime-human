@@ -109,6 +109,20 @@ export const PROFESSIONAL_SAVE_CANDIDATE_V2_RULES_FINGERPRINT = fingerprint(
   },
 );
 
+/**
+ * The single sanctioned aptitude value for a professional upgrade until character
+ * creation (ADR-021 section 8 new-game screen) defines a canonical source. Aptitudes
+ * are hidden authoritative state: neither the caller nor quality scores may choose
+ * them. Must stay identical to `PROFESSIONAL_CANONICAL_DEFAULT_APTITUDE` in
+ * `professional_upgrade_contract.rs`, which rejects any other value in the upgrade
+ * command and in the recovery scan. Deliberately outside both fingerprints: changing
+ * it is an owner-gated decision that must update both languages together.
+ */
+export const PROFESSIONAL_CANONICAL_DEFAULT_APTITUDES_V1 = Object.freeze({
+  reasoning: 500,
+  learning: 500,
+});
+
 export type ProfessionalImportRefusalReason =
   | "nothing-to-import"
   | "non-canonical-source-snapshot"

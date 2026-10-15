@@ -11,7 +11,30 @@ use super::{
 const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
 // Must stay identical to PROFESSIONAL_SAVE_CANDIDATE_V2_FINGERPRINT in game-application.
 pub(crate) const PROFESSIONAL_TARGET_FINGERPRINT: &str =
-    "ed6792b4a434c3be7c70adeb6fb8cbf429bfa6d5f9d1444a782bc5a7472759f0";
+    "438d397a16781f85f67e787ee52e9fc611409df84e770082c080cfb4975e2420";
+/// Must stay identical to JANUARY_1990_SAVE_SCHEMA_FINGERPRINT in game-application.
+/// The legacy MonthRun path (`begin_month_run` / `commit_month_run`) is only defined
+/// for saves carrying this schema, so a v1 runtime can never overwrite a v2 save.
+pub(crate) const JANUARY_1990_SAVE_SCHEMA_FINGERPRINT: &str =
+    "ceac48938ecd0990fb65a8abea1f8e72c228cd1bdf12484c6b868caeae3d3240";
+/// Must stay identical to PROFESSIONAL_CANONICAL_DEFAULT_APTITUDES_V1 in game-application.
+/// Aptitudes are hidden authoritative state with no sanctioned source yet (the
+/// character-creation screen of ADR-021 section 8 does not exist), so the upgrade pins
+/// both to this single documented default instead of accepting caller-chosen values.
+pub(crate) const PROFESSIONAL_CANONICAL_DEFAULT_APTITUDE: u64 = 500;
+
+/// Rejects the legacy (January v1) MonthRun path for any save that is not a
+/// January v1 save, notably an already upgraded professional v2 save.
+pub(crate) fn require_january_v1_save(save: &SaveRecordV1) -> Result<(), PersistenceError> {
+    if save.save_schema_fingerprint != JANUARY_1990_SAVE_SCHEMA_FINGERPRINT {
+        return Err(PersistenceError::InvalidCommand(
+            "legacy MonthRun operations are only defined for January 1990 v1 saves; \
+             this save uses another schema and cannot be advanced by the v1 runtime"
+                .to_owned(),
+        ));
+    }
+    Ok(())
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -70,6 +93,15 @@ impl UpgradeProfessionalSaveCommandV1 {
     /// arbitrary experience, grades, or rewritten January history in an upgrade.
     pub(crate) fn validate_transition(&self, old: &SaveRecordV1) -> Result<(), PersistenceError> {
         let target = self.snapshot.validate()?;
+        // The canonical form is exactly what the TypeScript builder emits
+        // (sorted keys, compact). Requiring it keeps stored bytes, their hash and
+        // every later canonical re-hash in agreement; a hash-consistent but
+        // differently serialized payload is rejected fail-closed.
+        if serde_json::to_string(&target).map_err(|_| invalid_upgrade())? != self.snapshot.json {
+            return Err(PersistenceError::InvalidCommand(
+                "professional upgrade snapshot must be canonically serialized".to_owned(),
+            ));
+        }
         let legacy: Value = serde_json::from_str(&old.snapshot.json)
             .map_err(|_| PersistenceError::CorruptedStoredPayload)?;
         validate_professional_target_structure(
@@ -213,8 +245,12 @@ pub(crate) fn validate_professional_target_structure(
         .ok_or_else(invalid_upgrade)?;
     require_keys(aptitudes, &["reasoning", "learning"])?;
     for key in ["reasoning", "learning"] {
-        if !aptitudes[key].as_u64().is_some_and(|value| value <= 1000) {
-            return Err(invalid_upgrade());
+        if aptitudes[key].as_u64() != Some(PROFESSIONAL_CANONICAL_DEFAULT_APTITUDE) {
+            return Err(PersistenceError::InvalidCommand(
+                "professional aptitudes must equal the canonical default until a sanctioned \
+                 character-creation source exists"
+                    .to_owned(),
+            ));
         }
     }
     Ok(())

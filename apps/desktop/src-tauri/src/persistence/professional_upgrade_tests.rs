@@ -10,7 +10,7 @@ use super::{
     professional_upgrade_contract::UpgradeProfessionalSaveCommandV1 as UpgradeCommand,
 };
 
-const TARGET: &str = "ed6792b4a434c3be7c70adeb6fb8cbf429bfa6d5f9d1444a782bc5a7472759f0";
+const TARGET: &str = "438d397a16781f85f67e787ee52e9fc611409df84e770082c080cfb4975e2420";
 
 fn committed_database() -> (TempDir, Database) {
     let temp = TempDir::new().expect("tempdir");
@@ -95,6 +95,37 @@ fn command(database: &Database) -> UpgradeCommand {
     }
 }
 
+fn load_save(database: &Database, save_id: &str) -> super::SaveRecordV1 {
+    database
+        .load_save(LoadSaveQueryV1 {
+            schema_version: "load-save-query-v1".to_owned(),
+            save_id: save_id.to_owned(),
+        })
+        .expect("load save")
+        .expect("save exists")
+}
+
+fn receipt_count(database: &Database) -> i64 {
+    database
+        .connection()
+        .expect("read receipts")
+        .query_row("SELECT COUNT(*) FROM request_receipts WHERE operation = 'upgrade-professional-save-v1'", [], |row| row.get(0))
+        .expect("count upgrade receipts")
+}
+
+/// Rewrites the candidate and recomputes its payload hash so only the semantic
+/// rule under test (never the payload hash check) can reject it.
+fn rewrite_command_snapshot(
+    mut request: UpgradeCommand,
+    edit: impl FnOnce(&mut Value),
+) -> UpgradeCommand {
+    let mut value: Value = serde_json::from_str(&request.snapshot.json).expect("candidate json");
+    edit(&mut value);
+    request.snapshot.json = serde_json::to_string(&value).expect("serialize candidate");
+    request.snapshot.sha256 = sha256_hex(request.snapshot.json.as_bytes());
+    request
+}
+
 #[test]
 fn atomic_upgrade_preserves_history_and_replays_receipt_after_reopen() {
     let (temp, mut database) = committed_database();
@@ -149,41 +180,86 @@ fn atomic_upgrade_preserves_history_and_replays_receipt_after_reopen() {
 }
 
 #[test]
-fn active_month_and_invalid_history_cannot_be_upgraded() {
+fn active_month_idle_save_and_invalid_history_cannot_be_upgraded() {
     let temp = TempDir::new().unwrap();
     let mut database = Database::open_or_create(&temp.path().join("active.sqlite3")).unwrap();
     let fixture = load_january_persistence_flow_fixture();
     database.create_save(fixture.create_save).unwrap();
+
+    // Idle January save: no completed month exists, so there is no history to import.
+    let idle = load_save(&database, &fixture.begin.save_id);
+    assert!(idle.last_committed_run_id.is_none());
     let request = UpgradeProfessionalSaveCommandV1 {
         schema_version: "upgrade-professional-save-command-v1".to_owned(),
-        request_id: "upgrade-active".to_owned(),
-        save_id: fixture.begin.save_id.clone(),
-        expected_save_revision: 0,
-        expected_updated_sequence: 1,
-        expected_snapshot_sha256: fixture.begin.checkpoint.sha256.clone(),
-        expected_source_save_schema_fingerprint: fixture.begin.compatibility.sha256.clone(),
+        request_id: "upgrade-idle".to_owned(),
+        save_id: idle.save_id.clone(),
+        expected_save_revision: idle.revision,
+        expected_updated_sequence: idle.updated_sequence,
+        expected_snapshot_sha256: idle.snapshot.sha256.clone(),
+        expected_source_save_schema_fingerprint: idle.save_schema_fingerprint.clone(),
         target_save_schema_fingerprint: TARGET.to_owned(),
         snapshot: fixture.begin.checkpoint.clone(),
     };
-    database.begin_month_run(fixture.begin).unwrap();
-    // Make CAS reflect the current source before checking active-run guard.
-    let save = database
-        .load_save(LoadSaveQueryV1 {
-            schema_version: "load-save-query-v1".to_owned(),
-            save_id: request.save_id.clone(),
-        })
-        .unwrap()
-        .unwrap();
+    assert!(matches!(
+        database.upgrade_professional_save(request),
+        Err(PersistenceError::InvalidCommand(message)) if message.contains("completed January")
+    ));
+    assert_eq!(load_save(&database, &idle.save_id), idle);
+
+    // Active month: the CAS preconditions are current, so only the active-run guard can reject.
+    database.begin_month_run(fixture.begin.clone()).unwrap();
+    let save = load_save(&database, &fixture.begin.save_id);
     let request = UpgradeProfessionalSaveCommandV1 {
-        expected_snapshot_sha256: save.snapshot.sha256,
-        expected_source_save_schema_fingerprint: save.save_schema_fingerprint,
+        schema_version: "upgrade-professional-save-command-v1".to_owned(),
+        request_id: "upgrade-active".to_owned(),
+        save_id: save.save_id.clone(),
+        expected_save_revision: save.revision,
         expected_updated_sequence: save.updated_sequence,
-        ..request
+        expected_snapshot_sha256: save.snapshot.sha256.clone(),
+        expected_source_save_schema_fingerprint: save.save_schema_fingerprint.clone(),
+        target_save_schema_fingerprint: TARGET.to_owned(),
+        snapshot: fixture.begin.checkpoint,
     };
     assert!(matches!(
         database.upgrade_professional_save(request),
         Err(PersistenceError::ActiveRunExists)
     ));
+    assert_eq!(load_save(&database, &save.save_id), save);
+    database.close().expect("close active-month database");
+
+    // Invalid history on a completed save: every rewrite of the committed January
+    // snapshot inside the candidate is rejected and leaves the save untouched.
+    type Rewrite = fn(&mut Value);
+    let rewrites: [(&str, Rewrite); 4] = [
+        ("terminal result rewritten", |s| {
+            s["january"]["completedMonth"]["terminalResult"] = json!({"forged": true});
+        }),
+        ("completed checkpoint hash rewritten", |s| {
+            s["january"]["completedMonth"]["completedCheckpointHash"] = json!("3".repeat(64));
+        }),
+        ("completed run id rewritten", |s| {
+            s["january"]["completedMonth"]["runId"] = json!("another-run");
+        }),
+        ("january history dropped", |s| {
+            s["january"]["completedMonth"] = Value::Null;
+        }),
+    ];
+    for (case, rewrite) in rewrites {
+        let (_temp, mut database) = committed_database();
+        let valid = command(&database);
+        let before = load_save(&database, &valid.save_id);
+        let invalid = rewrite_command_snapshot(valid, rewrite);
+        assert!(
+            matches!(
+                database.upgrade_professional_save(invalid),
+                Err(PersistenceError::InvalidCommand(_))
+            ),
+            "invalid January history was upgraded: {case}"
+        );
+        assert_eq!(load_save(&database, &before.save_id), before, "{case}");
+        assert_eq!(receipt_count(&database), 0, "orphan receipt: {case}");
+        database.close().expect("close invalid-history database");
+    }
 }
 
 #[test]
@@ -874,4 +950,326 @@ fn registered_professional_upgrade_ipc_is_dormant_before_backup_and_v2_runtime()
         .expect("save must still exist");
     assert_eq!(after, before, "rejected IPC must never update the save");
     worker.shutdown().expect("shutdown worker");
+}
+
+const JANUARY_V1_FINGERPRINT: &str =
+    "ceac48938ecd0990fb65a8abea1f8e72c228cd1bdf12484c6b868caeae3d3240";
+
+fn month_run_count(database: &Database) -> i64 {
+    database
+        .connection()
+        .expect("read month runs")
+        .query_row("SELECT COUNT(*) FROM month_runs", [], |row| row.get(0))
+        .expect("count month runs")
+}
+
+#[test]
+fn legacy_begin_month_run_rejects_an_upgraded_v2_save_and_leaves_it_unchanged() {
+    let (_temp, mut database, _request) = upgraded_database();
+    let fixture = load_january_persistence_flow_fixture();
+    let upgraded = load_save(&database, &fixture.begin.save_id);
+    assert_eq!(upgraded.save_schema_fingerprint, TARGET);
+    let runs_before = month_run_count(&database);
+
+    // A fresh request ID so the stored legacy begin receipt cannot replay. The stale
+    // revision and existing run id would also fail later checks; the schema guard
+    // must fire first with the dedicated error.
+    let mut begin = fixture.begin;
+    begin.request_id = "legacy-begin-after-upgrade".to_owned();
+    let rejected = database.begin_month_run(begin);
+    assert!(
+        matches!(
+            &rejected,
+            Err(PersistenceError::InvalidCommand(message))
+                if message.contains("legacy MonthRun operations")
+        ),
+        "legacy begin must not operate on a v2 save: {rejected:?}"
+    );
+    assert_eq!(load_save(&database, &upgraded.save_id), upgraded);
+    assert_eq!(month_run_count(&database), runs_before);
+    database
+        .verify_application_integrity()
+        .expect("rejected legacy begin leaves the upgraded save valid");
+    database.close().expect("close database");
+}
+
+#[test]
+fn legacy_commit_month_run_rejects_a_save_that_is_not_january_v1() {
+    let fixture = load_january_persistence_flow_fixture();
+    let temp = TempDir::new().unwrap();
+    let mut database = Database::open_or_create(&temp.path().join("save.sqlite3")).unwrap();
+    database.create_save(fixture.create_save).unwrap();
+    database.begin_month_run(fixture.begin).unwrap();
+    for boundary in fixture.boundaries {
+        database.store_month_run_boundary(boundary).unwrap();
+    }
+    // Defense in depth: even if a save somehow carries the professional schema while a
+    // run is still completed, the v1 commit must not overwrite its snapshot.
+    let changed = database
+        .connection_mut()
+        .unwrap()
+        .execute(
+            "UPDATE save_games SET save_schema_fingerprint = ?1",
+            [TARGET],
+        )
+        .unwrap();
+    assert_eq!(changed, 1);
+    let before = load_save(&database, &fixture.commit.save_id);
+    let rejected = database.commit_month_run(fixture.commit);
+    assert!(
+        matches!(
+            &rejected,
+            Err(PersistenceError::InvalidCommand(message))
+                if message.contains("legacy MonthRun operations")
+        ),
+        "legacy commit must not operate on a non-January-v1 save: {rejected:?}"
+    );
+    assert_eq!(load_save(&database, &before.save_id), before);
+    database.close().expect("close database");
+}
+
+#[test]
+fn only_january_v1_saves_can_be_upgraded() {
+    let (_temp, mut database) = committed_database();
+    let save_id = load_january_persistence_flow_fixture().create_save.save_id;
+    let changed = database
+        .connection_mut()
+        .unwrap()
+        .execute(
+            "UPDATE save_games SET save_schema_fingerprint = ?1",
+            ["a".repeat(64)],
+        )
+        .unwrap();
+    assert_eq!(changed, 1);
+    let before = load_save(&database, &save_id);
+    assert_ne!(before.save_schema_fingerprint, JANUARY_V1_FINGERPRINT);
+    // The command is built from the (tampered) stored save, so every CAS value is current.
+    let rejected = database.upgrade_professional_save(command(&database));
+    assert!(
+        matches!(&rejected, Err(PersistenceError::InvalidCommand(_))),
+        "{rejected:?}"
+    );
+    assert_eq!(load_save(&database, &save_id), before);
+    assert_eq!(receipt_count(&database), 0);
+    database.close().expect("close database");
+}
+
+#[test]
+fn upgrade_pins_aptitudes_to_the_canonical_default() {
+    for (case, reasoning, learning) in [
+        ("reasoning above default", 501_u64, 500_u64),
+        ("learning below default", 500, 499),
+        ("both zero", 0, 0),
+        ("both maximal", 1000, 1000),
+    ] {
+        let (_temp, mut database) = committed_database();
+        let valid = command(&database);
+        let before = load_save(&database, &valid.save_id);
+        let invalid = rewrite_command_snapshot(valid, |s| {
+            s["professional"]["aptitudes"] = json!({"reasoning": reasoning, "learning": learning});
+        });
+        assert!(
+            matches!(
+                database.upgrade_professional_save(invalid),
+                Err(PersistenceError::InvalidCommand(message)) if message.contains("canonical default")
+            ),
+            "caller-chosen aptitudes were accepted: {case}"
+        );
+        assert_eq!(load_save(&database, &before.save_id), before, "{case}");
+        assert_eq!(receipt_count(&database), 0, "{case}");
+        database.close().expect("close database");
+    }
+}
+
+#[test]
+fn recovery_rejects_a_hash_consistent_v2_save_with_non_default_aptitudes() {
+    let (_temp, mut database, request) = upgraded_database();
+    forge_hash_consistent_snapshot(&mut database, &request, |s| {
+        s["professional"]["aptitudes"]["learning"] = json!(501);
+    });
+    assert_corrupted(&database, "aptitude differs from the canonical default");
+    database.close().expect("close tampered test database");
+}
+
+#[test]
+fn upgrade_requires_the_committed_month_run_row_to_anchor_the_snapshot() {
+    // (a) MonthRun committed at another revision than the save's current revision.
+    let (_temp, mut database) = committed_database();
+    let request = command(&database);
+    let before = load_save(&database, &request.save_id);
+    database
+        .connection_mut()
+        .unwrap()
+        .execute(
+            "UPDATE month_runs SET committed_save_revision = committed_save_revision + 1",
+            [],
+        )
+        .unwrap();
+    assert!(matches!(
+        database.upgrade_professional_save(request),
+        Err(PersistenceError::CorruptedStoredPayload)
+    ));
+    assert_eq!(load_save(&database, &before.save_id), before);
+    assert_eq!(receipt_count(&database), 0);
+    database.close().expect("close database");
+
+    // (b) The snapshot's completedCheckpointHash disagrees with the MonthRun row. The
+    // save is rewritten hash-consistently and the command is derived from it, so only
+    // the row anchor can reject.
+    let (_temp, mut database) = committed_database();
+    let save_id = load_january_persistence_flow_fixture().create_save.save_id;
+    let stored = load_save(&database, &save_id);
+    let mut january: Value = serde_json::from_str(&stored.snapshot.json).unwrap();
+    january["completedMonth"]["completedCheckpointHash"] = json!("3".repeat(64));
+    let forged = serde_json::to_string(&january).unwrap();
+    database
+        .connection_mut()
+        .unwrap()
+        .execute(
+            "UPDATE save_games SET snapshot_json = ?1, snapshot_sha256 = ?2 WHERE save_id = ?3",
+            rusqlite::params![forged, sha256_hex(forged.as_bytes()), save_id],
+        )
+        .unwrap();
+    let before = load_save(&database, &save_id);
+    assert!(matches!(
+        database.upgrade_professional_save(command(&database)),
+        Err(PersistenceError::CorruptedStoredPayload)
+    ));
+    assert_eq!(load_save(&database, &save_id), before);
+    assert_eq!(receipt_count(&database), 0);
+    database.close().expect("close database");
+
+    // (c) The linked run belongs to another save.
+    let (_temp, mut database) = committed_database();
+    let request = command(&database);
+    let before = load_save(&database, &request.save_id);
+    database
+        .connection_mut()
+        .unwrap()
+        .execute_batch("PRAGMA foreign_keys = OFF; UPDATE month_runs SET save_id = 'another-save';")
+        .unwrap();
+    assert!(matches!(
+        database.upgrade_professional_save(request),
+        Err(PersistenceError::CorruptedStoredPayload)
+    ));
+    assert_eq!(load_save(&database, &before.save_id), before);
+    database.close().expect("close database");
+}
+
+#[test]
+fn every_cas_precondition_field_is_enforced_independently() {
+    type Mutate = fn(&mut UpgradeCommand);
+    let cases: [(&str, Mutate); 4] = [
+        ("expected_save_revision", |c| c.expected_save_revision += 1),
+        ("expected_updated_sequence", |c| {
+            c.expected_updated_sequence += 1;
+        }),
+        ("expected_snapshot_sha256", |c| {
+            c.expected_snapshot_sha256 = "b".repeat(64);
+        }),
+        ("expected_source_save_schema_fingerprint", |c| {
+            c.expected_source_save_schema_fingerprint = "c".repeat(64);
+        }),
+    ];
+    for (field, mutate) in cases {
+        let (_temp, mut database) = committed_database();
+        let mut request = command(&database);
+        let before = load_save(&database, &request.save_id);
+        mutate(&mut request);
+        let rejected = database.upgrade_professional_save(request);
+        assert!(
+            matches!(&rejected, Err(PersistenceError::SaveRevisionConflict)),
+            "stale {field} must be a CAS conflict: {rejected:?}"
+        );
+        assert_eq!(load_save(&database, &before.save_id), before, "{field}");
+        assert_eq!(receipt_count(&database), 0, "orphan receipt: {field}");
+        database.close().expect("close database");
+    }
+}
+
+#[test]
+fn same_request_id_with_another_payload_is_a_payload_conflict() {
+    let (_temp, mut database) = committed_database();
+    let request = command(&database);
+    assert!(matches!(
+        database.upgrade_professional_save(request.clone()).unwrap(),
+        MutationOutcome::Accepted(_)
+    ));
+    let upgraded = load_save(&database, &request.save_id);
+
+    // Every payload difference under the stored request ID is a conflict, checked
+    // before any CAS evaluation (the save has moved on, so CAS alone would differ).
+    let mut other_cas = request.clone();
+    other_cas.expected_snapshot_sha256 = "d".repeat(64);
+    let mut other_snapshot = request.clone();
+    other_snapshot.snapshot.json.push(' ');
+    other_snapshot.snapshot.sha256 = sha256_hex(other_snapshot.snapshot.json.as_bytes());
+    for (case, different) in [("cas field", other_cas), ("snapshot", other_snapshot)] {
+        assert!(
+            matches!(
+                database.upgrade_professional_save(different),
+                Err(PersistenceError::RequestPayloadConflict)
+            ),
+            "{case}"
+        );
+    }
+    assert_eq!(load_save(&database, &upgraded.save_id), upgraded);
+    assert_eq!(receipt_count(&database), 1);
+    database.close().expect("close database");
+}
+
+#[test]
+fn stored_receipt_reply_is_identical_after_the_save_advances() {
+    let (_temp, mut database) = committed_database();
+    let request = command(&database);
+    let first = match database.upgrade_professional_save(request.clone()).unwrap() {
+        MutationOutcome::Accepted(value) => value,
+        MutationOutcome::Duplicate(_) => panic!("first upgrade cannot be a replay"),
+    };
+    // Advance the save past the receipt's moment (a future v2 runtime would do this
+    // legitimately; here the row is advanced directly).
+    let advanced = database
+        .connection_mut()
+        .unwrap()
+        .execute(
+            "UPDATE save_games SET revision = revision + 1, updated_sequence = updated_sequence + 1000",
+            [],
+        )
+        .unwrap();
+    assert_eq!(advanced, 1);
+    assert_ne!(load_save(&database, &request.save_id), first.save);
+
+    let replay = database.upgrade_professional_save(request).unwrap();
+    assert!(
+        matches!(&replay, MutationOutcome::Duplicate(value) if *value == first),
+        "replay must return the stored receipt, not the current save: {replay:?}"
+    );
+    database.close().expect("close database");
+}
+
+#[test]
+fn non_canonically_serialized_candidate_is_rejected_even_when_hash_consistent() {
+    let (_temp, mut database) = committed_database();
+    let valid = command(&database);
+    let before = load_save(&database, &valid.save_id);
+    let reordered = {
+        let mut request = valid.clone();
+        let value: Value = serde_json::from_str(&request.snapshot.json).unwrap();
+        // Same value, different bytes: pretty-printed with insignificant whitespace.
+        request.snapshot.json = serde_json::to_string_pretty(&value).unwrap();
+        request.snapshot.sha256 = sha256_hex(request.snapshot.json.as_bytes());
+        request
+    };
+    assert!(matches!(
+        database.upgrade_professional_save(reordered),
+        Err(PersistenceError::InvalidCommand(message)) if message.contains("canonically")
+    ));
+    assert_eq!(load_save(&database, &before.save_id), before);
+    assert_eq!(receipt_count(&database), 0);
+    // The canonical form of the very same value is accepted.
+    assert!(matches!(
+        database.upgrade_professional_save(valid).unwrap(),
+        MutationOutcome::Accepted(_)
+    ));
+    database.close().expect("close database");
 }

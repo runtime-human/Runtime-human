@@ -142,14 +142,54 @@ fails closed. Remaining gap: the recovery scan cannot recompute
 `originalSnapshotSha256` (the original v1 snapshot bytes are no longer stored) nor
 validate January result semantics, which need the TypeScript core.
 
+Write-time guards (all inside the single `BEGIN IMMEDIATE` upgrade transaction,
+before any row changes):
+
+- every CAS precondition is checked independently — `expectedSaveRevision`,
+  `expectedUpdatedSequence`, `expectedSnapshotSha256` and
+  `expectedSourceSaveSchemaFingerprint` — and any mismatch is a
+  `SaveRevisionConflict`; the source must be the January 1990 v1 schema;
+- the `month_runs` row for `last_committed_run_id` must be `committed`, belong to
+  the save, carry `committed_save_revision == save.revision` and a completed
+  checkpoint hash equal to the January snapshot's `completedCheckpointHash`
+  (the same anchor the recovery scan applies, evaluated before the write);
+- the candidate must be the canonical serialization (sorted keys, compact) of its
+  own value, so stored bytes, their hash and any later canonical re-hash agree;
+  the Rust writer does not re-serialize (it stores the verified bytes) and rejects
+  any hash-consistent but differently serialized payload instead;
+- a request ID reused with a different payload is a `RequestPayloadConflict`,
+  checked before any CAS; replay returns the stored receipt verbatim even after the
+  save has advanced.
+
+Legacy path guard: `begin_month_run` and `commit_month_run` operate only on saves
+whose `save_schema_fingerprint` is the January 1990 v1 schema fingerprint
+(`JANUARY_1990_SAVE_SCHEMA_FINGERPRINT`, mirrored in Rust and pinned by a TypeScript
+parity test). A v1 runtime therefore can never advance or overwrite an upgraded v2
+save; a writable v2 MonthRun path is a later, separately reviewed contract.
+
+Aptitudes (owner-delegated decision, until character creation exists): the upgrade
+installs exactly one documented canonical default,
+`PROFESSIONAL_CANONICAL_DEFAULT_APTITUDES_V1 = { reasoning: 500, learning: 500 }`
+(Rust `PROFESSIONAL_CANONICAL_DEFAULT_APTITUDE = 500`). The Rust upgrade command and
+the recovery scan reject every other value; the TypeScript command builder refuses
+non-default aptitudes. Neither the caller nor quality scores may choose them. A
+sanctioned source (ADR-021 section 8 new-game screen) must replace this constant in
+both languages in one reviewed change.
+
 The import command is **not** enabled as a player action in this slice.
 Although its versioned Tauri IPC name is registered for contract compatibility,
 the production dispatcher explicitly rejects upgrade attempts before reaching
 the SQLite writer. Only internal, isolated persistence tests exercise the
-underlying transactional upgrade. Writable v2 MonthRun support, verified
-pre-upgrade backup/restore and the corresponding owner/review gate are required
-before changing this fail-closed dispatcher and enabling any user-facing
-migration. Prior January evidence stays `unassessed`; it never retroactively
+underlying transactional upgrade. Activation criteria, all required before
+changing this fail-closed dispatcher and enabling any user-facing migration:
+writable v2 MonthRun support, a verified pre-upgrade backup/restore, and the
+corresponding owner/review gate. The backup gate is precisely this: the Rust
+writer itself does **not** require or verify a backup (it is a generic CAS
+operation), so the activating caller must first create a backup
+(`createBackup`) and confirm its metadata (`saveId` and `saveRevision` equal to the upgrade's
+`saveId`/`expectedSaveRevision`, `hasActiveMonthRun = false`, `quickCheck = "ok"`,
+`foreignKeyViolations = 0`) before the writer runs; wiring and testing that precondition is part of the activation change, not of
+this slice. Prior January evidence stays `unassessed`; it never retroactively
 awards mastery, autonomy or grade.
 
 
@@ -215,11 +255,14 @@ Title, salary, tenure, referral, employer reputation or promotion cannot be migr
   `completedCheckpointHash` без строки MonthRun.
 
 Aptitudes (`reasoning`, `learning`) — скрытое состояние. Пока у них нет
-канонического источника, **решение владельца остаётся открытым**. Предложение:
-до появления экрана новой игры / создания персонажа B2C фиксирует одну
-документированную константу по умолчанию, не принимая значения от вызывающего
-кода и не выводя их из quality scores. Диапазон значений 0..1000, аргументы
-проверяются до любого IO.
+канонического источника, решение владельца делегировано: до появления экрана
+новой игры / создания персонажа (ADR-021 §8) B2C фиксирует одну
+документированную константу по умолчанию
+(`PROFESSIONAL_CANONICAL_DEFAULT_APTITUDES_V1` = 500/500, зеркало в Rust),
+не принимая значения от вызывающего кода и не выводя их из quality scores;
+Rust-команда обновления и recovery-скан отклоняют любые другие значения.
+Диапазон состояния лаборатории 0..1000, аргументы preflight проверяются до
+любого IO.
 
 ## Career compatibility
 

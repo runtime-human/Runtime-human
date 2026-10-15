@@ -74,6 +74,7 @@ export {
   parseProfessionalSaveCandidateV2,
   prepareCommittedJanuaryProfessionalCandidateV2,
   ProfessionalImportRefusedError,
+  PROFESSIONAL_CANONICAL_DEFAULT_APTITUDES_V1,
   PROFESSIONAL_SAVE_CANDIDATE_V2_FINGERPRINT,
   PROFESSIONAL_SAVE_CANDIDATE_V2_RULES_FINGERPRINT,
 } from "./progression/professional-save-candidate-v2";
