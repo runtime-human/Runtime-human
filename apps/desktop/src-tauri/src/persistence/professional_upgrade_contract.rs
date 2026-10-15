@@ -1,10 +1,10 @@
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde_json::{Value, json};
 
 use super::{
     contracts::CanonicalPayloadV1,
     error::PersistenceError,
-    hash::validate_sha256_hex,
+    hash::{sha256_hex, validate_sha256_hex},
     records::SaveRecordV1,
 };
 
@@ -99,18 +99,33 @@ impl UpgradeProfessionalSaveCommandV1 {
             || receipt.get("assessmentStatus").and_then(Value::as_str) != Some("unassessed")
             || receipt.get("originalRunId").and_then(Value::as_str)
                 != old.last_committed_run_id.as_deref()
-            || receipt.get("originalSaveId").and_then(Value::as_str) != Some(&old.save_id)
+            || receipt.get("originalSaveId").and_then(Value::as_str) != Some(old.save_id.as_str())
             || receipt.get("originalSaveRevision").and_then(Value::as_u64)
                 != Some(old.revision)
             || receipt.get("originalSnapshotSha256").and_then(Value::as_str)
-                != Some(&old.snapshot.sha256)
+                != Some(old.snapshot.sha256.as_str())
         {
             return Err(invalid_upgrade());
         }
-        validate_sha256_hex(
-            receipt["sourceFingerprint"].as_str().ok_or_else(invalid_upgrade)?,
-            "sourceFingerprint",
-        )?;
+        let source_fingerprint = receipt["sourceFingerprint"].as_str()
+            .ok_or_else(invalid_upgrade)?;
+        validate_sha256_hex(source_fingerprint, "sourceFingerprint")?;
+        let source_value = json!({
+            "domain": "runtime-human:fingerprint:v1",
+            "namespace": "january-professional-committed-source-v1",
+            "value": {
+                "saveId": old.save_id,
+                "runId": month["runId"],
+                "checkpointHash": month["completedCheckpointHash"],
+                "result": month["terminalResult"],
+            },
+        });
+        let canonical = serde_json::to_vec(&source_value).map_err(|_| invalid_upgrade())?;
+        if source_fingerprint != sha256_hex(&canonical) {
+            return Err(PersistenceError::InvalidCommand(
+                "professional source fingerprint does not match committed history".to_owned(),
+            ));
+        }
         let professional = target["professional"].as_object().ok_or_else(invalid_upgrade)?;
         require_keys(professional, &[
             "aptitudes", "lastEpisode", "recentContexts", "schemaVersion",
