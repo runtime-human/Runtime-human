@@ -116,6 +116,7 @@ export {
   parseProfessionalLabEpisodeV1,
   parseProfessionalLabStateV1,
   PROFESSIONAL_LAB_RULES_V1,
+  projectProfessionalLabFluencyV1,
 } from "./progression/professional-lab-v1";
 export type {
   ProfessionalLabEpisodeV1,

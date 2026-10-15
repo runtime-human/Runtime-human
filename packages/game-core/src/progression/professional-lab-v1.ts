@@ -4,6 +4,16 @@ import { fingerprint } from "../determinism/hash";
  * PROG-01B1 is a versioned, pure progression laboratory. It MUST NOT be used
  * as a serialized January save or production grade authority until B2 migrates
  * and atomically commits it under an explicit rules/compatibility manifest.
+ *
+ * Known lab limits owned by B2/B3 (see PROFESSIONAL-PROGRESSION-ENGINE §9, §19):
+ * - fluency decays to 0; the canon mastery-linked floor has no formula yet;
+ * - fluency has no repeat/diminishing attenuation (canon `practiceBps` is
+ *   undefined; participation stands in for it);
+ * - `contextFingerprint` is caller-supplied; the B3 provider bridge must derive
+ *   it from verified project truth;
+ * - the rules id is neither in the episode hash nor in state; B2 binds it via
+ *   the compatibility manifest;
+ * - `aptitudes.reasoning` is stored per canon §5/§7 but not consumed yet.
  */
 export const PROFESSIONAL_LAB_RULES_V1 = Object.freeze({
   schemaVersion: "professional-lab-rules-v1",
@@ -33,7 +43,8 @@ export const PROFESSIONAL_LAB_RULES_V1 = Object.freeze({
   }),
   participationBps: Object.freeze({
     independent: 10_000,
-    assisted: 10_500,
+    // Help is useful for learning but must never out-earn independent practice.
+    assisted: 9_000,
   }),
   repeatNoveltyBps: 1_500,
   newContextNoveltyBps: 10_000,
@@ -268,7 +279,8 @@ export function applyProfessionalExperienceLabV1(
         familiarityGain: 0,
         independentDeliveryObserved: false,
         gradeAwarded: false as const,
-        repeatedContext: state.recentContexts.includes(episode.contextFingerprint),
+        // A replay applies nothing, so it never reports an attenuated repeat.
+        repeatedContext: false,
       });
     }
     throw new TypeError("Professional episode is stale or conflicts with the committed month");
@@ -289,16 +301,13 @@ export function applyProfessionalExperienceLabV1(
   const deltas: ProfessionalLabSkillDeltaV1[] = [];
   const skills = allIds.map((id) => {
     const old = state.skills.find((skill) => skill.skillId === id);
+    // Decay is a pure function of stored fluency and lastPracticedMonth. It is
+    // only materialised when the skill is practiced again, so an untouched
+    // skill keeps its stored record and idle months are never decayed twice.
+    if (old !== undefined && !skillSet.has(id)) return old;
     const mastery = old?.mastery ?? 0;
-    const priorFluency = old === undefined ? 0 : decayFluency(old, episode.monthIndex);
-    if (!skillSet.has(id)) {
-      return Object.freeze({
-        skillId: id,
-        mastery,
-        fluency: priorFluency,
-        lastPracticedMonth: old?.lastPracticedMonth ?? episode.monthIndex,
-      });
-    }
+    const priorFluency =
+      old === undefined ? 0 : projectProfessionalLabFluencyV1(old, episode.monthIndex);
     const diminishingBps = 10_000 - Number((BigInt(mastery) * 5_000n) / 10_000n);
     // All intermediate multiplications and round-half-even are exact BigInt.
     const candidateMastery = roundHalfEven(PROFESSIONAL_LAB_RULES_V1.baseMastery, [
@@ -366,8 +375,15 @@ export function applyProfessionalExperienceLabV1(
   });
 }
 
-function decayFluency(skill: ProfessionalLabSkillV1, newMonth: number): number {
-  const gap = newMonth - skill.lastPracticedMonth - 1;
+/**
+ * Fluency a skill has at `monthIndex` after idle decay. Pure read projection:
+ * stored state is never rewritten by decay, so projections compose.
+ */
+export function projectProfessionalLabFluencyV1(
+  skill: Pick<ProfessionalLabSkillV1, "fluency" | "lastPracticedMonth">,
+  monthIndex: number,
+): number {
+  const gap = monthIndex - skill.lastPracticedMonth - 1;
   const months = Math.max(0, gap - PROFESSIONAL_LAB_RULES_V1.fluencyGraceMonths);
   return Math.max(0, skill.fluency - months * PROFESSIONAL_LAB_RULES_V1.fluencyDecayPerMonth);
 }
