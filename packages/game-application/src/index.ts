@@ -68,3 +68,19 @@ export type {
   PersistedMonthRunOrchestratorOptions,
   PersistedMonthRunResult,
 } from "./persisted-month-run-types";
+
+export {
+  createFreshProfessionalSaveCandidateV2,
+  parseProfessionalSaveCandidateV2,
+  prepareCommittedJanuaryProfessionalCandidateV2,
+  ProfessionalImportRefusedError,
+  PROFESSIONAL_SAVE_CANDIDATE_V2_FINGERPRINT,
+  PROFESSIONAL_SAVE_CANDIDATE_V2_RULES_FINGERPRINT,
+} from "./progression/professional-save-candidate-v2";
+export type {
+  ProfessionalImportRefusalReason,
+  ProfessionalLegacyReceiptV1,
+  ProfessionalSaveCandidateV2,
+} from "./progression/professional-save-candidate-v2";
+export { inspectCommittedJanuaryProfessionalImportV2 } from "./progression/inspect-professional-import-v2";
+export type { ProfessionalImportInspectionV2 } from "./progression/inspect-professional-import-v2";

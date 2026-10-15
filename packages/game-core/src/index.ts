@@ -115,6 +115,8 @@ export {
   createProfessionalLabStateV1,
   parseProfessionalLabEpisodeV1,
   parseProfessionalLabStateV1,
+  PROFESSIONAL_LAB_ALGORITHM_VERSION_V1,
+  PROFESSIONAL_LAB_STATE_MANIFEST_V1,
   PROFESSIONAL_LAB_RULES_V1,
   projectProfessionalLabFluencyV1,
 } from "./progression/professional-lab-v1";

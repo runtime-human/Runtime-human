@@ -14,6 +14,7 @@ import { parseSaveRecord, type SaveRecordV1 } from "@runtime-human/game-persiste
 import {
   JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
   parseJanuary1990SaveSnapshot,
+  type January1990CompletedMonthV1,
 } from "./january-save-snapshot";
 
 /**
@@ -91,17 +92,7 @@ export function projectCommittedJanuaryProfessionalSourceV1(
     throw new TypeError("Professional source committed run or save revision does not match");
   }
 
-  const outcome = parseJanuary1990Result(month.terminalResult).programmingOutcome;
-  requireJanuaryEvidence(outcome.evidence, outcome.accessRoute);
-  const storedOutcome = month.outcomes.find(
-    (entry) => entry.outcomeId === "january-1990/programming-outcome",
-  );
-  if (
-    storedOutcome === undefined ||
-    canonicalizeAuthoritative(storedOutcome.payload) !== canonicalizeAuthoritative(outcome)
-  ) {
-    throw new TypeError("Professional source stored outcome does not match the terminal result");
-  }
+  const outcome = requireCommittedJanuaryMonthEvidenceV1(month);
 
   const contextFingerprint = fingerprint("january-professional-task-context-v1", {
     projectId: outcome.projectId,
@@ -217,6 +208,31 @@ export function createJanuaryProfessionalLabEpisodeV1(
     feedback: approved.feedback,
     outcome: approved.outcome,
   });
+}
+
+/**
+ * Verifies that a completed January month carries complete canonical skill
+ * evidence and that its stored programming outcome equals the terminal result.
+ * Shared by the source projection and the save-candidate parser so a
+ * hash-consistent but evidence-free `terminalResult` cannot be wrapped.
+ *
+ * @internal Not exported from the package index.
+ */
+export function requireCommittedJanuaryMonthEvidenceV1(
+  month: Pick<January1990CompletedMonthV1, "terminalResult" | "outcomes">,
+) {
+  const outcome = parseJanuary1990Result(month.terminalResult).programmingOutcome;
+  requireJanuaryEvidence(outcome.evidence, outcome.accessRoute);
+  const storedOutcome = month.outcomes.find(
+    (entry) => entry.outcomeId === "january-1990/programming-outcome",
+  );
+  if (
+    storedOutcome === undefined ||
+    canonicalizeAuthoritative(storedOutcome.payload) !== canonicalizeAuthoritative(outcome)
+  ) {
+    throw new TypeError("Professional source stored outcome does not match the terminal result");
+  }
+  return outcome;
 }
 
 function requireMintedSource(source: unknown): void {
