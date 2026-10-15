@@ -9,6 +9,9 @@ use super::{
 };
 
 const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
+// Must stay identical to PROFESSIONAL_SAVE_CANDIDATE_V2_FINGERPRINT in game-application.
+const PROFESSIONAL_TARGET_FINGERPRINT: &str =
+    "58a22b3f61be510c7e0dd0c81ebbefeaa5f97f46863dcc0b10485baa6bcaeded";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -49,6 +52,11 @@ impl UpgradeProfessionalSaveCommandV1 {
             &self.target_save_schema_fingerprint,
             "targetSaveSchemaFingerprint",
         )?;
+        if self.target_save_schema_fingerprint != PROFESSIONAL_TARGET_FINGERPRINT {
+            return Err(PersistenceError::InvalidCommand(
+                "unsupported professional candidate target fingerprint".to_owned(),
+            ));
+        }
         if self.expected_source_save_schema_fingerprint == self.target_save_schema_fingerprint {
             return Err(PersistenceError::InvalidCommand(
                 "professional upgrade cannot reuse the old schema fingerprint".to_owned(),
