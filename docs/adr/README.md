@@ -3,8 +3,8 @@ title: "Architecture Decision Records"
 type: adr
 status: draft
 canon: true
-depends_on: [ADR-001, ADR-002, ADR-003, ADR-004, ADR-005, ADR-006, ADR-007, ADR-008, ADR-009, ADR-010, ADR-011, ADR-012, ADR-013, ADR-014, ADR-015, ADR-016, ADR-017, ADR-018, ADR-019, ADR-020]
-updated: 2026-07-18
+depends_on: [ADR-001, ADR-002, ADR-003, ADR-004, ADR-005, ADR-006, ADR-007, ADR-008, ADR-009, ADR-010, ADR-011, ADR-012, ADR-013, ADR-014, ADR-015, ADR-016, ADR-017, ADR-018, ADR-019, ADR-020, ADR-021]
+updated: 2026-10-15
 ---
 
 # Architecture Decision Records
@@ -31,6 +31,7 @@ updated: 2026-07-18
 - [ADR-018 — Авторитетная модель карьеры программиста, найма и занятости](ADR-018-authoritative-programmer-career-employment-model.md)
 - [ADR-019 — Авторитетная модель исторических технологий, tooling и ecosystem context](ADR-019-authoritative-historical-technology-ecosystem-model.md)
 - [ADR-020 — Авторитетная модель композиции профессиональных ситуаций](ADR-020-authoritative-professional-situation-content-composition-model.md)
+- [ADR-021 — Модель январского онбординга и подача approach cards](ADR-021-january-onboarding-decision-model-and-approach-cards.md)
 
 ## Decision sequence
 
@@ -43,8 +44,9 @@ updated: 2026-07-18
 - ADR-018: SD-005 career boundary; employer-visible signals lead to opportunities, hiring, offer, employment context and transitions without replacing grade/evidence or Company/Project truth.
 - ADR-019: SD-006 technology/ecosystem boundary; source-backed chronology and fictional local diffusion create immutable provider context without a tech tree, universal score or ownership drift.
 - ADR-020: SD-007 professional-situation content boundary; authored kernels and typed components are materialized and validated before runtime without free generation, duplicate pacing or provider ownership drift.
+- ADR-021: owner decisions 2026-10-15; January restructured to canon (access as start background, inline learning choice, one blocking decision with four approaches), approach cards in a row with select→confirm and qualitative markers, no NPC/state bars before their foundations, character name in the v2 save schema; January v1 stays replayable beside a versioned v2.
 
-ADR-015 constrains implementation scope of ADR-013/014/016/017/018/019/020 without отмены their ownership, determinism and compatibility guarantees.
+ADR-015 constrains implementation scope of ADR-013/014/016/017/018/019/020/021 without отмены their ownership, determinism and compatibility guarantees.
 
 ## Proposed
 

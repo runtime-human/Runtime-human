@@ -3,8 +3,8 @@ title: "Vertical Slice Plan"
 type: plan
 status: draft
 canon: true
-depends_on: [ADR-015, ADR-016, ADR-017]
-updated: 2026-07-18
+depends_on: [ADR-015, ADR-016, ADR-017, ADR-021]
+updated: 2026-10-15
 ---
 
 # Vertical Slice Plan
@@ -14,6 +14,7 @@ updated: 2026-07-18
 - [ADR-015](../adr/ADR-015-casual-first-abstraction-and-complexity-budget.md);
 - [ADR-016](../adr/ADR-016-authoritative-professional-challenge-model.md);
 - [ADR-017](../adr/ADR-017-authoritative-programmer-learning-access-model.md);
+- [ADR-021](../adr/ADR-021-january-onboarding-decision-model-and-approach-cards.md) — структура января v2 и подача approach cards (решения владельца 2026-10-15; при расхождении приоритет у ADR-021);
 - [Casual Simulation Design](../game-design/CASUAL-SIMULATION-DESIGN.md);
 - [Programmer-First Design](../game-design/PROGRAMMER-FIRST-DESIGN.md);
 - [Professional Progression Engine](../game-design/PROFESSIONAL-PROGRESSION-ENGINE.md);
@@ -62,8 +63,8 @@ Learning outcome и project challenge входят в один непрерыв�
 
 ## 4. Player flow
 
-1. Создать 12-летнего персонажа.
-2. Начать в комнате родителей с одним background доступа к технике.
+1. Создать 12-летнего персонажа: ввести имя (ADR-021 §8).
+2. Начать в комнате родителей с одним background доступа к технике — стартовый факт персонажа, а не блокирующий шаг (ADR-021 §2).
 3. Увидеть historically valid beginner source и путь доступа.
 4. При отсутствии домашнего компьютера увидеть school-lab fallback без permanent lock.
 5. Выбрать короткий learning approach:
@@ -93,6 +94,14 @@ Learning outcome и project challenge входят в один непрерыв�
 22. Перезапустить приложение и загрузить идентичный committed result.
 
 Release decision может быть частью approach, но отдельная сложная release flow не обязательна.
+
+### Уточнение ADR-021 (январь v2)
+
+- доступ — стартовый background и входит в start configuration; шага «выбери доступ» внутри месяца нет;
+- шаг 5 (learning approach) — inline неблокирующий выбор на стартовом экране; в январе v2 два режима (`read-and-run`, `edit-and-debug`), третий («попросить объяснение») откладывается до NPC/feedback source;
+- шаг 15 — единственное блокирующее решение: четыре approach cards **в один ряд**, без предвыбора, выбор → единственный `Подтвердить`; маркеры ≤2 на карточку (`+`/`−`/`?`, не только цвет, без чисел, навыков и NPC);
+- упоминаний наставника/NPC в тексте решений и consequence previews нет, шкал Energy/Stress/Confidence нет;
+- январь v1 (три блокирующих шага) остаётся воспроизводимым для существующих сейвов, новые игры используют v2.
 
 ## 5. MVP learning bridge
 
@@ -309,7 +318,7 @@ Exact probabilities/points are not shown.
 - worked example understood;
 - example modified with support;
 - low-access school-lab route;
-- mentor/teacher unavailable with alternative route;
+- mentor/teacher unavailable with alternative route (только после NPC foundation; в январе v2 не используется, ADR-021 §7);
 - blocked source/environment with visible retry.
 
 ### Professional challenge

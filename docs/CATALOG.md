@@ -3,7 +3,7 @@ title: "Runtime Human — полный каталог документации"
 type: index
 status: draft
 canon: false
-updated: 2026-09-06
+updated: 2026-10-15
 ---
 
 # Runtime Human — полный каталог документации
@@ -11,7 +11,7 @@ updated: 2026-09-06
 > Сгенерировано `node scripts/build-toc.mjs` из metadata документов. Не редактировать вручную.
 > Канонический навигационный вход и порядок источников истины: [INDEX.md](INDEX.md).
 
-Всего документов: **210**.
+Всего документов: **212**.
 
 ## Навигация
 
@@ -42,6 +42,7 @@ updated: 2026-09-06
 - [ADR-018 — Авторитетная модель карьеры программиста, найма и занятости](adr/ADR-018-authoritative-programmer-career-employment-model.md) — `accepted`, `canon`
 - [ADR-019 — Авторитетная модель исторических технологий, tooling и ecosystem context](adr/ADR-019-authoritative-historical-technology-ecosystem-model.md) — `accepted`, `canon`
 - [ADR-020 — Авторитетная модель композиции профессиональных ситуаций](adr/ADR-020-authoritative-professional-situation-content-composition-model.md) — `accepted`, `canon`
+- [ADR-021 — Модель январского онбординга и подача approach cards](adr/ADR-021-january-onboarding-decision-model-and-approach-cards.md) — `accepted`, `canon`
 - [Architecture Decision Records](adr/README.md) — `draft`, `canon`
 
 ## Архитектура
@@ -205,6 +206,7 @@ updated: 2026-09-06
 - [Programmer Progression & Evidence Documentation Implementation Plan](superpowers/plans/2026-07-17-programmer-progression-evidence-docs.md) — `completed`, `canon`
 - [Project & Technical Work Package Documentation Implementation Plan](superpowers/plans/2026-07-17-project-work-package-docs.md) — `completed`, `canon`
 - [Proposed ADR decision sheet](plans/PROPOSED-ADR-DECISIONS.md) — `draft`, `canon`
+- [REF-02 January Decision Model Implementation Plan](plans/REF-02-JANUARY-DECISION-MODEL-IMPLEMENTATION-PLAN.md) — `draft`, `canon`
 - [Release milestones](plans/RELEASE-MILESTONES.md) — `draft`, `canon`
 - [Repository Foundation design](superpowers/specs/2026-07-19-repository-foundation-design.md) — `draft`, `canon`
 - [Repository Foundation Implementation Plan](superpowers/plans/2026-07-19-repository-foundation.md) — `completed`, `canon`
