@@ -132,10 +132,14 @@ must leave the original save without an upgrade receipt; after COMMIT, retry
 must replay the same receipt without a second revision increment.
 
 The import command is **not** enabled as a player action in this slice.
-Writable v2 MonthRun support, verified pre-upgrade backup/restore and the
-corresponding owner/review gate are separate requirements before any
-user-facing migration. Prior January evidence stays `unassessed`; it never
-retroactively awards mastery, autonomy or grade.
+Although its versioned Tauri IPC name is registered for contract compatibility,
+the production dispatcher explicitly rejects upgrade attempts before reaching
+the SQLite writer. Only internal, isolated persistence tests exercise the
+underlying transactional upgrade. Writable v2 MonthRun support, verified
+pre-upgrade backup/restore and the corresponding owner/review gate are required
+before changing this fail-closed dispatcher and enabling any user-facing
+migration. Prior January evidence stays `unassessed`; it never retroactively
+awards mastery, autonomy or grade.
 
 
 ## Active project compatibility
