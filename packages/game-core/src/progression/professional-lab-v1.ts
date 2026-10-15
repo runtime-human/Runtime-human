@@ -283,9 +283,9 @@ export function applyProfessionalExperienceLabV1(
   const feedbackBps = PROFESSIONAL_LAB_RULES_V1.feedbackBps[episode.feedback];
   const participationBps = PROFESSIONAL_LAB_RULES_V1.participationBps[episode.participation];
   const skillSet = new Set(episode.skillIds);
-  const allIds = [
-    ...new Set([...state.skills.map((s) => s.skillId), ...episode.skillIds]),
-  ].sort(compareText);
+  const knownSkillIds = state.skills.map((skill) => skill.skillId);
+  const allIds = Array.from(new Set([...knownSkillIds, ...episode.skillIds]));
+  allIds.sort(compareText);
   const deltas: ProfessionalLabSkillDeltaV1[] = [];
   const skills = allIds.map((id) => {
     const old = state.skills.find((skill) => skill.skillId === id);
@@ -301,20 +301,19 @@ export function applyProfessionalExperienceLabV1(
     }
     const diminishingBps = 10_000 - Number((BigInt(mastery) * 5_000n) / 10_000n);
     // All intermediate multiplications and round-half-even are exact BigInt.
-    const masteryGain = boundedGain(
-      mastery,
-      roundHalfEven(PROFESSIONAL_LAB_RULES_V1.baseMastery, [
-        challengeBps,
-        noveltyBps,
-        feedbackBps,
-        capacityBps,
-        diminishingBps,
-      ]),
-    );
-    const fluencyGain = boundedGain(
-      priorFluency,
-      roundHalfEven(PROFESSIONAL_LAB_RULES_V1.baseFluency, [participationBps, outcomeBps]),
-    );
+    const candidateMastery = roundHalfEven(PROFESSIONAL_LAB_RULES_V1.baseMastery, [
+      challengeBps,
+      noveltyBps,
+      feedbackBps,
+      capacityBps,
+      diminishingBps,
+    ]);
+    const masteryGain = boundedGain(mastery, candidateMastery);
+    const candidateFluency = roundHalfEven(PROFESSIONAL_LAB_RULES_V1.baseFluency, [
+      participationBps,
+      outcomeBps,
+    ]);
+    const fluencyGain = boundedGain(priorFluency, candidateFluency);
     deltas.push(Object.freeze({ skillId: id, masteryGain, fluencyGain }));
     return Object.freeze({
       skillId: id,
@@ -324,15 +323,17 @@ export function applyProfessionalExperienceLabV1(
     });
   });
   const previousFamiliarity = state.technology?.familiarity ?? 0;
-  const familiarityGain = boundedGain(
-    previousFamiliarity,
-    roundHalfEven(PROFESSIONAL_LAB_RULES_V1.baseFamiliarity, [noveltyBps, outcomeBps]),
+  const candidateFamiliarity = roundHalfEven(PROFESSIONAL_LAB_RULES_V1.baseFamiliarity, [
+    noveltyBps,
+    outcomeBps,
+  ]);
+  const familiarityGain = boundedGain(previousFamiliarity, candidateFamiliarity);
+  const nextContexts = state.recentContexts.filter(
+    (context) => context !== episode.contextFingerprint,
   );
+  nextContexts.push(episode.contextFingerprint);
   const contexts = Object.freeze(
-    [
-      ...state.recentContexts.filter((context) => context !== episode.contextFingerprint),
-      episode.contextFingerprint,
-    ].slice(-PROFESSIONAL_LAB_RULES_V1.maximumRecentContexts),
+    nextContexts.slice(-PROFESSIONAL_LAB_RULES_V1.maximumRecentContexts),
   );
 
   const next = parseProfessionalLabStateV1({
@@ -381,10 +382,10 @@ function roundHalfEven(base: number, multipliers: readonly number[]): number {
   const quotient = numerator / denominator;
   const remainder = numerator % denominator;
   const doubled = remainder * 2n;
-  const rounded =
-    quotient +
-    (doubled > denominator || (doubled === denominator && quotient % 2n === 1n) ? 1n : 0n);
-  return Number(rounded);
+  const roundUp =
+    doubled > denominator ||
+    (doubled === denominator && quotient % 2n === 1n);
+  return Number(quotient + (roundUp ? 1n : 0n));
 }
 
 function boundedGain(current: number, proposed: number): number {
