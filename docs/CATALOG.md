@@ -11,7 +11,7 @@ updated: 2026-10-15
 > Сгенерировано `node scripts/build-toc.mjs` из metadata документов. Не редактировать вручную.
 > Канонический навигационный вход и порядок источников истины: [INDEX.md](INDEX.md).
 
-Всего документов: **212**.
+Всего документов: **213**.
 
 ## Навигация
 
@@ -201,6 +201,7 @@ updated: 2026-10-15
 - [PR Evidence Plane Implementation Plan](superpowers/plans/2026-08-31-pr-evidence-plane.md) — `completed`, `canon`
 - [Professional Challenge Engine — Implementation Plan](plans/PROFESSIONAL-CHALLENGE-IMPLEMENTATION-PLAN.md) — `draft`, `canon`
 - [Professional Situation Content Composition — Implementation Plan](plans/PROFESSIONAL-SITUATION-CONTENT-IMPLEMENTATION-PLAN.md) — `draft`, `canon`
+- [PROG-01B2C2 Writable Professional MonthRun v2 (M1) Implementation Plan](plans/PROG-01B2C2-WRITABLE-PROFESSIONAL-MONTHRUN-V2-PLAN.md) — `draft`, `canon`
 - [Programmer Career Engine — Implementation Plan](plans/PROGRAMMER-CAREER-IMPLEMENTATION-PLAN.md) — `draft`, `canon`
 - [Programmer Learning Engine Implementation Plan](superpowers/plans/2026-07-18-programmer-learning-engine.md) — `completed`, `canon`
 - [Programmer Progression & Evidence Documentation Implementation Plan](superpowers/plans/2026-07-17-programmer-progression-evidence-docs.md) — `completed`, `canon`

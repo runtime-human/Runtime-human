@@ -3,8 +3,8 @@ title: "Roadmap"
 type: plan
 status: draft
 canon: true
-depends_on: [ADR-015, ADR-016, ADR-017, ADR-018, ADR-019, ADR-020]
-updated: 2026-07-18
+depends_on: [ADR-013, ADR-015, ADR-016, ADR-017, ADR-018, ADR-019, ADR-020, ADR-021]
+updated: 2026-10-15
 ---
 
 # Roadmap
@@ -67,6 +67,14 @@ Exit:
 - provider/challenge/learning/project/progression/technology/content ownership compiles conceptually;
 - materialized IDs independent of input/display order;
 - no unused Extended schema burden.
+
+## Milestone M1 — authoritative professional persistence (PROG-01B2C2)
+
+M1 — implementation milestone внутри Phase 0/1, а не новая phase: он делает профессиональное состояние authoritative и персистентным через writable `MonthRun v2` (ProfessionalState v2, atomic commit, v1→v2 migration с verified backup, recovery) и вводит v2 save schema один раз для PROG-01 и REF-02C/REF-02E. Инвариант: no skill credit before commit, no double credit after restart.
+
+- Определение, слайсы C2a–C2e и открытые вопросы владельца: [PROG-01B2C2 Implementation Plan](PROG-01B2C2-WRITABLE-PROFESSIONAL-MONTHRUN-V2-PLAN.md).
+- Не расширяет scope Phase 0/1: grade, readiness и UI прогрессии остаются за пределами M1.
+- Блокирует REF-02E ([REF-02 plan](REF-02-JANUARY-DECISION-MODEL-IMPLEMENTATION-PLAN.md)).
 
 ## Phase 1 — Casual Programmer Vertical Slice
 
