@@ -15,10 +15,7 @@ export type JanuaryV2Context = Readonly<{
   learningMode: "read-and-run" | "edit-and-debug";
   defect: "syntax-error" | "logic-error";
 }>;
-export type JanuaryV2Delivery =
-  | "released"
-  | "released-with-limitation"
-  | "delayed-to-february";
+export type JanuaryV2Delivery = "released" | "released-with-limitation" | "delayed-to-february";
 export type JanuaryV2Participation = "independent" | "assisted";
 export type JanuaryV2Quality = "basic" | "adequate" | "strong";
 export type JanuaryV2Cost =
@@ -56,37 +53,36 @@ const EXPECTED_COSTS: Readonly<Record<JanuaryV2Approach, JanuaryV2Cost>> = Objec
 });
 
 /** Canonical fixture for design validation only; not published balance authority. */
-export const JANUARY_V2_PROVISIONAL_APPROACH_TABLE: JanuaryV2ApproachTable =
-  Object.freeze({
-    "investigate-first": Object.freeze({
-      finishThreshold: 6,
-      quality: "adequate",
-      participation: "independent",
-      cost: "completion-risk",
-      learningValue: 2,
-    }),
-    "ask-for-help": Object.freeze({
-      finishThreshold: 9,
-      quality: "adequate",
-      participation: "assisted",
-      cost: "assistance",
-      learningValue: 1,
-    }),
-    "reduce-scope": Object.freeze({
-      finishThreshold: 10,
-      quality: "basic",
-      participation: "independent",
-      cost: "known-limitation",
-      learningValue: 0,
-    }),
-    "defer-or-recover": Object.freeze({
-      finishThreshold: 0,
-      quality: "strong",
-      participation: "independent",
-      cost: "deferred-release",
-      learningValue: 2,
-    }),
-  });
+export const JANUARY_V2_PROVISIONAL_APPROACH_TABLE: JanuaryV2ApproachTable = Object.freeze({
+  "investigate-first": Object.freeze({
+    finishThreshold: 6,
+    quality: "adequate",
+    participation: "independent",
+    cost: "completion-risk",
+    learningValue: 2,
+  }),
+  "ask-for-help": Object.freeze({
+    finishThreshold: 9,
+    quality: "adequate",
+    participation: "assisted",
+    cost: "assistance",
+    learningValue: 1,
+  }),
+  "reduce-scope": Object.freeze({
+    finishThreshold: 10,
+    quality: "basic",
+    participation: "independent",
+    cost: "known-limitation",
+    learningValue: 0,
+  }),
+  "defer-or-recover": Object.freeze({
+    finishThreshold: 0,
+    quality: "strong",
+    participation: "independent",
+    cost: "deferred-release",
+    learningValue: 2,
+  }),
+});
 
 export const JANUARY_V2_DECLARED_CONTEXTS: readonly JanuaryV2Context[] = Object.freeze(
   (["home-pc", "shared-school-pc"] as const).flatMap((startBackground) =>
@@ -159,8 +155,10 @@ export function resolveJanuaryV2Approach(
 }
 
 function dominates(left: readonly number[], right: readonly number[]): boolean {
-  return left.every((value, index) => value >= (right[index] ?? Infinity)) &&
-    left.some((value, index) => value > (right[index] ?? Infinity));
+  return (
+    left.every((value, index) => value >= (right[index] ?? Infinity)) &&
+    left.some((value, index) => value > (right[index] ?? Infinity))
+  );
 }
 
 function forecast(
@@ -197,9 +195,12 @@ export function assertJanuaryV2ApproachBalance(table: JanuaryV2ApproachTable): v
       !Number.isInteger(rule.learningValue) ||
       rule.learningValue < 0 ||
       rule.learningValue > 2 ||
-      !(rule.quality in QUALITY_RANK) ||
+      !Object.hasOwn(QUALITY_RANK, rule.quality) ||
       (rule.participation !== "independent" && rule.participation !== "assisted") ||
-      rule.cost !== EXPECTED_COSTS[approach]
+      rule.cost !== EXPECTED_COSTS[approach] ||
+      (approach !== "ask-for-help" && rule.participation !== "independent") ||
+      (approach === "reduce-scope" && rule.finishThreshold !== 10) ||
+      (approach === "defer-or-recover" && rule.finishThreshold !== 0)
     ) {
       throw new TypeError(`Invalid or cost-free January v2 approach: ${approach}`);
     }
@@ -224,7 +225,10 @@ export function assertJanuaryV2ApproachBalance(table: JanuaryV2ApproachTable): v
     }
     for (const first of JANUARY_V2_APPROACHES) {
       for (const second of JANUARY_V2_APPROACHES) {
-        if (first !== second && dominates(forecast(table, context, first), forecast(table, context, second))) {
+        if (
+          first !== second &&
+          dominates(forecast(table, context, first), forecast(table, context, second))
+        ) {
           throw new TypeError(`January v2 Pareto dominance: ${first} over ${second}`);
         }
       }

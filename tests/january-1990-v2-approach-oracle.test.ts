@@ -83,7 +83,9 @@ describe("REF-02A1 isolated January v2 balance oracle", () => {
             ),
           );
         const classes = (startBackground: "home-pc" | "shared-school-pc") =>
-          [...new Set(outcomes(startBackground).map((r) => `${r.delivery}:${r.quality}`))].toSorted();
+          [
+            ...new Set(outcomes(startBackground).map((r) => `${r.delivery}:${r.quality}`)),
+          ].toSorted();
         expect(classes("home-pc")).toEqual(classes("shared-school-pc"));
       }
     }
@@ -94,9 +96,17 @@ describe("REF-02A1 isolated January v2 balance oracle", () => {
       for (const defect of ["syntax-error", "logic-error"] as const) {
         const context = { startBackground, defect };
         expect(
-          januaryV2FinishThreshold(table, { ...context, learningMode: "read-and-run" }, "investigate-first"),
+          januaryV2FinishThreshold(
+            table,
+            { ...context, learningMode: "read-and-run" },
+            "investigate-first",
+          ),
         ).toBeGreaterThan(
-          januaryV2FinishThreshold(table, { ...context, learningMode: "edit-and-debug" }, "investigate-first"),
+          januaryV2FinishThreshold(
+            table,
+            { ...context, learningMode: "edit-and-debug" },
+            "investigate-first",
+          ),
         );
       }
     }
@@ -117,16 +127,43 @@ describe("REF-02A1 isolated January v2 balance oracle", () => {
     ).toThrow(/cost-free/u);
     const incomplete = { ...table } as Record<string, unknown>;
     delete incomplete["reduce-scope"];
-    expect(() => assertJanuaryV2ApproachBalance(incomplete as JanuaryV2ApproachTable)).toThrow(/closed/u);
+    expect(() => assertJanuaryV2ApproachBalance(incomplete as JanuaryV2ApproachTable)).toThrow(
+      /closed/u,
+    );
     expect(() =>
       assertJanuaryV2ApproachBalance(replace("ask-for-help", { finishThreshold: 6 })),
     ).toThrow(/chance/u);
   });
 
+  it("rejects prototype quality names and false guaranteed-approach semantics", () => {
+    expect(() =>
+      assertJanuaryV2ApproachBalance(
+        replace("investigate-first", { quality: "toString" as "strong" }),
+      ),
+    ).toThrow(/Invalid/u);
+    expect(() =>
+      assertJanuaryV2ApproachBalance(
+        replace("reduce-scope", { finishThreshold: 9 }),
+      ),
+    ).toThrow(/Invalid/u);
+    expect(() =>
+      assertJanuaryV2ApproachBalance(
+        replace("defer-or-recover", { finishThreshold: 1 }),
+      ),
+    ).toThrow(/Invalid/u);
+    expect(() =>
+      assertJanuaryV2ApproachBalance(
+        replace("investigate-first", { participation: "assisted" }),
+      ),
+    ).toThrow(/Invalid/u);
+  });
+
   it("rejects invalid rolls and an impossible context", () => {
     const context = JANUARY_V2_DECLARED_CONTEXTS[0]!;
     for (const roll of [-1, 10, 1.5, NaN]) {
-      expect(() => resolveJanuaryV2Approach(table, context, "ask-for-help", roll)).toThrow(RangeError);
+      expect(() => resolveJanuaryV2Approach(table, context, "ask-for-help", roll)).toThrow(
+        RangeError,
+      );
     }
     expect(() =>
       resolveJanuaryV2Approach(
