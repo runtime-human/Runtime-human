@@ -67,6 +67,7 @@ function createPersistenceStub(
         ? { kind: "found", value: input.save }
         : { kind: "not-found" };
     },
+    upgradeProfessionalSave: unsupported,
     beginMonthRun: unsupported,
     loadMonthRun: unsupported,
     loadActiveMonthRun: unsupported,
