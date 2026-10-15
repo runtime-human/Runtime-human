@@ -1,4 +1,4 @@
-use std::{path::Path, process::Command};
+use std::{path::Path, process::Command, sync::Arc};
 
 use serde_json::{Value, json};
 use tempfile::TempDir;
@@ -438,4 +438,42 @@ fn unclean_upgrade_without_receipt_enters_recovery_read_only_worker_mode() {
     let mutation = worker.upgrade_professional_save_with_operation(request, operation);
     assert!(matches!(mutation, Err(PersistenceError::RecoveryRequired)));
     worker.shutdown().expect("close recovery worker");
+}
+
+#[test]
+fn registered_professional_upgrade_ipc_is_dormant_before_backup_and_v2_runtime() {
+    let (temp, database) = committed_database();
+    let request = command(&database);
+    let before = database
+        .load_save(LoadSaveQueryV1 {
+            schema_version: "load-save-query-v1".to_owned(),
+            save_id: request.save_id.clone(),
+        })
+        .expect("load completed legacy save")
+        .expect("legacy save exists");
+    database.close().expect("close before Tauri worker startup");
+
+    let worker = Arc::new(
+        PersistenceHandle::start(temp.path().join("save.sqlite3"))
+            .expect("start production persistence worker"),
+    );
+    let operation = worker.begin_operation();
+    let denied = super::commands::dispatch_professional_upgrade_v1(
+        Arc::clone(&worker),
+        operation,
+        request.clone(),
+    );
+    assert!(
+        matches!(denied, Err(PersistenceError::InvalidCommand(_))),
+        "registered Tauri upgrade must fail closed until activation gate is implemented"
+    );
+    let after = worker
+        .load_save(LoadSaveQueryV1 {
+            schema_version: "load-save-query-v1".to_owned(),
+            save_id: request.save_id,
+        })
+        .expect("load save after rejected migration")
+        .expect("save must still exist");
+    assert_eq!(after, before, "rejected IPC must never update the save");
+    worker.shutdown().expect("shutdown worker");
 }
