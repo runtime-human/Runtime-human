@@ -7,10 +7,7 @@ import {
   sha256Hex,
   type ProfessionalLabEpisodeV1,
 } from "@runtime-human/game-core";
-import {
-  parseSaveRecord,
-  type SaveRecordV1,
-} from "@runtime-human/game-persistence-contracts";
+import { parseSaveRecord, type SaveRecordV1 } from "@runtime-human/game-persistence-contracts";
 
 import {
   JANUARY_1990_SAVE_SCHEMA_FINGERPRINT,
@@ -67,10 +64,7 @@ export function projectCommittedJanuaryProfessionalSourceV1(
   if (month === null || save.lastCommittedRunId === null) {
     throw new TypeError("Professional source requires a completed, committed January month");
   }
-  if (
-    save.lastCommittedRunId !== month.runId ||
-    month.baseSaveRevision + 1 !== save.revision
-  ) {
+  if (save.lastCommittedRunId !== month.runId || month.baseSaveRevision + 1 !== save.revision) {
     throw new TypeError("Professional source committed run or save revision does not match");
   }
 
@@ -89,8 +83,7 @@ export function projectCommittedJanuaryProfessionalSourceV1(
     result: month.terminalResult,
   });
   const participation =
-    outcome.defectResponse === "ask-for-guidance" ||
-    outcome.learningPractice === "read-and-run"
+    outcome.defectResponse === "ask-for-guidance" || outcome.learningPractice === "read-and-run"
       ? "assisted"
       : "independent";
 
@@ -196,10 +189,7 @@ function requireJanuaryEvidence(
   }
 }
 
-function exactRecord(
-  value: unknown,
-  keys: readonly string[],
-): Readonly<Record<string, unknown>> {
+function exactRecord(value: unknown, keys: readonly string[]): Readonly<Record<string, unknown>> {
   if (
     typeof value !== "object" ||
     value === null ||
