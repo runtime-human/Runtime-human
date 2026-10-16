@@ -1,5 +1,9 @@
 import Ajv2020, { type ErrorObject, type ValidateFunction } from "ajv/dist/2020.js";
 import {
+  compileJanuaryV2ApproachBalance,
+  type JanuaryV2ApproachBalanceDocumentV1,
+} from "./january-v2-approach-balance";
+import {
   findNodeAtLocation,
   getNodeValue,
   parseTree,
@@ -197,7 +201,8 @@ export type BalanceDiagnosticCode =
   | "BAL002_INVALID_RANGE"
   | "BAL003_SLICE_ID_MISMATCH"
   | "BAL004_DUPLICATE_FAMILY"
-  | "BAL005_FORBIDDEN_PROPERTY";
+  | "BAL005_FORBIDDEN_PROPERTY"
+  | "BAL006_APPROACH_SEMANTICS";
 
 export type BalanceDiagnostic = Readonly<{
   code: BalanceDiagnosticCode;
@@ -232,7 +237,11 @@ export type BalanceSliceCompilationV1 = Readonly<{
 }>;
 
 export type BalanceSetCompilation =
-  | Readonly<{ kind: "success"; slices: readonly BalanceSliceCompilationV1[] }>
+  | Readonly<{
+      kind: "success";
+      slices: readonly BalanceSliceCompilationV1[];
+      januaryV2Approach?: JanuaryV2ApproachBalanceDocumentV1;
+    }>
   | Readonly<{ kind: "failure"; diagnostics: readonly BalanceDiagnostic[] }>;
 
 const ajv = new Ajv2020({
@@ -251,15 +260,28 @@ export function compileBalanceSet(files: readonly ContentSourceFile[]): BalanceS
   const documents: ValidatedBalanceDocumentV1[] = [];
   const seenPaths = new Set<string>();
 
+  const januaryV2Files = files.filter((file) => file.path.startsWith("balance/approach/"));
   for (const file of files.toSorted((left, right) => compareText(left.path, right.path))) {
-    compileBalanceFile(file, seenPaths, documents, diagnostics);
+    if (!file.path.startsWith("balance/approach/")) {
+      compileBalanceFile(file, seenPaths, documents, diagnostics);
+    }
   }
 
+  const januaryV2 = januaryV2Files.length > 0
+    ? compileJanuaryV2ApproachBalance(januaryV2Files)
+    : null;
+  if (januaryV2?.kind === "failure") {
+    diagnostics.push(...januaryV2.diagnostics);
+  }
   const slices = requireCompleteSlices(documents, diagnostics);
   if (diagnostics.length > 0) {
     return { kind: "failure", diagnostics: diagnostics.toSorted(compareBalanceDiagnostics) };
   }
-  return { kind: "success", slices };
+  return {
+    kind: "success",
+    slices,
+    ...(januaryV2?.kind === "success" ? { januaryV2Approach: januaryV2.document } : {}),
+  };
 }
 
 export function formatBalanceDiagnostics(

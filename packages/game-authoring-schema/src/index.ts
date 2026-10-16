@@ -12,6 +12,10 @@ export {
   type SkillEvidenceBalanceAuthoringDocument,
 } from "./balance-schema";
 export {
+  JanuaryV2ApproachBalanceAuthoringSchemaV1,
+  type JanuaryV2ApproachBalanceAuthoringDocument,
+} from "./january-v2-approach-balance-schema";
+export {
   ScenarioAuthoringSchemaV1,
   SCENARIO_IDENTIFIER_PATTERN,
   SCENARIO_SCHEMA_VERSION,

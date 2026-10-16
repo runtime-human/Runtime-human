@@ -71,6 +71,24 @@ REF-02A2 должен перенести настройки в отдельну�
 подтверждённые смысловые контекстные преимущества и остаётся открытой:
 равное множество outcome не доказывает отсутствие dominance по timing.
 
+## REF-02A2a — проверяемый контракт approach-balance-v1 (2026-10-16)
+
+Добавлена отдельная closed JSONC-семья `balance/approach/january-1990-v2.jsonc`.
+Её четыре строки `approaches` проверяются Ajv 2020 и TypeBox parity,
+а затем существующим `assertJanuaryV2ApproachBalance` (risk/help, cost,
+Pareto-anti-dominance, invariants). `pnpm balance:check` теперь требует
+наличия этой семьи и сверяет её с фиксированным Core snapshot. Её fingerprint
+создаётся в отдельном домене `january-v2-approach-balance-v1`, а не через
+January v1 rules fingerprint. Семьи v1 и исходные fixtures не меняются.
+
+**Это узкий A2a, а не полный REF-02A.** Текущие модификаторы
+background/learning/defect по-прежнему кодируются в изолированном oracle
+(#210), а не в JSONC. A2b должен перенести их в версионированные закрытые
+таблицы, продемонстрировать отсутствие dominance между стартовыми условиями
+и вариантами обучения, добавить multi-seed bounded trace, закрепить fingerprint
+как golden и проверить сохранение v1/legacy invariants. До этого новый баланс
+не подключён к production MonthRun, save, UI или контенту.
+
 ## Верификация
 
 - `pnpm balance:check` — компиляция и валидация `balance/**`, каноническое равенство с Core-default;
