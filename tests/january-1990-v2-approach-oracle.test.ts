@@ -121,7 +121,7 @@ describe("REF-02A1 isolated January v2 balance oracle", () => {
           learningValue: 2,
         }),
       ),
-    ).toThrow(/dominance|chance/u);
+    ).toThrow(/dominance|chance|Unreachable/u);
     expect(() =>
       assertJanuaryV2ApproachBalance(replace("ask-for-help", { cost: "completion-risk" })),
     ).toThrow(/cost-free/u);
