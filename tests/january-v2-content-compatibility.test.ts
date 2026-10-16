@@ -30,10 +30,12 @@ const V2_PRESENTATION_PROBE: ContentSourceFile = {
     availableFrom: "1990-01",
     entryPoint: true,
     references: [],
-    provenance: [{
-      sourceId: "runtime-human.january-1990-design",
-      title: "January v2 separate-bundle compatibility probe",
-    }],
+    provenance: [
+      {
+        sourceId: "runtime-human.january-1990-design",
+        title: "January v2 separate-bundle compatibility probe",
+      },
+    ],
     payload: {
       contentType: "january-v2-compatibility-probe",
       // A test probe, NOT player-facing content or an accepted v2 schema.
@@ -59,9 +61,9 @@ function bundle(files: readonly ContentSourceFile[]) {
 
 describe("REF-02B0 January v2 content compatibility gate", () => {
   it("pins the deployed January v1 manifest and compiled chunk bytes", async () => {
-    const roots = JSON.parse(
-      await readFile("content/content.config.json", "utf8"),
-    ) as { sourceRoots: string[] };
+    const roots = JSON.parse(await readFile("content/content.config.json", "utf8")) as {
+      sourceRoots: string[];
+    };
     expect(roots.sourceRoots).toEqual(LEGACY_ROOTS);
 
     const baseline = bundle(await legacyFiles());
@@ -110,7 +112,13 @@ describe("REF-02B0 January v2 content compatibility gate", () => {
     const legacy = await legacyFiles();
     const changed = legacy.map((file) =>
       file.path.endsWith("/situations/first-bug.jsonc")
-        ? { ...file, text: file.text.replace("First bug professional situation", "Modified January bug situation") }
+        ? {
+            ...file,
+            text: file.text.replace(
+              "First bug professional situation",
+              "Modified January bug situation",
+            ),
+          }
         : file,
     );
     const inspection = inspectProtectedContentChunks(
@@ -133,11 +141,7 @@ describe("REF-02B0 January v2 content compatibility gate", () => {
       text: V2_PRESENTATION_PROBE.text.replace('"programming-v2"', '"programming"'),
     };
     const candidate = bundle([...legacy, wrongDomain]);
-    const inspection = inspectProtectedContentChunks(
-      baseline,
-      candidate,
-      PROTECTED_CHUNKS,
-    );
+    const inspection = inspectProtectedContentChunks(baseline, candidate, PROTECTED_CHUNKS);
     expect(inspection.protectedChunksPreserved).toBe(false);
     expect(inspection.drifts).toContainEqual({
       chunkId: "1990s/programming",

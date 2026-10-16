@@ -57,12 +57,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
 
-      # Temporary read-only canonical formatter diagnostic; removed before acceptance.
-      - name: Print REF-02B0 formatting diff
-        run: |
-          pnpm exec oxfmt packages/game-content-compiler/src/index.ts tests/january-v2-content-compatibility.test.ts
-          git diff -- packages/game-content-compiler/src/index.ts tests/january-v2-content-compatibility.test.ts
-
       - name: Run non-authoritative fast feedback
         run: pnpm check:fast
 
