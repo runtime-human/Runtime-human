@@ -89,6 +89,25 @@ background/learning/defect по-прежнему кодируются в изо�
 как golden и проверить сохранение v1/legacy invariants. До этого новый баланс
 не подключён к production MonthRun, save, UI или контенту.
 
+## REF-02A2b — контекстные trade-offs, provisional
+
+В отдельной closed JSONC-семье
+`balance/context/january-1990-v2.jsonc` заданы модификаторы
+`startBackground × approach`, `learningMode` и `defect`.
+Core теперь вычисляет порог завершения по этим версионированным данным.
+`home-pc` помогает самостоятельному поиску, `shared-school-pc` —
+варианту `ask-for-help` (помощь без NPC). `read-and-run` улучшает шанс
+закончить сейчас, `edit-and-debug` повышает *practiceOpportunity*.
+Это только дизайнерская возможность практики, **не** авторитетное evidence,
+не mastery и не автоматически присуждаемый грейд.
+
+Недоминирование проверяется исчерпывающе для двух backgrounds, двух
+learning modes, двух дефектов и релевантных подходов; исходы по роллам 0–9
+закрепляются bounded-trace fixture. Финальный `balance:check` принимает
+обе v2-семьи и сохраняет v1 правила без изменений. Этот контракт не
+означает принятие production MonthRun v2, сохранений или игры до февраля.
+Маркеры контента и их truthfulness остаются REF-02B.
+
 ## Верификация
 
 - `pnpm balance:check` — компиляция и валидация `balance/**`, каноническое равенство с Core-default;

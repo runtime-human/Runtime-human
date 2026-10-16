@@ -1,3 +1,9 @@
+export {
+  compileJanuaryV2ContextBalance,
+  JANUARY_V2_CONTEXT_SCHEMA_V1,
+  JANUARY_V2_CONTEXT_SOURCE_PATH,
+} from "./january-v2-context-balance";
+export type { JanuaryV2ContextDocumentV1 } from "./january-v2-context-balance";
 export { compileContentSources } from "./compile-content-sources";
 export {
   compileJanuaryV2ApproachBalance,

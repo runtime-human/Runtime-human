@@ -12,6 +12,10 @@ export {
   type SkillEvidenceBalanceAuthoringDocument,
 } from "./balance-schema";
 export {
+  JanuaryV2ContextAuthoringSchemaV1,
+  type JanuaryV2ContextAuthoringDocument,
+} from "./january-v2-context-schema";
+export {
   JanuaryV2ApproachBalanceAuthoringSchemaV1,
   type JanuaryV2ApproachBalanceAuthoringDocument,
 } from "./january-v2-approach-balance-schema";

@@ -3,6 +3,14 @@
  * No v1 rules, persistence, content authority, or renderer integration.
  * Values are provisional: REF-02A2 must move them to validated JSONC.
  */
+import {
+  assertJanuaryV2ContextBalance,
+  JANUARY_V2_DEFAULT_CONTEXT_BALANCE,
+  januaryV2ContextFinishModifier,
+  januaryV2PracticeOpportunity,
+  type JanuaryV2ContextBalance,
+} from "./january-v2-context-balance";
+
 export const JANUARY_V2_APPROACHES = [
   "investigate-first",
   "ask-for-help",
@@ -38,6 +46,8 @@ export type JanuaryV2Outcome = Readonly<{
   quality: JanuaryV2Quality;
   knownLimitation: boolean;
   learningMode: JanuaryV2Context["learningMode"];
+  /** Bounded design opportunity; never an awarded skill or proficiency. */
+  practiceOpportunity: number;
 }>;
 
 const QUALITY_RANK: Readonly<Record<JanuaryV2Quality, number>> = Object.freeze({
@@ -108,6 +118,7 @@ export function januaryV2FinishThreshold(
   table: JanuaryV2ApproachTable,
   context: JanuaryV2Context,
   approach: JanuaryV2Approach,
+  contextBalance: JanuaryV2ContextBalance = JANUARY_V2_DEFAULT_CONTEXT_BALANCE,
 ): number {
   assertContext(context);
   const rule = table[approach];
@@ -117,10 +128,8 @@ export function januaryV2FinishThreshold(
     return rule.finishThreshold;
   }
   return (
-    rule.finishThreshold -
-    Number(context.startBackground === "shared-school-pc") -
-    Number(context.learningMode === "edit-and-debug") -
-    Number(context.defect === "logic-error")
+    rule.finishThreshold +
+    januaryV2ContextFinishModifier(context, approach, contextBalance)
   );
 }
 
@@ -130,11 +139,12 @@ export function resolveJanuaryV2Approach(
   context: JanuaryV2Context,
   approach: JanuaryV2Approach,
   outcomeRoll: number,
+  contextBalance: JanuaryV2ContextBalance = JANUARY_V2_DEFAULT_CONTEXT_BALANCE,
 ): JanuaryV2Outcome {
   if (!Number.isInteger(outcomeRoll) || outcomeRoll < 0 || outcomeRoll > 9) {
     throw new RangeError("January v2 outcome roll must be an integer from 0 to 9");
   }
-  const threshold = januaryV2FinishThreshold(table, context, approach);
+  const threshold = januaryV2FinishThreshold(table, context, approach, contextBalance);
   if (!Number.isInteger(threshold) || threshold < 0 || threshold > 10) {
     throw new RangeError("January v2 finish threshold is outside [0,10]");
   }
@@ -151,6 +161,7 @@ export function resolveJanuaryV2Approach(
     quality: rule.quality,
     knownLimitation: delivery === "released-with-limitation",
     learningMode: context.learningMode,
+    practiceOpportunity: januaryV2PracticeOpportunity(table, context, approach, contextBalance),
   });
 }
 
@@ -165,14 +176,15 @@ function forecast(
   table: JanuaryV2ApproachTable,
   context: JanuaryV2Context,
   approach: JanuaryV2Approach,
+  contextBalance: JanuaryV2ContextBalance,
 ): readonly number[] {
   const rule = table[approach];
   return [
-    januaryV2FinishThreshold(table, context, approach),
+    januaryV2FinishThreshold(table, context, approach, contextBalance),
     QUALITY_RANK[rule.quality],
     Number(rule.participation === "independent"),
     Number(approach !== "reduce-scope"),
-    rule.learningValue,
+    januaryV2PracticeOpportunity(table, context, approach, contextBalance),
   ];
 }
 
@@ -181,7 +193,10 @@ function forecast(
  * 4 approaches × 10 rolls. Throws on dominated choices or false help benefit.
  * This is a development validator, not an authoring-language interpreter.
  */
-export function assertJanuaryV2ApproachBalance(table: JanuaryV2ApproachTable): void {
+export function assertJanuaryV2ApproachBalance(
+  table: JanuaryV2ApproachTable,
+  contextBalance: JanuaryV2ContextBalance = JANUARY_V2_DEFAULT_CONTEXT_BALANCE,
+): void {
   const keys = Object.keys(table).toSorted();
   if (JSON.stringify(keys) !== JSON.stringify([...JANUARY_V2_APPROACHES].toSorted())) {
     throw new TypeError("January v2 approaches must be a complete closed table");
@@ -211,15 +226,16 @@ export function assertJanuaryV2ApproachBalance(table: JanuaryV2ApproachTable): v
   ) {
     throw new TypeError("Assisted practice must not be claimed as independent");
   }
+  assertJanuaryV2ContextBalance(table, contextBalance);
   for (const context of JANUARY_V2_DECLARED_CONTEXTS) {
     for (const approach of JANUARY_V2_APPROACHES) {
-      const threshold = januaryV2FinishThreshold(table, context, approach);
+      const threshold = januaryV2FinishThreshold(table, context, approach, contextBalance);
       if (threshold < 0 || threshold > 10) {
         throw new RangeError("Unreachable January v2 context threshold");
       }
     }
-    const help = januaryV2FinishThreshold(table, context, "ask-for-help");
-    const solo = januaryV2FinishThreshold(table, context, "investigate-first");
+    const help = januaryV2FinishThreshold(table, context, "ask-for-help", contextBalance);
+    const solo = januaryV2FinishThreshold(table, context, "investigate-first", contextBalance);
     if (help <= solo) {
       throw new TypeError("Help must improve finish chance over investigation");
     }
@@ -227,7 +243,10 @@ export function assertJanuaryV2ApproachBalance(table: JanuaryV2ApproachTable): v
       for (const second of JANUARY_V2_APPROACHES) {
         if (
           first !== second &&
-          dominates(forecast(table, context, first), forecast(table, context, second))
+          dominates(
+            forecast(table, context, first, contextBalance),
+            forecast(table, context, second, contextBalance),
+          )
         ) {
           throw new TypeError(`January v2 Pareto dominance: ${first} over ${second}`);
         }
@@ -241,7 +260,7 @@ export function assertJanuaryV2ApproachBalance(table: JanuaryV2ApproachTable): v
         const outcomes = new Set<string>();
         for (const approach of JANUARY_V2_APPROACHES) {
           for (let roll = 0; roll < 10; roll += 1) {
-            const result = resolveJanuaryV2Approach(table, context, approach, roll);
+            const result = resolveJanuaryV2Approach(table, context, approach, roll, contextBalance);
             outcomes.add(`${result.delivery}:${result.quality}`);
           }
         }

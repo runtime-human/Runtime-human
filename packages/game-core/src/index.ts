@@ -17,6 +17,13 @@ export type {
   JanuaryV2Participation,
   JanuaryV2Quality,
 } from "./january-1990/january-v2-approach-oracle";
+export {
+  assertJanuaryV2ContextBalance,
+  JANUARY_V2_DEFAULT_CONTEXT_BALANCE,
+  januaryV2ContextFinishModifier,
+  januaryV2PracticeOpportunity,
+} from "./january-1990/january-v2-context-balance";
+export type { JanuaryV2ContextBalance } from "./january-1990/january-v2-context-balance";
 export { canonicalizeAuthoritative } from "./determinism/authoritative-json";
 export { fingerprint, sha256Hex, stableId } from "./determinism/hash";
 export type { RandomSource } from "./determinism/random-source";

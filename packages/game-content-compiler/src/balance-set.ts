@@ -1,5 +1,10 @@
 import Ajv2020, { type ErrorObject, type ValidateFunction } from "ajv/dist/2020.js";
 import {
+  compileJanuaryV2ContextBalance,
+  type JanuaryV2ContextDocumentV1,
+} from "./january-v2-context-balance";
+import { assertJanuaryV2ApproachBalance } from "@runtime-human/game-core";
+import {
   compileJanuaryV2ApproachBalance,
   type JanuaryV2ApproachBalanceDocumentV1,
 } from "./january-v2-approach-balance";
@@ -241,6 +246,7 @@ export type BalanceSetCompilation =
       kind: "success";
       slices: readonly BalanceSliceCompilationV1[];
       januaryV2Approach?: JanuaryV2ApproachBalanceDocumentV1;
+      januaryV2Context?: JanuaryV2ContextDocumentV1;
     }>
   | Readonly<{ kind: "failure"; diagnostics: readonly BalanceDiagnostic[] }>;
 
@@ -261,8 +267,10 @@ export function compileBalanceSet(files: readonly ContentSourceFile[]): BalanceS
   const seenPaths = new Set<string>();
 
   const januaryV2Files = files.filter((file) => file.path.startsWith("balance/approach/"));
+  const januaryV2ContextFiles = files.filter((file) => file.path.startsWith("balance/context/"));
   for (const file of files.toSorted((left, right) => compareText(left.path, right.path))) {
-    if (!file.path.startsWith("balance/approach/")) {
+    if (!file.path.startsWith("balance/approach/") &&
+        !file.path.startsWith("balance/context/")) {
       compileBalanceFile(file, seenPaths, documents, diagnostics);
     }
   }
@@ -272,6 +280,34 @@ export function compileBalanceSet(files: readonly ContentSourceFile[]): BalanceS
   if (januaryV2?.kind === "failure") {
     diagnostics.push(...januaryV2.diagnostics);
   }
+  const januaryV2Context = januaryV2ContextFiles.length > 0
+    ? compileJanuaryV2ContextBalance(januaryV2ContextFiles)
+    : null;
+  if (januaryV2Context?.kind === "failure") {
+    diagnostics.push(...januaryV2Context.diagnostics);
+  }
+  if ((januaryV2 !== null) !== (januaryV2Context !== null)) {
+    diagnostics.push({
+      code: "BAL001_INCOMPLETE_TABLE",
+      message: "January v2 requires both approach and context balance families",
+      path: "<balance-set>",
+      line: 1,
+      column: 1,
+    });
+  }
+  if (januaryV2?.kind === "success" && januaryV2Context?.kind === "success") {
+    try {
+      assertJanuaryV2ApproachBalance(januaryV2.document.approaches, januaryV2Context.document);
+    } catch (error) {
+      diagnostics.push({
+        code: "BAL006_APPROACH_SEMANTICS",
+        message: error instanceof Error ? error.message : "Invalid context trade-offs",
+        path: "balance/context/january-1990-v2.jsonc",
+        line: 1,
+        column: 1,
+      });
+    }
+  }
   const slices = requireCompleteSlices(documents, diagnostics);
   if (diagnostics.length > 0) {
     return { kind: "failure", diagnostics: diagnostics.toSorted(compareBalanceDiagnostics) };
@@ -280,6 +316,8 @@ export function compileBalanceSet(files: readonly ContentSourceFile[]): BalanceS
     kind: "success",
     slices,
     ...(januaryV2?.kind === "success" ? { januaryV2Approach: januaryV2.document } : {}),
+    ...(januaryV2Context?.kind === "success" ?
+      { januaryV2Context: januaryV2Context.document } : {}),
   };
 }
 
