@@ -31,8 +31,19 @@ async function source(): Promise<ContentSourceFile> {
   return found;
 }
 
-function mutate(file: ContentSourceFile, change: (value: Record<string, any>) => void) {
-  const doc = parseJsonc(file.text) as Record<string, any>;
+type MutableApproaches = Record<
+  "investigate-first" | "ask-for-help" | "reduce-scope" | "defer-or-recover",
+  Record<string, unknown>
+>;
+type MutableDocument = {
+  schemaVersion: string;
+  sliceId: string;
+  approaches: MutableApproaches;
+  [key: string]: unknown;
+};
+
+function mutate(file: ContentSourceFile, change: (value: MutableDocument) => void) {
+  const doc = parseJsonc(file.text) as MutableDocument;
   change(doc);
   return { ...file, text: JSON.stringify(doc) };
 }
@@ -67,7 +78,7 @@ describe("REF-02A2a closed January v2 approach balance contract", () => {
 
   it("keeps the TypeBox and compiler schemas in acceptance parity", async () => {
     const file = await source();
-    const original = parseJsonc(file.text);
+    const original = parseJsonc(file.text) as MutableDocument;
     const ajv = new Ajv2020({ strict: true, allErrors: true, validateFormats: false });
     const authoring = ajv.compile(JanuaryV2ApproachBalanceAuthoringSchemaV1 as object);
     const compiler = ajv.compile(JANUARY_V2_APPROACH_BALANCE_SCHEMA_V1 as object);
@@ -99,7 +110,7 @@ describe("REF-02A2a closed January v2 approach balance contract", () => {
       doc.approaches["ask-for-help"].cost = "completion-risk";
     }))).toContain("BAL006_APPROACH_SEMANTICS");
     expect(errors(mutate(file, (doc) => {
-      delete doc.approaches["reduce-scope"];
+      Reflect.deleteProperty(doc.approaches, "reduce-scope");
     }))).toContain("SCHEMA_INVALID");
   });
 
