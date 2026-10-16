@@ -295,9 +295,8 @@ export function compileBalanceSet(files: readonly ContentSourceFile[]): BalanceS
   }
   if (januaryV2?.kind === "success" && januaryV2Context?.kind === "success") {
     try {
-      const { schemaVersion: _contextSchemaVersion, sliceId: _contextSliceId, ...contextModifiers } =
-        januaryV2Context.document;
-      assertJanuaryV2ApproachBalance(januaryV2.document.approaches, contextModifiers);
+      const { schemaVersion: _v, sliceId: _s, ...context } = januaryV2Context.document;
+      assertJanuaryV2ApproachBalance(januaryV2.document.approaches, context);
     } catch (error) {
       diagnostics.push({
         code: "BAL006_APPROACH_SEMANTICS",
