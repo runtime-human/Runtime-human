@@ -1,7 +1,16 @@
 import Ajv2020, { type ValidateFunction } from "ajv/dist/2020.js";
-import { getNodeValue, parseTree, printParseErrorCode, type Node as JsoncNode, type ParseError } from "jsonc-parser";
+import {
+  getNodeValue,
+  parseTree,
+  printParseErrorCode,
+  type Node as JsoncNode,
+  type ParseError,
+} from "jsonc-parser";
 
-import { assertJanuaryV2ApproachBalance, type JanuaryV2ApproachTable } from "@runtime-human/game-core";
+import {
+  assertJanuaryV2ApproachBalance,
+  type JanuaryV2ApproachTable,
+} from "@runtime-human/game-core";
 
 import type { BalanceDiagnostic } from "./balance-set";
 import type { ContentSourceFile } from "./content-types";
@@ -69,13 +78,15 @@ export function compileJanuaryV2ApproachBalance(
   if (files.length !== 1 || files[0]?.path !== JANUARY_V2_APPROACH_SOURCE_PATH) {
     return {
       kind: "failure",
-      diagnostics: [{
-        code: files.length > 1 ? "DUPLICATE_PATH" : "INVALID_PATH",
-        message: "Exactly one canonical January v2 approach balance file is required",
-        path: files[0]?.path ?? JANUARY_V2_APPROACH_SOURCE_PATH,
-        line: 1,
-        column: 1,
-      }],
+      diagnostics: [
+        {
+          code: files.length > 1 ? "DUPLICATE_PATH" : "INVALID_PATH",
+          message: "Exactly one canonical January v2 approach balance file is required",
+          path: files[0]?.path ?? JANUARY_V2_APPROACH_SOURCE_PATH,
+          line: 1,
+          column: 1,
+        },
+      ],
     };
   }
   const file = files[0];
@@ -84,41 +95,48 @@ export function compileJanuaryV2ApproachBalance(
   if (root === undefined || errors.length > 0) {
     return {
       kind: "failure",
-      diagnostics: [{
-        code: "JSONC_PARSE",
-        message: errors.length > 0
-          ? "JSONC parse: " + errors.map((error) => printParseErrorCode(error.error)).join(", ")
-          : "Empty JSONC document",
-        path: file.path,
-        line: 1,
-        column: 1,
-      }],
+      diagnostics: [
+        {
+          code: "JSONC_PARSE",
+          message:
+            errors.length > 0
+              ? "JSONC parse: " + errors.map((error) => printParseErrorCode(error.error)).join(", ")
+              : "Empty JSONC document",
+          path: file.path,
+          line: 1,
+          column: 1,
+        },
+      ],
     };
   }
   const invalidProperty = findInvalidProperty(root);
   if (invalidProperty !== null) {
     return {
       kind: "failure",
-      diagnostics: [{
-        code: "BAL005_FORBIDDEN_PROPERTY",
-        message: "Duplicate or unsafe property: " + invalidProperty,
-        path: file.path,
-        line: 1,
-        column: 1,
-      }],
+      diagnostics: [
+        {
+          code: "BAL005_FORBIDDEN_PROPERTY",
+          message: "Duplicate or unsafe property: " + invalidProperty,
+          path: file.path,
+          line: 1,
+          column: 1,
+        },
+      ],
     };
   }
   const document: unknown = getNodeValue(root);
   if (!validate(document)) {
     return {
       kind: "failure",
-      diagnostics: [{
-        code: "SCHEMA_INVALID",
-        message: "Approach schema: " + JSON.stringify(validate.errors ?? []),
-        path: file.path,
-        line: 1,
-        column: 1,
-      }],
+      diagnostics: [
+        {
+          code: "SCHEMA_INVALID",
+          message: "Approach schema: " + JSON.stringify(validate.errors ?? []),
+          path: file.path,
+          line: 1,
+          column: 1,
+        },
+      ],
     };
   }
   try {
@@ -126,13 +144,15 @@ export function compileJanuaryV2ApproachBalance(
   } catch (error) {
     return {
       kind: "failure",
-      diagnostics: [{
-        code: "BAL006_APPROACH_SEMANTICS",
-        message: error instanceof Error ? error.message : "Invalid approach semantics",
-        path: file.path,
-        line: 1,
-        column: 1,
-      }],
+      diagnostics: [
+        {
+          code: "BAL006_APPROACH_SEMANTICS",
+          message: error instanceof Error ? error.message : "Invalid approach semantics",
+          path: file.path,
+          line: 1,
+          column: 1,
+        },
+      ],
     };
   }
   return { kind: "success", document: Object.freeze(document) };

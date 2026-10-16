@@ -267,9 +267,8 @@ export function compileBalanceSet(files: readonly ContentSourceFile[]): BalanceS
     }
   }
 
-  const januaryV2 = januaryV2Files.length > 0
-    ? compileJanuaryV2ApproachBalance(januaryV2Files)
-    : null;
+  const januaryV2 =
+    januaryV2Files.length > 0 ? compileJanuaryV2ApproachBalance(januaryV2Files) : null;
   if (januaryV2?.kind === "failure") {
     diagnostics.push(...januaryV2.diagnostics);
   }

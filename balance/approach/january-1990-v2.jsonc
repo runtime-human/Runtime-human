@@ -10,28 +10,28 @@
       "quality": "adequate",
       "participation": "independent",
       "cost": "completion-risk",
-      "learningValue": 2
+      "learningValue": 2,
     },
     "ask-for-help": {
       "finishThreshold": 9,
       "quality": "adequate",
       "participation": "assisted",
       "cost": "assistance",
-      "learningValue": 1
+      "learningValue": 1,
     },
     "reduce-scope": {
       "finishThreshold": 10,
       "quality": "basic",
       "participation": "independent",
       "cost": "known-limitation",
-      "learningValue": 0
+      "learningValue": 0,
     },
     "defer-or-recover": {
       "finishThreshold": 0,
       "quality": "strong",
       "participation": "independent",
       "cost": "deferred-release",
-      "learningValue": 2
-    }
-  }
+      "learningValue": 2,
+    },
+  },
 }

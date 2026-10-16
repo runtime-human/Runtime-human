@@ -79,18 +79,52 @@ describe("REF-02A2a closed January v2 approach balance contract", () => {
   it("keeps the TypeBox and compiler schemas in acceptance parity", async () => {
     const file = await source();
     const original = parseJsonc(file.text) as MutableDocument;
-    const ajv = new Ajv2020({ strict: true, allErrors: true, validateFormats: false });
-    const authoring = ajv.compile(JanuaryV2ApproachBalanceAuthoringSchemaV1 as object);
-    const compiler = ajv.compile(JANUARY_V2_APPROACH_BALANCE_SCHEMA_V1 as object);
+    const createValidator = (schema: object) =>
+      new Ajv2020({
+        strict: true,
+        allErrors: true,
+        validateFormats: false,
+      }).compile(schema);
+    const authoring = createValidator(JanuaryV2ApproachBalanceAuthoringSchemaV1 as object);
+    const compiler = createValidator(JANUARY_V2_APPROACH_BALANCE_SCHEMA_V1 as object);
     const sample = [
       original,
       { ...original, schemaVersion: "quality-balance-v1" },
       { ...original, unexpected: 1 },
-      { ...original, approaches: { ...original.approaches, "future-approach": original.approaches["ask-for-help"] } },
-      { ...original, approaches: { ...original.approaches, "ask-for-help": { ...original.approaches["ask-for-help"], quality: "excellent" } } },
-      { ...original, approaches: { ...original.approaches, "ask-for-help": { ...original.approaches["ask-for-help"], finishThreshold: -1 } } },
-      { ...original, approaches: { ...original.approaches, "ask-for-help": { ...original.approaches["ask-for-help"], learningValue: 2.5 } } },
-      { ...original, approaches: Object.fromEntries(Object.entries(original.approaches).filter(([id]) => id !== "reduce-scope")) },
+      {
+        ...original,
+        approaches: {
+          ...original.approaches,
+          "future-approach": original.approaches["ask-for-help"],
+        },
+      },
+      {
+        ...original,
+        approaches: {
+          ...original.approaches,
+          "ask-for-help": { ...original.approaches["ask-for-help"], quality: "excellent" },
+        },
+      },
+      {
+        ...original,
+        approaches: {
+          ...original.approaches,
+          "ask-for-help": { ...original.approaches["ask-for-help"], finishThreshold: -1 },
+        },
+      },
+      {
+        ...original,
+        approaches: {
+          ...original.approaches,
+          "ask-for-help": { ...original.approaches["ask-for-help"], learningValue: 2.5 },
+        },
+      },
+      {
+        ...original,
+        approaches: Object.fromEntries(
+          Object.entries(original.approaches).filter(([id]) => id !== "reduce-scope"),
+        ),
+      },
     ];
     for (const document of sample) {
       expect(compiler(document)).toBe(authoring(document));
@@ -99,33 +133,58 @@ describe("REF-02A2a closed January v2 approach balance contract", () => {
 
   it("rejects a dominated option and tampering with assistance or cost", async () => {
     const file = await source();
-    expect(errors(mutate(file, (doc) => {
-      doc.approaches["investigate-first"].finishThreshold = 10;
-      doc.approaches["investigate-first"].quality = "strong";
-    }))).toContain("BAL006_APPROACH_SEMANTICS");
-    expect(errors(mutate(file, (doc) => {
-      doc.approaches["ask-for-help"].participation = "independent";
-    }))).toContain("BAL006_APPROACH_SEMANTICS");
-    expect(errors(mutate(file, (doc) => {
-      doc.approaches["ask-for-help"].cost = "completion-risk";
-    }))).toContain("BAL006_APPROACH_SEMANTICS");
-    expect(errors(mutate(file, (doc) => {
-      Reflect.deleteProperty(doc.approaches, "reduce-scope");
-    }))).toContain("SCHEMA_INVALID");
+    expect(
+      errors(
+        mutate(file, (doc) => {
+          doc.approaches["investigate-first"].finishThreshold = 10;
+          doc.approaches["investigate-first"].quality = "strong";
+        }),
+      ),
+    ).toContain("BAL006_APPROACH_SEMANTICS");
+    expect(
+      errors(
+        mutate(file, (doc) => {
+          doc.approaches["ask-for-help"].participation = "independent";
+        }),
+      ),
+    ).toContain("BAL006_APPROACH_SEMANTICS");
+    expect(
+      errors(
+        mutate(file, (doc) => {
+          doc.approaches["ask-for-help"].cost = "completion-risk";
+        }),
+      ),
+    ).toContain("BAL006_APPROACH_SEMANTICS");
+    expect(
+      errors(
+        mutate(file, (doc) => {
+          Reflect.deleteProperty(doc.approaches, "reduce-scope");
+        }),
+      ),
+    ).toContain("SCHEMA_INVALID");
   });
 
   it("rejects duplicate JSONC keys, unknown paths and malformed content", async () => {
     const file = await source();
     const duplicate = {
       ...file,
-      text: file.text.replace('"sliceId": "january-1990-v2",', '"sliceId": "january-1990-v2", "sliceId": "january-1990-v2",'),
+      text: file.text.replace(
+        '"sliceId": "january-1990-v2",',
+        '"sliceId": "january-1990-v2", "sliceId": "january-1990-v2",',
+      ),
     };
     expect(errors(duplicate)).toContain("BAL005_FORBIDDEN_PROPERTY");
-    expect(errors({ path: "balance/approach/other.jsonc", text: file.text })).toContain("INVALID_PATH");
+    expect(errors({ path: "balance/approach/other.jsonc", text: file.text })).toContain(
+      "INVALID_PATH",
+    );
     expect(errors({ ...file, text: "{" })).toContain("JSONC_PARSE");
     expect(compileJanuaryV2ApproachBalance([file, file]).kind).toBe("failure");
-    expect(errors(mutate(file, (doc) => {
-      doc.approaches["reduce-scope"].unknown = true;
-    }))).toContain("SCHEMA_INVALID");
+    expect(
+      errors(
+        mutate(file, (doc) => {
+          doc.approaches["reduce-scope"].unknown = true;
+        }),
+      ),
+    ).toContain("SCHEMA_INVALID");
   });
 });
