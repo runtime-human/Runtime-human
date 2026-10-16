@@ -269,8 +269,7 @@ export function compileBalanceSet(files: readonly ContentSourceFile[]): BalanceS
   const januaryV2Files = files.filter((file) => file.path.startsWith("balance/approach/"));
   const januaryV2ContextFiles = files.filter((file) => file.path.startsWith("balance/context/"));
   for (const file of files.toSorted((left, right) => compareText(left.path, right.path))) {
-    if (!file.path.startsWith("balance/approach/") &&
-        !file.path.startsWith("balance/context/")) {
+    if (!file.path.startsWith("balance/approach/") && !file.path.startsWith("balance/context/")) {
       compileBalanceFile(file, seenPaths, documents, diagnostics);
     }
   }
@@ -280,9 +279,8 @@ export function compileBalanceSet(files: readonly ContentSourceFile[]): BalanceS
   if (januaryV2?.kind === "failure") {
     diagnostics.push(...januaryV2.diagnostics);
   }
-  const januaryV2Context = januaryV2ContextFiles.length > 0
-    ? compileJanuaryV2ContextBalance(januaryV2ContextFiles)
-    : null;
+  const januaryV2Context =
+    januaryV2ContextFiles.length > 0 ? compileJanuaryV2ContextBalance(januaryV2ContextFiles) : null;
   if (januaryV2Context?.kind === "failure") {
     diagnostics.push(...januaryV2Context.diagnostics);
   }
@@ -297,7 +295,9 @@ export function compileBalanceSet(files: readonly ContentSourceFile[]): BalanceS
   }
   if (januaryV2?.kind === "success" && januaryV2Context?.kind === "success") {
     try {
-      assertJanuaryV2ApproachBalance(januaryV2.document.approaches, januaryV2Context.document);
+      const { schemaVersion: _contextSchemaVersion, sliceId: _contextSliceId, ...contextModifiers } =
+        januaryV2Context.document;
+      assertJanuaryV2ApproachBalance(januaryV2.document.approaches, contextModifiers);
     } catch (error) {
       diagnostics.push({
         code: "BAL006_APPROACH_SEMANTICS",
@@ -316,8 +316,9 @@ export function compileBalanceSet(files: readonly ContentSourceFile[]): BalanceS
     kind: "success",
     slices,
     ...(januaryV2?.kind === "success" ? { januaryV2Approach: januaryV2.document } : {}),
-    ...(januaryV2Context?.kind === "success" ?
-      { januaryV2Context: januaryV2Context.document } : {}),
+    ...(januaryV2Context?.kind === "success"
+      ? { januaryV2Context: januaryV2Context.document }
+      : {}),
   };
 }
 

@@ -127,10 +127,7 @@ export function januaryV2FinishThreshold(
   if (approach === "reduce-scope" || approach === "defer-or-recover") {
     return rule.finishThreshold;
   }
-  return (
-    rule.finishThreshold +
-    januaryV2ContextFinishModifier(context, approach, contextBalance)
-  );
+  return rule.finishThreshold + januaryV2ContextFinishModifier(context, approach, contextBalance);
 }
 
 /** The roll is supplied by the caller; this function never draws random values. */

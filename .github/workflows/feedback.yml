@@ -57,12 +57,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
 
-      # Temporary formatting diagnostic for REF-02A2b; remove before acceptance.
-      - name: Print REF-02A2b canonical formatting diff
-        run: |
-          pnpm exec oxfmt balance/context/january-1990-v2.jsonc packages/game-content-compiler/src/balance-set.ts packages/game-content-compiler/src/january-v2-context-balance.ts packages/game-core/src/january-1990/january-v2-approach-oracle.ts packages/game-core/src/january-1990/january-v2-context-balance.ts tests/january-1990-v2-context-balance.test.ts
-          git diff -- balance/context/january-1990-v2.jsonc packages/game-content-compiler/src/balance-set.ts packages/game-content-compiler/src/january-v2-context-balance.ts packages/game-core/src/january-1990/january-v2-approach-oracle.ts packages/game-core/src/january-1990/january-v2-context-balance.ts tests/january-1990-v2-context-balance.test.ts
-
       - name: Run non-authoritative fast feedback
         run: pnpm check:fast
 

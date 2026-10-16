@@ -5,14 +5,18 @@ import type {
 } from "./january-v2-approach-oracle";
 
 export type JanuaryV2ContextBalance = Readonly<{
-  startBackground: Readonly<Record<
-    JanuaryV2Context["startBackground"],
-    Readonly<Record<"investigate-first" | "ask-for-help", number>>
-  >>;
-  learningMode: Readonly<Record<
-    JanuaryV2Context["learningMode"],
-    Readonly<{ finishModifier: number; practiceOpportunityModifier: number }>
-  >>;
+  startBackground: Readonly<
+    Record<
+      JanuaryV2Context["startBackground"],
+      Readonly<Record<"investigate-first" | "ask-for-help", number>>
+    >
+  >;
+  learningMode: Readonly<
+    Record<
+      JanuaryV2Context["learningMode"],
+      Readonly<{ finishModifier: number; practiceOpportunityModifier: number }>
+    >
+  >;
   defect: Readonly<Record<JanuaryV2Context["defect"], number>>;
 }>;
 
@@ -68,10 +72,7 @@ const DEFECTS = ["syntax-error", "logic-error"] as const;
 const RELEASE_APPROACHES = ["investigate-first", "ask-for-help"] as const;
 
 function validateClosedObject(value: object, keys: readonly string[]): void {
-  if (
-    JSON.stringify(Object.keys(value).toSorted()) !==
-    JSON.stringify([...keys].toSorted())
-  ) {
+  if (JSON.stringify(Object.keys(value).toSorted()) !== JSON.stringify([...keys].toSorted())) {
     throw new TypeError("Incomplete or extended January v2 context modifiers");
   }
 }
@@ -122,12 +123,19 @@ export function assertJanuaryV2ContextBalance(
 
   for (const learningMode of LEARNING_MODES) {
     for (const defect of DEFECTS) {
-      const threshold = (startBackground: JanuaryV2Context["startBackground"], approach: typeof RELEASE_APPROACHES[number]) => {
+      const threshold = (
+        startBackground: JanuaryV2Context["startBackground"],
+        approach: (typeof RELEASE_APPROACHES)[number],
+      ) => {
         const context = { startBackground, learningMode, defect };
-        return table[approach].finishThreshold + januaryV2ContextFinishModifier(context, approach, balance);
+        return (
+          table[approach].finishThreshold +
+          januaryV2ContextFinishModifier(context, approach, balance)
+        );
       };
       if (
-        threshold("home-pc", "investigate-first") <= threshold("shared-school-pc", "investigate-first") ||
+        threshold("home-pc", "investigate-first") <=
+          threshold("shared-school-pc", "investigate-first") ||
         threshold("shared-school-pc", "ask-for-help") <= threshold("home-pc", "ask-for-help")
       ) {
         throw new TypeError("January v2 background Pareto dominance");
@@ -137,18 +145,21 @@ export function assertJanuaryV2ContextBalance(
   for (const startBackground of BACKGROUNDS) {
     for (const defect of DEFECTS) {
       for (const approach of RELEASE_APPROACHES) {
-        const context = (learningMode: JanuaryV2Context["learningMode"]) =>
-          ({ startBackground, defect, learningMode });
+        const context = (learningMode: JanuaryV2Context["learningMode"]) => ({
+          startBackground,
+          defect,
+          learningMode,
+        });
         const read = context("read-and-run");
         const edit = context("edit-and-debug");
-        const readThreshold = table[approach].finishThreshold +
-          januaryV2ContextFinishModifier(read, approach, balance);
-        const editThreshold = table[approach].finishThreshold +
-          januaryV2ContextFinishModifier(edit, approach, balance);
+        const readThreshold =
+          table[approach].finishThreshold + januaryV2ContextFinishModifier(read, approach, balance);
+        const editThreshold =
+          table[approach].finishThreshold + januaryV2ContextFinishModifier(edit, approach, balance);
         if (
           readThreshold <= editThreshold ||
           januaryV2PracticeOpportunity(table, edit, approach, balance) <=
-          januaryV2PracticeOpportunity(table, read, approach, balance)
+            januaryV2PracticeOpportunity(table, read, approach, balance)
         ) {
           throw new TypeError("January v2 learning mode Pareto dominance");
         }

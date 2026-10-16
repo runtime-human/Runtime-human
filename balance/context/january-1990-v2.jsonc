@@ -5,25 +5,25 @@
   "startBackground": {
     "home-pc": {
       "investigate-first": 1,
-      "ask-for-help": -1
+      "ask-for-help": -1,
     },
     "shared-school-pc": {
       "investigate-first": -1,
-      "ask-for-help": 1
-    }
+      "ask-for-help": 1,
+    },
   },
   "learningMode": {
     "read-and-run": {
       "finishModifier": 0,
-      "practiceOpportunityModifier": -1
+      "practiceOpportunityModifier": -1,
     },
     "edit-and-debug": {
       "finishModifier": -1,
-      "practiceOpportunityModifier": 1
-    }
+      "practiceOpportunityModifier": 1,
+    },
   },
   "defect": {
     "syntax-error": 0,
-    "logic-error": -1
-  }
+    "logic-error": -1,
+  },
 }

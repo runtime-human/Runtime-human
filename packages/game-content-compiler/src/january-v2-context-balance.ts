@@ -11,7 +11,8 @@ export const JANUARY_V2_CONTEXT_SOURCE_PATH = "balance/context/january-1990-v2.j
 export type JanuaryV2ContextDocumentV1 = Readonly<{
   schemaVersion: "january-context-balance-v1";
   sliceId: "january-1990-v2";
-}> & JanuaryV2ContextBalance;
+}> &
+  JanuaryV2ContextBalance;
 
 const integer = { type: "integer", minimum: -2, maximum: 2 } as const;
 const backgroundRow = {
@@ -71,13 +72,15 @@ export function compileJanuaryV2ContextBalance(
   if (files.length !== 1 || files[0]?.path !== JANUARY_V2_CONTEXT_SOURCE_PATH) {
     return {
       kind: "failure",
-      diagnostics: [{
-        code: files.length > 1 ? "DUPLICATE_PATH" : "INVALID_PATH",
-        message: "Exactly one canonical January v2 context file is required",
-        path: files[0]?.path ?? JANUARY_V2_CONTEXT_SOURCE_PATH,
-        line: 1,
-        column: 1,
-      }],
+      diagnostics: [
+        {
+          code: files.length > 1 ? "DUPLICATE_PATH" : "INVALID_PATH",
+          message: "Exactly one canonical January v2 context file is required",
+          path: files[0]?.path ?? JANUARY_V2_CONTEXT_SOURCE_PATH,
+          line: 1,
+          column: 1,
+        },
+      ],
     };
   }
   const file = files[0];
@@ -86,39 +89,45 @@ export function compileJanuaryV2ContextBalance(
   if (root === undefined || errors.length > 0) {
     return {
       kind: "failure",
-      diagnostics: [{
-        code: "JSONC_PARSE",
-        message: "Invalid or empty January v2 context JSONC",
-        path: file.path,
-        line: 1,
-        column: 1,
-      }],
+      diagnostics: [
+        {
+          code: "JSONC_PARSE",
+          message: "Invalid or empty January v2 context JSONC",
+          path: file.path,
+          line: 1,
+          column: 1,
+        },
+      ],
     };
   }
   const unsafe = findUnsafeProperty(root);
   if (unsafe !== null) {
     return {
       kind: "failure",
-      diagnostics: [{
-        code: "BAL005_FORBIDDEN_PROPERTY",
-        message: "Duplicate or unsafe January v2 context key: " + unsafe,
-        path: file.path,
-        line: 1,
-        column: 1,
-      }],
+      diagnostics: [
+        {
+          code: "BAL005_FORBIDDEN_PROPERTY",
+          message: "Duplicate or unsafe January v2 context key: " + unsafe,
+          path: file.path,
+          line: 1,
+          column: 1,
+        },
+      ],
     };
   }
   const doc: unknown = getNodeValue(root);
   if (!validate(doc)) {
     return {
       kind: "failure",
-      diagnostics: [{
-        code: "SCHEMA_INVALID",
-        message: "January v2 context schema: " + JSON.stringify(validate.errors ?? []),
-        path: file.path,
-        line: 1,
-        column: 1,
-      }],
+      diagnostics: [
+        {
+          code: "SCHEMA_INVALID",
+          message: "January v2 context schema: " + JSON.stringify(validate.errors ?? []),
+          path: file.path,
+          line: 1,
+          column: 1,
+        },
+      ],
     };
   }
   return { kind: "success", document: Object.freeze(doc) };

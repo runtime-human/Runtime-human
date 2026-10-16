@@ -29,7 +29,10 @@ import {
 import { loadJanuary1990CompiledBalance } from "./helpers/january-1990-balance";
 
 const repositoryRoot = fileURLToPath(new URL("..", import.meta.url));
-const fixturePath = new URL("../fixtures/balance/january-1990-v2-bounded-trace-v1.json", import.meta.url);
+const fixturePath = new URL(
+  "../fixtures/balance/january-1990-v2-bounded-trace-v1.json",
+  import.meta.url,
+);
 const fingerprintV2 = "c6c64a655ab1a32cf789fee4d2804f7318fbb171319c7a41a4f8dbec4e9e3791";
 
 async function source(): Promise<ContentSourceFile> {
@@ -87,11 +90,12 @@ describe("REF-02A2b January v2 non-dominant context balance", () => {
   it("matches the TypeBox and compiler schemas for valid and rejected inputs", async () => {
     const file = await source();
     const doc = parseJsonc(file.text) as MutableContextDocument;
-    const build = (schema: object) => new Ajv2020({
-      strict: true,
-      allErrors: true,
-      validateFormats: false,
-    }).compile(schema);
+    const build = (schema: object) =>
+      new Ajv2020({
+        strict: true,
+        allErrors: true,
+        validateFormats: false,
+      }).compile(schema);
     const authoring = build(JanuaryV2ContextAuthoringSchemaV1 as object);
     const compiler = build(JANUARY_V2_CONTEXT_SCHEMA_V1 as object);
     const cases = [
@@ -113,32 +117,60 @@ describe("REF-02A2b January v2 non-dominant context balance", () => {
       const parsed = compileJanuaryV2ContextBalance([changed]);
       if (parsed.kind !== "success") return parsed.diagnostics.map((d) => d.code);
       try {
-        assertJanuaryV2ApproachBalance(approaches, parsed.document);
+        const { schemaVersion: _schemaVersion, sliceId: _sliceId, ...contextModifiers } =
+          parsed.document;
+        assertJanuaryV2ApproachBalance(approaches, contextModifiers);
       } catch {
         return ["BAL006_APPROACH_SEMANTICS"];
       }
       return [];
     };
-    expect(check(mutate(file, (doc) => {
-      doc.startBackground["shared-school-pc"]["ask-for-help"] = -2;
-    }))).toContain("BAL006_APPROACH_SEMANTICS");
-    expect(check(mutate(file, (doc) => {
-      doc.learningMode["edit-and-debug"].practiceOpportunityModifier = -2;
-    }))).toContain("BAL006_APPROACH_SEMANTICS");
-    expect(check(mutate(file, (doc) => {
-      doc.learningMode["edit-and-debug"].finishModifier = 2;
-    }))).toContain("BAL006_APPROACH_SEMANTICS");
-    expect(failureCodes([mutate(file, (doc) => {
-      doc.defect["logic-error"] = 3;
-    })])).toContain("SCHEMA_INVALID");
-    expect(failureCodes([mutate(file, (doc) => {
-      Reflect.deleteProperty(doc.startBackground["home-pc"], "ask-for-help");
-    })])).toContain("SCHEMA_INVALID");
-    expect(failureCodes([mutate(file, (doc) => {
-      doc.unexpected = 1;
-    })])).toContain("SCHEMA_INVALID");
+    expect(
+      check(
+        mutate(file, (doc) => {
+          doc.startBackground["shared-school-pc"]!["ask-for-help"] = -2;
+        }),
+      ),
+    ).toContain("BAL006_APPROACH_SEMANTICS");
+    expect(
+      check(
+        mutate(file, (doc) => {
+          doc.learningMode["edit-and-debug"]!.practiceOpportunityModifier = -2;
+        }),
+      ),
+    ).toContain("BAL006_APPROACH_SEMANTICS");
+    expect(
+      check(
+        mutate(file, (doc) => {
+          doc.learningMode["edit-and-debug"]!.finishModifier = 2;
+        }),
+      ),
+    ).toContain("BAL006_APPROACH_SEMANTICS");
+    expect(
+      failureCodes([
+        mutate(file, (doc) => {
+          doc.defect["logic-error"] = 3;
+        }),
+      ]),
+    ).toContain("SCHEMA_INVALID");
+    expect(
+      failureCodes([
+        mutate(file, (doc) => {
+          Reflect.deleteProperty(doc.startBackground["home-pc"]!, "ask-for-help");
+        }),
+      ]),
+    ).toContain("SCHEMA_INVALID");
+    expect(
+      failureCodes([
+        mutate(file, (doc) => {
+          doc.unexpected = 1;
+        }),
+      ]),
+    ).toContain("SCHEMA_INVALID");
     expect(failureCodes([{ ...file, text: "{" }])).toContain("JSONC_PARSE");
-    expect(failureCodes([{ ...file, path: "balance/context/other.jsonc" }])).toContain("INVALID_PATH");
+    expect(failureCodes([{ ...file, path: "balance/context/other.jsonc" }])).toContain(
+      "INVALID_PATH",
+    );
     expect(failureCodes([file, file])).toContain("DUPLICATE_PATH");
   });
 
@@ -169,10 +201,11 @@ describe("REF-02A2b January v2 non-dominant context balance", () => {
           approach,
           delivery: {
             released: results.filter((v) => v.delivery === "released").length,
-            "released-with-limitation": results.filter((v) =>
-              v.delivery === "released-with-limitation").length,
-            "delayed-to-february": results.filter((v) =>
-              v.delivery === "delayed-to-february").length,
+            "released-with-limitation": results.filter(
+              (v) => v.delivery === "released-with-limitation",
+            ).length,
+            "delayed-to-february": results.filter((v) => v.delivery === "delayed-to-february")
+              .length,
           },
           quality: first.quality,
           participation: first.participation,
