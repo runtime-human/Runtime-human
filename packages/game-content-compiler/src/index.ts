@@ -4,6 +4,8 @@ export {
   JANUARY_V2_CONTEXT_SOURCE_PATH,
 } from "./january-v2-context-balance";
 export type { JanuaryV2ContextDocumentV1 } from "./january-v2-context-balance";
+export { inspectProtectedContentChunks } from "./content-compatibility";
+export type { ContentCompatibilityInspection, ProtectedContentChunkDrift } from "./content-compatibility";
 export { compileContentSources } from "./compile-content-sources";
 export {
   compileJanuaryV2ApproachBalance,

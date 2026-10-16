@@ -128,6 +128,7 @@ export default defineConfig({
         "tests/content-compiler.test.ts",
         "tests/content-source-loader.test.ts",
         "tests/january-content-golden.test.ts",
+        "tests/january-v2-content-compatibility.test.ts",
         "tests/materialize-january-e2-fixtures.test.ts",
       ]),
       nodeProject("persistence-contracts-node", [

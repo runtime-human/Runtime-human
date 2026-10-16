@@ -99,6 +99,16 @@ M1 = PROG-01B2C2 (ProfessionalState v2 / MonthRun v2 / v2 save schema; внеш�
 
 Правка v1 balance; runtime-интеграция; тексты и маркеры; UI.
 
+## REF-02B0 — Compatibility spike (Draft PR, 2026-10-16)
+
+The new `REF-02B0-CONTENT-COMPATIBILITY-SPIKE.md` records the executable finding:
+a v2 source in an independent `1990s/programming-v2` chunk leaves legacy
+chunk bytes intact but still changes the global v1 manifest fingerprint if
+compiled together. REF-02B1 must use a separate v2 publication/bundle;
+the legacy `content/content.config.json` and January v1 manifest remain
+unchanged. This is evidence in an unmerged Draft slice, **not** accepted
+production content.
+
 ## REF-02B — Approach content в compiled content + dominance/truthfulness-валидаторы
 
 **Скилл/зона:** `runtime-content`, зона `content` (+ `application` для read model).
