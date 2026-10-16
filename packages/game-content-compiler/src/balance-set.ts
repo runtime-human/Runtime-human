@@ -1,5 +1,14 @@
 import Ajv2020, { type ErrorObject, type ValidateFunction } from "ajv/dist/2020.js";
 import {
+  compileJanuaryV2ContextBalance,
+  type JanuaryV2ContextDocumentV1,
+} from "./january-v2-context-balance";
+import { assertJanuaryV2ApproachBalance } from "@runtime-human/game-core";
+import {
+  compileJanuaryV2ApproachBalance,
+  type JanuaryV2ApproachBalanceDocumentV1,
+} from "./january-v2-approach-balance";
+import {
   findNodeAtLocation,
   getNodeValue,
   parseTree,
@@ -197,7 +206,8 @@ export type BalanceDiagnosticCode =
   | "BAL002_INVALID_RANGE"
   | "BAL003_SLICE_ID_MISMATCH"
   | "BAL004_DUPLICATE_FAMILY"
-  | "BAL005_FORBIDDEN_PROPERTY";
+  | "BAL005_FORBIDDEN_PROPERTY"
+  | "BAL006_APPROACH_SEMANTICS";
 
 export type BalanceDiagnostic = Readonly<{
   code: BalanceDiagnosticCode;
@@ -232,7 +242,12 @@ export type BalanceSliceCompilationV1 = Readonly<{
 }>;
 
 export type BalanceSetCompilation =
-  | Readonly<{ kind: "success"; slices: readonly BalanceSliceCompilationV1[] }>
+  | Readonly<{
+      kind: "success";
+      slices: readonly BalanceSliceCompilationV1[];
+      januaryV2Approach?: JanuaryV2ApproachBalanceDocumentV1;
+      januaryV2Context?: JanuaryV2ContextDocumentV1;
+    }>
   | Readonly<{ kind: "failure"; diagnostics: readonly BalanceDiagnostic[] }>;
 
 const ajv = new Ajv2020({
@@ -251,15 +266,59 @@ export function compileBalanceSet(files: readonly ContentSourceFile[]): BalanceS
   const documents: ValidatedBalanceDocumentV1[] = [];
   const seenPaths = new Set<string>();
 
+  const januaryV2Files = files.filter((file) => file.path.startsWith("balance/approach/"));
+  const januaryV2ContextFiles = files.filter((file) => file.path.startsWith("balance/context/"));
   for (const file of files.toSorted((left, right) => compareText(left.path, right.path))) {
-    compileBalanceFile(file, seenPaths, documents, diagnostics);
+    if (!file.path.startsWith("balance/approach/") && !file.path.startsWith("balance/context/")) {
+      compileBalanceFile(file, seenPaths, documents, diagnostics);
+    }
   }
 
+  const januaryV2 =
+    januaryV2Files.length > 0 ? compileJanuaryV2ApproachBalance(januaryV2Files) : null;
+  if (januaryV2?.kind === "failure") {
+    diagnostics.push(...januaryV2.diagnostics);
+  }
+  const januaryV2Context =
+    januaryV2ContextFiles.length > 0 ? compileJanuaryV2ContextBalance(januaryV2ContextFiles) : null;
+  if (januaryV2Context?.kind === "failure") {
+    diagnostics.push(...januaryV2Context.diagnostics);
+  }
+  if ((januaryV2 !== null) !== (januaryV2Context !== null)) {
+    diagnostics.push({
+      code: "BAL001_INCOMPLETE_TABLE",
+      message: "January v2 requires both approach and context balance families",
+      path: "<balance-set>",
+      line: 1,
+      column: 1,
+    });
+  }
+  if (januaryV2?.kind === "success" && januaryV2Context?.kind === "success") {
+    try {
+      const { schemaVersion: _v, sliceId: _s, ...context } = januaryV2Context.document;
+      assertJanuaryV2ApproachBalance(januaryV2.document.approaches, context);
+    } catch (error) {
+      diagnostics.push({
+        code: "BAL006_APPROACH_SEMANTICS",
+        message: error instanceof Error ? error.message : "Invalid context trade-offs",
+        path: "balance/context/january-1990-v2.jsonc",
+        line: 1,
+        column: 1,
+      });
+    }
+  }
   const slices = requireCompleteSlices(documents, diagnostics);
   if (diagnostics.length > 0) {
     return { kind: "failure", diagnostics: diagnostics.toSorted(compareBalanceDiagnostics) };
   }
-  return { kind: "success", slices };
+  return {
+    kind: "success",
+    slices,
+    ...(januaryV2?.kind === "success" ? { januaryV2Approach: januaryV2.document } : {}),
+    ...(januaryV2Context?.kind === "success"
+      ? { januaryV2Context: januaryV2Context.document }
+      : {}),
+  };
 }
 
 export function formatBalanceDiagnostics(

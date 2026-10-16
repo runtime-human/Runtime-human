@@ -1,4 +1,16 @@
+export {
+  compileJanuaryV2ContextBalance,
+  JANUARY_V2_CONTEXT_SCHEMA_V1,
+  JANUARY_V2_CONTEXT_SOURCE_PATH,
+} from "./january-v2-context-balance";
+export type { JanuaryV2ContextDocumentV1 } from "./january-v2-context-balance";
 export { compileContentSources } from "./compile-content-sources";
+export {
+  compileJanuaryV2ApproachBalance,
+  JANUARY_V2_APPROACH_BALANCE_SCHEMA_V1,
+  JANUARY_V2_APPROACH_SOURCE_PATH,
+} from "./january-v2-approach-balance";
+export type { JanuaryV2ApproachBalanceDocumentV1 } from "./january-v2-approach-balance";
 export { BALANCE_SOURCE_ROOT, loadBalanceSourceFiles } from "./balance-source-files";
 export type { LoadBalanceSourceFilesOptions } from "./balance-source-files";
 export {
