@@ -57,6 +57,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --reporter=silent
 
+      # Temporary read-only formatter output for this PR; remove after applying the diff.
+      - name: Print REF-02A2a canonical format diff
+        run: |
+          pnpm exec oxfmt balance/approach/january-1990-v2.jsonc packages/game-content-compiler/src/balance-set.ts packages/game-content-compiler/src/january-v2-approach-balance.ts tests/january-1990-v2-approach-balance.test.ts
+          git diff -- balance/approach/january-1990-v2.jsonc packages/game-content-compiler/src/balance-set.ts packages/game-content-compiler/src/january-v2-approach-balance.ts tests/january-1990-v2-approach-balance.test.ts
+
       - name: Run non-authoritative fast feedback
         run: pnpm check:fast
 
