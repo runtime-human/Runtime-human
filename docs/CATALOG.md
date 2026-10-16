@@ -3,7 +3,7 @@ title: "Runtime Human — полный каталог документации"
 type: index
 status: draft
 canon: false
-updated: 2026-10-15
+updated: 2026-10-16
 ---
 
 # Runtime Human — полный каталог документации
@@ -11,7 +11,7 @@ updated: 2026-10-15
 > Сгенерировано `node scripts/build-toc.mjs` из metadata документов. Не редактировать вручную.
 > Канонический навигационный вход и порядок источников истины: [INDEX.md](INDEX.md).
 
-Всего документов: **213**.
+Всего документов: **214**.
 
 ## Навигация
 
@@ -212,6 +212,7 @@ updated: 2026-10-15
 - [Repository Foundation design](superpowers/specs/2026-07-19-repository-foundation-design.md) — `draft`, `canon`
 - [Repository Foundation Implementation Plan](superpowers/plans/2026-07-19-repository-foundation.md) — `completed`, `canon`
 - [Roadmap](plans/ROADMAP.md) — `draft`, `canon`
+- [Runtime Human 2.0 — owner design decisions](plans/RUNTIME-HUMAN-2-DESIGN-DECISIONS.md) — `draft`, `non-canon`
 - [Runtime Human execution status and next gates](superpowers/plans/2026-07-22-runtime-human-execution-status.md) — `superseded`, `non-canon`
 - [Runtime Human Game Shell and Selective Sandwich Panels Design](superpowers/specs/2026-07-30-game-shell-selective-sandwich-panels-design.md) — `accepted`, `canon`
 - [Runtime Human integrated implementation roadmap](superpowers/plans/2026-07-22-runtime-human-integrated-roadmap.md) — `superseded`, `non-canon`
