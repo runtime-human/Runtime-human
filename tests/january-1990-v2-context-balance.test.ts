@@ -117,9 +117,8 @@ describe("REF-02A2b January v2 non-dominant context balance", () => {
       const parsed = compileJanuaryV2ContextBalance([changed]);
       if (parsed.kind !== "success") return parsed.diagnostics.map((d) => d.code);
       try {
-        const { schemaVersion: _schemaVersion, sliceId: _sliceId, ...contextModifiers } =
-          parsed.document;
-        assertJanuaryV2ApproachBalance(approaches, contextModifiers);
+        const { schemaVersion: _v, sliceId: _s, ...context } = parsed.document;
+        assertJanuaryV2ApproachBalance(approaches, context);
       } catch {
         return ["BAL006_APPROACH_SEMANTICS"];
       }
