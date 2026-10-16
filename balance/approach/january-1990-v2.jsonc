@@ -1,0 +1,37 @@
+// REF-02A2a: closed January v2 approach tuning.
+// Provisional design data only; not active MonthRun/save authority.
+// v1 balance sources and their fingerprints stay frozen.
+{
+  "schemaVersion": "approach-balance-v1",
+  "sliceId": "january-1990-v2",
+  "approaches": {
+    "investigate-first": {
+      "finishThreshold": 6,
+      "quality": "adequate",
+      "participation": "independent",
+      "cost": "completion-risk",
+      "learningValue": 2,
+    },
+    "ask-for-help": {
+      "finishThreshold": 9,
+      "quality": "adequate",
+      "participation": "assisted",
+      "cost": "assistance",
+      "learningValue": 1,
+    },
+    "reduce-scope": {
+      "finishThreshold": 10,
+      "quality": "basic",
+      "participation": "independent",
+      "cost": "known-limitation",
+      "learningValue": 0,
+    },
+    "defer-or-recover": {
+      "finishThreshold": 0,
+      "quality": "strong",
+      "participation": "independent",
+      "cost": "deferred-release",
+      "learningValue": 2,
+    },
+  },
+}

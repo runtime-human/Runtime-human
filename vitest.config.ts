@@ -77,6 +77,8 @@ export default defineConfig({
         "tests/january-1990-view-model.test.ts",
         "tests/january-1990-balance.test.ts",
         "tests/january-1990-balance-trace.test.ts",
+        "tests/january-1990-v2-approach-oracle.test.ts",
+        "tests/january-1990-v2-approach-balance.test.ts",
         "tests/january-1990-content-projection.test.ts",
         "tests/january-1990-simulation-properties.test.ts",
         "tests/january-1990-rng-shadow.test.ts",
