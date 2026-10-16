@@ -40,15 +40,42 @@ Other evaluated alternatives:
 
 **Risks / follow-up gates:** existing ADR authority; save and running MonthRun compatibility; concurrent stacked draft PRs; deterministic replay; state schema versioning; historical content provenance; precise decision/auto-advance behavior; accessibility and Russian UI; GitHub-hosted verification. The rollout requires explicit owner signoff and a separate implementation plan.
 
-## Decision 02 — advancement/time controls: PENDING
+## Decision 02 — advancement/time controls: SELECTED
 
-To be selected in the next owner question:
-- A: one explicit click for every month;
-- B: manual next month plus bounded fast-forward / until-next-meaningful-decision; simulation stops before a blocking choice (recommended candidate);
-- C: largely automatic play with periodic intervention;
-- D: realtime/offline-progress aging.
+**Question:** How should time pass and when must the game pause?
 
-The exact limits for consecutive months, whether nonblocking highlights interrupt acceleration, and autoplay policy are **not decided**.
+**Owner selection (2026-10-16): B — one month + smart fast-forward.**
+
+Other evaluated alternatives:
+- A — Exactly one manual click for each month.
+- C — Continuous autoplay with occasional interruptions.
+- D — Real-time / offline aging in the background.
+
+**Accepted player-facing behavior:**
+1. One simulated month remains the indivisible gameplay interval. The default action is **Next month**.
+2. Offer bounded convenience advances: **+3 months** and **Until next meaningful event/decision**. They run the same month logic, not a separate accelerated balance model. The earlier proposed **12-month cap** for "until event" is a **provisional UX/safety default**, not a separately approved balancing constant.
+3. Routine commitments (learning, project work, life obligations) continue without repeated monthly re-selection until changed, interrupted or completed.
+4. **Stop before any blocking choice**: never auto-select a choice or silently apply decision-specific effects. It is permitted to complete preceding months but not to finish the month awaiting the player's decision.
+5. Show a concise recap of completed quiet months and retain their chronology; do not hide important outcomes merely because fast-forward was used.
+6. No mandatory real-time auto-play and no passage of in-game time when the app is closed in v2's initial gameplay mode.
+7. Preserve one coherent, transparent player-facing action to continue after answering the pending choice.
+
+**Suggested implementation/acceptance semantics (requires follow-up architecture/spec acceptance, not production authority yet):**
+- `advanceMonth(state, choiceOrContinuation, scopedRng)` is the deterministic unit; a fast-forward command repeats it while eligible and stops at the first unresolved blocking decision, requested bound, or safe terminal/failure condition.
+- The blocking decision is materialized/persisted as pending **before** its month is finalized. Resume after the player's explicit selection; never consume additional randomness or reroll the offer just because UI reloads.
+- Fast-forward reports separately: requested bound, number of **completed** months, current displayed date, stop reason (`limit-reached`, `decision-required`, `end-of-content`, `blocked`) and chronology highlights.
+- A month containing only nonblocking information may proceed automatically while preserving its notable effects and narrative in the recap. Detailed stop-on-notable-event preferences remain **undecided**.
+- For a given starting save/seed and player decisions, consecutive single-month advances and smart fast-forward must produce equivalent canonical state, event IDs, chronology and PRNG evolution for every **completed** month. Repeated requests/retries must not duplicate credits or events.
+- The persistence boundary, save revision behavior, idempotency and crash recovery must be specified with Rust/SQLite ownership before implementation. Prefer atomic per-completed-month persistence so a cancelled/interrupted fast-forward cannot leave half a month committed; prove this with restart and interruption tests.
+- Controls should remain disabled/explicitly blocked if save recovery is required or a choice is pending. An existing active legacy v1 MonthRun must not be converted to this v2 flow in place.
+
+**Unresolved tuning, not owner decisions:** exact maximum fast-forward span and UX guard when no event is eligible (12 months suggested); whether nonblocking milestones also stop; whether repeated accelerate input is supported; how to summarize long quiet stretches; whether a dedicated pause/cancel button is necessary. These must be resolved with a playable test, not a general scheduling engine.
+
+**First focused acceptance fixtures:** sequential vs +3 vs until-event parity, event on first/second/third simulated month, event-free 12-month window, pending decision save/reload, repeated request IDs, mid-batch interruption/restart, and content-exhaustion/recovery stop.
+
+## Decision 03 — character state and attributes: PENDING
+
+Next owner question: compact character model and how much of it should be visible in normal UI. No option selected yet.
 
 ## Remaining decision sequence (tentative)
 
