@@ -11,6 +11,17 @@ export type {
 } from "./content-compatibility";
 export { compileContentSources } from "./compile-content-sources";
 export {
+  assertJanuaryV2PresentationDraft,
+  JANUARY_V2_PRESENTATION_DRAFT_VERSION,
+} from "./january-v2-presentation-draft";
+export type {
+  JanuaryV2DraftApproach,
+  JanuaryV2DraftMarker,
+  JanuaryV2MarkerAxis,
+  JanuaryV2MarkerPolarity,
+  JanuaryV2PresentationDraft,
+} from "./january-v2-presentation-draft";
+export {
   compileJanuaryV2ApproachBalance,
   JANUARY_V2_APPROACH_BALANCE_SCHEMA_V1,
   JANUARY_V2_APPROACH_SOURCE_PATH,
