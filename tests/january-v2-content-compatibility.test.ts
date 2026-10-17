@@ -1,0 +1,213 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+
+import { describe, expect, it } from "vitest";
+
+import {
+  assertIsolatedContentBuildNamespaces,
+  compileContentSources,
+  inspectProtectedContentChunks,
+  loadContentSourceFiles,
+  type ContentSourceFile,
+} from "@runtime-human/game-content-compiler";
+
+const LEGACY_ROOTS = [
+  "content/sources/technology",
+  "content/1990s/programming",
+  "content/1990s/ecosystem",
+] as const;
+const PROTECTED_CHUNKS = ["1990s/ecosystem", "1990s/programming"] as const;
+const LEGACY_MANIFEST_FINGERPRINT =
+  "02518cba1617689d4ada48e4624e6dfc96175c1b363132db38d8e738b819739f";
+
+const V2_PRESENTATION_PROBE: ContentSourceFile = {
+  path: "content/january-v2/presentation/first-bug.jsonc",
+  text: JSON.stringify({
+    schemaVersion: "content-source-v1",
+    id: "core.situation-presentation.january-1990-v2",
+    kind: "storylet",
+    domain: "programming-v2",
+    era: "1990s",
+    availableFrom: "1990-01",
+    entryPoint: true,
+    references: [],
+    provenance: [
+      {
+        sourceId: "runtime-human.january-1990-design",
+        title: "January v2 separate-bundle compatibility probe",
+      },
+    ],
+    payload: {
+      contentType: "january-v2-compatibility-probe",
+      // A test probe, NOT player-facing content or an accepted v2 schema.
+      purpose: "separate-compiled-content-namespace",
+    },
+  }),
+};
+
+async function legacyFiles(): Promise<readonly ContentSourceFile[]> {
+  return loadContentSourceFiles({
+    repositoryRoot: process.cwd(),
+    sourceRoots: LEGACY_ROOTS,
+  });
+}
+
+function bundle(files: readonly ContentSourceFile[]) {
+  const compiled = compileContentSources(files);
+  if (compiled.kind === "failure") {
+    throw new Error(JSON.stringify(compiled.diagnostics));
+  }
+  return compiled.bundle;
+}
+
+describe("REF-02B0 January v2 content compatibility gate", () => {
+  it("pins the deployed January v1 manifest and compiled chunk bytes", async () => {
+    const roots = JSON.parse(await readFile("content/content.config.json", "utf8")) as {
+      sourceRoots: string[];
+    };
+    expect(roots.sourceRoots).toEqual(LEGACY_ROOTS);
+
+    const baseline = bundle(await legacyFiles());
+    const manifest = JSON.parse(
+      await readFile("apps/desktop/public/content/manifest.json", "utf8"),
+    ) as { contentFingerprint: string };
+    expect(manifest.contentFingerprint).toBe(LEGACY_MANIFEST_FINGERPRINT);
+    expect(baseline.manifest.contentFingerprint).toBe(LEGACY_MANIFEST_FINGERPRINT);
+    expect(baseline.manifest).toEqual(manifest);
+    expect(baseline.manifest.chunks.map((chunk) => chunk.chunkId)).toEqual(PROTECTED_CHUNKS);
+
+    for (const chunkId of PROTECTED_CHUNKS) {
+      const path = `chunks/${chunkId}.json`;
+      const artifact = baseline.artifacts.find((entry) => entry.path === path);
+      expect(artifact, path).toBeDefined();
+      await expect(readFile(join("apps/desktop/public/content", path), "utf8")).resolves.toBe(
+        artifact?.json,
+      );
+    }
+  });
+
+  it("requires disjoint v1/v2 source and deployment namespaces before B1 publication", () => {
+    const legacyBuild = {
+      sourceRoots: LEGACY_ROOTS,
+      outputRoot: "apps/desktop/public/content",
+    } as const;
+    const isolatedV2 = {
+      sourceRoots: ["content/1990s/programming-v2"],
+      outputRoot: "apps/desktop/public/content-v2",
+    } as const;
+
+    // Prefixes alone must not create a false collision (programming != programming-v2).
+    expect(() => assertIsolatedContentBuildNamespaces(legacyBuild, isolatedV2)).not.toThrow();
+
+    const overlapping = [
+      {
+        sourceRoots: ["content/1990s/programming"],
+        outputRoot: "apps/desktop/public/content-v2",
+      },
+      {
+        sourceRoots: ["content/1990s"],
+        outputRoot: "apps/desktop/public/content-v2",
+      },
+      {
+        sourceRoots: ["content/1990s/programming/v2"],
+        outputRoot: "apps/desktop/public/content-v2",
+      },
+      {
+        sourceRoots: ["content/january-v2"],
+        outputRoot: "apps/desktop/public/content",
+      },
+      {
+        sourceRoots: ["content/january-v2"],
+        outputRoot: "apps/desktop/public/content/v2",
+      },
+      {
+        sourceRoots: ["content/january-v2"],
+        outputRoot: "apps/desktop/public",
+      },
+      {
+        sourceRoots: ["content/january-v2"],
+        outputRoot: "content/1990s/programming/generated",
+      },
+      {
+        sourceRoots: ["content/january-v2"],
+        outputRoot: "content/january-v2/generated",
+      },
+    ];
+    for (const config of overlapping) {
+      expect(() => assertIsolatedContentBuildNamespaces(legacyBuild, config)).toThrow(
+        /Content build (namespaces|additional source\/output) overlap/,
+      );
+    }
+
+    expect(() =>
+      assertIsolatedContentBuildNamespaces(legacyBuild, {
+        sourceRoots: ["content/january-v2"],
+        outputRoot: "../unsafe",
+      }),
+    ).toThrow("Content build outputRoot must be a normalized relative path");
+  });
+
+  it("proves a new domain preserves v1 chunk bytes but changes a combined manifest", async () => {
+    const legacy = await legacyFiles();
+    const baseline = bundle(legacy);
+    const augmented = bundle([...legacy, V2_PRESENTATION_PROBE]);
+    const inspection = inspectProtectedContentChunks(baseline, augmented, PROTECTED_CHUNKS);
+
+    expect(inspection.drifts).toEqual([]);
+    expect(inspection.protectedChunksPreserved).toBe(true);
+    expect(inspection.manifestFingerprintChanged).toBe(true);
+    expect(augmented.manifest.chunks.map((chunk) => chunk.chunkId)).toEqual([
+      ...PROTECTED_CHUNKS,
+      "1990s/programming-v2",
+    ]);
+    expect(augmented.manifest.contentFingerprint).not.toBe(LEGACY_MANIFEST_FINGERPRINT);
+
+    // Only a separate compilation can retain the deployed January v1 manifest.
+    const separateV2 = bundle([V2_PRESENTATION_PROBE]);
+    expect(separateV2.manifest.chunks.map((chunk) => chunk.chunkId)).toEqual([
+      "1990s/programming-v2",
+    ]);
+    expect(bundle(legacy).manifest.contentFingerprint).toBe(LEGACY_MANIFEST_FINGERPRINT);
+  });
+
+  it("fails closed when the protected programming chunk changes", async () => {
+    const legacy = await legacyFiles();
+    const changed = legacy.map((file) =>
+      file.path.endsWith("/situations/first-bug.jsonc")
+        ? {
+            ...file,
+            text: file.text.replace(
+              "First bug professional situation",
+              "Modified January bug situation",
+            ),
+          }
+        : file,
+    );
+    const inspection = inspectProtectedContentChunks(
+      bundle(legacy),
+      bundle(changed),
+      PROTECTED_CHUNKS,
+    );
+    expect(inspection).toEqual({
+      manifestFingerprintChanged: true,
+      protectedChunksPreserved: false,
+      drifts: [{ chunkId: "1990s/programming", reason: "bytes-changed" }],
+    });
+  });
+
+  it("rejects attempts to add v2 content to the existing programming chunk", async () => {
+    const legacy = await legacyFiles();
+    const baseline = bundle(legacy);
+    const wrongDomain: ContentSourceFile = {
+      ...V2_PRESENTATION_PROBE,
+      text: V2_PRESENTATION_PROBE.text.replace('"programming-v2"', '"programming"'),
+    };
+    const candidate = bundle([...legacy, wrongDomain]);
+    const inspection = inspectProtectedContentChunks(baseline, candidate, PROTECTED_CHUNKS);
+    expect(inspection.protectedChunksPreserved).toBe(false);
+    expect(inspection.drifts).toContainEqual({
+      chunkId: "1990s/programming",
+      reason: "bytes-changed",
+    });
+  });
+});
