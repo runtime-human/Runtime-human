@@ -1,5 +1,7 @@
 mod backup;
 mod backup_receipt;
+#[cfg(test)]
+mod bootstrap_observability_tests;
 mod checkpoint_integrity;
 pub(crate) mod commands;
 #[cfg(test)]

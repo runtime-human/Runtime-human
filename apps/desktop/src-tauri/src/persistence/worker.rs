@@ -165,69 +165,72 @@ impl PersistenceHandle {
         let worker_performance = performance.clone();
         let worker = thread::Builder::new()
             .name("runtime-human-sqlite".to_owned())
-            .spawn(move || match Database::open_or_create(&path) {
-                Ok(database) => {
-                    if database.recovery_status() == RecoveryStatus::UncleanButValid
-                        && database.verify_application_integrity().is_err()
-                    {
-                        drop(database);
-                        match Database::open_existing_read_only(&path) {
-                            Ok(read_only) => {
-                                if startup_sender.send(Ok(())).is_err() {
-                                    return read_only.close();
+            .spawn(move || {
+                match Database::open_or_create_with_performance(&path, worker_performance.clone()) {
+                    Ok(database) => {
+                        if database.recovery_status() == RecoveryStatus::UncleanButValid
+                            && database.verify_application_integrity().is_err()
+                        {
+                            drop(database);
+                            match Database::open_existing_read_only(&path) {
+                                Ok(read_only) => {
+                                    if startup_sender.send(Ok(())).is_err() {
+                                        return read_only.close();
+                                    }
+                                    return worker_loop(
+                                        read_only,
+                                        receiver,
+                                        &worker_queue_depth,
+                                        &worker_performance,
+                                        &backup_directory,
+                                        WorkerMode::RecoveryReadOnly,
+                                    );
                                 }
-                                return worker_loop(
-                                    read_only,
+                                Err(error) => {
+                                    let _startup_receiver_closed =
+                                        startup_sender.send(Err(error)).is_err();
+                                    return Ok(());
+                                }
+                            }
+                        }
+                        if startup_sender.send(Ok(())).is_err() {
+                            return database.close();
+                        }
+                        worker_loop(
+                            database,
+                            receiver,
+                            &worker_queue_depth,
+                            &worker_performance,
+                            &backup_directory,
+                            WorkerMode::Normal,
+                        )
+                    }
+                    Err(PersistenceError::IncompatibleSchema { found, supported }) => {
+                        match Database::open_existing_read_only(&path) {
+                            Ok(database) => {
+                                if startup_sender.send(Ok(())).is_err() {
+                                    return database.close();
+                                }
+                                worker_loop(
+                                    database,
                                     receiver,
                                     &worker_queue_depth,
                                     &worker_performance,
                                     &backup_directory,
-                                    WorkerMode::RecoveryReadOnly,
-                                );
+                                    WorkerMode::NewerSchemaReadOnly { found, supported },
+                                )
                             }
                             Err(error) => {
                                 let _startup_receiver_closed =
                                     startup_sender.send(Err(error)).is_err();
-                                return Ok(());
+                                Ok(())
                             }
                         }
                     }
-                    if startup_sender.send(Ok(())).is_err() {
-                        return database.close();
+                    Err(error) => {
+                        let _startup_receiver_closed = startup_sender.send(Err(error)).is_err();
+                        Ok(())
                     }
-                    worker_loop(
-                        database,
-                        receiver,
-                        &worker_queue_depth,
-                        &worker_performance,
-                        &backup_directory,
-                        WorkerMode::Normal,
-                    )
-                }
-                Err(PersistenceError::IncompatibleSchema { found, supported }) => {
-                    match Database::open_existing_read_only(&path) {
-                        Ok(database) => {
-                            if startup_sender.send(Ok(())).is_err() {
-                                return database.close();
-                            }
-                            worker_loop(
-                                database,
-                                receiver,
-                                &worker_queue_depth,
-                                &worker_performance,
-                                &backup_directory,
-                                WorkerMode::NewerSchemaReadOnly { found, supported },
-                            )
-                        }
-                        Err(error) => {
-                            let _startup_receiver_closed = startup_sender.send(Err(error)).is_err();
-                            Ok(())
-                        }
-                    }
-                }
-                Err(error) => {
-                    let _startup_receiver_closed = startup_sender.send(Err(error)).is_err();
-                    Ok(())
                 }
             })
             .map_err(|source| PersistenceError::io("starting the SQLite worker", source))?;
