@@ -3,7 +3,7 @@ title: "Runtime Human 2.0 — owner design decisions"
 type: plan
 status: draft
 canon: false
-updated: 2026-10-16
+updated: 2026-10-17
 ---
 
 # Runtime Human 2.0 — owner design decisions (work-in-progress)
@@ -73,13 +73,51 @@ Other evaluated alternatives:
 
 **First focused acceptance fixtures:** sequential vs +3 vs until-event parity, event on first/second/third simulated month, event-free 12-month window, pending decision save/reload, repeated request IDs, mid-batch interruption/restart, and content-exhaustion/recovery stop.
 
-## Decision 03 — character state and attributes: PENDING
+## Decision 03 — character state and attributes: SELECTED
 
-Next owner question: compact character model and how much of it should be visible in normal UI. No option selected yet.
+**Question:** How deep should the v2 character's non-professional life state be, and how should it appear in the UI?
+
+**Owner selection (2026-10-17): B — Compact Living Character Model.**
+
+Other evaluated alternatives:
+- A — Facts/events only, with almost no internal life variables.
+- C — Classic BitLife-style always-visible numerical health, happiness, intelligence, discipline, stress, money and relationships.
+- D — Rich RPG personality simulation with interacting needs, drives, routines and advanced social/physical systems.
+
+**Accepted user-facing requirements:**
+1. Keep identity, in-game date/age, current life circumstances, current commitments and relevant life history as compact, readable facts. The January 1990/age 12 start remains the established baseline.
+2. Allow **one or two salient personality traits**, expressed as human-readable descriptors (e.g., curious, persistent). They bias eligibility, approach and consequences of relevant events; they do **not** constitute a full personality engine.
+3. Permit exactly **three small internal life-state dimensions in the initial proposal**: **wellbeing**, **access to opportunities** (including equipment/time/context availability), and **financial stability**. Keep exact numerical scales, threshold tables and persistent-field representation **unfixed until v2 state/schema design and balancing**. Treat money amounts or expenses as future domain decisions rather than inferred from "financial stability".
+4. Normally present those states as **qualitative descriptions and situational facts** when they matter to the current decision, rather than exposing three permanent bars or a character-sheet dashboard.
+5. Distinguish **actual world facts** (e.g., "school PC available Wednesdays") from summaries of access or wellbeing. Facts are authoritative for event prerequisites where appropriate; an aggregate opportunity band must not arbitrarily replace concrete resources.
+6. Maintain a programmer-first game: technical skills, learning, projects, career and technology history are separate upcoming design decisions, **not** extra RPG stats introduced by this selection.
+7. Do not add autonomous needs loops for sleep, food, moods, hormones, daily schedules or comprehensive NPC simulation to MVP. Do not use numerical "intelligence" as an opaque gateway.
+8. Explain important state changes causally through the monthly result and chronology, including when hidden internal values affected a choice. Do not trap a young or low-resource character in permanent soft locks; meaningful recovery paths must exist.
+
+**Illustrative (not normative) March 1990 Normal UI:**
+- "Алексей, 12 лет · школьник".
+- "Любознательный, упорный".
+- "Самочувствие: в порядке".
+- "Компьютер: в школе по средам".
+- "Финансы: зависит от семьи".
+- Context: "Вы увлечены BASIC, но время за компьютером ограничено; можно учиться или попросить дополнительный доступ."
+
+**Architecture/acceptance direction (not implemented by this log):**
+- Prefer bounded, versioned `CharacterStateV2` and explicit world facts / event receipts, with derived `CharacterSummary` presentation projections. The schema, numeric calibration, updates and field-level ownership require a separate compatible design/ADR.
+- Only retain traits and internal life-state that change a current meaningful choice, progression, constraint or explained outcome. Life-state mutations happen with the completed month, not through independently running timers.
+- Golden fixtures should cover different initial equipment access, family financial context, wellbeing setbacks and trait combinations; a choice must cause a sensible outcome, and fast-forward must agree with individual month steps.
+- Test save/reload equivalence, bounded state updates, truthful qualitative bands, deterministic replay and availability of recovery choices after setbacks; no arbitrarily guaranteed outcomes from one personality trait.
+- Any character-name/identity schema change must be reconciled with accepted ADR-021 and the in-flight PROG-01 v2 save schema work; existing v1 states and pending MonthRuns remain untouched.
+
+**Explicitly unresolved:** trait acquisition/change rules, exact hidden numeric ranges, whether relationships are part of `CharacterStateV2` or event facts, family financial accounting, life/health event severity, UI details for age/trait discovery. Resolve through later design questions and playtests; none is implicitly accepted here.
+
+## Decision 04 — ongoing activities, learning and idle progression: PENDING
+
+Next owner question: whether a player controls one persistent focus, multiple lightweight commitments, or more detailed schedules; how routine progress should advance automatically. No option selected yet.
 
 ## Remaining decision sequence (tentative)
 
-After time controls: minimal saved character state; activities and routine automation; projects and skills; career; event selection and life/NPC depth; historical eras; UI/UX and accessibility; migration/legacy support; acceptance criteria and first playable years.
+After character state: activities and routine automation; projects and skills; career; event selection and life/NPC depth; historical eras; UI/UX and accessibility; migration/legacy support; acceptance criteria and first playable years.
 
 ## Acceptance before converting this draft to canonical architecture
 
