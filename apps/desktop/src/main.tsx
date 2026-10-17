@@ -8,6 +8,7 @@ import "./shell/game-shell.css";
 import "./shell/bottom-game-dock.css";
 import "./overview/career-overview.css";
 import "./january/january-runtime.css";
+import "./january/january-reference-stage.css";
 import { RUNTIME_RENDERER_MILESTONES } from "./performance/renderer-milestones.js";
 
 const rootElement = document.getElementById("root");
