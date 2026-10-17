@@ -3,7 +3,7 @@ title: "Runtime Human 2.0 — owner design decisions"
 type: plan
 status: draft
 canon: false
-updated: 2026-10-17
+updated: 2026-10-18
 ---
 
 # Runtime Human 2.0 — owner design decisions (work-in-progress)
@@ -111,13 +111,49 @@ Other evaluated alternatives:
 
 **Explicitly unresolved:** trait acquisition/change rules, exact hidden numeric ranges, whether relationships are part of `CharacterStateV2` or event facts, family financial accounting, life/health event severity, UI details for age/trait discovery. Resolve through later design questions and playtests; none is implicitly accepted here.
 
-## Decision 04 — ongoing activities, learning and idle progression: PENDING
+## Decision 04 — ongoing activities, learning and idle progression: SELECTED
 
-Next owner question: whether a player controls one persistent focus, multiple lightweight commitments, or more detailed schedules; how routine progress should advance automatically. No option selected yet.
+**Question:** How many ongoing activities should the player manage, and how does learning/work progress during the monthly idle loop?
+
+**Owner selection (2026-10-18): B — One Main Goal + Background Activities.**
+
+Other evaluated alternatives:
+- A — Exactly one ongoing action; no simultaneous side commitments.
+- C — Multiple equal goals controlled through ranked priorities.
+- D — Explicit division of time across study, coding, work, relationships and rest.
+
+**Accepted player-facing requirements:**
+1. Set **one main goal** expressing what the character is actively working toward (e.g. `Learn BASIC` or `Build a small game`). The main goal persists automatically month-to-month until the player changes it, the goal completes, becomes inapplicable, or a meaningful interruption requires attention. It is not reselected each month.
+2. Allow **up to two optional background activities**, e.g. school computing club and keeping in touch with a classmate. They also persist as ongoing commitments until removed, ended or blocked by life circumstances. The player need not fill both slots.
+3. Ordinary life obligations (school, later employment, basic household context) continue automatically as **life context**, not as extra player-configurable micromanagement slots. Do not silently convert a mandatory job or school into a free-time main goal.
+4. Routine advancement consumes simulated months only on the explicit Next Month / +3 Months / Until Event actions decided in Decision 02. No offline aging, wall-clock timers, daily schedules, idle tapping or repeated progress clicking.
+5. Learning should produce **qualitative, causal capability changes** (e.g. understanding a concept, practicing it, applying it in a working program), not XP farming or generic productivity/learning bars. Technical skill hierarchy, difficulty and evidence accounting are separate later design decisions; no new skill/proficiency schema is approved here.
+6. Time and resource constraints should be meaningful but **lightweight and explainable**. School/work obligations, equipment access and wellbeing can limit the progress of optional activities. Do not allow unlimited full-speed progress on three pursuits at once, but avoid minute-by-minute budgets or punitive efficiency management.
+7. Goal completion, loss of equipment, meaningful opportunity, major setback or a blocking event can offer a new decision. Auto-advance must stop **before** that decision, never make a consequential replacement choice automatically. When the player is not required to choose, life continues and completed/affected activities are accurately summarized.
+8. UI default is one prominent **Main Goal** line/card, up to two small **Background Activities** entries, optional change/stop actions, and a brief recap of the month's actual progress. Do not put a timetable, three concurrent progress bars or an activity-management dashboard on the main game page.
+9. Historical equipment/technology access gates remain authoritative. Example: school computer available only on Wednesdays is a world fact that limits real programming practice; the UI can report the reason, not merely a hidden numeric penalty.
+10. Never deadlock gameplay when a goal completes or becomes unavailable: show its outcome, provide a clear chance to pick another goal, and preserve the idle option to continue ordinary life where meaningful.
+
+**Illustrative month (not normative content or fixed tuning):**
+- March 1990: main goal — `Изучать BASIC`; background — `Компьютерный кружок`, `Общаться с Сергеем`; mandatory school continues automatically.
+- During the month, the player learns input/variables, gains practical access at the club, and may strengthen a friendship without scheduling each school day. If access is limited, state the limitation and preserve a reasonable partial outcome.
+- Three-month fast-forward repeats the **same monthly updates**; if the instructor offers a meaningful competition entry, execution halts before choosing to enter.
+
+**Suggested core responsibilities (non-canonical implementation direction):**
+- Store references to a single active main goal and a bounded list of up to two distinct, valid background commitments, plus optional compact progress evidence where directly required. Avoid persistent activity graphs or parallel full scheduling engines.
+- A deterministic month update should reconcile current obligations/context, eligible goal progress, background results, new opportunities/decisions and the monthly chronicle. Exact sequencing, resource allocation/scales and RNG partitioning remain open until a v2 state-machine ADR; do not assert an implementation-ready formula here.
+- If a goal is invalidated mid-month, explicitly report whether it progressed partially or stopped, and ensure pause/resume or save/reload cannot accidentally double-award progress.
+- Preserve determinism across individual vs batched month processing (Decision 02) including interruption on month 1/2/3, goal completion on a boundary, club termination, lost computer access, and no-background-activity cases.
+
+**Deferred tuning and decisions:** slot occupancy limits may be revised after playtests; how many options are offered when a goal completes; whether focus can change outside the month boundary; explicit pause vs replacement of a goal; which commitments use a shared time-pressure model; schooling/employment scheduling; how skill evidence and projects interact; text density in the monthly recap. Do not decide these implicitly.
+
+## Decision 05 — programmer projects, progress, completion and long-term consequences: PENDING
+
+Next owner question: choose the depth of the projects system, including how projects are started, completed and remembered. No option selected yet.
 
 ## Remaining decision sequence (tentative)
 
-After character state: activities and routine automation; projects and skills; career; event selection and life/NPC depth; historical eras; UI/UX and accessibility; migration/legacy support; acceptance criteria and first playable years.
+After activities and routine automation: projects and skills; career; event selection and life/NPC depth; historical eras; UI/UX and accessibility; migration/legacy support; acceptance criteria and first playable years.
 
 ## Acceptance before converting this draft to canonical architecture
 
