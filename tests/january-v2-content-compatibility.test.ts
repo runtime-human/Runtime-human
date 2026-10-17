@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
+  assertIsolatedContentBuildNamespaces,
   compileContentSources,
   inspectProtectedContentChunks,
   loadContentSourceFiles,
@@ -83,6 +84,67 @@ describe("REF-02B0 January v2 content compatibility gate", () => {
         artifact?.json,
       );
     }
+  });
+
+  it("requires disjoint v1/v2 source and deployment namespaces before B1 publication", () => {
+    const legacyBuild = {
+      sourceRoots: LEGACY_ROOTS,
+      outputRoot: "apps/desktop/public/content",
+    } as const;
+    const isolatedV2 = {
+      sourceRoots: ["content/1990s/programming-v2"],
+      outputRoot: "apps/desktop/public/content-v2",
+    } as const;
+
+    // Prefixes alone must not create a false collision (programming != programming-v2).
+    expect(() => assertIsolatedContentBuildNamespaces(legacyBuild, isolatedV2)).not.toThrow();
+
+    const overlapping = [
+      {
+        sourceRoots: ["content/1990s/programming"],
+        outputRoot: "apps/desktop/public/content-v2",
+      },
+      {
+        sourceRoots: ["content/1990s"],
+        outputRoot: "apps/desktop/public/content-v2",
+      },
+      {
+        sourceRoots: ["content/1990s/programming/v2"],
+        outputRoot: "apps/desktop/public/content-v2",
+      },
+      {
+        sourceRoots: ["content/january-v2"],
+        outputRoot: "apps/desktop/public/content",
+      },
+      {
+        sourceRoots: ["content/january-v2"],
+        outputRoot: "apps/desktop/public/content/v2",
+      },
+      {
+        sourceRoots: ["content/january-v2"],
+        outputRoot: "apps/desktop/public",
+      },
+      {
+        sourceRoots: ["content/january-v2"],
+        outputRoot: "content/1990s/programming/generated",
+      },
+      {
+        sourceRoots: ["content/january-v2"],
+        outputRoot: "content/january-v2/generated",
+      },
+    ];
+    for (const config of overlapping) {
+      expect(() => assertIsolatedContentBuildNamespaces(legacyBuild, config)).toThrow(
+        /Content build (namespaces|additional source\/output) overlap/,
+      );
+    }
+
+    expect(() =>
+      assertIsolatedContentBuildNamespaces(legacyBuild, {
+        sourceRoots: ["content/january-v2"],
+        outputRoot: "../unsafe",
+      }),
+    ).toThrow("Content build outputRoot must be a normalized relative path");
   });
 
   it("proves a new domain preserves v1 chunk bytes but changes a combined manifest", async () => {
