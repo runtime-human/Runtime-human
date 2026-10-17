@@ -127,6 +127,30 @@ Russian strings, marker truthfulness checks and a typed read model.
 
 ## REF-02B — Approach content в compiled content + dominance/truthfulness-валидаторы
 
+### REF-02B1a — isolated presentation truthfulness preflight (staged)
+
+Первый ограниченный шаг после REF-02B0: `assertJanuaryV2PresentationDraft`
+в `game-content-compiler`. Он принимает **только авторский черновик**
+четырёх доступных approach cards; выполняет closed-field, ID/order,
+RU-preview lexical и ≤2-маркерную проверки и доказывает консервативный
+набор `axis × polarity` утверждений по REF-02A outcome oracle
+(8 declared contexts × 10 rolls, caller-supplied compiled balance).
+Неизмеряемые claims, включая `scope/gain`, отклоняются. Для
+`finish-chance` сравнение `gain` идёт с `investigate-first`,
+а `cost` — с `ask-for-help`; другие словесные интерпретации
+без дополнительного предиката не сертифицированы. `quality/gain`
+допускает сильное качество отложенного результата, но **не**
+означает состоявшийся выпуск и требует редакторского source review.
+
+**Важно:** B1a не подключён к `compileContentSources` и не публикует v2
+контент. Перед включением January v2 необходимо создать отдельный
+v2 source-root/output namespace, schema+localization+provenance,
+скомпилированные записи и обязательный compiler gate; сохранить
+отдельно опубликованный v1 manifest из B0, а также реализовать
+`DecisionReadModel`, листинги и их историческую проверку.
+Успешный тест B1a **не** является acceptance всего REF-02B.
+
+
 **Скилл/зона:** `runtime-content`, зона `content` (+ `application` для read model).
 
 ### Scope
