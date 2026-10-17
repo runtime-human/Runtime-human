@@ -57,3 +57,44 @@ function requireNormalizedPath(value: unknown, message: string): string {
   }
   return value;
 }
+
+/**
+ * REF-02B0: the new January v2 bundle must never read the legacy bundle's
+ * sources or publish over its files. Paths are repository-relative and
+ * compared on segment boundaries (so "programming" and "programming-v2"
+ * are distinct). Both configs are parsed again to fail closed on invalid
+ * paths, even when supplied by programmatic callers.
+ *
+ * This is a preflight for REF-02B1's dual-bundle build. It does not change
+ * the legacy compiler configuration or publish v2 content.
+ */
+export function assertIsolatedContentBuildNamespaces(
+  legacy: ContentBuildConfig,
+  additional: ContentBuildConfig,
+): void {
+  const oldBuild = parseContentBuildConfig(legacy);
+  const newBuild = parseContentBuildConfig(additional);
+  const pathOverlaps = (left: string, right: string): boolean =>
+    left === right || left.startsWith(`${right}/`) || right.startsWith(`${left}/`);
+
+  for (const [label, build] of [
+    ["legacy", oldBuild],
+    ["additional", newBuild],
+  ] as const) {
+    for (const sourceRoot of build.sourceRoots) {
+      if (pathOverlaps(sourceRoot, build.outputRoot)) {
+        throw new TypeError(
+          `Content build ${label} source/output overlap: ${sourceRoot} / ${build.outputRoot}`,
+        );
+      }
+    }
+  }
+
+  for (const oldPath of [...oldBuild.sourceRoots, oldBuild.outputRoot]) {
+    for (const newPath of [...newBuild.sourceRoots, newBuild.outputRoot]) {
+      if (pathOverlaps(oldPath, newPath)) {
+        throw new TypeError(`Content build namespaces overlap: ${oldPath} / ${newPath}`);
+      }
+    }
+  }
+}
