@@ -37,7 +37,7 @@ export type {
   SkillEvidenceBalanceDocumentV1,
   ValidatedBalanceDocumentV1,
 } from "./balance-set";
-export { parseContentBuildConfig } from "./content-build-config";
+export { assertIsolatedContentBuildNamespaces, parseContentBuildConfig } from "./content-build-config";
 export type { ContentBuildConfig } from "./content-build-config";
 export { projectContentCatalog } from "./content-catalog-projection";
 export type {
