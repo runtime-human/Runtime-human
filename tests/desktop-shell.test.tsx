@@ -58,6 +58,33 @@ describe("DesktopShell", () => {
     );
   });
 
+  it("accepts feature-owned presentation-only rail slots", () => {
+    render(
+      <DesktopShell
+        breadcrumb="Обзор карьеры"
+        contextRail={<div>Контекст из CareerOverviewView</div>}
+        era="Персональные компьютеры"
+        navigation={navigation}
+        playerRail={<div>Сводка из CareerOverviewView</div>}
+        profile="Локальная карьера"
+        status={<strong>Состояние сохранено</strong>}
+      >
+        <section>Содержимое обзора</section>
+      </DesktopShell>,
+    );
+
+    const playerRail = screen.getByRole("complementary", { name: "Состояние персонажа" });
+    const contextRail = screen.getByRole("complementary", { name: "Контекст игры" });
+
+    expect(playerRail).toHaveTextContent("Сводка из CareerOverviewView");
+    expect(playerRail).not.toHaveTextContent("Локальная карьера");
+    expect(contextRail).toHaveTextContent("Контекст из CareerOverviewView");
+    expect(contextRail).not.toHaveTextContent("Персональные компьютеры");
+    expect(screen.getByRole("status", { name: "Состояние сохранения" })).toHaveTextContent(
+      "Состояние сохранено",
+    );
+  });
+
   it("intercepts an unmodified route click for application navigation", () => {
     const onNavigate = vi.fn();
     render(

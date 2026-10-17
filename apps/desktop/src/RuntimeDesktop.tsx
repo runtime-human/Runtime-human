@@ -2,7 +2,11 @@ import { JanuaryRuntimeScreen } from "./january/JanuaryRuntimeScreen";
 import { JanuarySaveStatus } from "./january/JanuarySaveStatus";
 import type { JanuarySessionState } from "./january/use-january-session";
 import { projectCareerOverviewView } from "./overview/career-overview-model";
-import { CareerOverviewScreen } from "./overview/CareerOverviewScreen";
+import {
+  CareerOverviewContextRail,
+  CareerOverviewPlayerRail,
+  CareerOverviewScreen,
+} from "./overview/CareerOverviewScreen";
 import {
   hrefForDesktopRoute,
   type DesktopRoute,
@@ -26,15 +30,18 @@ const PLANNED_NAVIGATION = Object.freeze<readonly DesktopNavigationItem[]>([
 export function RuntimeDesktop({ route, navigate, session }: RuntimeDesktopProps) {
   const navigation = buildNavigation(route.id);
   const currentMonth = route.id === "current-month";
+  const overviewView = projectCareerOverviewView(session.view);
 
   return (
     <DesktopShell
       breadcrumb={currentMonth ? "Январь 1990" : "Обзор карьеры"}
+      contextRail={currentMonth ? undefined : <CareerOverviewContextRail view={overviewView} />}
       era="Персональные компьютеры"
       navigation={navigation}
       onNavigate={(id) => {
         if (isDesktopRouteId(id)) navigate(id);
       }}
+      playerRail={currentMonth ? undefined : <CareerOverviewPlayerRail view={overviewView} />}
       profile="Локальная карьера"
       status={
         <>
@@ -55,7 +62,7 @@ export function RuntimeDesktop({ route, navigate, session }: RuntimeDesktopProps
         <CareerOverviewScreen
           onOpenCurrentMonth={() => navigate("current-month")}
           onRetry={() => void session.retry()}
-          view={projectCareerOverviewView(session.view)}
+          view={overviewView}
         />
       )}
     </DesktopShell>

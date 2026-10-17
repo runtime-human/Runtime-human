@@ -10,7 +10,11 @@ import {
   parseSaveRevision,
 } from "@runtime-human/game-schema";
 
-import { CareerOverviewScreen } from "../apps/desktop/src/overview/CareerOverviewScreen";
+import {
+  CareerOverviewContextRail,
+  CareerOverviewPlayerRail,
+  CareerOverviewScreen,
+} from "../apps/desktop/src/overview/CareerOverviewScreen";
 
 const saveId = parseSaveId("career-overview-screen-save");
 const runId = parseMonthRunId("career-overview-screen-run");
@@ -126,5 +130,49 @@ describe("CareerOverviewScreen", () => {
     expect(screen.getByText("Ответ хранилища не получен.")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Повторить безопасно" }));
     expect(onRetry).toHaveBeenCalledOnce();
+  });
+
+  it("projects only existing CareerOverviewView facts into the player and context rails", () => {
+    const view = {
+      kind: "active-month",
+      month: "1990-01",
+      stage: "learning",
+      progress: 52,
+      saveId,
+      runId,
+      runRevision: parseMonthRunRevision(4),
+    } as const;
+
+    const { container } = render(
+      <>
+        <CareerOverviewPlayerRail view={view} />
+        <CareerOverviewContextRail view={view} />
+      </>,
+    );
+
+    expect(screen.getByRole("region", { name: "Кратко о карьере" })).toHaveTextContent(
+      "Январь 1990",
+    );
+    expect(screen.getByRole("region", { name: "Контекст обзора" })).toHaveTextContent("Практика");
+    expect(screen.getByRole("region", { name: "Контекст обзора" })).toHaveTextContent("52%");
+    expect(container).not.toHaveTextContent(/зарплат|salary|XP|productivity|репутац/iu);
+  });
+
+  it("keeps the blocking reason directly visible in the scene", () => {
+    render(
+      <CareerOverviewScreen
+        onOpenCurrentMonth={() => undefined}
+        onRetry={() => undefined}
+        view={{
+          kind: "blocked",
+          reason: "corrupted-checkpoint",
+          message: "Сохранённый прогресс повреждён и требует проверки.",
+        }}
+      />,
+    );
+
+    expect(screen.getByRole("heading", { name: "Требуется проверка" })).toBeInTheDocument();
+    expect(screen.getByText("Сохранённый прогресс повреждён и требует проверки.")).toBeVisible();
+    expect(screen.getByText("Сохранённый прогресс повреждён")).toBeVisible();
   });
 });

@@ -1,76 +1,79 @@
 .career-overview {
   display: grid;
-  width: min(var(--content-max), 100%);
-  grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.38fr);
-  gap: var(--space-5);
-  margin: 0 auto;
-  padding: var(--stage-gutter);
-}
-
-.career-overview-hero,
-.career-overview-note {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
+  width: 100%;
+  min-height: 100%;
+  padding: var(--game-stage-gutter);
+  background: var(--game-bg);
 }
 
 .career-overview-hero {
   display: flex;
-  min-height: 38rem;
+  min-width: 0;
+  min-height: 100%;
   flex-direction: column;
-  padding: clamp(2rem, 5vw, 4.5rem);
+  padding: clamp(1.5rem, 3.6vw, 3.5rem);
+  border: 1px solid var(--game-border);
+  border-radius: var(--game-radius-panel);
+  background: var(--game-surface-1);
+  box-shadow: var(--game-shadow-panel);
+}
+
+.career-overview-heading {
+  display: grid;
+  gap: var(--space-3);
 }
 
 .career-overview-eyebrow {
   margin: 0;
-  color: var(--meta);
-  font-size: var(--text-xs);
+  color: var(--game-muted);
+  font-size: var(--game-text-caption);
   font-weight: 800;
-  letter-spacing: var(--tracking-label);
+  letter-spacing: var(--game-tracking-label);
   text-transform: uppercase;
 }
 
 .career-overview h1 {
-  max-width: 11ch;
-  margin: clamp(1.5rem, 5vh, 3.5rem) 0 0;
-  color: var(--fg);
-  font-family: var(--font-display);
-  font-size: clamp(3rem, 7vw, var(--text-4xl));
-  font-weight: 550;
-  letter-spacing: var(--tracking-display);
-  line-height: var(--leading-tight);
+  max-width: 14ch;
+  margin: 0;
+  color: var(--game-fg);
+  font-family: var(--game-font-display);
+  font-size: clamp(2rem, 4vw, var(--game-text-display));
+  font-weight: 600;
+  letter-spacing: var(--game-tracking-display);
+  line-height: var(--game-leading-tight);
 }
 
 .career-overview-state {
   display: flex;
+  min-width: 0;
   flex: 1;
   flex-direction: column;
-  margin-top: var(--space-10);
+  margin-top: clamp(1.5rem, 4vh, 3rem);
   padding-top: var(--space-6);
-  border-top: 1px solid var(--border-soft);
+  border-top: 1px solid var(--game-border-soft);
 }
 
 .career-overview-state--warning {
-  border-top-color: color-mix(in oklab, var(--warn), var(--border-soft) 65%);
+  border-top-color: color-mix(in oklab, var(--game-warning), var(--game-border-soft) 62%);
 }
 
 .career-overview-state--error {
-  border-top-color: color-mix(in oklab, var(--danger), var(--border-soft) 65%);
+  border-top-color: color-mix(in oklab, var(--game-danger), var(--game-border-soft) 62%);
 }
 
 .career-overview-state h2 {
   margin: 0;
-  color: var(--fg-2);
-  font-size: clamp(var(--text-xl), 3vw, var(--text-2xl));
-  line-height: var(--leading-tight);
+  color: var(--game-fg);
+  font-size: clamp(var(--game-text-section), 2.2vw, var(--game-text-title));
+  line-height: var(--game-leading-tight);
 }
 
 .career-overview-state > p {
   max-width: 58ch;
   margin: var(--space-4) 0 0;
-  color: var(--muted);
-  font-size: clamp(var(--text-base), 1.35vw, var(--text-lg));
-  line-height: var(--leading-body);
+  color: var(--game-fg-2);
+  font-size: var(--game-text-body);
+  line-height: var(--game-leading-body);
 }
 
 .career-overview-facts {
@@ -78,12 +81,13 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-5);
   margin-top: auto;
-  padding-top: var(--space-10);
+  padding-top: var(--space-8);
 }
 
 .career-overview-facts > div {
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--border-soft);
+  min-width: 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--game-border-soft);
 }
 
 .career-overview-facts span,
@@ -92,17 +96,17 @@
 }
 
 .career-overview-facts span {
-  color: var(--meta);
-  font-size: var(--text-xs);
-  letter-spacing: 0.04em;
+  color: var(--game-muted);
+  font-size: var(--game-text-caption);
+  letter-spacing: var(--game-tracking-label);
   text-transform: uppercase;
 }
 
 .career-overview-facts strong {
   margin-top: var(--space-2);
-  color: var(--fg-2);
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
+  color: var(--game-fg-2);
+  font-size: var(--game-text-small);
+  font-weight: 650;
 }
 
 .career-overview-progress-block,
@@ -116,22 +120,22 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  color: var(--fg-2);
-  font-size: var(--text-sm);
+  color: var(--game-fg-2);
+  font-size: var(--game-text-small);
 }
 
 .career-overview-progress-copy strong,
 .career-overview-quality-item strong {
-  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 .career-overview-progress,
 .career-overview-quality-track {
   overflow: hidden;
-  height: 0.45rem;
+  height: 0.4rem;
   margin-top: var(--space-2);
-  border-radius: var(--radius-pill);
-  background: var(--surface-subtle);
+  border-radius: var(--game-radius-pill);
+  background: var(--game-surface-3);
 }
 
 .career-overview-progress > span,
@@ -139,101 +143,143 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: var(--accent);
+  background: var(--game-accent);
 }
 
 .career-overview-quality {
   display: grid;
-  gap: var(--space-5);
+  gap: var(--space-4);
 }
 
 .career-overview-action {
   display: inline-flex;
+  width: min(100%, 22rem);
+  min-height: 2.75rem;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-8);
-  width: min(100%, 22rem);
   margin-top: var(--space-8);
-  padding: 0.95rem var(--space-5);
-  border: 1px solid var(--accent);
-  border-radius: var(--radius-md);
-  color: var(--accent-on);
-  background: var(--accent);
+  padding: 0.8rem var(--space-5);
+  border: 1px solid var(--game-accent);
+  border-radius: var(--game-radius-control);
+  color: var(--game-accent-on);
+  background: var(--game-accent);
   font-weight: 800;
   cursor: pointer;
   transition:
-    transform var(--motion-fast) var(--ease-standard),
-    background var(--motion-fast) var(--ease-standard);
+    transform var(--game-motion-fast) var(--game-ease-standard),
+    background var(--game-motion-fast) var(--game-ease-standard);
 }
 
 .career-overview-action:hover {
-  transform: translateY(-0.12rem);
-  background: var(--accent-hover);
+  transform: translateY(-0.1rem);
+  background: var(--game-accent-hover);
 }
 
 .career-overview-action:active {
-  transform: translateY(0.08rem);
-  background: var(--accent-active);
+  transform: translateY(0.05rem);
+  background: var(--game-accent-active);
 }
 
 .career-overview-action:focus-visible {
   outline: none;
-  box-shadow: var(--focus-ring);
+  box-shadow: var(--game-shadow-focus);
 }
 
-.career-overview-note {
-  align-self: start;
-  padding: var(--space-6);
+.career-overview-rail {
+  display: grid;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  align-content: start;
+  gap: var(--space-5);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: var(--game-stage-gutter);
+  scrollbar-gutter: stable;
 }
 
-.career-overview-note span,
-.career-overview-note strong {
-  display: block;
+.career-overview-rail-heading {
+  display: grid;
+  gap: var(--space-2);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--game-border-soft);
 }
 
-.career-overview-note span {
-  color: var(--meta);
-  font-size: var(--text-xs);
-  letter-spacing: var(--tracking-label);
+.career-overview-rail-heading span,
+.career-overview-rail-list dt {
+  color: var(--game-muted);
+  font-size: var(--game-text-caption);
+  letter-spacing: var(--game-tracking-label);
   text-transform: uppercase;
 }
 
-.career-overview-note strong {
-  margin-top: var(--space-3);
-  color: var(--fg-2);
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
+.career-overview-rail-heading strong {
+  color: var(--game-fg);
+  font-family: var(--game-font-display);
+  font-size: var(--game-text-section);
+  font-weight: 650;
+  line-height: var(--game-leading-tight);
 }
 
-.career-overview-note p {
-  margin: var(--space-4) 0 0;
-  color: var(--muted);
-  font-size: var(--text-sm);
-  line-height: var(--leading-body);
+.career-overview-rail-list {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
 }
 
-@media (max-width: 980px) {
-  .career-overview {
-    grid-template-columns: 1fr;
-  }
+.career-overview-rail-list > div {
+  display: grid;
+  gap: var(--space-1);
+}
 
+.career-overview-rail-list dt,
+.career-overview-rail-list dd {
+  margin: 0;
+}
+
+.career-overview-rail-list dd {
+  overflow-wrap: anywhere;
+  color: var(--game-fg-2);
+  font-size: var(--game-text-small);
+  font-weight: 650;
+  line-height: var(--game-leading-body);
+}
+
+.career-overview-rail-copy {
+  margin: 0;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--game-border-soft);
+  color: var(--game-muted);
+  font-size: var(--game-text-small);
+  line-height: var(--game-leading-body);
+}
+
+@media (max-width: 1360px) {
   .career-overview-hero {
-    min-height: 32rem;
+    padding: var(--space-6);
+  }
+
+  .career-overview-facts {
+    gap: var(--space-4);
   }
 }
 
-@media (max-width: 520px) {
-  .career-overview-facts {
-    grid-template-columns: 1fr;
-  }
-
-  .career-overview h1 {
-    font-size: clamp(2.6rem, 16vw, 4rem);
+@media (forced-colors: active) {
+  .career-overview-action:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+    box-shadow: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .career-overview-action {
     transition: none;
+  }
+
+  .career-overview-action:hover,
+  .career-overview-action:active {
+    transform: none;
   }
 }
