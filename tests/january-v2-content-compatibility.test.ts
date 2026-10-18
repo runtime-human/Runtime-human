@@ -205,6 +205,8 @@ describe("REF-02B0 January v2 content compatibility gate", () => {
       "content/COM1.tmp",
       "content/LPT².log",
       "content/bad?name",
+      "content/bad\\u001f",
+      "content/bad\\u0000",
       "content/cafe\u0301",
     ]) {
       expect(() =>
