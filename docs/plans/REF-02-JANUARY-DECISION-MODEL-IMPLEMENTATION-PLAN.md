@@ -119,7 +119,20 @@ chunks in an augmented build, and negative cases for legacy byte drift.
 from manifest compatibility. January v1 `content/content.config.json`,
 published artifacts and golden fixtures remain unchanged.
 
-B0 additionally exports `assertIsolatedContentBuildNamespaces(legacy, additional)` for\nB1's dual-bundle preflight. It fails closed for overlapping source roots,\noverlapping output roots, or source/output intersections across builds\n(including parent/child paths); sibling names like `programming` and\n`programming-v2` remain valid. Negative tests cover deployed v1 output\nclobber and unsafe nested roots. This helper is **not yet wired into a\nproduction v2 publisher**; B1 must invoke it before any v2 write.\n\nThe v2 scenario owner must bind a **separate v2 manifest fingerprint**
+B0 additionally exports `assertIsolatedContentBuildNamespaces(legacy, additional)`
+for REF-02B1's dual-bundle preflight. The guard rejects overlapping source
+roots, overlapping output roots, and source/output intersections between
+builds, including ancestor/descendant paths and Windows case-insensitive
+aliases. It also rejects non-portable Windows path spellings (trailing dots
+or spaces, reserved device names, invalid characters, and non-NFC segments).
+Distinct sibling names such as `programming` and `programming-v2` remain
+valid. Negative tests cover deployed v1 output clobber, nested source
+roots and case-folded aliases.
+
+This is **not yet wired into a production v2 publisher**; REF-02B1 must
+invoke the guard before a dual-bundle write.
+
+The v2 scenario owner must bind a **separate v2 manifest fingerprint**
 during REF-02C before activation. A passing chunk check alone does
 not prove saved-checkpoint compatibility. This unmerged Draft B0 result
 is not accepted production content; REF-02B1 must still add source-backed
