@@ -78,9 +78,7 @@ export function assertIsolatedContentBuildNamespaces(
     const oldPath = windowsContentNamespaceKey(left);
     const newPath = windowsContentNamespaceKey(right);
     return (
-      oldPath === newPath ||
-      oldPath.startsWith(`${newPath}/`) ||
-      newPath.startsWith(`${oldPath}/`)
+      oldPath === newPath || oldPath.startsWith(`${newPath}/`) || newPath.startsWith(`${oldPath}/`)
     );
   };
 
