@@ -74,8 +74,15 @@ export function assertIsolatedContentBuildNamespaces(
 ): void {
   const oldBuild = parseContentBuildConfig(legacy);
   const newBuild = parseContentBuildConfig(additional);
-  const pathOverlaps = (left: string, right: string): boolean =>
-    left === right || left.startsWith(`${right}/`) || right.startsWith(`${left}/`);
+  const pathOverlaps = (left: string, right: string): boolean => {
+    const oldPath = windowsContentNamespaceKey(left);
+    const newPath = windowsContentNamespaceKey(right);
+    return (
+      oldPath === newPath ||
+      oldPath.startsWith(`${newPath}/`) ||
+      newPath.startsWith(`${oldPath}/`)
+    );
+  };
 
   for (const [label, build] of [
     ["legacy", oldBuild],
@@ -97,4 +104,28 @@ export function assertIsolatedContentBuildNamespaces(
       }
     }
   }
+}
+
+/**
+ * The desktop publisher runs on Windows. Treat source and output paths as
+ * case-insensitive namespaces even when tests execute on a case-sensitive
+ * host. Reject ambiguous Win32 path spellings instead of relying on the host
+ * filesystem: trailing dots/spaces, device names, and invalid path characters
+ * can cause an apparent sibling to alias an existing directory.
+ *
+ * Both sides must use NFC spelling; the comparison is intentionally
+ * conservative and does not create or inspect filesystem paths.
+ */
+function windowsContentNamespaceKey(path: string): string {
+  for (const segment of path.split("/")) {
+    if (
+      segment !== segment.normalize("NFC") ||
+      /[. ]$/u.test(segment) ||
+      /[\u0000-\u001f<>:"|?*]/u.test(segment) ||
+      /^(?:con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])(?:\..*)?$/iu.test(segment)
+    ) {
+      throw new TypeError(`Content build namespace path is not Windows-portable: ${path}`);
+    }
+  }
+  return path.toLowerCase();
 }
