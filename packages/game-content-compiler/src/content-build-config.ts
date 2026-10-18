@@ -119,7 +119,8 @@ function windowsContentNamespaceKey(path: string): string {
     if (
       segment !== segment.normalize("NFC") ||
       /[. ]$/u.test(segment) ||
-      /[\u0000-\u001f<>:"|?*]/u.test(segment) ||
+      [...segment].some((character) => (character.codePointAt(0) ?? 0) < 0x20) ||
+      /[<>:"|?*]/u.test(segment) ||
       /^(?:con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])(?:\..*)?$/iu.test(segment)
     ) {
       throw new TypeError(`Content build namespace path is not Windows-portable: ${path}`);
