@@ -119,7 +119,7 @@ function windowsContentNamespaceKey(path: string): string {
     if (
       segment !== segment.normalize("NFC") ||
       /[. ]$/u.test(segment) ||
-      [...segment].some((character) => (character.codePointAt(0) ?? 0) < 0x20) ||
+      hasWindowsControlCharacter(segment) ||
       /[<>:"|?*]/u.test(segment) ||
       /^(?:con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])(?:\..*)?$/iu.test(segment)
     ) {
@@ -127,4 +127,11 @@ function windowsContentNamespaceKey(path: string): string {
     }
   }
   return path.toLowerCase();
+}
+
+function hasWindowsControlCharacter(segment: string): boolean {
+  for (const character of segment) {
+    if ((character.codePointAt(0) ?? 0) < 0x20) return true;
+  }
+  return false;
 }
