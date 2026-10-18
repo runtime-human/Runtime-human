@@ -11,7 +11,10 @@ import {
   createJanuary1990BalanceFingerprint,
   JANUARY_1990_BALANCE_SLICE_ID,
   JANUARY_1990_DEFAULT_BALANCE,
+  JANUARY_V2_PROVISIONAL_APPROACH_TABLE,
+  JANUARY_V2_DEFAULT_CONTEXT_BALANCE,
   parseJanuary1990Balance,
+  fingerprint,
 } from "@runtime-human/game-core";
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -64,7 +67,29 @@ if (compilation.kind === "failure") {
       process.exitCode = 1;
     } else {
       console.log(
-        `[balance] OK: ${compilation.slices.length} slice(s), ${files.length} file(s), balanceFingerprint ${createJanuary1990BalanceFingerprint(balance)}`,
+        `[balance] OK: ${compilation.slices.length} legacy slice(s), v1 fingerprint ${createJanuary1990BalanceFingerprint(balance)}`,
+      );
+    }
+  }
+  const januaryV2 = compilation.januaryV2Approach;
+  const januaryV2Context = compilation.januaryV2Context;
+  if (januaryV2 === undefined || januaryV2Context === undefined) {
+    console.error("[balance] FAIL: missing approach and context balance families for january-1990-v2");
+    process.exitCode = 1;
+  } else {
+    const { schemaVersion: _contextSchemaVersion, sliceId: _contextSliceId, ...contextFields } = januaryV2Context;
+    const expected = canonicalizeAuthoritative(JANUARY_V2_PROVISIONAL_APPROACH_TABLE);
+    if (canonicalizeAuthoritative(januaryV2.approaches) !== expected ||
+        canonicalizeAuthoritative(contextFields) !==
+          canonicalizeAuthoritative(JANUARY_V2_DEFAULT_CONTEXT_BALANCE)) {
+      console.error("[balance] FAIL: compiled January v2 approaches diverge from core default");
+      process.exitCode = 1;
+    } else {
+      console.log(
+        `[balance] January v2 approach contract OK; fingerprint ${fingerprint("january-v2-balance-v1", {
+          approaches: januaryV2.approaches,
+          context: contextFields,
+        })}`,
       );
     }
   }

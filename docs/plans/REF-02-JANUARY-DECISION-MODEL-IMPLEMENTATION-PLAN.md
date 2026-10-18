@@ -99,6 +99,45 @@ M1 = PROG-01B2C2 (ProfessionalState v2 / MonthRun v2 / v2 save schema; внеш�
 
 Правка v1 balance; runtime-интеграция; тексты и маркеры; UI.
 
+## REF-02B0 — Compatibility spike (Draft PR, 2026-10-16)
+
+Executable finding: the v1 content compiler partitions records by
+`era/domain` and computes its global `contentFingerprint` over all chunk
+descriptors and entry-point IDs. A v2 source in a distinct
+`1990s/programming-v2` chunk can preserve both legacy chunk **bytes**, but
+still changes the global v1 manifest fingerprint if compiled together.
+Therefore REF-02B1 must publish the v2 sources through independent source
+roots, build configuration and output namespace. No v2 source is yet
+published: this slice uses a synthetic in-memory test probe only.
+
+The legacy manifest fingerprint is
+`02518cba1617689d4ada48e4624e6dfc96175c1b363132db38d8e738b819739f`.
+`tests/january-v2-content-compatibility.test.ts` verifies exact v1 manifest
+and chunk bytes, the change in the combined manifest, preservation of v1
+chunks in an augmented build, and negative cases for legacy byte drift.
+`inspectProtectedContentChunks` reports chunk preservation separately
+from manifest compatibility. January v1 `content/content.config.json`,
+published artifacts and golden fixtures remain unchanged.
+
+B0 additionally exports `assertIsolatedContentBuildNamespaces(legacy, additional)`
+for REF-02B1's dual-bundle preflight. The guard rejects overlapping source
+roots, overlapping output roots, and source/output intersections between
+builds, including ancestor/descendant paths and Windows case-insensitive
+aliases. It also rejects non-portable Windows path spellings (trailing dots
+or spaces, reserved device names, invalid characters, and non-NFC segments).
+Distinct sibling names such as `programming` and `programming-v2` remain
+valid. Negative tests cover deployed v1 output clobber, nested source
+roots and case-folded aliases.
+
+This is **not yet wired into a production v2 publisher**; REF-02B1 must
+invoke the guard before a dual-bundle write.
+
+The v2 scenario owner must bind a **separate v2 manifest fingerprint**
+during REF-02C before activation. A passing chunk check alone does
+not prove saved-checkpoint compatibility. This unmerged Draft B0 result
+is not accepted production content; REF-02B1 must still add source-backed
+Russian strings, marker truthfulness checks and a typed read model.
+
 ## REF-02B — Approach content в compiled content + dominance/truthfulness-валидаторы
 
 **Скилл/зона:** `runtime-content`, зона `content` (+ `application` для read model).
