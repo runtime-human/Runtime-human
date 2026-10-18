@@ -147,6 +147,81 @@ describe("REF-02B0 January v2 content compatibility gate", () => {
     ).toThrow("Content build outputRoot must be a normalized relative path");
   });
 
+  it("rejects case-insensitive Windows aliases of legacy source and output roots", () => {
+    const legacy = {
+      sourceRoots: LEGACY_ROOTS,
+      outputRoot: "apps/desktop/public/content",
+    } as const;
+
+    for (const additional of [
+      {
+        sourceRoots: ["CONTENT/1990s/PROGRAMMING"],
+        outputRoot: "apps/desktop/public/content-v2",
+      },
+      {
+        sourceRoots: ["CONTENT/1990s/PROGRAMMING/subfolder"],
+        outputRoot: "apps/desktop/public/content-v2",
+      },
+      {
+        sourceRoots: ["content/january-v2"],
+        outputRoot: "APPS/DESKTOP/PUBLIC/CONTENT",
+      },
+      {
+        sourceRoots: ["content/january-v2"],
+        outputRoot: "Apps/Desktop/Public/Content/chunks",
+      },
+      {
+        sourceRoots: ["content/january-v2"],
+        outputRoot: "CONTENT/SOURCES/TECHNOLOGY/generated",
+      },
+      {
+        sourceRoots: ["Content/January-v2"],
+        outputRoot: "content/january-v2/generated",
+      },
+    ]) {
+      expect(() => assertIsolatedContentBuildNamespaces(legacy, additional)).toThrow(
+        /Content build (namespaces|additional source\/output) overlap/,
+      );
+    }
+
+    // These sibling directories remain distinct even under Windows case folding.
+    expect(() =>
+      assertIsolatedContentBuildNamespaces(legacy, {
+        sourceRoots: ["CONTENT/1990s/PROGRAMMING-V2"],
+        outputRoot: "APPS/DESKTOP/PUBLIC/CONTENT-V2",
+      }),
+    ).not.toThrow();
+  });
+
+  it("rejects non-portable Windows spellings before checking namespace isolation", () => {
+    const legacy = {
+      sourceRoots: LEGACY_ROOTS,
+      outputRoot: "apps/desktop/public/content",
+    } as const;
+    for (const path of [
+      "content/january-v2.",
+      "content/january-v2 ",
+      "content/NUL",
+      "content/COM1.tmp",
+      "content/LPT².log",
+      "content/bad?name",
+      "content/cafe\u0301",
+    ]) {
+      expect(() =>
+        assertIsolatedContentBuildNamespaces(legacy, {
+          sourceRoots: [path],
+          outputRoot: "apps/desktop/public/content-v2",
+        }),
+      ).toThrow("Content build namespace path is not Windows-portable");
+    }
+    expect(() =>
+      assertIsolatedContentBuildNamespaces(legacy, {
+        sourceRoots: ["content/january-v2"],
+        outputRoot: "apps/desktop/public/content-v2.",
+      }),
+    ).toThrow("Content build namespace path is not Windows-portable");
+  });
+
   it("proves a new domain preserves v1 chunk bytes but changes a combined manifest", async () => {
     const legacy = await legacyFiles();
     const baseline = bundle(legacy);
