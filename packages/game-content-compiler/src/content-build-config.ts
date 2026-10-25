@@ -86,11 +86,18 @@ export function assertIsolatedContentBuildNamespaces(
     ["legacy", oldBuild],
     ["additional", newBuild],
   ] as const) {
-    for (const sourceRoot of build.sourceRoots) {
+    for (const [index, sourceRoot] of build.sourceRoots.entries()) {
       if (pathOverlaps(sourceRoot, build.outputRoot)) {
         throw new TypeError(
           `Content build ${label} source/output overlap: ${sourceRoot} / ${build.outputRoot}`,
         );
+      }
+      for (const nextSourceRoot of build.sourceRoots.slice(index + 1)) {
+        if (pathOverlaps(sourceRoot, nextSourceRoot)) {
+          throw new TypeError(
+            `Content build ${label} source roots overlap: ${sourceRoot} / ${nextSourceRoot}`,
+          );
+        }
       }
     }
   }
