@@ -52,6 +52,8 @@ export { CONTENT_COMPILER_VERSION, CONTENT_SOURCE_SCHEMA_V1 } from "./content-so
 export { formatContentDiagnostics } from "./format-content-diagnostics";
 export { loadContentSourceFiles } from "./load-content-source-files";
 export type { LoadContentSourceFilesOptions } from "./load-content-source-files";
+export { runIsolatedContentBuild } from "./run-isolated-content-build";
+export type { RunIsolatedContentBuildOptions } from "./run-isolated-content-build";
 export { runContentBuild } from "./run-content-build";
 export type {
   ContentBuildMode,
