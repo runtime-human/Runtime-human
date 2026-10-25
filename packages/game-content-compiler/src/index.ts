@@ -1,4 +1,21 @@
+export {
+  compileJanuaryV2ContextBalance,
+  JANUARY_V2_CONTEXT_SCHEMA_V1,
+  JANUARY_V2_CONTEXT_SOURCE_PATH,
+} from "./january-v2-context-balance";
+export type { JanuaryV2ContextDocumentV1 } from "./january-v2-context-balance";
+export { inspectProtectedContentChunks } from "./content-compatibility";
+export type {
+  ContentCompatibilityInspection,
+  ProtectedContentChunkDrift,
+} from "./content-compatibility";
 export { compileContentSources } from "./compile-content-sources";
+export {
+  compileJanuaryV2ApproachBalance,
+  JANUARY_V2_APPROACH_BALANCE_SCHEMA_V1,
+  JANUARY_V2_APPROACH_SOURCE_PATH,
+} from "./january-v2-approach-balance";
+export type { JanuaryV2ApproachBalanceDocumentV1 } from "./january-v2-approach-balance";
 export { BALANCE_SOURCE_ROOT, loadBalanceSourceFiles } from "./balance-source-files";
 export type { LoadBalanceSourceFilesOptions } from "./balance-source-files";
 export {
@@ -20,7 +37,10 @@ export type {
   SkillEvidenceBalanceDocumentV1,
   ValidatedBalanceDocumentV1,
 } from "./balance-set";
-export { parseContentBuildConfig } from "./content-build-config";
+export {
+  assertIsolatedContentBuildNamespaces,
+  parseContentBuildConfig,
+} from "./content-build-config";
 export type { ContentBuildConfig } from "./content-build-config";
 export { projectContentCatalog } from "./content-catalog-projection";
 export type {
@@ -32,6 +52,14 @@ export { CONTENT_COMPILER_VERSION, CONTENT_SOURCE_SCHEMA_V1 } from "./content-so
 export { formatContentDiagnostics } from "./format-content-diagnostics";
 export { loadContentSourceFiles } from "./load-content-source-files";
 export type { LoadContentSourceFilesOptions } from "./load-content-source-files";
+export {
+  assertJanuaryV2PresentationSource,
+  JANUARY_V2_PRESENTATION_ID,
+  JANUARY_V2_PRESENTATION_SOURCE_PATH,
+} from "./january-v2-presentation-source";
+export { runJanuaryV2ContentBuild } from "./run-january-v2-content-build";
+export { runIsolatedContentBuild } from "./run-isolated-content-build";
+export type { RunIsolatedContentBuildOptions } from "./run-isolated-content-build";
 export { runContentBuild } from "./run-content-build";
 export type {
   ContentBuildMode,

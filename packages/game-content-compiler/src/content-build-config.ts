@@ -57,3 +57,88 @@ function requireNormalizedPath(value: unknown, message: string): string {
   }
   return value;
 }
+
+/**
+ * REF-02B0: the new January v2 bundle must never read the legacy bundle's
+ * sources or publish over its files. Paths are repository-relative and
+ * compared on segment boundaries (so "programming" and "programming-v2"
+ * are distinct). Both configs are parsed again to fail closed on invalid
+ * paths, even when supplied by programmatic callers.
+ *
+ * This is a preflight for REF-02B1's dual-bundle build. It does not change
+ * the legacy compiler configuration or publish v2 content.
+ */
+export function assertIsolatedContentBuildNamespaces(
+  legacy: ContentBuildConfig,
+  additional: ContentBuildConfig,
+): void {
+  const oldBuild = parseContentBuildConfig(legacy);
+  const newBuild = parseContentBuildConfig(additional);
+  const pathOverlaps = (left: string, right: string): boolean => {
+    const oldPath = windowsContentNamespaceKey(left);
+    const newPath = windowsContentNamespaceKey(right);
+    return (
+      oldPath === newPath || oldPath.startsWith(`${newPath}/`) || newPath.startsWith(`${oldPath}/`)
+    );
+  };
+
+  for (const [label, build] of [
+    ["legacy", oldBuild],
+    ["additional", newBuild],
+  ] as const) {
+    for (const [index, sourceRoot] of build.sourceRoots.entries()) {
+      if (pathOverlaps(sourceRoot, build.outputRoot)) {
+        throw new TypeError(
+          `Content build ${label} source/output overlap: ${sourceRoot} / ${build.outputRoot}`,
+        );
+      }
+      for (const nextSourceRoot of build.sourceRoots.slice(index + 1)) {
+        if (pathOverlaps(sourceRoot, nextSourceRoot)) {
+          throw new TypeError(
+            `Content build ${label} source roots overlap: ${sourceRoot} / ${nextSourceRoot}`,
+          );
+        }
+      }
+    }
+  }
+
+  for (const oldPath of [...oldBuild.sourceRoots, oldBuild.outputRoot]) {
+    for (const newPath of [...newBuild.sourceRoots, newBuild.outputRoot]) {
+      if (pathOverlaps(oldPath, newPath)) {
+        throw new TypeError(`Content build namespaces overlap: ${oldPath} / ${newPath}`);
+      }
+    }
+  }
+}
+
+/**
+ * The desktop publisher runs on Windows. Treat source and output paths as
+ * case-insensitive namespaces even when tests execute on a case-sensitive
+ * host. Reject ambiguous Win32 path spellings instead of relying on the host
+ * filesystem: trailing dots/spaces, device names, and invalid path characters
+ * can cause an apparent sibling to alias an existing directory.
+ *
+ * Both sides must use NFC spelling; the comparison is intentionally
+ * conservative and does not create or inspect filesystem paths.
+ */
+function windowsContentNamespaceKey(path: string): string {
+  for (const segment of path.split("/")) {
+    if (
+      segment !== segment.normalize("NFC") ||
+      /[. ]$/u.test(segment) ||
+      hasWindowsControlCharacter(segment) ||
+      /[<>:"|?*]/u.test(segment) ||
+      /^(?:con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])(?:\..*)?$/iu.test(segment)
+    ) {
+      throw new TypeError(`Content build namespace path is not Windows-portable: ${path}`);
+    }
+  }
+  return path.toLowerCase();
+}
+
+function hasWindowsControlCharacter(segment: string): boolean {
+  for (const character of segment) {
+    if ((character.codePointAt(0) ?? 0) < 0x20) return true;
+  }
+  return false;
+}

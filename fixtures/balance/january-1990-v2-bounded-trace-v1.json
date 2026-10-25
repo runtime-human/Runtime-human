@@ -1,0 +1,455 @@
+{
+  "schemaVersion": "january-v2-bounded-trace-v1",
+  "rollsPerOption": 10,
+  "balanceFingerprint": "c6c64a655ab1a32cf789fee4d2804f7318fbb171319c7a41a4f8dbec4e9e3791",
+  "rows": [
+    {
+      "startBackground": "home-pc",
+      "learningMode": "read-and-run",
+      "defect": "syntax-error",
+      "approach": "investigate-first",
+      "delivery": {
+        "released": 7,
+        "released-with-limitation": 0,
+        "delayed-to-february": 3
+      },
+      "quality": "adequate",
+      "participation": "independent",
+      "practiceOpportunity": 1
+    },
+    {
+      "startBackground": "home-pc",
+      "learningMode": "read-and-run",
+      "defect": "syntax-error",
+      "approach": "ask-for-help",
+      "delivery": {
+        "released": 8,
+        "released-with-limitation": 0,
+        "delayed-to-february": 2
+      },
+      "quality": "adequate",
+      "participation": "assisted",
+      "practiceOpportunity": 0
+    },
+    {
+      "startBackground": "home-pc",
+      "learningMode": "read-and-run",
+      "defect": "syntax-error",
+      "approach": "reduce-scope",
+      "delivery": {
+        "released": 0,
+        "released-with-limitation": 10,
+        "delayed-to-february": 0
+      },
+      "quality": "basic",
+      "participation": "independent",
+      "practiceOpportunity": 0
+    },
+    {
+      "startBackground": "home-pc",
+      "learningMode": "read-and-run",
+      "defect": "syntax-error",
+      "approach": "defer-or-recover",
+      "delivery": {
+        "released": 0,
+        "released-with-limitation": 0,
+        "delayed-to-february": 10
+      },
+      "quality": "strong",
+      "participation": "independent",
+      "practiceOpportunity": 1
+    },
+    {
+      "startBackground": "home-pc",
+      "learningMode": "read-and-run",
+      "defect": "logic-error",
+      "approach": "investigate-first",
+      "delivery": {
+        "released": 6,
+        "released-with-limitation": 0,
+        "delayed-to-february": 4
+      },
+      "quality": "adequate",
+      "participation": "independent",
+      "practiceOpportunity": 1
+    },
+    {
+      "startBackground": "home-pc",
+      "learningMode": "read-and-run",
+      "defect": "logic-error",
+      "approach": "ask-for-help",
+      "delivery": {
+        "released": 7,
+        "released-with-limitation": 0,
+        "delayed-to-february": 3
+      },
+      "quality": "adequate",
+      "participation": "assisted",
+      "practiceOpportunity": 0
+    },
+    {
+      "startBackground": "home-pc",
+      "learningMode": "read-and-run",
+      "defect": "logic-error",
+      "approach": "reduce-scope",
+      "delivery": {
+        "released": 0,
+        "released-with-limitation": 10,
+        "delayed-to-february": 0
+      },
+      "quality": "basic",
+      "participation": "independent",
+      "practiceOpportunity": 0
+    },
+    {
+      "startBackground": "home-pc",
+      "learningMode": "read-and-run",
+      "defect": "logic-error",
+      "approach": "defer-or-recover",
+      "delivery": {
+        "released": 0,
+        "released-with-limitation": 0,
+        "delayed-to-february": 10
+      },
+      "quality": "strong",
+      "participation": "independent",
+      "practiceOpportunity": 1
+    },
+    {
+      "startBackground": "home-pc",
+      "learningMode": "edit-and-debug",
+      "defect": "syntax-error",
+      "approach": "investigate-first",
+      "delivery": {
+        "released": 6,
+        "released-with-limitation": 0,
+        "delayed-to-february": 4
+      },
+      "quality": "adequate",
+      "participation": "independent",
+      "practiceOpportunity": 3
+    },
+    {
+      "startBackground": "home-pc",
+      "learningMode": "edit-and-debug",
+      "defect": "syntax-error",
+      "approach": "ask-for-help",
+      "delivery": {
+        "released": 7,
+        "released-with-limitation": 0,
+        "delayed-to-february": 3
+      },
+      "quality": "adequate",
+      "participation": "assisted",
+      "practiceOpportunity": 2
+    },
+    {
+      "startBackground": "home-pc",
+      "learningMode": "edit-and-debug",
+      "defect": "syntax-error",
+      "approach": "reduce-scope",
+      "delivery": {
+        "released": 0,
+        "released-with-limitation": 10,
+        "delayed-to-february": 0
+      },
+      "quality": "basic",
+      "participation": "independent",
+      "practiceOpportunity": 1
+    },
+    {
+      "startBackground": "home-pc",
+      "learningMode": "edit-and-debug",
+      "defect": "syntax-error",
+      "approach": "defer-or-recover",
+      "delivery": {
+        "released": 0,
+        "released-with-limitation": 0,
+        "delayed-to-february": 10
+      },
+      "quality": "strong",
+      "participation": "independent",
+      "practiceOpportunity": 3
+    },
+    {
+      "startBackground": "home-pc",
+      "learningMode": "edit-and-debug",
+      "defect": "logic-error",
+      "approach": "investigate-first",
+      "delivery": {
+        "released": 5,
+        "released-with-limitation": 0,
+        "delayed-to-february": 5
+      },
+      "quality": "adequate",
+      "participation": "independent",
+      "practiceOpportunity": 3
+    },
+    {
+      "startBackground": "home-pc",
+      "learningMode": "edit-and-debug",
+      "defect": "logic-error",
+      "approach": "ask-for-help",
+      "delivery": {
+        "released": 6,
+        "released-with-limitation": 0,
+        "delayed-to-february": 4
+      },
+      "quality": "adequate",
+      "participation": "assisted",
+      "practiceOpportunity": 2
+    },
+    {
+      "startBackground": "home-pc",
+      "learningMode": "edit-and-debug",
+      "defect": "logic-error",
+      "approach": "reduce-scope",
+      "delivery": {
+        "released": 0,
+        "released-with-limitation": 10,
+        "delayed-to-february": 0
+      },
+      "quality": "basic",
+      "participation": "independent",
+      "practiceOpportunity": 1
+    },
+    {
+      "startBackground": "home-pc",
+      "learningMode": "edit-and-debug",
+      "defect": "logic-error",
+      "approach": "defer-or-recover",
+      "delivery": {
+        "released": 0,
+        "released-with-limitation": 0,
+        "delayed-to-february": 10
+      },
+      "quality": "strong",
+      "participation": "independent",
+      "practiceOpportunity": 3
+    },
+    {
+      "startBackground": "shared-school-pc",
+      "learningMode": "read-and-run",
+      "defect": "syntax-error",
+      "approach": "investigate-first",
+      "delivery": {
+        "released": 5,
+        "released-with-limitation": 0,
+        "delayed-to-february": 5
+      },
+      "quality": "adequate",
+      "participation": "independent",
+      "practiceOpportunity": 1
+    },
+    {
+      "startBackground": "shared-school-pc",
+      "learningMode": "read-and-run",
+      "defect": "syntax-error",
+      "approach": "ask-for-help",
+      "delivery": {
+        "released": 10,
+        "released-with-limitation": 0,
+        "delayed-to-february": 0
+      },
+      "quality": "adequate",
+      "participation": "assisted",
+      "practiceOpportunity": 0
+    },
+    {
+      "startBackground": "shared-school-pc",
+      "learningMode": "read-and-run",
+      "defect": "syntax-error",
+      "approach": "reduce-scope",
+      "delivery": {
+        "released": 0,
+        "released-with-limitation": 10,
+        "delayed-to-february": 0
+      },
+      "quality": "basic",
+      "participation": "independent",
+      "practiceOpportunity": 0
+    },
+    {
+      "startBackground": "shared-school-pc",
+      "learningMode": "read-and-run",
+      "defect": "syntax-error",
+      "approach": "defer-or-recover",
+      "delivery": {
+        "released": 0,
+        "released-with-limitation": 0,
+        "delayed-to-february": 10
+      },
+      "quality": "strong",
+      "participation": "independent",
+      "practiceOpportunity": 1
+    },
+    {
+      "startBackground": "shared-school-pc",
+      "learningMode": "read-and-run",
+      "defect": "logic-error",
+      "approach": "investigate-first",
+      "delivery": {
+        "released": 4,
+        "released-with-limitation": 0,
+        "delayed-to-february": 6
+      },
+      "quality": "adequate",
+      "participation": "independent",
+      "practiceOpportunity": 1
+    },
+    {
+      "startBackground": "shared-school-pc",
+      "learningMode": "read-and-run",
+      "defect": "logic-error",
+      "approach": "ask-for-help",
+      "delivery": {
+        "released": 9,
+        "released-with-limitation": 0,
+        "delayed-to-february": 1
+      },
+      "quality": "adequate",
+      "participation": "assisted",
+      "practiceOpportunity": 0
+    },
+    {
+      "startBackground": "shared-school-pc",
+      "learningMode": "read-and-run",
+      "defect": "logic-error",
+      "approach": "reduce-scope",
+      "delivery": {
+        "released": 0,
+        "released-with-limitation": 10,
+        "delayed-to-february": 0
+      },
+      "quality": "basic",
+      "participation": "independent",
+      "practiceOpportunity": 0
+    },
+    {
+      "startBackground": "shared-school-pc",
+      "learningMode": "read-and-run",
+      "defect": "logic-error",
+      "approach": "defer-or-recover",
+      "delivery": {
+        "released": 0,
+        "released-with-limitation": 0,
+        "delayed-to-february": 10
+      },
+      "quality": "strong",
+      "participation": "independent",
+      "practiceOpportunity": 1
+    },
+    {
+      "startBackground": "shared-school-pc",
+      "learningMode": "edit-and-debug",
+      "defect": "syntax-error",
+      "approach": "investigate-first",
+      "delivery": {
+        "released": 4,
+        "released-with-limitation": 0,
+        "delayed-to-february": 6
+      },
+      "quality": "adequate",
+      "participation": "independent",
+      "practiceOpportunity": 3
+    },
+    {
+      "startBackground": "shared-school-pc",
+      "learningMode": "edit-and-debug",
+      "defect": "syntax-error",
+      "approach": "ask-for-help",
+      "delivery": {
+        "released": 9,
+        "released-with-limitation": 0,
+        "delayed-to-february": 1
+      },
+      "quality": "adequate",
+      "participation": "assisted",
+      "practiceOpportunity": 2
+    },
+    {
+      "startBackground": "shared-school-pc",
+      "learningMode": "edit-and-debug",
+      "defect": "syntax-error",
+      "approach": "reduce-scope",
+      "delivery": {
+        "released": 0,
+        "released-with-limitation": 10,
+        "delayed-to-february": 0
+      },
+      "quality": "basic",
+      "participation": "independent",
+      "practiceOpportunity": 1
+    },
+    {
+      "startBackground": "shared-school-pc",
+      "learningMode": "edit-and-debug",
+      "defect": "syntax-error",
+      "approach": "defer-or-recover",
+      "delivery": {
+        "released": 0,
+        "released-with-limitation": 0,
+        "delayed-to-february": 10
+      },
+      "quality": "strong",
+      "participation": "independent",
+      "practiceOpportunity": 3
+    },
+    {
+      "startBackground": "shared-school-pc",
+      "learningMode": "edit-and-debug",
+      "defect": "logic-error",
+      "approach": "investigate-first",
+      "delivery": {
+        "released": 3,
+        "released-with-limitation": 0,
+        "delayed-to-february": 7
+      },
+      "quality": "adequate",
+      "participation": "independent",
+      "practiceOpportunity": 3
+    },
+    {
+      "startBackground": "shared-school-pc",
+      "learningMode": "edit-and-debug",
+      "defect": "logic-error",
+      "approach": "ask-for-help",
+      "delivery": {
+        "released": 8,
+        "released-with-limitation": 0,
+        "delayed-to-february": 2
+      },
+      "quality": "adequate",
+      "participation": "assisted",
+      "practiceOpportunity": 2
+    },
+    {
+      "startBackground": "shared-school-pc",
+      "learningMode": "edit-and-debug",
+      "defect": "logic-error",
+      "approach": "reduce-scope",
+      "delivery": {
+        "released": 0,
+        "released-with-limitation": 10,
+        "delayed-to-february": 0
+      },
+      "quality": "basic",
+      "participation": "independent",
+      "practiceOpportunity": 1
+    },
+    {
+      "startBackground": "shared-school-pc",
+      "learningMode": "edit-and-debug",
+      "defect": "logic-error",
+      "approach": "defer-or-recover",
+      "delivery": {
+        "released": 0,
+        "released-with-limitation": 0,
+        "delayed-to-february": 10
+      },
+      "quality": "strong",
+      "participation": "independent",
+      "practiceOpportunity": 3
+    }
+  ]
+}

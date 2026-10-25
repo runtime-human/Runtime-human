@@ -99,6 +99,86 @@ M1 = PROG-01B2C2 (ProfessionalState v2 / MonthRun v2 / v2 save schema; внеш�
 
 Правка v1 balance; runtime-интеграция; тексты и маркеры; UI.
 
+## REF-02B0 — Compatibility spike (Draft PR, 2026-10-16)
+
+Executable finding: the v1 content compiler partitions records by
+`era/domain` and computes its global `contentFingerprint` over all chunk
+descriptors and entry-point IDs. A v2 source in a distinct
+`1990s/programming-v2` chunk can preserve both legacy chunk **bytes**, but
+still changes the global v1 manifest fingerprint if compiled together.
+Therefore REF-02B1 must publish the v2 sources through independent source
+roots, build configuration and output namespace. No v2 source is yet
+published: this slice uses a synthetic in-memory test probe only.
+
+The legacy manifest fingerprint is
+`02518cba1617689d4ada48e4624e6dfc96175c1b363132db38d8e738b819739f`.
+`tests/january-v2-content-compatibility.test.ts` verifies exact v1 manifest
+and chunk bytes, the change in the combined manifest, preservation of v1
+chunks in an augmented build, and negative cases for legacy byte drift.
+`inspectProtectedContentChunks` reports chunk preservation separately
+from manifest compatibility. January v1 `content/content.config.json`,
+published artifacts and golden fixtures remain unchanged.
+
+B0 additionally exports `assertIsolatedContentBuildNamespaces(legacy, additional)`
+for REF-02B1's dual-bundle preflight. The guard rejects overlapping
+source roots within either build, overlapping source/output namespaces
+within a build, and all source/output intersections between builds,
+including ancestor/descendant paths and Windows case-insensitive aliases. It also rejects non-portable Windows path spellings (trailing dots
+or spaces, reserved device names, invalid characters, and non-NFC segments).
+Distinct sibling names such as `programming` and `programming-v2` remain
+valid. Negative tests cover deployed v1 output clobber, within-build
+nested/aliased source roots, and cross-build case-folded aliases.
+
+A dedicated `runIsolatedContentBuild` API now calls this guard **before
+filesystem access** and verifies that the published legacy bundle exactly
+matches its current v1 sources (read-only `runContentBuild(check)`) before
+building or checking the additional isolated bundle. Missing/stale/invalid
+v1 publication rejects the v2 write without repairing or mutating v1.
+Registered temp-directory tests cover the success path, missing/stale and
+invalid v1, rejected overlap and preservation of both manifests.
+
+This is **not yet a production v2 publisher or CLI**: REF-02B1 must add
+a separate v2 source root, config, compiled player-facing source-backed
+RU content, semantic truthfulness validation and consumer wiring, using
+this guarded API. The v1 golden fingerprint is separately pinned by B0
+regression tests; the generic guard is not a fingerprint allowlist.
+
+The v2 scenario owner must bind a **separate v2 manifest fingerprint**
+during REF-02C before activation. A passing chunk check alone does
+not prove saved-checkpoint compatibility. This unmerged Draft B0 result
+is not accepted production content; REF-02B1 must still add source-backed
+Russian strings, marker truthfulness checks and a typed read model.
+
+## REF-02B1b — Первая отдельная source-backed презентация (Draft)
+
+Существующий PR #213 теперь содержит `content/content-v2.config.json` с
+изолированным `content/january-v2` → `apps/desktop/public/content-v2`.
+В новом независимом `1990s/programming-v2` chunk размещён один
+`core.situation-presentation.january-1990-v2`: русская строковая таблица
+со стабильными ключами, ситуация, четыре approach, background/learning
+options и два read-only GW-BASIC листинга для `syntax-error` /
+`logic-error`. Provenance включает проектный ADR-021 и руководство
+Microsoft GW-BASIC Interpreter User's Reference (1986); листинги
+авторские иллюстрации, а не дословные выдержки из руководства.
+
+`assertJanuaryV2PresentationSource` проверяет закрытую структуру,
+допустимые ключи, количество/порядок опций, отсутствие внутренних
+метрик/цифр/NPC в превью, маркеры и их наблюдаемые направления
+по восьми контекстам и десяти outcome rolls. Семантические проверки
+завязаны на текущий замороженный REF-02A oracle: изменение модели
+потребует обновления тестов и независимой проверки смысла русских фраз.
+`runJanuaryV2ContentBuild` выполняет этот authoring gate до уже
+изолированного publisher API. Тесты доказывают отсутствие записи при
+невалидном v2-контенте и неизменность v1 manifest.
+
+Этот срез ещё **не принимает REF-02B целиком**: нет production
+CLI/runtime activation, typed `DecisionReadModel`, общего authoring
+JSON schema, компиляторных diagnostic codes для v2 и независимого
+source/wording review. V2 output сознательно не добавлен в
+канонический v1 `content:check` или правила воспроизведения сохранений.
+В будущем отдельный acceptance gate должен проверять v2 published
+artifact fingerprint и стабильность словаря.
+
 ## REF-02B — Approach content в compiled content + dominance/truthfulness-валидаторы
 
 **Скилл/зона:** `runtime-content`, зона `content` (+ `application` для read model).
