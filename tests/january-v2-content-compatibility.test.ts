@@ -2,6 +2,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+import { parse as parseJsonc } from "jsonc-parser";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -409,7 +410,7 @@ describe("REF-02B0 January v2 content compatibility gate", () => {
       };
     };
     const changed = (edit: (document: EditablePresentation) => void) => {
-      const doc = JSON.parse(original.text) as EditablePresentation;
+      const doc = parseJsonc(original.text) as EditablePresentation;
       edit(doc);
       return [{ ...original, text: JSON.stringify(doc) }];
     };
@@ -502,7 +503,7 @@ describe("REF-02B0 January v2 content compatibility gate", () => {
       expect(await runV2()).toMatchObject({ kind: "written" });
       const originalV2Bytes = await readFile(v2Manifest, "utf8");
 
-      const mutated = JSON.parse(v2Source) as {
+      const mutated = parseJsonc(v2Source) as {
         payload: { strings: Record<string, string> };
       };
       mutated.payload.strings["january.v2.approach.help.cost"] = "Навык Debugging";
