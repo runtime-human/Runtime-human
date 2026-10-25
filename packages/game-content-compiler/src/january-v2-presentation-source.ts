@@ -122,7 +122,7 @@ export function assertJanuaryV2PresentationSource(files: readonly ContentSourceF
     const text = string(dictionary[key], key);
     if (
       text.trim() !== text ||
-      [...text].length > maxLength ||
+      Array.from(text).length > maxLength ||
       PREVIEW_CONTROLS.test(text) ||
       PREVIEW_FORBIDDEN.test(text)
     ) {
