@@ -149,6 +149,36 @@ not prove saved-checkpoint compatibility. This unmerged Draft B0 result
 is not accepted production content; REF-02B1 must still add source-backed
 Russian strings, marker truthfulness checks and a typed read model.
 
+## REF-02B1b — Первая отдельная source-backed презентация (Draft)
+
+Существующий PR #213 теперь содержит `content/content-v2.config.json` с
+изолированным `content/january-v2` → `apps/desktop/public/content-v2`.
+В новом независимом `1990s/programming-v2` chunk размещён один
+`core.situation-presentation.january-1990-v2`: русская строковая таблица
+со стабильными ключами, ситуация, четыре approach, background/learning
+options и два read-only GW-BASIC листинга для `syntax-error` /
+`logic-error`. Provenance включает проектный ADR-021 и руководство
+Microsoft GW-BASIC Interpreter User's Reference (1986); листинги
+авторские иллюстрации, а не дословные выдержки из руководства.
+
+`assertJanuaryV2PresentationSource` проверяет закрытую структуру,
+допустимые ключи, количество/порядок опций, отсутствие внутренних
+метрик/цифр/NPC в превью, маркеры и их наблюдаемые направления
+по восьми контекстам и десяти outcome rolls. Семантические проверки
+завязаны на текущий замороженный REF-02A oracle: изменение модели
+потребует обновления тестов и независимой проверки смысла русских фраз.
+`runJanuaryV2ContentBuild` выполняет этот authoring gate до уже
+изолированного publisher API. Тесты доказывают отсутствие записи при
+невалидном v2-контенте и неизменность v1 manifest.
+
+Этот срез ещё **не принимает REF-02B целиком**: нет production
+CLI/runtime activation, typed `DecisionReadModel`, общего authoring
+JSON schema, компиляторных diagnostic codes для v2 и независимого
+source/wording review. V2 output сознательно не добавлен в
+канонический v1 `content:check` или правила воспроизведения сохранений.
+В будущем отдельный acceptance gate должен проверять v2 published
+artifact fingerprint и стабильность словаря.
+
 ## REF-02B — Approach content в compiled content + dominance/truthfulness-валидаторы
 
 **Скилл/зона:** `runtime-content`, зона `content` (+ `application` для read model).
