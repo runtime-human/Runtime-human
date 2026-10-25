@@ -357,7 +357,9 @@ describe("REF-02B0 January v2 content compatibility gate", () => {
       sourceRoots: string[];
       outputRoot: string;
     };
-    const additionalConfig = JSON.parse(await readFile("content/content-v2.config.json", "utf8")) as {
+    const additionalConfig = JSON.parse(
+      await readFile("content/content-v2.config.json", "utf8"),
+    ) as {
       sourceRoots: string[];
       outputRoot: string;
     };
@@ -373,9 +375,7 @@ describe("REF-02B0 January v2 content compatibility gate", () => {
       repositoryRoot: process.cwd(),
       sourceRoots: additionalConfig.sourceRoots,
     });
-    expect(sourceFiles.map((source) => source.path)).toEqual([
-      JANUARY_V2_PRESENTATION_SOURCE_PATH,
-    ]);
+    expect(sourceFiles.map((source) => source.path)).toEqual([JANUARY_V2_PRESENTATION_SOURCE_PATH]);
     expect(() => assertJanuaryV2PresentationSource(sourceFiles)).not.toThrow();
     const compiled = bundle(sourceFiles);
     expect(compiled.manifest.chunks.map((chunk) => chunk.chunkId)).toEqual([
@@ -414,43 +414,57 @@ describe("REF-02B0 January v2 content compatibility gate", () => {
       return [{ ...original, text: JSON.stringify(doc) }];
     };
     expect(() =>
-      assertJanuaryV2PresentationSource(changed((doc) => {
-        doc.payload.approaches[0]!.tradeOffs[0]!.polarity = "cost";
-      })),
+      assertJanuaryV2PresentationSource(
+        changed((doc) => {
+          doc.payload.approaches[0]!.tradeOffs[0]!.polarity = "cost";
+        }),
+      ),
     ).toThrow(/marker semantic witness mismatch/u);
     expect(() =>
-      assertJanuaryV2PresentationSource(changed((doc) => {
-        doc.payload.approaches.pop();
-      })),
+      assertJanuaryV2PresentationSource(
+        changed((doc) => {
+          doc.payload.approaches.pop();
+        }),
+      ),
     ).toThrow(/exactly 4 entries/u);
     expect(() =>
-      assertJanuaryV2PresentationSource(changed((doc) => {
-        doc.payload.strings["january.v2.approach.help.gain"] = "Успех 90%";
-      })),
+      assertJanuaryV2PresentationSource(
+        changed((doc) => {
+          doc.payload.strings["january.v2.approach.help.gain"] = "Успех 90%";
+        }),
+      ),
     ).toThrow(/preview wording limits/u);
     expect(() =>
-      assertJanuaryV2PresentationSource(changed((doc) => {
-        doc.payload.strings["january.v2.approach.help.gain"] = "Поможет наставник";
-      })),
+      assertJanuaryV2PresentationSource(
+        changed((doc) => {
+          doc.payload.strings["january.v2.approach.help.gain"] = "Поможет наставник";
+        }),
+      ),
     ).toThrow(/preview wording limits/u);
     expect(() =>
-      assertJanuaryV2PresentationSource(changed((doc) => {
-        doc.payload.situation.titleKey = "january.v2.no.such.key";
-      })),
+      assertJanuaryV2PresentationSource(
+        changed((doc) => {
+          doc.payload.situation.titleKey = "january.v2.no.such.key";
+        }),
+      ),
     ).toThrow(/unknown localization key/u);
     expect(() =>
-      assertJanuaryV2PresentationSource(changed((doc) => {
-        doc.payload.listings[0]!.eventType = "future-error";
-      })),
+      assertJanuaryV2PresentationSource(
+        changed((doc) => {
+          doc.payload.listings[0]!.eventType = "future-error";
+        }),
+      ),
     ).toThrow(/listing metadata mismatch/u);
     expect(() =>
-      assertJanuaryV2PresentationSource(changed((doc) => {
-        doc.payload.extra = true;
-      })),
+      assertJanuaryV2PresentationSource(
+        changed((doc) => {
+          doc.payload.extra = true;
+        }),
+      ),
     ).toThrow(/closed field set/u);
-    expect(() =>
-      assertJanuaryV2PresentationSource([{ ...original, text: "{invalid" }]),
-    ).toThrow(/generic compilation/u);
+    expect(() => assertJanuaryV2PresentationSource([{ ...original, text: "{invalid" }])).toThrow(
+      /generic compilation/u,
+    );
   });
 
   it("refuses to publish a mutated v2 source and leaves both bundles untouched", async () => {
