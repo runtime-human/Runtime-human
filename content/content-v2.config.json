@@ -1,0 +1,4 @@
+{
+  "sourceRoots": ["content/january-v2"],
+  "outputRoot": "apps/desktop/public/content-v2"
+}
