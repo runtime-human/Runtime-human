@@ -176,10 +176,7 @@ describe("REF-02B0 January v2 content compatibility gate", () => {
       ["content/sources/technology", "CONTENT/SOURCES/TECHNOLOGY"],
     ]) {
       expect(() =>
-        assertIsolatedContentBuildNamespaces(
-          { ...legacy, sourceRoots },
-          isolated,
-        ),
+        assertIsolatedContentBuildNamespaces({ ...legacy, sourceRoots }, isolated),
       ).toThrow("Content build legacy source roots overlap");
     }
 
