@@ -6,6 +6,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   assertIsolatedContentBuildNamespaces,
+  assertJanuaryV2PresentationSource,
+  JANUARY_V2_PRESENTATION_SOURCE_PATH,
+  runJanuaryV2ContentBuild,
   compileContentSources,
   inspectProtectedContentChunks,
   loadContentSourceFiles,
@@ -344,6 +347,155 @@ describe("REF-02B0 January v2 content compatibility gate", () => {
         "Refusing isolated content build: legacy published artifacts are content-invalid",
       );
       expect(await readFile(newManifest, "utf8")).toBe(v2Before);
+    } finally {
+      await rm(repositoryRoot, { recursive: true, force: true });
+    }
+  });
+
+  it("compiles separately authored RU January v2 content without changing the legacy bundle", async () => {
+    const legacyConfig = JSON.parse(await readFile("content/content.config.json", "utf8")) as {
+      sourceRoots: string[];
+      outputRoot: string;
+    };
+    const additionalConfig = JSON.parse(await readFile("content/content-v2.config.json", "utf8")) as {
+      sourceRoots: string[];
+      outputRoot: string;
+    };
+    expect(additionalConfig).toEqual({
+      sourceRoots: ["content/january-v2"],
+      outputRoot: "apps/desktop/public/content-v2",
+    });
+    expect(() =>
+      assertIsolatedContentBuildNamespaces(legacyConfig, additionalConfig),
+    ).not.toThrow();
+
+    const sourceFiles = await loadContentSourceFiles({
+      repositoryRoot: process.cwd(),
+      sourceRoots: additionalConfig.sourceRoots,
+    });
+    expect(sourceFiles.map((source) => source.path)).toEqual([
+      JANUARY_V2_PRESENTATION_SOURCE_PATH,
+    ]);
+    expect(() => assertJanuaryV2PresentationSource(sourceFiles)).not.toThrow();
+    const compiled = bundle(sourceFiles);
+    expect(compiled.manifest.chunks.map((chunk) => chunk.chunkId)).toEqual([
+      "1990s/programming-v2",
+    ]);
+    expect(compiled.manifest.entryPointIds).toEqual([
+      "core.situation-presentation.january-1990-v2",
+    ]);
+    expect(compiled.manifest.contentFingerprint).not.toBe(LEGACY_MANIFEST_FINGERPRINT);
+    expect(bundle(await legacyFiles()).manifest.contentFingerprint).toBe(
+      LEGACY_MANIFEST_FINGERPRINT,
+    );
+  });
+
+  it("rejects invalid January v2 marker claims, wording, and missing localization", async () => {
+    const sources = await loadContentSourceFiles({
+      repositoryRoot: process.cwd(),
+      sourceRoots: ["content/january-v2"],
+    });
+    const original = sources[0]!;
+    type EditablePresentation = {
+      payload: {
+        approaches: {
+          id: string;
+          tradeOffs: { axis: string; polarity: string; textKey: string }[];
+        }[];
+        strings: Record<string, string>;
+        listings: { eventType: string; highlightedLine: number }[];
+        situation: { titleKey: string };
+        [key: string]: unknown;
+      };
+    };
+    const changed = (edit: (document: EditablePresentation) => void) => {
+      const doc = JSON.parse(original.text) as EditablePresentation;
+      edit(doc);
+      return [{ ...original, text: JSON.stringify(doc) }];
+    };
+    expect(() =>
+      assertJanuaryV2PresentationSource(changed((doc) => {
+        doc.payload.approaches[0]!.tradeOffs[0]!.polarity = "cost";
+      })),
+    ).toThrow(/marker semantic witness mismatch/u);
+    expect(() =>
+      assertJanuaryV2PresentationSource(changed((doc) => {
+        doc.payload.approaches.pop();
+      })),
+    ).toThrow(/exactly 4 entries/u);
+    expect(() =>
+      assertJanuaryV2PresentationSource(changed((doc) => {
+        doc.payload.strings["january.v2.approach.help.gain"] = "Успех 90%";
+      })),
+    ).toThrow(/preview wording limits/u);
+    expect(() =>
+      assertJanuaryV2PresentationSource(changed((doc) => {
+        doc.payload.strings["january.v2.approach.help.gain"] = "Поможет наставник";
+      })),
+    ).toThrow(/preview wording limits/u);
+    expect(() =>
+      assertJanuaryV2PresentationSource(changed((doc) => {
+        doc.payload.situation.titleKey = "january.v2.no.such.key";
+      })),
+    ).toThrow(/unknown localization key/u);
+    expect(() =>
+      assertJanuaryV2PresentationSource(changed((doc) => {
+        doc.payload.listings[0]!.eventType = "future-error";
+      })),
+    ).toThrow(/listing metadata mismatch/u);
+    expect(() =>
+      assertJanuaryV2PresentationSource(changed((doc) => {
+        doc.payload.extra = true;
+      })),
+    ).toThrow(/closed field set/u);
+    expect(() =>
+      assertJanuaryV2PresentationSource([{ ...original, text: "{invalid" }]),
+    ).toThrow(/generic compilation/u);
+  });
+
+  it("refuses to publish a mutated v2 source and leaves both bundles untouched", async () => {
+    const repositoryRoot = await mkdtemp(join(tmpdir(), "runtime-human-v2-content-"));
+    const legacyConfig = {
+      sourceRoots: ["content/legacy"],
+      outputRoot: "apps/desktop/public/content",
+    } as const;
+    const additionalConfig = {
+      sourceRoots: ["content/january-v2"],
+      outputRoot: "apps/desktop/public/content-v2",
+    } as const;
+    const legacySource = join(repositoryRoot, "content/legacy/source.jsonc");
+    const v2Path = join(repositoryRoot, JANUARY_V2_PRESENTATION_SOURCE_PATH);
+    const legacyManifest = join(repositoryRoot, legacyConfig.outputRoot, "manifest.json");
+    const v2Manifest = join(repositoryRoot, additionalConfig.outputRoot, "manifest.json");
+    const v2Source = await readFile(JANUARY_V2_PRESENTATION_SOURCE_PATH, "utf8");
+    try {
+      await mkdir(join(repositoryRoot, "content/legacy"), { recursive: true });
+      await mkdir(join(repositoryRoot, "content/january-v2/presentation"), { recursive: true });
+      await writeFile(legacySource, V2_PRESENTATION_PROBE.text, "utf8");
+      await writeFile(v2Path, v2Source, "utf8");
+      const runV2 = () =>
+        runJanuaryV2ContentBuild({
+          repositoryRoot,
+          legacyConfig,
+          additionalConfig,
+          mode: "write",
+        });
+      await expect(runV2()).rejects.toThrow(/legacy published artifacts are outdated/u);
+      expect(
+        await runContentBuild({ repositoryRoot, config: legacyConfig, mode: "write" }),
+      ).toMatchObject({ kind: "written" });
+      const legacyBytes = await readFile(legacyManifest, "utf8");
+      expect(await runV2()).toMatchObject({ kind: "written" });
+      const originalV2Bytes = await readFile(v2Manifest, "utf8");
+
+      const mutated = JSON.parse(v2Source) as {
+        payload: { strings: Record<string, string> };
+      };
+      mutated.payload.strings["january.v2.approach.help.cost"] = "Навык Debugging";
+      await writeFile(v2Path, JSON.stringify(mutated), "utf8");
+      await expect(runV2()).rejects.toThrow(/preview wording limits/u);
+      expect(await readFile(legacyManifest, "utf8")).toBe(legacyBytes);
+      expect(await readFile(v2Manifest, "utf8")).toBe(originalV2Bytes);
     } finally {
       await rm(repositoryRoot, { recursive: true, force: true });
     }
