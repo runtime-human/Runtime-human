@@ -25,7 +25,7 @@ const EXPECTED_MARKERS = {
 } as const;
 
 const PREVIEW_FORBIDDEN =
-  /[\p{N}%％]|(?:\b(?:xp|mastery|readiness|evidence|debugging|programming|npc|mentor|teacher)\b)|(?:наставник|учител|одноклассник|родител|\bдруг\b|лучши|рекоменду|оптимальн|мастерств|отладк|программировани|готовност)/iu;
+  /[\p{N}%％]|(?:\b(?:xp|mastery|readiness|evidence|debugging|programming|npc|mentor|teacher)\b)|(?:наставник|учител|одноклассник|родител|\bдруг\b|(?<!\p{L})лучш|рекоменду|оптимальн|мастерств|отладк|программировани|готовност)/iu;
 const PREVIEW_CONTROLS = /[\p{Cc}\p{Cf}]/u;
 
 function closed(value: unknown, keys: readonly string[], where: string): Record<string, unknown> {
