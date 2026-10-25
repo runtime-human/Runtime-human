@@ -129,8 +129,19 @@ Distinct sibling names such as `programming` and `programming-v2` remain
 valid. Negative tests cover deployed v1 output clobber, within-build
 nested/aliased source roots, and cross-build case-folded aliases.
 
-This is **not yet wired into a production v2 publisher**; REF-02B1 must
-invoke the guard before a dual-bundle write.
+A dedicated `runIsolatedContentBuild` API now calls this guard **before
+filesystem access** and verifies that the published legacy bundle exactly
+matches its current v1 sources (read-only `runContentBuild(check)`) before
+building or checking the additional isolated bundle. Missing/stale/invalid
+v1 publication rejects the v2 write without repairing or mutating v1.
+Registered temp-directory tests cover the success path, missing/stale and
+invalid v1, rejected overlap and preservation of both manifests.
+
+This is **not yet a production v2 publisher or CLI**: REF-02B1 must add
+a separate v2 source root, config, compiled player-facing source-backed
+RU content, semantic truthfulness validation and consumer wiring, using
+this guarded API. The v1 golden fingerprint is separately pinned by B0
+regression tests; the generic guard is not a fingerprint allowlist.
 
 The v2 scenario owner must bind a **separate v2 manifest fingerprint**
 during REF-02C before activation. A passing chunk check alone does
