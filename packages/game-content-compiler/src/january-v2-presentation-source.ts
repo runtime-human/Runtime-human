@@ -15,8 +15,7 @@ import type { ContentSourceFile } from "./content-types";
 
 export const JANUARY_V2_PRESENTATION_SOURCE_PATH =
   "content/january-v2/presentation/january-1990.jsonc" as const;
-export const JANUARY_V2_PRESENTATION_ID =
-  "core.situation-presentation.january-1990-v2" as const;
+export const JANUARY_V2_PRESENTATION_ID = "core.situation-presentation.january-1990-v2" as const;
 
 const EXPECTED_MARKERS = {
   "investigate-first": ["independent-experience:gain", "finish-chance:cost"],
@@ -69,44 +68,73 @@ export function assertJanuaryV2PresentationSource(files: readonly ContentSourceF
     throw new TypeError("January v2 source fails generic compilation");
   }
   const entry = compilation.bundle.chunks.flatMap((chunk) => chunk.entries)[0];
-  if (entry?.id !== JANUARY_V2_PRESENTATION_ID || entry.kind !== "storylet" ||
-      entry.domain !== "programming-v2" || entry.era !== "1990s" || !entry.entryPoint) {
+  if (
+    entry?.id !== JANUARY_V2_PRESENTATION_ID ||
+    entry.kind !== "storylet" ||
+    entry.domain !== "programming-v2" ||
+    entry.era !== "1990s" ||
+    !entry.entryPoint
+  ) {
     throw new TypeError("January v2 presentation has an incorrect identity or chunk");
   }
   const document = parseJsonc(files[0].text) as { payload: unknown };
-  const payload = closed(document.payload, [
-    "contentType", "locale", "decisionId", "contentVersion", "situation",
-    "startBackground", "learningMode", "approaches", "listings", "strings",
-  ], "January v2 presentation");
-  if (payload.contentType !== "january-v2-presentation-v1" ||
-      payload.locale !== "ru" || payload.decisionId !== "january-1990/approach" ||
-      payload.contentVersion !== "january-1990-presentation-v1") {
+  const payload = closed(
+    document.payload,
+    [
+      "contentType",
+      "locale",
+      "decisionId",
+      "contentVersion",
+      "situation",
+      "startBackground",
+      "learningMode",
+      "approaches",
+      "listings",
+      "strings",
+    ],
+    "January v2 presentation",
+  );
+  if (
+    payload.contentType !== "january-v2-presentation-v1" ||
+    payload.locale !== "ru" ||
+    payload.decisionId !== "january-1990/approach" ||
+    payload.contentVersion !== "january-1990-presentation-v1"
+  ) {
     throw new TypeError("January v2 presentation version and locale mismatch");
   }
 
   const dictionaryValue = payload.strings;
-  if (dictionaryValue === null || typeof dictionaryValue !== "object" ||
-      Array.isArray(dictionaryValue)) {
+  if (
+    dictionaryValue === null ||
+    typeof dictionaryValue !== "object" ||
+    Array.isArray(dictionaryValue)
+  ) {
     throw new TypeError("January v2 strings must be an object");
   }
   const dictionary = dictionaryValue as Record<string, unknown>;
   const usedKeys = new Set<string>();
   const readText = (value: unknown, where: string, maxLength: number): void => {
     const key = string(value, where);
-    if (!/^january\.v2\.[a-z]+(?:\.[a-z]+)*$/u.test(key) ||
-        !Object.hasOwn(dictionary, key)) {
+    if (!/^january\.v2\.[a-z]+(?:\.[a-z]+)*$/u.test(key) || !Object.hasOwn(dictionary, key)) {
       throw new TypeError(`${where} refers to an unknown localization key`);
     }
     usedKeys.add(key);
     const text = string(dictionary[key], key);
-    if (text.trim() !== text || [...text].length > maxLength ||
-        PREVIEW_CONTROLS.test(text) || PREVIEW_FORBIDDEN.test(text)) {
+    if (
+      text.trim() !== text ||
+      [...text].length > maxLength ||
+      PREVIEW_CONTROLS.test(text) ||
+      PREVIEW_FORBIDDEN.test(text)
+    ) {
       throw new TypeError(`${key} violates January v2 preview wording limits`);
     }
   };
 
-  const situation = closed(payload.situation,
-    ["titleKey", "goalKey", "problemKey", "causeKeys", "stakesKey"], "situation");
+  const situation = closed(
+    payload.situation,
+    ["titleKey", "goalKey", "problemKey", "causeKeys", "stakesKey"],
+    "situation",
+  );
   readText(situation.titleKey, "situation.titleKey", 72);
   readText(situation.goalKey, "situation.goalKey", 180);
   readText(situation.problemKey, "situation.problemKey", 240);
@@ -133,8 +161,11 @@ export function assertJanuaryV2PresentationSource(files: readonly ContentSourceF
 
   const approaches = array(payload.approaches, 4, "approaches");
   for (const [index, option] of approaches.entries()) {
-    const item = closed(option,
-      ["id", "availability", "labelKey", "forecastKey", "tradeOffs"], "approach");
+    const item = closed(
+      option,
+      ["id", "availability", "labelKey", "forecastKey", "tradeOffs"],
+      "approach",
+    );
     if (item.id !== JANUARY_V2_APPROACHES[index] || item.availability !== "available") {
       throw new TypeError("January v2 approach order or availability mismatch");
     }
@@ -143,8 +174,10 @@ export function assertJanuaryV2PresentationSource(files: readonly ContentSourceF
     const markers = array(item.tradeOffs, 2, "approach.tradeOffs");
     for (const [markerIndex, marker] of markers.entries()) {
       const record = closed(marker, ["axis", "polarity", "textKey"], "marker");
-      if (`${String(record.axis)}:${String(record.polarity)}` !==
-          EXPECTED_MARKERS[item.id as JanuaryV2Approach][markerIndex]) {
+      if (
+        `${String(record.axis)}:${String(record.polarity)}` !==
+        EXPECTED_MARKERS[item.id as JanuaryV2Approach][markerIndex]
+      ) {
         throw new TypeError("January v2 marker semantic witness mismatch");
       }
       readText(record.textKey, "marker.textKey", 96);
@@ -153,11 +186,16 @@ export function assertJanuaryV2PresentationSource(files: readonly ContentSourceF
 
   const listingTypes = ["syntax-error", "logic-error"] as const;
   for (const [index, item] of array(payload.listings, 2, "listings").entries()) {
-    const listing = closed(item,
-      ["eventType", "captionKey", "highlightedLine", "sourceId", "lines"], "listing");
-    if (listing.eventType !== listingTypes[index] ||
-        listing.sourceId !== "microsoft.gw-basic.manual" ||
-        listing.highlightedLine !== 20) {
+    const listing = closed(
+      item,
+      ["eventType", "captionKey", "highlightedLine", "sourceId", "lines"],
+      "listing",
+    );
+    if (
+      listing.eventType !== listingTypes[index] ||
+      listing.sourceId !== "microsoft.gw-basic.manual" ||
+      listing.highlightedLine !== 20
+    ) {
       throw new TypeError("January v2 listing metadata mismatch");
     }
     readText(listing.captionKey, "listing.captionKey", 180);
@@ -169,8 +207,10 @@ export function assertJanuaryV2PresentationSource(files: readonly ContentSourceF
     }
   }
 
-  if (Object.keys(dictionary).length !== usedKeys.size ||
-      !Object.keys(dictionary).every((key) => usedKeys.has(key))) {
+  if (
+    Object.keys(dictionary).length !== usedKeys.size ||
+    !Object.keys(dictionary).every((key) => usedKeys.has(key))
+  ) {
     throw new TypeError("January v2 strings contain unused localization entries");
   }
 
@@ -197,12 +237,13 @@ export function assertJanuaryV2PresentationSource(files: readonly ContentSourceF
     const defer = outcomes("defer-or-recover");
     const finishes = (items: typeof solo) =>
       items.filter((item) => item.delivery !== "delayed-to-february").length;
-    if (!(finishes(help) > finishes(solo) && finishes(solo) < 10) ||
-        !solo.every((item) => item.participation === "independent") ||
-        !help.every((item) => item.participation === "assisted") ||
-        !scope.every((item) => item.delivery === "released-with-limitation") ||
-        !defer.every((item) =>
-          item.delivery === "delayed-to-february" && item.quality === "strong")) {
+    if (
+      !(finishes(help) > finishes(solo) && finishes(solo) < 10) ||
+      !solo.every((item) => item.participation === "independent") ||
+      !help.every((item) => item.participation === "assisted") ||
+      !scope.every((item) => item.delivery === "released-with-limitation") ||
+      !defer.every((item) => item.delivery === "delayed-to-february" && item.quality === "strong")
+    ) {
       throw new TypeError("January v2 marker predictions are not supported by balance");
     }
   }
