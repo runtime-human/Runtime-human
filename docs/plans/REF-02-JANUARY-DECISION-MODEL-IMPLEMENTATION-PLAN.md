@@ -120,14 +120,14 @@ from manifest compatibility. January v1 `content/content.config.json`,
 published artifacts and golden fixtures remain unchanged.
 
 B0 additionally exports `assertIsolatedContentBuildNamespaces(legacy, additional)`
-for REF-02B1's dual-bundle preflight. The guard rejects overlapping source
-roots, overlapping output roots, and source/output intersections between
-builds, including ancestor/descendant paths and Windows case-insensitive
-aliases. It also rejects non-portable Windows path spellings (trailing dots
+for REF-02B1's dual-bundle preflight. The guard rejects overlapping
+source roots within either build, overlapping source/output namespaces
+within a build, and all source/output intersections between builds,
+including ancestor/descendant paths and Windows case-insensitive aliases. It also rejects non-portable Windows path spellings (trailing dots
 or spaces, reserved device names, invalid characters, and non-NFC segments).
 Distinct sibling names such as `programming` and `programming-v2` remain
-valid. Negative tests cover deployed v1 output clobber, nested source
-roots and case-folded aliases.
+valid. Negative tests cover deployed v1 output clobber, within-build
+nested/aliased source roots, and cross-build case-folded aliases.
 
 This is **not yet wired into a production v2 publisher**; REF-02B1 must
 invoke the guard before a dual-bundle write.
