@@ -445,6 +445,13 @@ describe("REF-02B0 January v2 content compatibility gate", () => {
     expect(() =>
       assertJanuaryV2PresentationSource(
         changed((doc) => {
+          doc.payload.strings["january.v2.approach.help.gain"] = "Самый лучший подход";
+        }),
+      ),
+    ).toThrow(/preview wording limits/u);
+    expect(() =>
+      assertJanuaryV2PresentationSource(
+        changed((doc) => {
           doc.payload.situation.titleKey = "january.v2.no.such.key";
         }),
       ),
