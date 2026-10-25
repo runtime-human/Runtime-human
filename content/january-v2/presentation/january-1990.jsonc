@@ -1,0 +1,200 @@
+{
+  "schemaVersion": "content-source-v1",
+  "id": "core.situation-presentation.january-1990-v2",
+  "kind": "storylet",
+  "domain": "programming-v2",
+  "era": "1990s",
+  "availableFrom": "1990-01",
+  "entryPoint": true,
+  "references": [],
+  "provenance": [
+    {
+      "sourceId": "runtime-human.january-1990-design",
+      "title": "January 1990 approach-card and onboarding design",
+      "locator": "docs/adr/ADR-021-january-onboarding-decision-model-and-approach-cards.md"
+    },
+    {
+      "sourceId": "microsoft.gw-basic.manual",
+      "title": "Microsoft GW-BASIC Interpreter User's Reference (1986)",
+      "locator": "https://www.bitsavers.org/pdf/microsoft/gw-basic/410130013-320-R01-0686_Microsoft_GW-BASIC_Interpreter_Users_Reference_1986.pdf"
+    }
+  ],
+  "payload": {
+    "contentType": "january-v2-presentation-v1",
+    "locale": "ru",
+    "decisionId": "january-1990/approach",
+    "contentVersion": "january-1990-presentation-v1",
+    "situation": {
+      "titleKey": "january.v2.situation.title",
+      "goalKey": "january.v2.situation.goal",
+      "problemKey": "january.v2.situation.problem",
+      "causeKeys": [
+        "january.v2.situation.cause.input",
+        "january.v2.situation.cause.tools"
+      ],
+      "stakesKey": "january.v2.situation.stakes"
+    },
+    "startBackground": {
+      "defaultOptionId": "home-pc",
+      "options": [
+        {
+          "id": "home-pc",
+          "labelKey": "january.v2.background.home.label",
+          "forecastKey": "january.v2.background.home.forecast"
+        },
+        {
+          "id": "shared-school-pc",
+          "labelKey": "january.v2.background.shared.label",
+          "forecastKey": "january.v2.background.shared.forecast"
+        }
+      ]
+    },
+    "learningMode": {
+      "defaultOptionId": "read-and-run",
+      "options": [
+        {
+          "id": "read-and-run",
+          "labelKey": "january.v2.learning.read.label",
+          "forecastKey": "january.v2.learning.read.forecast"
+        },
+        {
+          "id": "edit-and-debug",
+          "labelKey": "january.v2.learning.edit.label",
+          "forecastKey": "january.v2.learning.edit.forecast"
+        }
+      ]
+    },
+    "approaches": [
+      {
+        "id": "investigate-first",
+        "availability": "available",
+        "labelKey": "january.v2.approach.investigate.label",
+        "forecastKey": "january.v2.approach.investigate.forecast",
+        "tradeOffs": [
+          {
+            "axis": "independent-experience",
+            "polarity": "gain",
+            "textKey": "january.v2.approach.investigate.gain"
+          },
+          {
+            "axis": "finish-chance",
+            "polarity": "cost",
+            "textKey": "january.v2.approach.investigate.cost"
+          }
+        ]
+      },
+      {
+        "id": "ask-for-help",
+        "availability": "available",
+        "labelKey": "january.v2.approach.help.label",
+        "forecastKey": "january.v2.approach.help.forecast",
+        "tradeOffs": [
+          {
+            "axis": "finish-chance",
+            "polarity": "gain",
+            "textKey": "january.v2.approach.help.gain"
+          },
+          {
+            "axis": "independent-experience",
+            "polarity": "cost",
+            "textKey": "january.v2.approach.help.cost"
+          }
+        ]
+      },
+      {
+        "id": "reduce-scope",
+        "availability": "available",
+        "labelKey": "january.v2.approach.scope.label",
+        "forecastKey": "january.v2.approach.scope.forecast",
+        "tradeOffs": [
+          {
+            "axis": "release-timing",
+            "polarity": "gain",
+            "textKey": "january.v2.approach.scope.gain"
+          },
+          {
+            "axis": "scope",
+            "polarity": "cost",
+            "textKey": "january.v2.approach.scope.cost"
+          }
+        ]
+      },
+      {
+        "id": "defer-or-recover",
+        "availability": "available",
+        "labelKey": "january.v2.approach.defer.label",
+        "forecastKey": "january.v2.approach.defer.forecast",
+        "tradeOffs": [
+          {
+            "axis": "quality",
+            "polarity": "gain",
+            "textKey": "january.v2.approach.defer.gain"
+          },
+          {
+            "axis": "release-timing",
+            "polarity": "cost",
+            "textKey": "january.v2.approach.defer.cost"
+          }
+        ]
+      }
+    ],
+    "listings": [
+      {
+        "eventType": "syntax-error",
+        "captionKey": "january.v2.listing.syntax.caption",
+        "highlightedLine": 20,
+        "sourceId": "microsoft.gw-basic.manual",
+        "lines": [
+          "10 INPUT \"VALUE\"; A",
+          "20 IF A > 5 PRINT \"HIGH\"",
+          "30 PRINT \"DONE\""
+        ]
+      },
+      {
+        "eventType": "logic-error",
+        "captionKey": "january.v2.listing.logic.caption",
+        "highlightedLine": 20,
+        "sourceId": "microsoft.gw-basic.manual",
+        "lines": [
+          "10 INPUT \"VALUE\"; A",
+          "20 IF A > 5 THEN PRINT \"HIGH\"",
+          "30 IF A < 5 THEN PRINT \"LOW\""
+        ]
+      }
+    ],
+    "strings": {
+      "january.v2.situation.title": "Ошибка в первой программе",
+      "january.v2.situation.goal": "Сделать так, чтобы программа правильно обрабатывала введённое значение.",
+      "january.v2.situation.problem": "Программа ведёт себя не так, как ожидается. Причина ещё не установлена.",
+      "january.v2.situation.cause.input": "Проблема проявляется при проверке введённого значения.",
+      "january.v2.situation.cause.tools": "Под рукой только листинг и простые средства проверки.",
+      "january.v2.situation.stakes": "Можно закончить сейчас, упростить результат или перенести работу.",
+      "january.v2.background.home.label": "Компьютер дома",
+      "january.v2.background.home.forecast": "Может быть проще проверять программу самостоятельно, но с подсказкой будет сложнее.",
+      "january.v2.background.shared.label": "Общий компьютер",
+      "january.v2.background.shared.forecast": "Времени за компьютером меньше, зато проще получить подсказку.",
+      "january.v2.learning.read.label": "Читать и повторять",
+      "january.v2.learning.read.forecast": "Меньше риск задержать работу, но меньше возможностей попробовать самому.",
+      "january.v2.learning.edit.label": "Менять и проверять",
+      "january.v2.learning.edit.forecast": "Больше пространства для самостоятельных проб, но работа может затянуться.",
+      "january.v2.approach.investigate.label": "Проверить самостоятельно",
+      "january.v2.approach.investigate.forecast": "Повторить проблему и найти причину без подсказки.",
+      "january.v2.approach.investigate.gain": "Самостоятельно разобраться в причине",
+      "january.v2.approach.investigate.cost": "Можно не успеть закончить",
+      "january.v2.approach.help.label": "Получить подсказку",
+      "january.v2.approach.help.forecast": "Разобрать ошибку с подсказкой и быстрее дойти до результата.",
+      "january.v2.approach.help.gain": "Выше шанс закончить сейчас",
+      "january.v2.approach.help.cost": "Меньше самостоятельности",
+      "january.v2.approach.scope.label": "Упростить первую версию",
+      "january.v2.approach.scope.forecast": "Оставить сложный случай за рамками первой версии.",
+      "january.v2.approach.scope.gain": "Можно выпустить сейчас",
+      "january.v2.approach.scope.cost": "Останется известное ограничение",
+      "january.v2.approach.defer.label": "Перенести завершение",
+      "january.v2.approach.defer.forecast": "Не выпускать программу сейчас, продолжить проверку позже.",
+      "january.v2.approach.defer.gain": "Сохранить возможность улучшить результат",
+      "january.v2.approach.defer.cost": "Выпуск откладывается",
+      "january.v2.listing.syntax.caption": "В условии пропущено ключевое слово THEN.",
+      "january.v2.listing.logic.caption": "Граничное значение не попадает ни в одну ветку."
+    }
+  }
+}
