@@ -147,6 +147,50 @@ describe("REF-02B0 January v2 content compatibility gate", () => {
     ).toThrow("Content build outputRoot must be a normalized relative path");
   });
 
+  it("rejects duplicate, nested and Windows-aliased source roots within either build", () => {
+    const legacy = {
+      sourceRoots: LEGACY_ROOTS,
+      outputRoot: "apps/desktop/public/content",
+    } as const;
+    const isolated = {
+      sourceRoots: ["content/january-v2"],
+      outputRoot: "apps/desktop/public/content-v2",
+    } as const;
+    const sourceRootPairs = [
+      ["content/january-v2", "content/january-v2/subdir"],
+      ["content/january-v2/subdir", "CONTENT/JANUARY-V2"],
+      ["content/january-v2", "CONTENT/JANUARY-V2"],
+    ] as const;
+
+    for (const sourceRoots of sourceRootPairs) {
+      expect(() =>
+        assertIsolatedContentBuildNamespaces(legacy, {
+          ...isolated,
+          sourceRoots,
+        }),
+      ).toThrow("Content build additional source roots overlap");
+    }
+
+    for (const sourceRoots of [
+      ["content/sources/technology", "content/sources"],
+      ["content/sources/technology", "CONTENT/SOURCES/TECHNOLOGY"],
+    ]) {
+      expect(() =>
+        assertIsolatedContentBuildNamespaces(
+          { ...legacy, sourceRoots },
+          isolated,
+        ),
+      ).toThrow("Content build legacy source roots overlap");
+    }
+
+    expect(() =>
+      assertIsolatedContentBuildNamespaces(legacy, {
+        ...isolated,
+        sourceRoots: ["content/january-v2", "CONTENT/JANUARY-V2-EXTRAS"],
+      }),
+    ).not.toThrow();
+  });
+
   it("rejects case-insensitive Windows aliases of legacy source and output roots", () => {
     const legacy = {
       sourceRoots: LEGACY_ROOTS,
