@@ -1,4 +1,5 @@
-import { readFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -8,6 +9,8 @@ import {
   compileContentSources,
   inspectProtectedContentChunks,
   loadContentSourceFiles,
+  runContentBuild,
+  runIsolatedContentBuild,
   type ContentSourceFile,
 } from "@runtime-human/game-content-compiler";
 
@@ -263,6 +266,87 @@ describe("REF-02B0 January v2 content compatibility gate", () => {
         outputRoot: "apps/desktop/public/content-v2.",
       }),
     ).toThrow("Content build namespace path is not Windows-portable");
+  });
+
+  it("publishes and checks only isolated v2 after verifying deployed legacy artifacts", async () => {
+    const repositoryRoot = await mkdtemp(join(tmpdir(), "runtime-human-v2-build-"));
+    const legacyConfig = {
+      sourceRoots: ["content/legacy"],
+      outputRoot: "apps/desktop/public/content",
+    } as const;
+    const additionalConfig = {
+      sourceRoots: ["content/january-v2"],
+      outputRoot: "apps/desktop/public/content-v2",
+    } as const;
+    const legacySource = join(repositoryRoot, "content/legacy/fixture.jsonc");
+    const newSource = join(repositoryRoot, "content/january-v2/fixture.jsonc");
+    const legacyManifest = join(repositoryRoot, legacyConfig.outputRoot, "manifest.json");
+    const newManifest = join(repositoryRoot, additionalConfig.outputRoot, "manifest.json");
+    const isolated = (mode: "check" | "write") =>
+      runIsolatedContentBuild({
+        repositoryRoot,
+        legacyConfig,
+        additionalConfig,
+        mode,
+      });
+
+    try {
+      await mkdir(join(repositoryRoot, "content/legacy"), { recursive: true });
+      await mkdir(join(repositoryRoot, "content/january-v2"), { recursive: true });
+      await writeFile(legacySource, V2_PRESENTATION_PROBE.text, "utf8");
+      await writeFile(newSource, V2_PRESENTATION_PROBE.text, "utf8");
+
+      // A missing or stale v1 publication must not cause any v2 write.
+      await expect(isolated("write")).rejects.toThrow(
+        "Refusing isolated content build: legacy published artifacts are outdated",
+      );
+      await expect(readFile(newManifest, "utf8")).rejects.toMatchObject({ code: "ENOENT" });
+
+      expect(
+        await runContentBuild({ repositoryRoot, config: legacyConfig, mode: "write" }),
+      ).toMatchObject({ kind: "written" });
+      const v1Before = await readFile(legacyManifest, "utf8");
+
+      await expect(
+        runIsolatedContentBuild({
+          repositoryRoot,
+          legacyConfig,
+          additionalConfig: {
+            sourceRoots: ["CONTENT/LEGACY"],
+            outputRoot: additionalConfig.outputRoot,
+          },
+          mode: "write",
+        }),
+      ).rejects.toThrow("Content build namespaces overlap");
+
+      expect(await isolated("write")).toMatchObject({ kind: "written" });
+      expect(await isolated("check")).toMatchObject({ kind: "current" });
+      expect(await readFile(legacyManifest, "utf8")).toBe(v1Before);
+      const v2Before = await readFile(newManifest, "utf8");
+
+      // Valid source drift in v1 fails closed; the v2 output is untouched.
+      await writeFile(
+        legacySource,
+        V2_PRESENTATION_PROBE.text.replace(
+          "January v2 separate-bundle compatibility probe",
+          "Modified legacy compatibility probe",
+        ),
+        "utf8",
+      );
+      await expect(isolated("write")).rejects.toThrow(
+        "Refusing isolated content build: legacy published artifacts are outdated",
+      );
+      expect(await readFile(legacyManifest, "utf8")).toBe(v1Before);
+      expect(await readFile(newManifest, "utf8")).toBe(v2Before);
+
+      await writeFile(legacySource, "{invalid", "utf8");
+      await expect(isolated("write")).rejects.toThrow(
+        "Refusing isolated content build: legacy published artifacts are content-invalid",
+      );
+      expect(await readFile(newManifest, "utf8")).toBe(v2Before);
+    } finally {
+      await rm(repositoryRoot, { recursive: true, force: true });
+    }
   });
 
   it("proves a new domain preserves v1 chunk bytes but changes a combined manifest", async () => {
